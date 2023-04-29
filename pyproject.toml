@@ -1,0 +1,70 @@
+[build-system]
+requires = ["poetry-core", "oldest-supported-numpy"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "lmo"
+version = "0.1.0"
+description = "L-Moments for robust statistics."
+authors = ["Joren Hammudoglu <jhammudoglu@gmail.com>"]
+readme = "README.md"
+license = "BSD-3-Clause"
+homepage = "https://github.com/jorenham/lmo/"
+repository = "https://github.com/jorenham/lmo/"
+keywords = []
+classifiers = [
+    "Development Status :: 3 - Alpha",
+
+    "Natural Language :: English",
+
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Scientific/Engineering",
+
+    "Typing :: Typed",
+
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: POSIX",
+    "Operating System :: Unix",
+    "Operating System :: MacOS",
+]
+
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/jorenham/lmo/issues"
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.12"
+scipy = ">=1.8"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.3"
+hypothesis = {extras = ["numpy"], version = "^6.74.1"}
+
+pyright = "^1.1"
+ruff = "^0.0.263"
+
+[tool.pytest.ini_options]
+addopts = "-ra -q --nf --sw --doctest-modules"
+doctest_optionflags = [
+    "NORMALIZE_WHITESPACE",
+    "IGNORE_EXCEPTION_DETAIL"
+]
+
+[tool.pyright]
+include = ["lmo"]
+exclude = [".git", ".github", "build", "dist", "**/__pycache__", "**/.pytest_cache"]
+venvPath = ".venv"
+pythonVersion = "3.10"
+pythonPlatform = "Linux"
+typeCheckingMode = "strict"
+
+[tool.ruff]
+line-length = 80
+target-version = "py310"
+
+[tool.ruff.pydocstyle]
+convention = "google"
