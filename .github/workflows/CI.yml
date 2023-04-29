@@ -3,8 +3,6 @@ name: CI
 on:
   push:
   pull_request:
-  tags:
-    - '**'
 
 jobs:
   ci:
@@ -36,7 +34,7 @@ jobs:
         run: poetry install --sync
 
       - name: ruff
-        run: poetry run ruff check
+        run: poetry run ruff check lmo
 
       - name: pyright
         run: poetry run pyright
