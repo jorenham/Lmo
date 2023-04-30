@@ -26,9 +26,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: poetry
-          cache-dependency-path: |
-            ${{ matrix.project }}/poetry.lock
-            ${{ matrix.project }}/pyproject.toml
 
       - name: install
         run: poetry install --sync
