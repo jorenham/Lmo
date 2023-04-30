@@ -1,14 +1,10 @@
-__all__ = (
-    '__version__',
-    'l',
-)
+from typing import Final as _Final
 
-import importlib.metadata
-from typing import Final
+from ._meta import get_version as _get_version
 
-__version__: Final[str] = importlib.metadata.version(
-    __package__ or __file__.split('/')[-1]
-)
+from .l_univariate import *  # noqa
+from .l_multivariate import *  # noqa
 
 
-from . import l
+__version__: _Final[str] = _get_version()
+

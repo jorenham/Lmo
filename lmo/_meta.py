@@ -1,8 +1,10 @@
 __all__ = (
     'jit',
+    'get_version',
 )
 
 import functools
+import importlib.metadata
 from typing import Any, Callable, TypeVar
 
 
@@ -31,3 +33,6 @@ if numba is None:
 else:
     jit = functools.partial(numba.njit, cache=True, error_model='numpy')
 
+
+def get_version() -> str:
+    return importlib.metadata.version(__package__ or __file__.split('/')[-1])
