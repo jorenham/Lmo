@@ -53,7 +53,8 @@ numba = [
 
 
 [tool.pytest.ini_options]
-addopts = "-ra -q --nf --sw --doctest-modules"
+#addopts = "-ra --nf --sw --doctest-modules"
+addopts = ""
 doctest_optionflags = [
     "NORMALIZE_WHITESPACE",
     "IGNORE_EXCEPTION_DETAIL"

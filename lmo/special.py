@@ -29,18 +29,18 @@ def sh_legendre(m: int | np.integer[Any], /) -> npt.NDArray[np.int_]:
     with the inverse of the lower Pascal matrix of size (m + 1, m).
 
     Args:
-        m: Order of the shifted legendre polynomial, >0.
+        m: Order of the shifted legendre polynomial, strictly positive integer.
 
     Returns:
-        P: Integer array of shape `(m, m)` with shifted legendre coefficients.
+        P: Array of shape `(m, m)` with shifted legendre coefficients.
 
     See Also:
         * https://wikipedia.org/wiki/Legendre_polynomials
         * https://wikipedia.org/wiki/Pascal_matrix
 
     """
-    if m < 0:
-        raise ValueError
+    if m <= 0:
+        raise ValueError('m must be >0')
 
     # Simultaneously calculate the lower- and symmetric inverse Pascal matrices.
     lp = np.zeros((m, m), np.int_)
@@ -49,6 +49,7 @@ def sh_legendre(m: int | np.integer[Any], /) -> npt.NDArray[np.int_]:
     lp[0, 0] = 1
     for i in range(1, m):
         lp[i, 0] = (-1) ** i
+        # lp[i, 0] = -lp[i - 1, 0]
         for j in range(1, m):
             lp[i, j] = lp[i - 1, j - 1] - lp[i - 1, j]
             p2[i, j] = p2[i - 1, j] + p2[i, j - 1]

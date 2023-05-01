@@ -22,6 +22,7 @@ See Also:
 
 __all__ = 'l_moments', 'l_moment', 'l_loc', 'l_scale', 'l_skew', 'l_kurt',
 
+from typing import Any, TypeAlias
 
 import numpy as np
 import numpy.typing as npt
@@ -29,59 +30,59 @@ import numpy.typing as npt
 from ._l_stats import l_weights
 from ._typing import SortKind
 
+_AnyFloat: TypeAlias = np.floating[Any]
+_NumOrVec: TypeAlias = _AnyFloat | npt.NDArray[_AnyFloat]
+
 
 def l_moments(
     a: npt.ArrayLike,
     k_max: int,
-    /,
-    axis: int | None = -1,
     *,
     sort_kind: SortKind | None = None,
-) -> npt.NDArray[np.float_]:
+) -> npt.NDArray[_AnyFloat]:
     """
     Estimate the [0, 1, ..., k_max]-th sample L-moments, where the 0th is 1,
     the first the arithmetic mean, and the second L-moment is half of the
     mean-absolute difference.
 
     Args:
-        a: Array-like with samples of shape (n, ) or (m, n).
+        a: Array-like with samples of shape (n, ) or (n, m).
         k_max: The max order of the L-moments, >0.
-        axis (optional): Axis along which to calculate the L-moments
         sort_kind (opional): The kind of sort algorithm to use.
 
     Returns:
-        l: Array of shape (1 + k_max) or (m, 1 + k_max), where ``l[k]`` is
+        l: Array of shape (1 + k_max,) or (1 + k_max, [m]), where ``l[k]`` is
             the k-th L-moment (scalar or vector).
 
     """
-    if k_max <= 0:
+    if k_max <= -1:
         raise ValueError('k_max must be a strictly positive integer')
 
-    x: np.ndarray = np.sort(a, axis=axis, kind=sort_kind)
+    x: np.ndarray = np.sort(a, axis=0, kind=sort_kind)
 
-    if x.ndim > 1:
-        assert axis is not None
+    if x.ndim not in {1, 2}:
+        raise ValueError('sample array must be either 1-D or 2-D')
 
-        if x.ndim > 2:
-            raise ValueError('sample array must be either 1-D or 2-D')
+    n = len(x)
+    dtype = np.find_common_type([x.dtype], [np.float_])
 
-        if axis <= -1:
-            axis += x.ndim
+    # the zeroth L-moment
+    l0 = np.ones((1, ) if x.ndim == 1 else (1, x.shape[-1]), dtype=dtype)
 
-    n = x.shape[axis or 0]
-
-    if k_max == 1:
-        return np.array([1.0]) if x.ndim == 1 else np.ones(n, dtype=np.float_)
+    if k_max == 0:
+        return l0
 
     if n < k_max:
         raise ValueError(
             f'the k-th L-moment requires at least k ({k_max}) samples, got {n}'
         )
 
-    l_1k = (x if axis or x.ndim == 1 else x) @ l_weights(n, k_max)
+    # the [1, ..., k_max]-th L-moments
+    l1k = (l_weights(k_max, n) @ x).astype(dtype)
+    # l1k = (x.T @ l_weights(k_max, n)).T.astype(dtype)
 
-    # prepend the 0th L-moments, i.e. 1
-    return np.r_[1, l_1k] if l_1k.ndim == 1 else np.c_[np.ones(len(l_1k)), l_1k]
+    # concat the [0]-th and the [1, ..., k_max]-th L-moments
+    return np.r_[l0, l1k]
 
 
 def l_moment(
@@ -89,85 +90,60 @@ def l_moment(
     k: int,
     r: int = 0,
     /,
-    axis: int | None = -1,
-    *,
-    sort_kind: SortKind | None = None,
-) -> float | npt.NDArray[np.float_]:
+    **kwargs
+) -> _NumOrVec:
     """
     Estimates the k-th L-moment, or the (k, r)-th L-moment ratio.
 
     Args:
-        a: Array-like with samples of shape (n, ) or (m, n).
+        a: Array-like of shape (n, ) or (n, m) with `n` samples and `m`
+            variables.
         k: The order of the L-moment.
         r (optional): If `r` is set to a positive integer, divides the k-th
             L-moment by the r-th one, and an L-moment ratio is returned.
             If r=0 (default), the regular L-moment is returned, as the 0th
             L-moment is always 1.
-        axis (optional): Axis along which to calculate the L-moments
-        sort_kind (opional): The kind of sort algorithm to use.
 
     Returns:
         l: A scalar or vector of size (m,); the k-th L-moment(s), optionally
             divided by the r-th L-moment(s).
 
     """
+    if k <= -1 or r <= -1:
+        raise ValueError('k and r must be strictly positive integers')
 
-    ll = l_moments(a, max(k, r), axis=axis, sort_kind=sort_kind)
+    ll = l_moments(a, max(k, r), **kwargs)
+    assert np.all(ll[0] == 1)
 
-    i_kr = [k - 1, r - 1]
-    lk, lr = ll[i_kr] if ll.ndim == 1 else ll[..., i_kr]
-
-    if k == 0:
-        return 1.0 / lr
-
-    return lk if r == 0 or np.all(lk == 0) else lk / lr
+    return ll[k] / ll[r] if r else ll[k]
 
 
-def l_loc(
-    a: npt.ArrayLike,
-    /,
-    axis: int | None = -1,
-) -> float | npt.NDArray[np.float_]:
+def l_loc(a: npt.ArrayLike, /, **kwargs) -> _NumOrVec:
     """
     Sample L-location, i.e. the oh so familiar / boring arithmetic mean.
     """
-    return l_moment(a, 1, axis=axis)
+    return l_moment(a, 1, **kwargs)
 
 
-def l_scale(
-    a: npt.ArrayLike,
-    /,
-    axis: int | None = -1,
-    **kwargs,
-) -> float | npt.NDArray[np.float_]:
+def l_scale(a: npt.ArrayLike, /, **kwargs) -> _NumOrVec:
     """
     Sample L-scale (analogue of standard deviation); the second L-moment, i.e.
     an alias of `moment(a, 2, ...)`.
 
     Equivalent to half the mean-absolute difference.
     """
-    return l_moment(a, 2, axis=axis, **kwargs)
+    return l_moment(a, 2, **kwargs)
 
 
-def l_skew(
-    a: npt.ArrayLike,
-    /,
-    axis: int | None = -1,
-    **kwargs,
-) -> float | npt.NDArray[np.float_]:
+def l_skew(a: npt.ArrayLike, /, **kwargs) -> _NumOrVec:
     """
     L-skewness coefficient; the 3rd sample L-moment ratio.
     """
-    return l_moment(a, 3, 2, axis=axis, **kwargs)
+    return l_moment(a, 3, 2, **kwargs)
 
 
-def l_kurt(
-    a: npt.ArrayLike,
-    /,
-    axis: int | None = -1,
-    **kwargs,
-) -> float | npt.NDArray[np.float_]:
+def l_kurt(a: npt.ArrayLike, /, **kwargs) -> _NumOrVec:
     """
     L-kurtosis coefficient; the 4th sample L-moment ratio.
     """
-    return l_moment(a, 4, 2, axis=axis, **kwargs)
+    return l_moment(a, 4, 2, **kwargs)
