@@ -37,19 +37,14 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.12"
-scipy = ">=1.8"
+numpy = ">=1.21"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.3"
-hypothesis = {extras = ["numpy"], version = "^6.74.1"}
+hypothesis = {extras = ["numpy"], version = "^6.75"}
 
 pyright = "^1.1"
 ruff = "^0.0.263"
-
-numba = [
-    { version = "^0.56", allow-prereleases = false, python = ">=3.10,<3.11", markers = "platform_python_implementation == 'CPython'" },
-    { version = "^0.57rc1", python = ">=3.11", markers = "platform_python_implementation == 'CPython'" },
-]
 
 
 [tool.pytest.ini_options]
@@ -66,8 +61,7 @@ exclude = [".git", ".github", "build", "dist", "**/__pycache__", "**/.pytest_cac
 venvPath = ".venv"
 pythonVersion = "3.10"
 pythonPlatform = "Linux"
-# maybe later...
-# typeCheckingMode = "strict"
+typeCheckingMode = "strict"
 
 [tool.ruff]
 line-length = 80
