@@ -17,17 +17,11 @@ __st_a_kwargs = {
     'dtype': hnp.floating_dtypes(
         sizes=(32, 64, 128) if hasattr(np, 'float128') else (32, 64)
     ),
-    'elements': st.floats(
-        -1024,
-        1024,
-        allow_nan=False,
-        allow_infinity=False,
-        width=16,
-    ),
+    'elements': st.floats(-(1 << 20), 1 << 20, width=32),
 }
 
 st_m = st.integers(1, 5)
-st_n = st.integers(_N_MIN, _N_MIN + 50)
+st_n = st.integers(_N_MIN, 50)
 st_mn = st.tuples(st_m, st_n)
 st_a = hnp.arrays(shape=st_mn, **__st_a_kwargs)
 st_a_unique = hnp.arrays(shape=st_mn, unique=True, **__st_a_kwargs)
