@@ -77,17 +77,18 @@ def tl_comoment(
     if r < 0:
         raise ValueError('r must be >=0')
 
-    x = np.asanyarray(a, order='F' if rowvar else 'C')
+    x = np.asanyarray(a)
 
-    if x.ndim == 1:
-        x = x[np.newaxis, :]
-    elif x.ndim != 2:
-        raise ValueError(f'sample array must be 1-D or 2-D, got {x.ndim}')
+    if x.ndim != 2:
+        raise ValueError(f'sample array must be 2-D, got {x.ndim}')
     elif not rowvar:
         x = x.T
 
     m, n = x.shape
     dtype = np.find_common_type([x.dtype], [np.float_])
+
+    if not m or not x.size:
+        return np.empty((0, 0), dtype)
 
     if r == 0:
         # The zeroth (TL-)co-moment matrix is the identity matrix, right..?
