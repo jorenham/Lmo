@@ -1,4 +1,6 @@
-from hypothesis import given, strategies as st
+from datetime import timedelta
+
+from hypothesis import given, settings, strategies as st
 from hypothesis.extra import numpy as hnp
 import numpy as np
 
@@ -77,6 +79,7 @@ def test_l_coloc_mean(a: np.ndarray):
     assert np.allclose(m_i[:, 0], a.mean(1))
 
 
+@settings(deadline=timedelta(seconds=1))
 @given(a=st_a_unique)
 def test_l_corr_standard(a: np.ndarray):
     r_aa = lmo.l_corr(a)

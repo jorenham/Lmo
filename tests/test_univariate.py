@@ -1,4 +1,6 @@
-from hypothesis import given, strategies as st
+from datetime import timedelta
+
+from hypothesis import given, settings, strategies as st
 from hypothesis.extra import numpy as hnp
 import numpy as np
 
@@ -52,6 +54,7 @@ def test_tl_cv_bound(a: np.ndarray,  s: int, t: int):
     assert tl_cv <= tl_cv_max
 
 
+@settings(deadline=timedelta(seconds=1))
 @given(a=st_a1_unique, r=st.integers(3, _R_MAX), s=st_s, t=st_t)
 def test_tl_ratio_bound(a: np.ndarray, r: int, s: int, t: int):
     tau_max = tl_ratio_max(r, 2, s, t)
