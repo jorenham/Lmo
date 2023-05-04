@@ -48,12 +48,12 @@ ruff = "^0.0.263"
 
 
 [tool.pytest.ini_options]
-#addopts = "-ra --nf --sw --doctest-modules"
-addopts = ""
-doctest_optionflags = [
-    "NORMALIZE_WHITESPACE",
-    "IGNORE_EXCEPTION_DETAIL"
-]
+minversion = "7.0"
+addopts = ["-ra", "--showlocals", "--strict-markers", "--strict-config"]
+xfail_strict = true
+filterwarnings = ["error"]
+log_cli_level = "info"
+testpaths = ["tests"]
 
 [tool.pyright]
 include = ["lmo"]
