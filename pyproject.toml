@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "lmo"
-version = "0.1.0"
+version = "0.2.0"
 description = "L-Moments for robust statistics."
 authors = ["Joren Hammudoglu <jhammudoglu@gmail.com>"]
 readme = "README.md"
@@ -12,7 +12,7 @@ license = "BSD-3-Clause"
 homepage = "https://github.com/jorenham/lmo/"
 repository = "https://github.com/jorenham/lmo/"
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
 
     "Natural Language :: English",
 
