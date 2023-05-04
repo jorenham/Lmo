@@ -117,6 +117,10 @@ def tl_ratio(
         return np.ones_like(l_r)
 
     l_k = l_r if k == r else tl_moment(x, k, s, t, axis=axis)
+
+    if not l_k:
+        # respect the bounds; use nan instead of inf
+        return np.nan * l_r if l_r else l_r
     return l_r / l_k
 
 

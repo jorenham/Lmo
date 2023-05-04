@@ -23,10 +23,9 @@ def tl_ratio_max(
 
     # the zeroth (TL-)moment is 1. I.e. the total area under the pdf (or the
     # sum of the ppf if discrete) is 1.
-    if r == 0:
-        return 1
-    if k == 0:
-        # the (T)L-moments forall r>0 are unbounded, right...?
+    if r in (0, k):
+        return 1.0
+    if not k:
         return float('inf')
 
     if r < 0:

@@ -1,6 +1,6 @@
 __all__ = 'tl_weights', 'l_weights'
 
-from math import comb
+from math import comb, fsum
 
 import numpy as np
 import numpy.typing as npt
@@ -38,8 +38,8 @@ def tl_weights(n: int, r: int, /, s: int, t: int) -> npt.NDArray[np.float_]:
     w_j = np.zeros(n)
     for j in range(s, n - t):
         # divide inside the loop, to avoid overflows
-        w_j[j] = sum(
-            w_k[k] * comb(j, r + s - k - 1) * comb(n - j - 1, t + k)
+        w_j[j] = fsum(
+            comb(j, r + s - k - 1) * comb(n - j - 1, t + k) * w_k[k]
             for k in range(r)
         )
 

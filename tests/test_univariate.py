@@ -3,65 +3,86 @@ from hypothesis.extra import numpy as hnp
 import numpy as np
 
 import lmo
+from lmo.stats import tl_ratio_max
 
-_max_r = 8
+_R_MAX = 8
+_S_MAX = _T_MAX = 2
+_N_MIN = _R_MAX + _S_MAX + _T_MAX
 
-st_elems = st.floats(allow_nan=False, allow_infinity=False, width=16)
-st_r = st.integers(min_value=1, max_value=_max_r)
-st_n = st.integers(min_value=_max_r + 1, max_value=100)
-st_m = st.integers(min_value=1, max_value=10)
-st_s = st.integers(0, 4)
-st_t = st.integers(0, 4)
-st_arrays_1d = hnp.arrays(
-    dtype=hnp.floating_dtypes(),
-    shape=st_n,
-    elements=st_elems
-)
-st_arrays_2d = hnp.arrays(
-    dtype=hnp.floating_dtypes(),
-    shape=st.tuples(st_n, st_m),
-    elements=st_elems
-)
+st_r = st.integers(1, _R_MAX)
+st_k = st.integers(2, _R_MAX)
+st_s = st.integers(0, _S_MAX)
+st_t = st.integers(0, _T_MAX)
+
+__st_a_kwargs = {
+    'dtype': hnp.floating_dtypes(
+        sizes=(32, 64, 128) if hasattr(np, 'float128') else (32, 64)
+    ),
+    'elements': st.floats(
+        -1024,
+        1024,
+        allow_nan=False,
+        allow_infinity=False,
+        width=16,
+    ),
+}
+st_shape_a1 = st.integers(_N_MIN, _N_MIN + 50)
+st_a1 = hnp.arrays(shape=st_shape_a1, **__st_a_kwargs)
+st_a1_unique = hnp.arrays(shape=st_shape_a1, unique=True, **__st_a_kwargs)
 
 
-@given(a=st_arrays_1d)
-def test_moment0_1d(a: np.ndarray):
+@given(a=st_a1)
+def test_tl_moment_zero(a: np.ndarray):
     l0 = lmo.tl_moment(a, 0)
 
     assert np.isscalar(l0)
     assert l0 == 1
 
 
-@given(a=st_arrays_2d)
-def test_moment0_2d(a: np.ndarray):
-    l0 = lmo.tl_moment(a, 0, axis=1)
+@given(a=st_a1, r=st_r, s=st_s, t=st_t)
+def test_tl_ratio_unit(a: np.ndarray, r: int, s: int, t: int):
+    tau = lmo.tl_ratio(a, r, r, s, t)
 
-    assert not np.isscalar(l0)
-    assert l0.shape == (len(l0),)
-    assert l0.dtype.type == a.dtype.type
-    assert np.all(l0 == 1)
+    assert np.allclose(tau, 1)
 
 
-@given(a=st_arrays_1d | st_arrays_2d)
+@given(a=st_a1, s=st_s, t=st_t)
+def test_tl_cv_bound(a: np.ndarray,  s: int, t: int):
+    """Theorem 2 in J.R.M. Hosking (1990), but exended for TL moments."""
+    tl_cv_max = tl_ratio_max(2, 1, s, t)
+
+    a = np.abs(a) + 0.1  # ensure positive and nonzero mean
+    tl_cv = lmo.tl_ratio(a, 2, 1, s, t)
+
+    # nan is "fine" too
+    assert tl_cv <= tl_cv_max
+
+
+@given(a=st_a1_unique, r=st.integers(3, _R_MAX), s=st_s, t=st_t)
+def test_tl_ratio_bound(a: np.ndarray, r: int, s: int, t: int):
+    tau_max = tl_ratio_max(r, 2, s, t)
+    tau = lmo.tl_ratio(a, r, 2, s, t)
+
+    # nan is "fine" too
+    assert abs(tau) <= tau_max + 1e-8
+
+
+@given(a=st_a1)
 def test_l_loc(a: np.ndarray):
-    loc = a.mean(axis=0, dtype=np.float_)
-    l_loc = lmo.l_loc(a, axis=0)
+    loc = a.mean(dtype=np.float_)
+    l_loc = lmo.l_loc(a)
 
     assert l_loc.shape == loc.shape
-    assert np.allclose(l_loc, loc, rtol=1e-3)
+    assert np.allclose(l_loc, loc, rtol=1e-4)
 
 
-@given(a=st_arrays_1d | st_arrays_2d)
+@given(a=st_a1)
 def test_l_scale(a: np.ndarray):
     # half mean absolute difference
     n = len(a)
-    scale = np.sum(
-        abs(a - a[:, None]),
-        axis=tuple(range(a.ndim)) if a.ndim > 1 else None,
-        dtype=np.float_
-    ) / (n**2 - n) / 2
+    scale = abs(a - a[:, None]).mean() / (2 - 2 / n)
 
-    l_scale = lmo.l_scale(a, axis=0)
+    l_scale = lmo.l_scale(a)
 
     assert l_scale.shape == scale.shape
-    assert np.allclose(l_scale.astype(a.dtype), scale.astype(a.dtype))
+    assert np.allclose(l_scale, scale, rtol=1e-4)
