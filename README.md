@@ -1,3 +1,5 @@
+<img src="./docs/static/lmo.svg" alt="jorenham/lmo" width="128" align="right">
+
 # Lmo
 
 <!--badges-start-->
