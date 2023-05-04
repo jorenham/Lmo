@@ -5,4 +5,9 @@
 [![license](https://img.shields.io/github/license/jorenham/lmo?style=flat-square)](https://github.com/jorenham/lmo/blob/master/LICENSE?)
 
 
-~*coming soon*~
+Streamlined calculation of L-moments and TL-moments.
+
+---
+
+*Docs and examples coming soon*.
+
