@@ -1,0 +1,64 @@
+site_name: Lmo
+site_description: Robust statistics with (T)L-Moments.
+site_author: Joren Hammudoglu
+strict: true
+site_url: https://jorenham.github.io/lmo
+
+repo_name: jorenham/lmo
+repo_url: https://github.com/jorenham/lmo
+
+nav:
+  - Overview: index.md
+  - Code Reference: reference.md
+  - Contributing: contributing.md
+
+theme:
+  name: material
+  palette:
+    scheme: slate
+    primary: bbb cyan
+    accent: bbb red
+  font:
+    text: Lato
+    code: Roboto Mono
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/jorenham
+
+plugins:
+  - search
+  - include-markdown
+  - autorefs
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            paths: [lmo]
+            members_order: source
+            show_root_toc_entry: false
+            show_root_full_path: false
+
+markdown_extensions:
+  - admonition
+  - footnotes
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.betterem
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+
+extra_css:
+  - styles/theme.css
+
+extra_javascript:
+  - scripts/mathjax.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+watch:
+  - docs
+  - lmo

@@ -42,10 +42,14 @@ numpy = ">=1.21"
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.3"
 hypothesis = {extras = ["numpy"], version = "^6.75"}
-
 pyright = "^1.1"
 ruff = "^0.0.263"
 
+[tool.poetry.group.docs.dependencies]
+mkdocs = "^1.4.3"
+mkdocs-material = "^9.1.9"
+mkdocstrings = {extras = ["python"], version = "^0.21.2"}
+mkdocs-include-markdown-plugin = "^4.0.4"
 
 [tool.pytest.ini_options]
 minversion = "7.0"

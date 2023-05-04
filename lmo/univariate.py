@@ -1,10 +1,10 @@
 """
 Estimators of the sample L-moments, and derived summary statistics.
 
-According to wikipedia:
+According to [Wikipedia](https://wikipedia.org/wiki/L-moment):
 
-    L-moments are far more meaningful when dealing with outliers in data
-    than conventional moments.
+> L-moments are far more meaningful when dealing with outliers in data
+> than conventional moments.
 
 Note that L-moments are robust to outliers, but not resistant to extreme
 values.
@@ -15,10 +15,13 @@ moments (MM) and maximum likelihood estimation (MLE), e.g. ftting of the
 
 
 See Also:
-    * `Wikipedia - L-moment <https://wikipedia.org/wiki/L-moment>`_
-    * `J. R. M. Hosking (1990) <https://jstor.org/stable/2345653>`_
-    * `E. Elmamir et al. (2003) <https://doi.org/10.1016/S0167-9473(02)00250-5>`
-    * `J. R. M. Hosking (2007) <https://doi.org/10.1016/j.jspi.2006.12.002>`_
+  * [J.R.M. Hosking (1990) - L-Moments: Analysis and Estimation of
+    Distributions Using Linear Combinations of
+    Order Statistics](https://jstor.org/stable/2345653)
+  * [E. Elmamir & A. Seheult (2003) -
+    Trimmed L-moments](https://doi.org/10.1016/S0167-9473(02)00250-5)
+  * [J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
+    L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
 
 """
 
@@ -48,7 +51,7 @@ def tl_moment(
     *,
     axis: int | None = None,
     sort: SortKind | None = None,
-) -> _NumOrArr:
+) -> np.float_ | npt.NDArray[np.float_]:
     """
     The r-th sample TL-moment.
 
@@ -56,16 +59,16 @@ def tl_moment(
         a: Array-like with samples.
         r: The order of the TL-moment; strictly positive integer.
 
-        s (optional): Amount of samples to trim at the start, default is 1.
-        t (optional): Amount of samples to trim at the end, default is 1.
+        s: Amount of samples to trim at the start, default is 1.
+        t: Amount of samples to trim at the end, default is 1.
 
-        axis (optional): Axis along wich to calculate the TL-moments.
-          If None (default), all samples in the array will be used.
-        sort (opional): Sorting algorithm to use, default is 'quicksort'. See
-          `numpy.sort` for more info.
+        axis: Axis along wich to calculate the TL-moments.
+            If `None` (default), all samples in the array will be used.
+        sort: Sorting algorithm to use, default is `'quicksort'`. See
+            `numpy.sort` for more info.
 
     Returns:
-        out: Scalar or array; the r-th TL-moment(s).
+        Scalar or array; the r-th TL-moment(s).
 
     """
     x = np.sort(a, axis=axis, kind=sort)
