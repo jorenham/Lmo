@@ -117,14 +117,17 @@ def tl_ratio(
     if k == 0:
         return l_r
     if k == r:
-        return np.ones_like(l_r)
+        return np.ones_like(l_r)[()]
 
     l_k = l_r if k == r else tl_moment(x, k, s, t, axis=axis)
 
-    if not l_k:
-        # respect the bounds; use nan instead of inf
-        return np.nan * l_r if l_r else l_r
-    return l_r / l_k
+    # i.e. `x / 0 = 0 if x == 0 else np.nan`
+    return np.divide(
+        l_r,
+        l_k,
+        out=np.where(l_r == 0, 0.0, np.nan),
+        where=l_k != 0
+    )[()]  # [()] converts any 0-dimensional arrays to scalar
 
 
 def tl_loc(

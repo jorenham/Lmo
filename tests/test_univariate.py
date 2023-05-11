@@ -26,6 +26,11 @@ st_shape_a1 = st.integers(_N_MIN, 50)
 st_a1 = hnp.arrays(shape=st_shape_a1, **__st_a_kwargs)
 st_a1_unique = hnp.arrays(shape=st_shape_a1, unique=True, **__st_a_kwargs)
 
+st_a2 = hnp.arrays(
+    shape=st.tuples(st_shape_a1, st.integers(1, 10)),
+    **__st_a_kwargs
+)
+
 
 @given(a=st_a1)
 def test_tl_moment_zero(a: np.ndarray):
@@ -54,6 +59,7 @@ def test_tl_cv_bound(a: np.ndarray,  s: int, t: int):
     assert tl_cv <= tl_cv_max
 
 
+# noinspection PyArgumentEqualDefault
 @settings(deadline=timedelta(seconds=1))
 @given(a=st_a1_unique, r=st.integers(3, _R_MAX), s=st_s, t=st_t)
 def test_tl_ratio_bound(a: np.ndarray, r: int, s: int, t: int):
@@ -64,13 +70,28 @@ def test_tl_ratio_bound(a: np.ndarray, r: int, s: int, t: int):
     assert abs(tau) <= tau_max + 1e-8
 
 
-@given(a=st_a1)
+@given(a=st_a1 | st_a2)
 def test_l_loc(a: np.ndarray):
     loc = a.mean(dtype=np.float_)
     l_loc = lmo.l_loc(a)
 
     assert l_loc.shape == loc.shape
     assert np.allclose(l_loc, loc, rtol=1e-4)
+
+
+@given(a=st_a2)
+def test_l_loc_2d(a: np.ndarray):
+    locs = a.mean(axis=0, dtype=np.float_)
+    l_locs = lmo.l_loc(a, axis=0)
+
+    assert len(l_locs) == a.shape[1]
+    assert l_locs.shape == locs.shape
+    assert np.allclose(l_locs, locs, rtol=1e-4)
+
+    l_locs_t = lmo.l_loc(a.T, axis=1)
+
+    assert l_locs_t.shape == l_locs.shape
+    assert np.allclose(l_locs_t, l_locs)
 
 
 @given(a=st_a1)
@@ -83,3 +104,6 @@ def test_l_scale(a: np.ndarray):
 
     assert l_scale.shape == scale.shape
     assert np.allclose(l_scale, scale, rtol=1e-4)
+
+
+# TODO: tl_loc, tl_scale, (t)l_skew, (t)l_kurt
