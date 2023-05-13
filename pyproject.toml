@@ -9,47 +9,39 @@ description = "L-Moments for robust statistics."
 authors = ["Joren Hammudoglu <jhammudoglu@gmail.com>"]
 readme = "README.md"
 license = "BSD-3-Clause"
-homepage = "https://github.com/jorenham/lmo/"
+homepage = "https://jorenham.github.io/lmo/"
 repository = "https://github.com/jorenham/lmo/"
 classifiers = [
     "Development Status :: 4 - Beta",
-
-    "Natural Language :: English",
-
     "Intended Audience :: Developers",
-    "Intended Audience :: Education",
+    "Intended Audience :: Financial and Insurance Industry",
     "Intended Audience :: Science/Research",
-
-    "Topic :: Software Development :: Libraries",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
     "Topic :: Scientific/Engineering",
-
+    "Topic :: Utilities",
     "Typing :: Typed",
-
-    "Operating System :: Microsoft :: Windows",
-    "Operating System :: POSIX :: Linux",
-    "Operating System :: POSIX",
-    "Operating System :: Unix",
-    "Operating System :: MacOS",
 ]
 
 [tool.poetry.urls]
+Documentation = "https://jorenham.github.io/lmo/"
 "Bug Tracker" = "https://github.com/jorenham/lmo/issues"
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.12"
-numpy = ">=1.21"
+python = "^3.10"
+numpy = "^1.20"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.3"
 hypothesis = {extras = ["numpy"], version = "^6.75"}
 pyright = "^1.1"
-ruff = "^0.0.263"
+ruff = ">=0.0.263,<1.0"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.4.3"
-mkdocs-material = "^9.1.9"
-mkdocstrings = {extras = ["python"], version = "^0.21.2"}
-mkdocs-include-markdown-plugin = "^4.0.4"
+mkdocs-material = ">=9.1.9"
+mkdocstrings = {extras = ["python"], version = ">=0.21.2,<1.0"}
+mkdocs-include-markdown-plugin = { version = ">=4.0.4", python = "<3.12" }
 
 [tool.pytest.ini_options]
 minversion = "7.0"
@@ -61,7 +53,18 @@ testpaths = ["tests"]
 
 [tool.pyright]
 include = ["lmo"]
-exclude = [".git", ".github", "build", "dist", "**/__pycache__", "**/.pytest_cache"]
+exclude = [
+    "**/__pycache__",
+    "**/.pytest_cache",
+    ".git",
+    ".github",
+    ".hypothesis",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".venv",
+    "dist",
+    "docs",
+]
 venvPath = ".venv"
 pythonVersion = "3.10"
 pythonPlatform = "Linux"
