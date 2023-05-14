@@ -1,4 +1,4 @@
-<img src="./docs/static/lmo.svg" alt="jorenham/lmo" width="128" align="right">
+<img src="https://jorenham.github.io/lmo/static/lmo.svg" alt="jorenham/lmo" width="128" align="right">
 
 # Lmo
 
