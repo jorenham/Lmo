@@ -1,6 +1,6 @@
 <!--head-start-->
 
-<img src="https://jorenham.github.io/lmo/static/img.svg" alt="jorenham/lmo" width="128" align="right">
+<img src="https://jorenham.github.io/lmo/img/lmo.svg" alt="jorenham/lmo" width="128" align="right">
 
 # Lmo
 
