@@ -16,6 +16,12 @@ Lmo is a lightweight library with pythonic syntax. Some features include:
  - Flat functions, no classes (scipy > scikit) 
  - Red and fluffy
 
+## Installation
+
+```shell
+pip install lmo
+```
+
 ## Why (T)L-moments?
 
 !!! note info "Coming soon. For now, see [Wikipedia](https://wikipedia.org/wiki/L-moment)"
@@ -24,11 +30,7 @@ Lmo is a lightweight library with pythonic syntax. Some features include:
 ## Roadmap
 
 - [x] Sample L-, and TL-moment estimators
-- [x] Multivariate L- and TL- co-moments.
-- [ ] Standard error / covariance matrices of the sample (T)L-moments (Elamir et al. 2002, 4.1.)
-- [ ] Parameter estimatation for known probability distributions.
-- [ ] Better docs: introduction, motivation, examples, etc.
-- [ ] Numerical tools for estimating (T)L-moments of unknown distributions.
-- [ ] Optional numba JIT support.
-- [ ] Generic (T)L method-of-moments implementation
-- [ ] LQ-moments (Mudholkar and Hutson, 1998)
+- [x] Sample L- and TL- co-moments (multivariate) estimators
+- [ ] Variance structure of sample (T)L moments [#4](https://github.com/jorenham/lmo/issues/4)
+- [ ] Fitting of distributions with known TL- or L-moments [#5](https://github.com/jorenham/lmo/issues/5)
+- [ ] Population (T)L-moment estimation from quantile functions [#6](https://github.com/jorenham/lmo/issues/6)
