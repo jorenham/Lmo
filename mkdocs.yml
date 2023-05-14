@@ -14,13 +14,15 @@ nav:
 
 theme:
   name: material
+  logo: img/logo.png
+  favicon: img/favicon.ico
   palette:
     scheme: slate
-    primary: bbb cyan
-    accent: bbb red
+    primary: nose
+    accent: skin
   font:
-    text: Lato
-    code: Roboto Mono
+    text: Fira Sans
+    code: Fira Mono
 
 extra:
   social:

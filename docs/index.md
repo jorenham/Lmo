@@ -1,19 +1,17 @@
-# Lmo
-
 {%
    include-markdown "../README.md"
-   start="<!--badges-start-->"
-   end="<!--badges-end-->"
+   start="<!--head-start-->"
+   end="<!--head-end-->"
 %}
 
 
 Lmo is a lightweight library with pythonic syntax. Some features include:
 
+ - Robust alternatives to conventional [moments](https://wikipedia.org/wiki/Moment_(mathematics)): even the [Cauchy distribution](https://wikipedia.org/wiki/Cauchy_distribution) poses no threat!
  - Lightweight; it only requires [numpy](https://numpy.org/doc/stable/index.html)
  - Clean code style: linted with [ruff](https://github.com/charliermarsh/ruff)
  - Fully type-annotated, valid in [pyright](https://github.com/microsoft/pyright)'s strict mode.
  - [Hypothesis](https://hypothesis.readthedocs.io/en/latest/)-tested
- - Flat functions, no classes (scipy > scikit) 
  - Red and fluffy
 
 ## Installation
@@ -21,11 +19,6 @@ Lmo is a lightweight library with pythonic syntax. Some features include:
 ```shell
 pip install lmo
 ```
-
-## Why (T)L-moments?
-
-!!! note info "Coming soon. For now, see [Wikipedia](https://wikipedia.org/wiki/L-moment)"
-
 
 ## Roadmap
 
