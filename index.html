@@ -18,7 +18,7 @@
       
         <link rel="next" href="reference/">
       
-      <link rel="icon" href="assets/images/favicon.png">
+      <link rel="icon" href="img/favicon.ico">
       <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.12">
     
     
@@ -41,8 +41,8 @@
         
         
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Lato";--md-code-font:"Roboto Mono"}</style>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Fira+Sans:300,300i,400,400i,700,700i%7CFira+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Fira Sans";--md-code-font:"Fira Mono"}</style>
       
     
     
@@ -65,7 +65,7 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="bbb-cyan" data-md-color-accent="bbb-red">
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="nose" data-md-color-accent="skin">
   
     
     
@@ -93,8 +93,7 @@
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="." title="Lmo" class="md-header__button md-logo" aria-label="Lmo" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+  <img src="img/logo.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -193,8 +192,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href="." title="Lmo" class="md-nav__button md-logo" aria-label="Lmo" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+  <img src="img/logo.png" alt="logo">
 
     </a>
     Lmo
@@ -258,13 +256,6 @@
         <li class="md-nav__item">
   <a href="#installation" class="md-nav__link">
     Installation
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#why-tl-moments" class="md-nav__link">
-    Why (T)L-moments?
   </a>
   
 </li>
@@ -348,13 +339,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#why-tl-moments" class="md-nav__link">
-    Why (T)L-moments?
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#roadmap" class="md-nav__link">
     Roadmap
   </a>
@@ -379,31 +363,30 @@
   
 
 
-<h1 id="lmo">Lmo</h1>
-<!-- BEGIN INCLUDE ../README.md '&lt;!--badges-start--&gt;' '&lt;!--badges-end--&gt;' -->
+<!-- BEGIN INCLUDE ../README.md '&lt;!--head-start--&gt;' '&lt;!--head-end--&gt;' -->
 
+<p><img src="https://jorenham.github.io/lmo/static/img.svg" alt="jorenham/lmo" width="128" align="right"></p>
+<h1 id="lmo">Lmo</h1>
 <p><img alt="GitHub Workflow Status (with branch)" src="https://img.shields.io/github/actions/workflow/status/jorenham/lmo/CI.yml?branch=master&amp;style=flat-square" />
 <a href="https://pypi.org/project/lmo/"><img alt="PyPI" src="https://img.shields.io/pypi/v/lmo?style=flat-square" /></a>
 <a href="https://github.com/jorenham/lmo"><img alt="versions" src="https://img.shields.io/pypi/pyversions/lmo?style=flat-square" /></a>
 <a href="https://github.com/jorenham/lmo/blob/master/LICENSE?"><img alt="license" src="https://img.shields.io/github/license/jorenham/lmo?style=flat-square" /></a></p>
+<p>Streamlined calculation of L-moments and TL-moments.</p>
+<hr />
 <!-- END INCLUDE -->
 
 <p>Lmo is a lightweight library with pythonic syntax. Some features include:</p>
 <ul>
+<li>Robust alternatives to conventional <a href="https://wikipedia.org/wiki/Moment_(mathematics)">moments</a>: even the <a href="https://wikipedia.org/wiki/Cauchy_distribution">Cauchy distribution</a> poses no threat!</li>
 <li>Lightweight; it only requires <a href="https://numpy.org/doc/stable/index.html">numpy</a></li>
 <li>Clean code style: linted with <a href="https://github.com/charliermarsh/ruff">ruff</a></li>
 <li>Fully type-annotated, valid in <a href="https://github.com/microsoft/pyright">pyright</a>'s strict mode.</li>
 <li><a href="https://hypothesis.readthedocs.io/en/latest/">Hypothesis</a>-tested</li>
-<li>Flat functions, no classes (scipy &gt; scikit) </li>
 <li>Red and fluffy</li>
 </ul>
 <h2 id="installation">Installation</h2>
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>lmo
 </code></pre></div>
-<h2 id="why-tl-moments">Why (T)L-moments?</h2>
-<div class="admonition note info">
-<p class="admonition-title">Coming soon. For now, see <a href="https://wikipedia.org/wiki/L-moment">Wikipedia</a></p>
-</div>
 <h2 id="roadmap">Roadmap</h2>
 <ul class="task-list">
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Sample L-, and TL-moment estimators</li>
