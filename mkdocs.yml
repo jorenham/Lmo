@@ -37,8 +37,9 @@ plugins:
       handlers:
         python:
           options:
-            paths: [lmo]
+            annotations_path: 'full'
             members_order: source
+            show_source: false
             show_root_toc_entry: false
             show_root_full_path: false
 
