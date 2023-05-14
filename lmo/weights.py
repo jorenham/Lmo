@@ -16,11 +16,16 @@ def tl_weights(n: int, r: int, /, trim: Trimming) -> npt.NDArray[np.float_]:
     Args:
         n: Sample size.
         r: L-moment order, e.g. 1 for location, and 2 for scale.
-        trim: Amount of samples to trim on both sides, or a tuple of the amount
-            to trim on the left and right sides. Default is 1.
+        trim:
+            Amount of samples to trim as either
+
+            - `(t1: int, t2: int)` for left and right trimming,
+            - `t: int`, or `(t: int)` as alias for `(t, t)`, or
+            - `()` as alias for `(0, 0)`.
 
     Returns:
-        w_j: A vector of size `n`, with linear weights for each of the
+        w_j:
+            A vector of size `n`, with linear weights for each of the
             (ordered) samples.
 
     """
