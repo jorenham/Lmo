@@ -30,20 +30,16 @@ __all__ = (
     'tl_moment', 'tl_ratio', 'tl_loc', 'tl_scale', 'tl_skew', 'tl_kurt',
 )
 
-from typing import Any, TypeAlias
+from typing import Any
 
 import numpy as np
-import numpy.typing as npt
 
+from .typing import AnyTensor, ScalarOrArray, SortKind
 from .weights import tl_weights
-from ._typing import SortKind
-
-_AnyFloat: TypeAlias = np.floating[Any]
-_NumOrArr: TypeAlias = _AnyFloat | npt.NDArray[_AnyFloat]
 
 
 def tl_moment(
-    a: npt.ArrayLike,
+    a: AnyTensor,
     r: int,
     /,
     s: int = 1,
@@ -51,7 +47,7 @@ def tl_moment(
     *,
     axis: int | None = None,
     sort: SortKind | None = None,
-) -> np.float_ | npt.NDArray[np.float_]:
+) -> ScalarOrArray[np.float_]:
     """
     The r-th sample TL-moment.
 
@@ -71,14 +67,12 @@ def tl_moment(
         Scalar or array; the r-th TL-moment(s).
 
     """
-    x = np.sort(a, axis=axis, kind=sort)
+    x = np.sort(np.asanyarray(a), axis=axis, kind=sort)
     n = x.shape[axis or 0]
 
     if r == 0:
         # zeroth (TL-)moment is 1
-        # noinspection PyTypeChecker
-        dt: np.dtype[_AnyFloat] = np.find_common_type([x.dtype], [np.float_])
-        return np.ones(x.size // n, dtype=dt) if x.ndim > 1 else dt.type(1)
+        return np.ones(x.size // n) if x.ndim > 1 else np.float_(1)
 
     w = tl_weights(n, r, s, t)
 
@@ -97,7 +91,7 @@ def tl_moment(
 
 
 def tl_ratio(
-    a: npt.ArrayLike,
+    a: AnyTensor,
     r: int,
     /,
     k: int = 2,
@@ -106,11 +100,11 @@ def tl_ratio(
     *,
     axis: int | None = None,
     sort: SortKind | None = None,
-) -> _NumOrArr:
+) -> ScalarOrArray[np.float_]:
     """
     Ratio of the r-th and k-th (2nd by default) sample TL-moments.
     """
-    x = np.sort(a, axis=axis, kind=sort)
+    x = np.sort(np.asanyarray(a), axis=axis, kind=sort)
 
     l_r = tl_moment(x, r, s, t, axis=axis)
 
@@ -131,12 +125,12 @@ def tl_ratio(
 
 
 def tl_loc(
-    a: npt.ArrayLike,
+    a: AnyTensor,
     /,
     s: int = 1,
     t: int = 1,
     **kwargs: Any,
-) -> _NumOrArr:
+) -> ScalarOrArray[np.float_]:
     """
     TL-location: the first sample TL-moment. Analogous to the sample mean.
     """
@@ -144,12 +138,12 @@ def tl_loc(
 
 
 def tl_scale(
-    a: npt.ArrayLike,
+    a: AnyTensor,
     /,
     s: int = 1,
     t: int = 1,
     **kwargs: Any,
-) -> _NumOrArr:
+) -> ScalarOrArray[np.float_]:
     """
     TL-scale: the second TL-moment. Analogous to the sample standard deviation.
     """
@@ -157,12 +151,12 @@ def tl_scale(
 
 
 def tl_skew(
-    a: npt.ArrayLike,
+    a: AnyTensor,
     /,
     s: int = 1,
     t: int = 1,
     **kwargs: Any,
-) -> _NumOrArr:
+) -> ScalarOrArray[np.float_]:
     """
     TL-skewness coefficient; the ratio of the 3rd and 2nd sample TL-moments.
     """
@@ -170,12 +164,12 @@ def tl_skew(
 
 
 def tl_kurt(
-    a: npt.ArrayLike,
+    a: AnyTensor,
     /,
     s: int = 1,
     t: int = 1,
     **kwargs: Any,
-) -> _NumOrArr:
+) -> ScalarOrArray[np.float_]:
     """
     TL-kurtosis coefficient; the ratio of the 4th and 2nd sample TL-moments.
     """
@@ -184,7 +178,12 @@ def tl_kurt(
 
 # L-moment aliasses
 
-def l_moment(a: npt.ArrayLike, r: int, /, **kwargs: Any) -> _NumOrArr:
+def l_moment(
+    a: AnyTensor,
+    r: int,
+    /,
+    **kwargs: Any,
+) -> ScalarOrArray[np.float_]:
     """
     The r-th sample L-moment.
     Alias for ``tl_moment(a, r, 0, 0, **kwargs)``.
@@ -193,11 +192,12 @@ def l_moment(a: npt.ArrayLike, r: int, /, **kwargs: Any) -> _NumOrArr:
 
 
 def l_ratio(
-    a: npt.ArrayLike,
-    r: int, k: int = 2,
+    a: AnyTensor,
+    r: int,
+    k: int = 2,
     /,
     **kwargs: Any,
-) -> _NumOrArr:
+) -> ScalarOrArray[np.float_]:
     """
     Ratio of the r-th and k-th L-moments.
     Alias for ``tl_ratio(a, r, k, 0, 0, **kwargs)``.
@@ -207,7 +207,7 @@ def l_ratio(
     return tl_ratio(a, r, k, 0, 0, **kwargs)
 
 
-def l_loc(a: npt.ArrayLike, /, **kwargs: Any) -> _NumOrArr:
+def l_loc(a: AnyTensor, /, **kwargs: Any) -> ScalarOrArray[np.float_]:
     """
     L-location: the first sample L-moment.
     Equivalent to the sample mean.
@@ -215,7 +215,7 @@ def l_loc(a: npt.ArrayLike, /, **kwargs: Any) -> _NumOrArr:
     return l_moment(a, 1, **kwargs)
 
 
-def l_scale(a: npt.ArrayLike, /, **kwargs: Any) -> _NumOrArr:
+def l_scale(a: AnyTensor, /, **kwargs: Any) -> ScalarOrArray[np.float_]:
     """
     L-scale: the second L-moment.
     Equivalent to half the mean absolute difference.
@@ -223,14 +223,14 @@ def l_scale(a: npt.ArrayLike, /, **kwargs: Any) -> _NumOrArr:
     return l_moment(a, 2, **kwargs)
 
 
-def l_skew(a: npt.ArrayLike, /, **kwargs: Any) -> _NumOrArr:
+def l_skew(a: AnyTensor, /, **kwargs: Any) -> ScalarOrArray[np.float_]:
     """
     L-skewness coefficient; the ratio of the 3rd and 2nd sample L-moments.
     """
     return l_ratio(a, 3, **kwargs)
 
 
-def l_kurt(a: npt.ArrayLike, /, **kwargs: Any) -> _NumOrArr:
+def l_kurt(a: AnyTensor, /, **kwargs: Any) -> ScalarOrArray[np.float_]:
     """
     L-kurtosis coefficient; the ratio of the 4th and 2nd sample L-moments.
     """

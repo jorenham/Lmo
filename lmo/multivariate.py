@@ -29,13 +29,13 @@ import numpy as np
 from numpy import typing as npt
 
 from . import tl_moment
-from ._typing import SortKind
+from .typing import AnyMatrix, SortKind
 from .weights import tl_weights
 
 
 # noinspection PyPep8Naming
 def tl_comoment(
-    a: npt.ArrayLike,
+    a: AnyMatrix,
     r: int,
     /,
     s: int = 1,
@@ -105,7 +105,7 @@ def tl_comoment(
 
 # noinspection PyPep8Naming
 def tl_coratio(
-    a: npt.ArrayLike,
+    a: AnyMatrix,
     r: int,
     /,
     k: int = 2,
@@ -134,7 +134,7 @@ def tl_coratio(
 
 
 def tl_coloc(
-    a: npt.ArrayLike,
+    a: AnyMatrix,
     /,
     s: int = 1,
     t: int = 1,
@@ -152,7 +152,7 @@ def tl_coloc(
 
 
 def tl_coscale(
-    a: npt.ArrayLike,
+    a: AnyMatrix,
     /,
     s: int = 1,
     t: int = 1,
@@ -170,7 +170,7 @@ def tl_coscale(
 
 
 def tl_corr(
-    a: npt.ArrayLike,
+    a: AnyMatrix,
     /,
     s: int = 1,
     t: int = 1,
@@ -192,7 +192,7 @@ def tl_corr(
 
 
 def tl_coskew(
-    a: npt.ArrayLike,
+    a: AnyMatrix,
     /,
     s: int = 1,
     t: int = 1,
@@ -207,7 +207,7 @@ def tl_coskew(
 
 
 def tl_cokurt(
-    a: npt.ArrayLike,
+    a: AnyMatrix,
     /,
     s: int = 1,
     t: int = 1,
@@ -222,7 +222,7 @@ def tl_cokurt(
 
 
 def l_comoment(
-    a: npt.ArrayLike,
+    a: AnyMatrix,
     r: int,
     /,
     **kwargs: Any,
@@ -235,7 +235,7 @@ def l_comoment(
 
 
 def l_coratio(
-    a: npt.ArrayLike,
+    a: AnyMatrix,
     r: int,
     k: int = 2,
     /,
@@ -248,21 +248,21 @@ def l_coratio(
     return tl_coratio(a, r, k, 0, 0, **kwargs)
 
 
-def l_coloc(a: npt.ArrayLike, /, **kwargs: Any) -> npt.NDArray[np.float_]:
+def l_coloc(a: AnyMatrix, /, **kwargs: Any) -> npt.NDArray[np.float_]:
     """
     L-colocation matrix, i.e. each `L[i, j]` is the sample mean of `a[i]`.
     """
     return l_comoment(a, 1, **kwargs)
 
 
-def l_coscale(a: npt.ArrayLike, /, **kwargs: Any) -> npt.NDArray[np.float_]:
+def l_coscale(a: AnyMatrix, /, **kwargs: Any) -> npt.NDArray[np.float_]:
     """
     L-scale: the second L-comoment matrix.
     """
     return l_comoment(a, 2, **kwargs)
 
 
-def l_corr(a: npt.ArrayLike, /, **kwargs: Any) -> npt.NDArray[np.float_]:
+def l_corr(a: AnyMatrix, /, **kwargs: Any) -> npt.NDArray[np.float_]:
     """
     L-correlation coefficients; the 2nd L-comoment ratio matrix.
 
@@ -271,14 +271,14 @@ def l_corr(a: npt.ArrayLike, /, **kwargs: Any) -> npt.NDArray[np.float_]:
     return l_coratio(a, 2, **kwargs)
 
 
-def l_coskew(a: npt.ArrayLike, /, **kwargs: Any) -> npt.NDArray[np.float_]:
+def l_coskew(a: AnyMatrix, /, **kwargs: Any) -> npt.NDArray[np.float_]:
     """
     L-coskewness coefficients; the 3rd L-comoment ratio matrix.
     """
     return l_coratio(a, 3, **kwargs)
 
 
-def l_cokurt(a: npt.ArrayLike, /, **kwargs: Any) -> npt.NDArray[np.float_]:
+def l_cokurt(a: AnyMatrix, /, **kwargs: Any) -> npt.NDArray[np.float_]:
     """
     L-cokurtosis coefficients; the 4th L-comoment ratio matrix.
     """
