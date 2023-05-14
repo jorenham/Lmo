@@ -8,13 +8,13 @@ import lmo
 from lmo.stats import tl_ratio_max
 
 _R_MAX = 8
-_S_MAX = _T_MAX = 2
-_N_MIN = _R_MAX + _S_MAX + _T_MAX
+_T_MAX = 2
+_N_MIN = _R_MAX + 2 * _T_MAX
 
 st_r = st.integers(1, _R_MAX)
 st_k = st.integers(2, _R_MAX)
-st_s = st.integers(0, _S_MAX)
 st_t = st.integers(0, _T_MAX)
+st_trim = st_t | st.tuples() | st.tuples(st_t) | st.tuples(st_t, st_t)
 
 __st_a_kwargs = {
     'dtype': hnp.floating_dtypes(
@@ -40,20 +40,20 @@ def test_tl_moment_zero(a: np.ndarray):
     assert l0 == 1
 
 
-@given(a=st_a1, r=st_r, s=st_s, t=st_t)
-def test_tl_ratio_unit(a: np.ndarray, r: int, s: int, t: int):
-    tau = lmo.tl_ratio(a, r, r, s, t)
+@given(a=st_a1, r=st_r, trim=st_trim)
+def test_tl_ratio_unit(a: np.ndarray, r: int, trim):
+    tau = lmo.tl_ratio(a, r, r, trim)
 
     assert np.allclose(tau, 1)
 
 
-@given(a=st_a1, s=st_s, t=st_t)
-def test_tl_cv_bound(a: np.ndarray,  s: int, t: int):
+@given(a=st_a1, trim=st_trim)
+def test_tl_cv_bound(a: np.ndarray,  trim):
     """Theorem 2 in J.R.M. Hosking (1990), but exended for TL moments."""
-    tl_cv_max = tl_ratio_max(2, 1, s, t)
+    tl_cv_max = tl_ratio_max(2, 1, trim)
 
     a = np.abs(a) + 0.1  # ensure positive and nonzero mean
-    tl_cv = lmo.tl_ratio(a, 2, 1, s, t)
+    tl_cv = lmo.tl_ratio(a, 2, 1, trim)
 
     # nan is "fine" too
     assert tl_cv <= tl_cv_max
@@ -61,10 +61,10 @@ def test_tl_cv_bound(a: np.ndarray,  s: int, t: int):
 
 # noinspection PyArgumentEqualDefault
 @settings(deadline=timedelta(seconds=1))
-@given(a=st_a1_unique, r=st.integers(3, _R_MAX), s=st_s, t=st_t)
-def test_tl_ratio_bound(a: np.ndarray, r: int, s: int, t: int):
-    tau_max = tl_ratio_max(r, 2, s, t)
-    tau = lmo.tl_ratio(a, r, 2, s, t)
+@given(a=st_a1_unique, r=st.integers(3, _R_MAX), trim=st_trim)
+def test_tl_ratio_bound(a: np.ndarray, r: int, trim):
+    tau_max = tl_ratio_max(r, 2, trim=trim)
+    tau = lmo.tl_ratio(a, r, trim=trim)
 
     # nan is "fine" too
     assert abs(tau) <= tau_max + 1e-8

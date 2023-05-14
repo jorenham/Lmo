@@ -1,17 +1,19 @@
 from math import factorial as fact
 
+from lmo._utils import expand_trimming
+from lmo.typing import Trimming
+
 
 def tl_ratio_max(
     r: int,
     /,
     k: int = 2,
-    s: int = 1,
-    t: int = 1,
+    trim: Trimming = 1,
 ) -> float:
     """
     The theoretical upper bound on the absolute TL-ratios, i.e.::
 
-        abs(tl_ratio(a, r, k, s, t)) <= tl_ratio_max(r, k, s, t)
+        abs(tl_ratio(a, r, k, (tl, tr))) <= tl_ratio_max(r, k, tl, tr)
 
     is True for all samples `a`.
 
@@ -33,9 +35,11 @@ def tl_ratio_max(
     if k < 0:
         raise ValueError(f'expected k >= 0, got {k} < 0')
 
-    m = min(s, t)
+    tl, tr = expand_trimming(trim)
+
+    m = min(tl, tr)
     # disclaimer: the `k` instead of a `2` here is just a guess
     return (
-        k * fact(m + k - 1) * fact(s + t + r) /
-        (r * fact(m + r - 1) * fact(s + t + k))
+        k * fact(m + k - 1) * fact(tl + tr + r) /
+        (r * fact(m + r - 1) * fact(tl + tr + k))
     )

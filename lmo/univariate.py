@@ -34,7 +34,7 @@ from typing import Any
 
 import numpy as np
 
-from .typing import AnyTensor, ScalarOrArray, SortKind
+from .typing import AnyTensor, ScalarOrArray, SortKind, Trimming
 from .weights import tl_weights
 
 
@@ -42,8 +42,7 @@ def tl_moment(
     a: AnyTensor,
     r: int,
     /,
-    s: int = 1,
-    t: int = 1,
+    trim: Trimming = 1,
     *,
     axis: int | None = None,
     sort: SortKind | None = None,
@@ -54,9 +53,8 @@ def tl_moment(
     Args:
         a: Array-like with samples.
         r: The order of the TL-moment; strictly positive integer.
-
-        s: Amount of samples to trim at the start, default is 1.
-        t: Amount of samples to trim at the end, default is 1.
+        trim: Amount of samples to trim on both sides, or a tuple of the amount
+            to trim on the left and right sides.
 
         axis: Axis along wich to calculate the TL-moments.
             If `None` (default), all samples in the array will be used.
@@ -74,7 +72,7 @@ def tl_moment(
         # zeroth (TL-)moment is 1
         return np.ones(x.size // n) if x.ndim > 1 else np.float_(1)
 
-    w = tl_weights(n, r, s, t)
+    w = tl_weights(n, r, trim)
 
     _axis = (axis or 0) % x.ndim
     assert _axis >= 0
@@ -95,8 +93,7 @@ def tl_ratio(
     r: int,
     /,
     k: int = 2,
-    s: int = 1,
-    t: int = 1,
+    trim: Trimming = 1,
     *,
     axis: int | None = None,
     sort: SortKind | None = None,
@@ -106,14 +103,14 @@ def tl_ratio(
     """
     x = np.sort(np.asanyarray(a), axis=axis, kind=sort)
 
-    l_r = tl_moment(x, r, s, t, axis=axis)
+    l_r = tl_moment(x, r, trim, axis=axis)
 
     if k == 0:
         return l_r
     if k == r:
         return np.ones_like(l_r)[()]
 
-    l_k = l_r if k == r else tl_moment(x, k, s, t, axis=axis)
+    l_k = l_r if k == r else tl_moment(x, k, trim, axis=axis)
 
     # i.e. `x / 0 = 0 if x == 0 else np.nan`
     return np.divide(
@@ -127,53 +124,49 @@ def tl_ratio(
 def tl_loc(
     a: AnyTensor,
     /,
-    s: int = 1,
-    t: int = 1,
+    trim: Trimming = 1,
     **kwargs: Any,
 ) -> ScalarOrArray[np.float_]:
     """
     TL-location: the first sample TL-moment. Analogous to the sample mean.
     """
-    return tl_moment(a, 1, s, t, **kwargs)
+    return tl_moment(a, 1, trim, **kwargs)
 
 
 def tl_scale(
     a: AnyTensor,
     /,
-    s: int = 1,
-    t: int = 1,
+    trim: Trimming = 1,
     **kwargs: Any,
 ) -> ScalarOrArray[np.float_]:
     """
     TL-scale: the second TL-moment. Analogous to the sample standard deviation.
     """
-    return tl_moment(a, 2, s, t, **kwargs)
+    return tl_moment(a, 2, trim, **kwargs)
 
 
 def tl_skew(
     a: AnyTensor,
     /,
-    s: int = 1,
-    t: int = 1,
+    trim: Trimming = 1,
     **kwargs: Any,
 ) -> ScalarOrArray[np.float_]:
     """
     TL-skewness coefficient; the ratio of the 3rd and 2nd sample TL-moments.
     """
-    return tl_ratio(a, 3, s=s, t=t, **kwargs)
+    return tl_ratio(a, 3, trim=trim, **kwargs)
 
 
 def tl_kurt(
     a: AnyTensor,
     /,
-    s: int = 1,
-    t: int = 1,
+    trim: Trimming = 1,
     **kwargs: Any,
 ) -> ScalarOrArray[np.float_]:
     """
     TL-kurtosis coefficient; the ratio of the 4th and 2nd sample TL-moments.
     """
-    return tl_ratio(a, 4, s=s, t=t, **kwargs)
+    return tl_ratio(a, 4, trim=trim, **kwargs)
 
 
 # L-moment aliasses
@@ -186,9 +179,9 @@ def l_moment(
 ) -> ScalarOrArray[np.float_]:
     """
     The r-th sample L-moment.
-    Alias for ``tl_moment(a, r, 0, 0, **kwargs)``.
+    Alias for ``tl_moment(a, r, 0, **kwargs)``.
     """
-    return tl_moment(a, r, 0, 0, **kwargs)
+    return tl_moment(a, r, 0, **kwargs)
 
 
 def l_ratio(
@@ -200,11 +193,11 @@ def l_ratio(
 ) -> ScalarOrArray[np.float_]:
     """
     Ratio of the r-th and k-th L-moments.
-    Alias for ``tl_ratio(a, r, k, 0, 0, **kwargs)``.
+    Alias for ``tl_ratio(a, r, k, 0, **kwargs)``.
 
     For k > 0, the L-moment ratio's are bounded within [-1, 1].
     """
-    return tl_ratio(a, r, k, 0, 0, **kwargs)
+    return tl_ratio(a, r, k, 0, **kwargs)
 
 
 def l_loc(a: AnyTensor, /, **kwargs: Any) -> ScalarOrArray[np.float_]:

@@ -1,29 +1,32 @@
 from hypothesis import given, strategies as st
 import numpy as np
 
+# noinspection PyProtectedMember
+from lmo._utils import expand_trimming
 from lmo.weights import l_weights, tl_weights
 
 
 st_n = st.integers(32, 1024)
 st_r = st.integers(1, 8)
-st_s = st.integers(0, 4)
-st_s1 = st.integers(1, 4)
+
 st_t = st.integers(0, 4)
-st_t1 = st.integers(1, 4)
+_st_t1 = st.integers(1, 4)
+st_trim = st_t | st.tuples() | st.tuples(st_t) | st.tuples(st_t, st_t)
+st_trim1 = _st_t1 | st.tuples(_st_t1) | st.tuples(_st_t1, _st_t1)
 
 
 @given(n=st_n, r=st_r)
 def test_a_l_ias(n, r):
     # gotta make testing fun somehow...
     w_l = l_weights(n, r)
-    w_tl = tl_weights(n, r, 0, 0)
+    w_tl = tl_weights(n, r, 0)
 
     assert np.array_equal(w_l, w_tl)
 
 
-@given(n=st_n, r=st_r, s=st_s, t=st_t)
-def test_tl_basic(n, r, s, t):
-    w = tl_weights(n, r, s, t)
+@given(n=st_n, r=st_r, trim=st_trim)
+def test_tl_basic(n, r, trim):
+    w = tl_weights(n, r, trim)
 
     assert w.shape == (n,)
     assert np.all(np.isfinite(n))
@@ -31,28 +34,32 @@ def test_tl_basic(n, r, s, t):
 
 @given(n=st_n, r=st_r, t=st_t)
 def test_tl_symmetry(n, r, t):
-    w = tl_weights(n, r, t, t)
+    w = tl_weights(n, r, (t, t))
 
     assert np.allclose(w, w[::-1] * (-1)**(r-1))
 
 
-@given(n=st_n, r=st_r, s=st_s1, t=st_t1)
-def test_tl_trim(n, r, s, t):
-    w = tl_weights(n, r, s, t)
+@given(n=st_n, r=st_r, trim=st_trim1)
+def test_tl_trim(n, r, trim):
+    w = tl_weights(n, r, trim=trim)
 
-    assert np.allclose(w[:s], 0)
-    assert np.allclose(w[-t:], 0)
+    tl, tr = expand_trimming(trim)
+    assert tl > 0
+    assert tr > 0
+
+    assert np.allclose(w[:tl], 0)
+    assert np.allclose(w[-tr:], 0)
 
 
-@given(n=st_n, s=st_s, t=st_t)
-def test_tl_sum1(n, s, t):
-    w = tl_weights(n, 1, s, t)
+@given(n=st_n, trim=st_trim)
+def test_tl_sum1(n, trim):
+    w = tl_weights(n, 1, trim)
 
     assert np.allclose(np.sum(w), 1)
 
 
-@given(n=st_n, r=st.integers(2, 16), s=st_s, t=st_t)
-def test_tl_sum2p(n, r, s, t):
-    w = tl_weights(n, r, s, t)
+@given(n=st_n, r=st.integers(2, 16), trim=st_trim)
+def test_tl_sum2p(n, r, trim):
+    w = tl_weights(n, r, trim)
 
     assert np.allclose(np.sum(w), 0)

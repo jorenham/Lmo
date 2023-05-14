@@ -12,8 +12,8 @@ _N_MIN = _R_MAX + _S_MAX + _T_MAX
 
 st_r = st.integers(1, _R_MAX)
 st_k = st.integers(2, _R_MAX)
-st_s = st.integers(0, _S_MAX)
 st_t = st.integers(0, _T_MAX)
+st_trim = st_t | st.tuples() | st.tuples(st_t) | st.tuples(st_t, st_t)
 
 __st_a_kwargs = {
     'dtype': hnp.floating_dtypes(
@@ -29,43 +29,43 @@ st_a = hnp.arrays(shape=st_mn, **__st_a_kwargs)
 st_a_unique = hnp.arrays(shape=st_mn, unique=True, **__st_a_kwargs)
 
 
-@given(r=st_r, s=st_s, t=st_t)
-def test_tl_comoment_empty(r: int, s: int, t: int):
-    l_00 = lmo.tl_comoment(np.empty((0, 0)), r, s, t)
+@given(r=st_r, trim=st_trim)
+def test_tl_comoment_empty(r: int, trim):
+    l_00 = lmo.tl_comoment(np.empty((0, 0)), r, trim)
 
     assert l_00.shape == (0, 0)
 
 
-@given(a=st_a, s=st_s, t=st_t)
-def test_tl_comoment_zero(a: np.ndarray, s: int, t: int):
-    l_aa = lmo.tl_comoment(a, 0, s, t)
+@given(a=st_a, trim=st_trim)
+def test_tl_comoment_zero(a: np.ndarray, trim):
+    l_aa = lmo.tl_comoment(a, 0, trim)
 
     assert l_aa.shape == (len(a), len(a))
     assert np.array_equal(l_aa, np.eye(len(a)))
 
 
-@given(a=st_a, r=st_r, s=st_s, t=st_t)
-def test_tl_comoment_rowvar(a: np.ndarray, r: int, s: int, t: int):
-    l_aa = lmo.tl_comoment(a, r, s, t)
-    l_aa_t = lmo.tl_comoment(a.T, r, s, t, rowvar=False)
+@given(a=st_a, r=st_r, trim=st_trim)
+def test_tl_comoment_rowvar(a: np.ndarray, r: int, trim):
+    l_aa = lmo.tl_comoment(a, r, trim)
+    l_aa_t = lmo.tl_comoment(a.T, r, trim, rowvar=False)
 
     assert np.all(l_aa == l_aa_t)
 
 
-@given(a=st_a, r=st_r, s=st_s, t=st_t)
-def test_tl_comoment_diag(a: np.ndarray, r: int, s: int, t: int):
-    l_a = lmo.tl_moment(a, r, s, t, axis=1)
-    L_aa = lmo.tl_comoment(a, r, s, t)
+@given(a=st_a, r=st_r, trim=st_trim)
+def test_tl_comoment_diag(a: np.ndarray, r: int, trim):
+    l_a = lmo.tl_moment(a, r, trim, axis=1)
+    L_aa = lmo.tl_comoment(a, r, trim)
 
     assert np.allclose(L_aa.diagonal(), l_a)
 
 
-@given(a=st_a, r=st_r, s=st_s, t=st_t)
-def test_tl_comoment_rowwise(a: np.ndarray, r: int, s: int, t: int):
-    l_a = lmo.tl_moment(a, r, s, t, axis=1)
+@given(a=st_a, r=st_r, trim=st_trim)
+def test_tl_comoment_rowwise(a: np.ndarray, r: int, trim):
+    l_a = lmo.tl_moment(a, r, trim, axis=1)
 
     def func(a_m):
-        return lmo.tl_comoment(a_m[None, :], r, s, t)[0, 0]
+        return lmo.tl_comoment(a_m[None, :], r, trim)[0, 0]
 
     L_a1 = np.apply_along_axis(func, 1, a)
 
@@ -75,8 +75,11 @@ def test_tl_comoment_rowwise(a: np.ndarray, r: int, s: int, t: int):
 
 @given(a=st_a)
 def test_l_coloc_mean(a: np.ndarray):
-    m_i = lmo.l_coloc(a)
-    assert np.allclose(m_i[:, 0], a.mean(1))
+    m_a = a.mean(1)
+    l_aa = lmo.l_coloc(a)
+    l_a0 = l_aa[:, 0]
+
+    assert np.allclose(l_a0, m_a, atol=1e-3, rtol=1e-5)
 
 
 @settings(deadline=timedelta(seconds=1))

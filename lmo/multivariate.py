@@ -29,7 +29,7 @@ import numpy as np
 from numpy import typing as npt
 
 from . import tl_moment
-from .typing import AnyMatrix, SortKind
+from .typing import AnyMatrix, SortKind, Trimming
 from .weights import tl_weights
 
 
@@ -38,8 +38,7 @@ def tl_comoment(
     a: AnyMatrix,
     r: int,
     /,
-    s: int = 1,
-    t: int = 1,
+    trim: Trimming = 1,
     *,
     rowvar: bool = True,
     sort: SortKind | None = None,
@@ -55,9 +54,8 @@ def tl_comoment(
           Each row of `a` represents a variable, and each column a single
           observation of all those variables. Also see `rowvar` below.
         r: The order of the TL-moment; strictly positive integer.
-
-        s (optional): Amount of samples to trim at the start, default is 1.
-        t (optional): Amount of samples to trim at the end, default is 1.
+        trim: Amount of samples to trim on both sides, or a tuple of the amount
+            to trim on the left and right sides. Default is 1.
 
         rowvar (optional): If `rowvar` is True (default), then each row
           represents a variable, with observations in the columns. Otherwise,
@@ -94,7 +92,7 @@ def tl_comoment(
         # The zeroth (TL-)co-moment matrix is the identity matrix, right..?
         return np.eye(m, dtype=dtype)
 
-    w = tl_weights(n, r, s, t)
+    w = tl_weights(n, r, trim)
 
     L_ji = np.empty((m, m), dtype=dtype)
     for j, ii in enumerate(np.argsort(x, kind=sort)):
@@ -109,8 +107,7 @@ def tl_coratio(
     r: int,
     /,
     k: int = 2,
-    s: int = 1,
-    t: int = 1,
+    trim: Trimming = 1,
     **kwargs: Any,
 ) -> npt.NDArray[np.float_]:
     """
@@ -121,13 +118,13 @@ def tl_coratio(
           L-Moments: L-Comoment Matrices.
 
     """
-    L_k = tl_comoment(a, r, s, t, **kwargs)
+    L_k = tl_comoment(a, r, trim, **kwargs)
 
     if k == 0:
         return L_k
 
     l_r = L_k.diagonal() if k == r else cast(
-        npt.NDArray[np.float_], tl_moment(a, r, s, t, **kwargs)
+        npt.NDArray[np.float_], tl_moment(a, r, trim, **kwargs)
     )
 
     return L_k / l_r[:, np.newaxis]
@@ -136,8 +133,7 @@ def tl_coratio(
 def tl_coloc(
     a: AnyMatrix,
     /,
-    s: int = 1,
-    t: int = 1,
+    trim: Trimming = 1,
     **kwargs: Any,
 ) -> npt.NDArray[np.float_]:
     """
@@ -148,14 +144,13 @@ def tl_coloc(
           please tell me (github: @jorenham).
 
     """
-    return tl_comoment(a, 1, s, t, **kwargs)
+    return tl_comoment(a, 1, trim, **kwargs)
 
 
 def tl_coscale(
     a: AnyMatrix,
     /,
-    s: int = 1,
-    t: int = 1,
+    trim: Trimming = 1,
     **kwargs: Any,
 ) -> npt.NDArray[np.float_]:
     """
@@ -166,14 +161,13 @@ def tl_coscale(
     But unlike the variance-covariance matrix, the TL-coscale matrix is not
     symmetric.
     """
-    return tl_comoment(a, 2, s, t, **kwargs)
+    return tl_comoment(a, 2, trim, **kwargs)
 
 
 def tl_corr(
     a: AnyMatrix,
     /,
-    s: int = 1,
-    t: int = 1,
+    trim: Trimming = 1,
     **kwargs: Any,
 ) -> npt.NDArray[np.float_]:
     """
@@ -188,14 +182,13 @@ def tl_corr(
         (T)L-correlation coefficient measures monotonicity.
 
     """
-    return tl_coratio(a, 2, s=s, t=t, **kwargs)
+    return tl_coratio(a, 2, trim=trim, **kwargs)
 
 
 def tl_coskew(
     a: AnyMatrix,
     /,
-    s: int = 1,
-    t: int = 1,
+    trim: Trimming = 1,
     **kwargs: Any,
 ) -> npt.NDArray[np.float_]:
     """
@@ -203,14 +196,13 @@ def tl_coskew(
 
     The main diagonal cantains the TL-skewness coefficients.
     """
-    return tl_coratio(a, 3, s=s, t=t, **kwargs)
+    return tl_coratio(a, 3, trim=trim, **kwargs)
 
 
 def tl_cokurt(
     a: AnyMatrix,
     /,
-    s: int = 1,
-    t: int = 1,
+    trim: Trimming = 1,
     **kwargs: Any,
 ) -> npt.NDArray[np.float_]:
     """
@@ -218,7 +210,7 @@ def tl_cokurt(
 
     The main diagonal contains the TL-kurtosis coefficients.
     """
-    return tl_coratio(a, 4, s=s, t=t, **kwargs)
+    return tl_coratio(a, 4, trim=trim, **kwargs)
 
 
 def l_comoment(
@@ -231,7 +223,7 @@ def l_comoment(
     The r-th sample L-comoment matrix.
     Alias for ``tl_comoment(a, r, 0, 0, **kwargs)``.
     """
-    return tl_comoment(a, r, 0, 0, **kwargs)
+    return tl_comoment(a, r, 0, **kwargs)
 
 
 def l_coratio(
@@ -245,7 +237,7 @@ def l_coratio(
     L-comoment ratio matrix `L_r[i, j] / l_k[j]`.
     Alias for ``tl_coratio(a, r, k, 0, 0, **kwargs)``.
     """
-    return tl_coratio(a, r, k, 0, 0, **kwargs)
+    return tl_coratio(a, r, k, 0, **kwargs)
 
 
 def l_coloc(a: AnyMatrix, /, **kwargs: Any) -> npt.NDArray[np.float_]:
