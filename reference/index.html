@@ -562,7 +562,8 @@ moments (MM) and maximum likelihood estimation (MLE), e.g. ftting of the
 
   <div class="doc doc-contents ">
   
-      <p>The r-th sample TL-moment.</p>
+      <p>Estimate the <span class="arithmatex">\(r\)</span>-th sample TL-moment, <span class="arithmatex">\(\lambda_{r}^{(t_1, t_2)}\)</span>, for
+left and right trim lengths <span class="arithmatex">\(t_1\)</span> and <span class="arithmatex">\(t_2\)</span>.</p>
 
   <p><strong>Parameters:</strong></p>
   <table>
@@ -578,7 +579,7 @@ moments (MM) and maximum likelihood estimation (MLE), e.g. ftting of the
         <tr>
           <td><code>a</code></td>
           <td>
-                <code><span title="lmo.typing.AnyTensor">AnyTensor</span></code>
+                <code>lmo.typing.AnyTensor</code>
           </td>
           <td><p>Array-like with samples.</p></td>
           <td>
@@ -598,14 +599,32 @@ moments (MM) and maximum likelihood estimation (MLE), e.g. ftting of the
         <tr>
           <td><code>trim</code></td>
           <td>
-                <code><span title="lmo.typing.Trimming">Trimming</span></code>
+                <code>lmo.typing.Trimming</code>
           </td>
-          <td><p>Amount of samples to trim on both sides, or a tuple of the amount
-to trim on the left and right sides.</p></td>
+          <td><p>Amount of samples to trim as either</p>
+<ul>
+<li><code>(t1: int, t2: int)</code> for left and right trimming,</li>
+<li><code>t: int</code>, or <code>(t: int)</code> as alias for <code>(t, t)</code>, or</li>
+<li><code>()</code> as alias for <code>(0, 0)</code>.</li>
+</ul>
+<p>If not provided, <code>1</code> will be used by default.</p></td>
           <td>
                 <code>1</code>
           </td>
         </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Other Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
         <tr>
           <td><code>axis</code></td>
           <td>
@@ -613,20 +632,13 @@ to trim on the left and right sides.</p></td>
           </td>
           <td><p>Axis along wich to calculate the TL-moments.
 If <code>None</code> (default), all samples in the array will be used.</p></td>
-          <td>
-                <code>None</code>
-          </td>
         </tr>
         <tr>
           <td><code>sort</code></td>
           <td>
-                <code><span title="lmo.typing.SortKind">SortKind</span> | None</code>
+                <code>lmo.typing.SortKind | None</code>
           </td>
-          <td><p>Sorting algorithm to use, default is <code>'quicksort'</code>. See
-<code>numpy.sort</code> for more info.</p></td>
-          <td>
-                <code>None</code>
-          </td>
+          <td><p>Sorting algorithm, see <a href="https://numpy.org/doc/stable/reference/generated/numpy.sort"><code>numpy.sort</code></a>.</p></td>
         </tr>
     </tbody>
   </table>
@@ -642,112 +654,13 @@ If <code>None</code> (default), all samples in the array will be used.</p></td>
     <tbody>
         <tr>
           <td>
-                <code><span title="lmo.typing.ScalarOrArray">ScalarOrArray</span>[<span title="numpy">np</span>.<span title="numpy.float_">float_</span>]</code>
+                <code>lmo.typing.ScalarOrArray[numpy.numpy.float_]</code>
           </td>
           <td><p>Scalar or array; the r-th TL-moment(s).</p></td>
         </tr>
     </tbody>
   </table>
 
-      <details class="quote">
-        <summary>Source code in <code>lmo/univariate.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">41</span>
-<span class="normal">42</span>
-<span class="normal">43</span>
-<span class="normal">44</span>
-<span class="normal">45</span>
-<span class="normal">46</span>
-<span class="normal">47</span>
-<span class="normal">48</span>
-<span class="normal">49</span>
-<span class="normal">50</span>
-<span class="normal">51</span>
-<span class="normal">52</span>
-<span class="normal">53</span>
-<span class="normal">54</span>
-<span class="normal">55</span>
-<span class="normal">56</span>
-<span class="normal">57</span>
-<span class="normal">58</span>
-<span class="normal">59</span>
-<span class="normal">60</span>
-<span class="normal">61</span>
-<span class="normal">62</span>
-<span class="normal">63</span>
-<span class="normal">64</span>
-<span class="normal">65</span>
-<span class="normal">66</span>
-<span class="normal">67</span>
-<span class="normal">68</span>
-<span class="normal">69</span>
-<span class="normal">70</span>
-<span class="normal">71</span>
-<span class="normal">72</span>
-<span class="normal">73</span>
-<span class="normal">74</span>
-<span class="normal">75</span>
-<span class="normal">76</span>
-<span class="normal">77</span>
-<span class="normal">78</span>
-<span class="normal">79</span>
-<span class="normal">80</span>
-<span class="normal">81</span>
-<span class="normal">82</span>
-<span class="normal">83</span>
-<span class="normal">84</span>
-<span class="normal">85</span>
-<span class="normal">86</span>
-<span class="normal">87</span>
-<span class="normal">88</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">tl_moment</span><span class="p">(</span>
-    <span class="n">a</span><span class="p">:</span> <span class="n">AnyTensor</span><span class="p">,</span>
-    <span class="n">r</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="o">/</span><span class="p">,</span>
-    <span class="n">trim</span><span class="p">:</span> <span class="n">Trimming</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="o">*</span><span class="p">,</span>
-    <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">sort</span><span class="p">:</span> <span class="n">SortKind</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ScalarOrArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    The r-th sample TL-moment.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        a: Array-like with samples.</span>
-<span class="sd">        r: The order of the TL-moment; strictly positive integer.</span>
-<span class="sd">        trim: Amount of samples to trim on both sides, or a tuple of the amount</span>
-<span class="sd">            to trim on the left and right sides.</span>
-
-<span class="sd">        axis: Axis along wich to calculate the TL-moments.</span>
-<span class="sd">            If `None` (default), all samples in the array will be used.</span>
-<span class="sd">        sort: Sorting algorithm to use, default is `&#39;quicksort&#39;`. See</span>
-<span class="sd">            `numpy.sort` for more info.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        Scalar or array; the r-th TL-moment(s).</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asanyarray</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">sort</span><span class="p">)</span>
-    <span class="n">n</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">axis</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">]</span>
-
-    <span class="k">if</span> <span class="n">r</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="c1"># zeroth (TL-)moment is 1</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="o">//</span> <span class="n">n</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-
-    <span class="n">w</span> <span class="o">=</span> <span class="n">tl_weights</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">trim</span><span class="p">)</span>
-
-    <span class="n">_axis</span> <span class="o">=</span> <span class="p">(</span><span class="n">axis</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">)</span> <span class="o">%</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span>
-    <span class="k">assert</span> <span class="n">_axis</span> <span class="o">&gt;=</span> <span class="mi">0</span>
-
-    <span class="k">if</span> <span class="n">_axis</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="c1"># apply along the first axis</span>
-        <span class="k">return</span> <span class="n">w</span> <span class="o">@</span> <span class="n">x</span>
-
-    <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">or</span> <span class="n">_axis</span> <span class="o">==</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="c1"># apply along the last axis</span>
-        <span class="k">return</span> <span class="n">x</span> <span class="o">@</span> <span class="n">w</span>
-
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">apply_along_axis</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inner</span><span class="p">,</span> <span class="n">_axis</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
-</code></pre></div></td></tr></table></div>
-      </details>
   </div>
 
 </div>
@@ -764,73 +677,17 @@ If <code>None</code> (default), all samples in the array will be used.</p></td>
 
   <div class="doc doc-contents ">
   
-      <p>Ratio of the r-th and k-th (2nd by default) sample TL-moments.</p>
+      <p>Ratio of the r-th and k-th (2nd by default) sample TL-moments:</p>
+<div class="arithmatex">\[
+\tau_{r, k}^{(t_1, t_2)} = \frac{
+    \lambda_{r}^{(t_1, t_2)}
+}{
+    \lambda_{k}^{(t_1, t_2)}
+}
+\]</div>
+<p>By default, <span class="arithmatex">\(k = 2\)</span> and <span class="arithmatex">\(t_1 = t_2 = 1\)</span> are used, i.e.
+<span class="arithmatex">\(\tau_{r, 2}^{(1, 1)}\)</span>, or <span class="arithmatex">\(\tau_r^{(1)}\)</span> for short.</p>
 
-      <details class="quote">
-        <summary>Source code in <code>lmo/univariate.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 91</span>
-<span class="normal"> 92</span>
-<span class="normal"> 93</span>
-<span class="normal"> 94</span>
-<span class="normal"> 95</span>
-<span class="normal"> 96</span>
-<span class="normal"> 97</span>
-<span class="normal"> 98</span>
-<span class="normal"> 99</span>
-<span class="normal">100</span>
-<span class="normal">101</span>
-<span class="normal">102</span>
-<span class="normal">103</span>
-<span class="normal">104</span>
-<span class="normal">105</span>
-<span class="normal">106</span>
-<span class="normal">107</span>
-<span class="normal">108</span>
-<span class="normal">109</span>
-<span class="normal">110</span>
-<span class="normal">111</span>
-<span class="normal">112</span>
-<span class="normal">113</span>
-<span class="normal">114</span>
-<span class="normal">115</span>
-<span class="normal">116</span>
-<span class="normal">117</span>
-<span class="normal">118</span>
-<span class="normal">119</span>
-<span class="normal">120</span>
-<span class="normal">121</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">tl_ratio</span><span class="p">(</span>
-    <span class="n">a</span><span class="p">:</span> <span class="n">AnyTensor</span><span class="p">,</span>
-    <span class="n">r</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="o">/</span><span class="p">,</span>
-    <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
-    <span class="n">trim</span><span class="p">:</span> <span class="n">Trimming</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="o">*</span><span class="p">,</span>
-    <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">sort</span><span class="p">:</span> <span class="n">SortKind</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ScalarOrArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Ratio of the r-th and k-th (2nd by default) sample TL-moments.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asanyarray</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">sort</span><span class="p">)</span>
-
-    <span class="n">l_r</span> <span class="o">=</span> <span class="n">tl_moment</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">trim</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">l_r</span>
-    <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="n">r</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">l_r</span><span class="p">)[()]</span>
-
-    <span class="n">l_k</span> <span class="o">=</span> <span class="n">l_r</span> <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="n">r</span> <span class="k">else</span> <span class="n">tl_moment</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">trim</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>
-
-    <span class="c1"># i.e. `x / 0 = 0 if x == 0 else np.nan`</span>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span>
-        <span class="n">l_r</span><span class="p">,</span>
-        <span class="n">l_k</span><span class="p">,</span>
-        <span class="n">out</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">l_r</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">),</span>
-        <span class="n">where</span><span class="o">=</span><span class="n">l_k</span> <span class="o">!=</span> <span class="mi">0</span>
-    <span class="p">)[()]</span>  <span class="c1"># [()] converts any 0-dimensional arrays to scalar</span>
-</code></pre></div></td></tr></table></div>
-      </details>
   </div>
 
 </div>
@@ -847,31 +704,13 @@ If <code>None</code> (default), all samples in the array will be used.</p></td>
 
   <div class="doc doc-contents ">
   
-      <p>TL-location: the first sample TL-moment. Analogous to the sample mean.</p>
+      <p>Sample estimator of the TL-location, <span class="arithmatex">\(\lambda_1^{(t_1, t_2)}\)</span>; the first
+TL-moment.</p>
 
-      <details class="quote">
-        <summary>Source code in <code>lmo/univariate.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">124</span>
-<span class="normal">125</span>
-<span class="normal">126</span>
-<span class="normal">127</span>
-<span class="normal">128</span>
-<span class="normal">129</span>
-<span class="normal">130</span>
-<span class="normal">131</span>
-<span class="normal">132</span>
-<span class="normal">133</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">tl_loc</span><span class="p">(</span>
-    <span class="n">a</span><span class="p">:</span> <span class="n">AnyTensor</span><span class="p">,</span>
-    <span class="o">/</span><span class="p">,</span>
-    <span class="n">trim</span><span class="p">:</span> <span class="n">Trimming</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ScalarOrArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    TL-location: the first sample TL-moment. Analogous to the sample mean.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">tl_moment</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">trim</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-</code></pre></div></td></tr></table></div>
-      </details>
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <p><a class="autorefs autorefs-internal" href="#lmo.univariate.tl_moment">lmo.tl_moment</a></p>
+</details>
   </div>
 
 </div>
@@ -888,31 +727,9 @@ If <code>None</code> (default), all samples in the array will be used.</p></td>
 
   <div class="doc doc-contents ">
   
-      <p>TL-scale: the second TL-moment. Analogous to the sample standard deviation.</p>
+      <p>Sample TL-scale estimator, <span class="arithmatex">\(\lambda_2^{(t_1, t_2)}\)</span>, the second TL-moment.
+A robust alternative of the sample standard deviation.</p>
 
-      <details class="quote">
-        <summary>Source code in <code>lmo/univariate.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">136</span>
-<span class="normal">137</span>
-<span class="normal">138</span>
-<span class="normal">139</span>
-<span class="normal">140</span>
-<span class="normal">141</span>
-<span class="normal">142</span>
-<span class="normal">143</span>
-<span class="normal">144</span>
-<span class="normal">145</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">tl_scale</span><span class="p">(</span>
-    <span class="n">a</span><span class="p">:</span> <span class="n">AnyTensor</span><span class="p">,</span>
-    <span class="o">/</span><span class="p">,</span>
-    <span class="n">trim</span><span class="p">:</span> <span class="n">Trimming</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ScalarOrArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    TL-scale: the second TL-moment. Analogous to the sample standard deviation.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">tl_moment</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">trim</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-</code></pre></div></td></tr></table></div>
-      </details>
   </div>
 
 </div>
@@ -929,31 +746,9 @@ If <code>None</code> (default), all samples in the array will be used.</p></td>
 
   <div class="doc doc-contents ">
   
-      <p>TL-skewness coefficient; the ratio of the 3rd and 2nd sample TL-moments.</p>
+      <p>TL-skewness coefficient, <span class="arithmatex">\(\tau_3^{(t_1, t_2)}\)</span>; the 3rd sample TL-moment
+ratio.</p>
 
-      <details class="quote">
-        <summary>Source code in <code>lmo/univariate.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">148</span>
-<span class="normal">149</span>
-<span class="normal">150</span>
-<span class="normal">151</span>
-<span class="normal">152</span>
-<span class="normal">153</span>
-<span class="normal">154</span>
-<span class="normal">155</span>
-<span class="normal">156</span>
-<span class="normal">157</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">tl_skew</span><span class="p">(</span>
-    <span class="n">a</span><span class="p">:</span> <span class="n">AnyTensor</span><span class="p">,</span>
-    <span class="o">/</span><span class="p">,</span>
-    <span class="n">trim</span><span class="p">:</span> <span class="n">Trimming</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ScalarOrArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    TL-skewness coefficient; the ratio of the 3rd and 2nd sample TL-moments.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">tl_ratio</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="n">trim</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-</code></pre></div></td></tr></table></div>
-      </details>
   </div>
 
 </div>
@@ -970,31 +765,9 @@ If <code>None</code> (default), all samples in the array will be used.</p></td>
 
   <div class="doc doc-contents ">
   
-      <p>TL-kurtosis coefficient; the ratio of the 4th and 2nd sample TL-moments.</p>
+      <p>TL-kurtosis coefficient, <span class="arithmatex">\(\tau_4^{(t_1, t_2)}\)</span>; the 4th sample TL-moment
+ratio.</p>
 
-      <details class="quote">
-        <summary>Source code in <code>lmo/univariate.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">160</span>
-<span class="normal">161</span>
-<span class="normal">162</span>
-<span class="normal">163</span>
-<span class="normal">164</span>
-<span class="normal">165</span>
-<span class="normal">166</span>
-<span class="normal">167</span>
-<span class="normal">168</span>
-<span class="normal">169</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">tl_kurt</span><span class="p">(</span>
-    <span class="n">a</span><span class="p">:</span> <span class="n">AnyTensor</span><span class="p">,</span>
-    <span class="o">/</span><span class="p">,</span>
-    <span class="n">trim</span><span class="p">:</span> <span class="n">Trimming</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ScalarOrArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    TL-kurtosis coefficient; the ratio of the 4th and 2nd sample TL-moments.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">tl_ratio</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="n">trim</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-</code></pre></div></td></tr></table></div>
-      </details>
   </div>
 
 </div>
@@ -1011,34 +784,16 @@ If <code>None</code> (default), all samples in the array will be used.</p></td>
 
   <div class="doc doc-contents ">
   
-      <p>The r-th sample L-moment.
-Alias for <code>tl_moment(a, r, 0, **kwargs)</code>.</p>
+      <p>The <span class="arithmatex">\(r\)</span>-th sample L-moment, <span class="arithmatex">\(\lambda_r\)</span>.
+Alias of <a class="autorefs autorefs-internal" href="#lmo.univariate.tl_moment"><code>lmo.tl_moment(..., trim=0)</code></a>.</p>
 
-      <details class="quote">
-        <summary>Source code in <code>lmo/univariate.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">174</span>
-<span class="normal">175</span>
-<span class="normal">176</span>
-<span class="normal">177</span>
-<span class="normal">178</span>
-<span class="normal">179</span>
-<span class="normal">180</span>
-<span class="normal">181</span>
-<span class="normal">182</span>
-<span class="normal">183</span>
-<span class="normal">184</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">l_moment</span><span class="p">(</span>
-    <span class="n">a</span><span class="p">:</span> <span class="n">AnyTensor</span><span class="p">,</span>
-    <span class="n">r</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="o">/</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ScalarOrArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    The r-th sample L-moment.</span>
-<span class="sd">    Alias for ``tl_moment(a, r, 0, **kwargs)``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">tl_moment</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-</code></pre></div></td></tr></table></div>
-      </details>
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <ul>
+<li><a href="https://jstor.org/stable/2345653">J.R.M. Hosking (1990)</a></li>
+<li><a href="https://wikipedia.org/wiki/L-moment">L-moment - Wikipedia</a></li>
+</ul>
+</details>
   </div>
 
 </div>
@@ -1048,48 +803,23 @@ Alias for <code>tl_moment(a, r, 0, **kwargs)</code>.</p>
 
 
 <h2 id="lmo.univariate.l_ratio" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">l_ratio</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">l_ratio</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
 </h2>
 
 
   <div class="doc doc-contents ">
   
-      <p>Ratio of the r-th and k-th L-moments.
-Alias for <code>tl_ratio(a, r, k, 0, **kwargs)</code>.</p>
-<p>For k &gt; 0, the L-moment ratio's are bounded within [-1, 1].</p>
+      <p>Ratio of the r-th and k-th (2nd by default) sample L-moments:</p>
+<div class="arithmatex">\[
+\tau_{r, k} = \frac{\lambda_{r}}{\lambda_{k}}
+\]</div>
+<p>Alias of <a class="autorefs autorefs-internal" href="#lmo.univariate.tl_ratio"><code>lmo.tl_ratio(..., trim=0)</code></a>.</p>
 
-      <details class="quote">
-        <summary>Source code in <code>lmo/univariate.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">187</span>
-<span class="normal">188</span>
-<span class="normal">189</span>
-<span class="normal">190</span>
-<span class="normal">191</span>
-<span class="normal">192</span>
-<span class="normal">193</span>
-<span class="normal">194</span>
-<span class="normal">195</span>
-<span class="normal">196</span>
-<span class="normal">197</span>
-<span class="normal">198</span>
-<span class="normal">199</span>
-<span class="normal">200</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">l_ratio</span><span class="p">(</span>
-    <span class="n">a</span><span class="p">:</span> <span class="n">AnyTensor</span><span class="p">,</span>
-    <span class="n">r</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
-    <span class="o">/</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ScalarOrArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Ratio of the r-th and k-th L-moments.</span>
-<span class="sd">    Alias for ``tl_ratio(a, r, k, 0, **kwargs)``.</span>
-
-<span class="sd">    For k &gt; 0, the L-moment ratio&#39;s are bounded within [-1, 1].</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">tl_ratio</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-</code></pre></div></td></tr></table></div>
-      </details>
+<details class="notes" open>
+  <summary>Notes</summary>
+  <p>Tthe L-moment ratio's are bounded within the interval <span class="arithmatex">\([-1, 1)\)</span>.</p>
+</details>
   </div>
 
 </div>
@@ -1107,23 +837,12 @@ Alias for <code>tl_ratio(a, r, k, 0, **kwargs)</code>.</p>
   <div class="doc doc-contents ">
   
       <p>L-location: the first sample L-moment.
-Equivalent to the sample mean.</p>
+Equivalent to <a class="autorefs autorefs-internal" href="#lmo.univariate.tl_loc"><code>lmo.tl_loc(a, 0, **kwargs)</code></a>.</p>
 
-      <details class="quote">
-        <summary>Source code in <code>lmo/univariate.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">203</span>
-<span class="normal">204</span>
-<span class="normal">205</span>
-<span class="normal">206</span>
-<span class="normal">207</span>
-<span class="normal">208</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">l_loc</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">AnyTensor</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ScalarOrArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    L-location: the first sample L-moment.</span>
-<span class="sd">    Equivalent to the sample mean.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">l_moment</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-</code></pre></div></td></tr></table></div>
-      </details>
+<details class="notes" open>
+  <summary>Notes</summary>
+  <p>The L-location is equivalent to the (arithmetic) sample mean.</p>
+</details>
   </div>
 
 </div>
@@ -1141,23 +860,12 @@ Equivalent to the sample mean.</p>
   <div class="doc doc-contents ">
   
       <p>L-scale: the second L-moment.
-Equivalent to half the mean absolute difference.</p>
+Equivalent to <a class="autorefs autorefs-internal" href="#lmo.univariate.tl_scale"><code>lmo.tl_scale(a, 0, **kwargs)</code></a>.</p>
 
-      <details class="quote">
-        <summary>Source code in <code>lmo/univariate.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">211</span>
-<span class="normal">212</span>
-<span class="normal">213</span>
-<span class="normal">214</span>
-<span class="normal">215</span>
-<span class="normal">216</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">l_scale</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">AnyTensor</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ScalarOrArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    L-scale: the second L-moment.</span>
-<span class="sd">    Equivalent to half the mean absolute difference.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">l_moment</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-</code></pre></div></td></tr></table></div>
-      </details>
+<details class="notes" open>
+  <summary>Notes</summary>
+  <p>The L-scale is equivalent to half the <a href="https://wikipedia.org/wiki/Mean_absolute_difference">mean absolute difference</a>.</p>
+</details>
   </div>
 
 </div>
@@ -1174,21 +882,9 @@ Equivalent to half the mean absolute difference.</p>
 
   <div class="doc doc-contents ">
   
-      <p>L-skewness coefficient; the ratio of the 3rd and 2nd sample L-moments.</p>
+      <p>L-skewness coefficient; the 3rd sample L-moment ratio.
+Equivalent to <a class="autorefs autorefs-internal" href="#lmo.univariate.tl_skew"><code>lmo.tl_skew(a, 0, **kwargs)</code></a>.</p>
 
-      <details class="quote">
-        <summary>Source code in <code>lmo/univariate.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">219</span>
-<span class="normal">220</span>
-<span class="normal">221</span>
-<span class="normal">222</span>
-<span class="normal">223</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">l_skew</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">AnyTensor</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ScalarOrArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    L-skewness coefficient; the ratio of the 3rd and 2nd sample L-moments.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">l_ratio</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-</code></pre></div></td></tr></table></div>
-      </details>
   </div>
 
 </div>
@@ -1205,21 +901,15 @@ Equivalent to half the mean absolute difference.</p>
 
   <div class="doc doc-contents ">
   
-      <p>L-kurtosis coefficient; the ratio of the 4th and 2nd sample L-moments.</p>
+      <p>L-kurtosis coefficient; the 4th sample L-moment ratio.
+Equivalent to <a class="autorefs autorefs-internal" href="#lmo.univariate.tl_kurt"><code>lmo.tl_kurt(a, 0, **kwargs)</code></a>.</p>
 
-      <details class="quote">
-        <summary>Source code in <code>lmo/univariate.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">226</span>
-<span class="normal">227</span>
-<span class="normal">228</span>
-<span class="normal">229</span>
-<span class="normal">230</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">l_kurt</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">AnyTensor</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ScalarOrArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    L-kurtosis coefficient; the ratio of the 4th and 2nd sample L-moments.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">l_ratio</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-</code></pre></div></td></tr></table></div>
-      </details>
+<details class="notes" open>
+  <summary>Notes</summary>
+  <p>The L-kurtosis <span class="arithmatex">\(\tau_4\)</span> lies within the interval
+<span class="arithmatex">\([-\frac{1}{4}, 1)\)</span>, and by the L-skewness <span class="arithmatex">\(\tau_3\)</span> as
+<span class="arithmatex">\(5 \tau_3^2 - 1 \le 4 \tau_4\)</span>.</p>
+</details>
   </div>
 
 </div>
