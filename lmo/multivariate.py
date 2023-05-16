@@ -108,6 +108,8 @@ def tl_coratio(
     /,
     k: int = 2,
     trim: Trimming = 1,
+    *,
+    rowvar: bool = True,
     **kwargs: Any,
 ) -> npt.NDArray[np.float_]:
     """
@@ -118,13 +120,15 @@ def tl_coratio(
           L-Moments: L-Comoment Matrices.
 
     """
-    L_k = tl_comoment(a, r, trim, **kwargs)
+    L_k = tl_comoment(a, r, trim, rowvar=rowvar, **kwargs)
 
     if k == 0:
         return L_k
 
-    l_r = L_k.diagonal() if k == r else cast(
-        npt.NDArray[np.float_], tl_moment(a, r, trim, **kwargs)
+    axis = +rowvar
+    l_r = cast(
+        npt.NDArray[np.float_],
+        np.diag(L_k) if k == r else tl_moment(a, r, trim, axis=axis, **kwargs)
     )
 
     return L_k / l_r[:, np.newaxis]
