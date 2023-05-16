@@ -128,7 +128,7 @@ def tl_coratio(
     axis = +rowvar
     l_r = cast(
         npt.NDArray[np.float_],
-        np.diag(L_k) if k == r else tl_moment(a, r, trim, axis=axis, **kwargs)
+        np.diag(L_k) if k == r else tl_moment(a, k, trim, axis=axis, **kwargs)
     )
 
     return L_k / l_r[:, np.newaxis]
