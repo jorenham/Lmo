@@ -1,4 +1,8 @@
 __all__ = (
+    '__version__',
+
+    'weights',
+
     'l_moment',
     'l_ratio',
     'l_loc',
@@ -28,8 +32,6 @@ __all__ = (
     'tl_corr',
     'tl_coskew',
     'tl_cokurt',
-
-    'weights',
 )
 
 from typing import Final as _Final
@@ -37,8 +39,23 @@ from typing import Final as _Final
 from ._meta import get_version as _get_version
 
 from . import weights
-from .univariate import *  # noqa
-from .multivariate import *  # noqa
+from .univariate import (
+    tl_moment, l_moment,
+    tl_ratio, l_ratio,
+    tl_loc, l_loc,
+    tl_scale, l_scale,
+    tl_skew, l_skew,
+    tl_kurt, l_kurt,
+)
+from .multivariate import (
+    tl_comoment, l_comoment,
+    tl_coratio, l_coratio,
+    tl_coloc, l_coloc,
+    tl_coscale, l_coscale,
+    tl_corr, l_corr,
+    tl_coskew, l_coskew,
+    tl_cokurt, l_cokurt,
+)
 
 
 __version__: _Final[str] = _get_version()
