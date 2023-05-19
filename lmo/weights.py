@@ -49,7 +49,10 @@ def tl_weights(
 
     """
 
-    if not issubclass(np.dtype(dtype).type, np.floating):
+    if not issubclass(  # pyright: ignore [reportUnnecessaryIsInstance]
+        np.dtype(dtype).type,
+        np.floating
+    ):
         raise TypeError(
             f'dtype must be a subclass of numpy.floating, got {dtype!r}'
         )
