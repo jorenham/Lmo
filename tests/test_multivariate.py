@@ -79,7 +79,7 @@ def test_l_coloc_mean(a: np.ndarray):
     l_aa = lmo.l_coloc(a)
     l_a0 = l_aa[:, 0]
 
-    assert np.allclose(l_a0, m_a, atol=1e-3, rtol=1e-5)
+    assert np.allclose(l_a0, m_a, atol=1e-5, rtol=1e-3)
 
 
 @settings(deadline=timedelta(seconds=1))
