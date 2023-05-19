@@ -17,6 +17,7 @@ __all__ = (
     'l_coratio',
     'l_coloc',
     'l_coscale',
+    'l_corr',
     'l_coskew',
     'l_cokurt',
 
@@ -24,14 +25,18 @@ __all__ = (
     'tl_coratio',
     'tl_coloc',
     'tl_coscale',
+    'tl_corr',
     'tl_coskew',
     'tl_cokurt',
+
+    'weights',
 )
 
 from typing import Final as _Final
 
 from ._meta import get_version as _get_version
 
+from . import weights
 from .univariate import *  # noqa
 from .multivariate import *  # noqa
 
