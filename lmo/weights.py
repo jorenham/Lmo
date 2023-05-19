@@ -159,7 +159,7 @@ def reweight(
         dn = n_k - n_j
 
         assert ds > 0
-        assert 0 <= dn <= ds + 1, (dn, ds)
+        assert 0 <= dn <= ds + 1
 
         if dn:
             ds_j = n_j + 1 - s_j
@@ -175,7 +175,9 @@ def reweight(
             # "inner" integer indices
             if dn > 1:
                 assert ds > 1, (ds, dn)
-                v_r[k] += w_r[n_j + 1: n_k].sum(0)
+                v_r[k] += np.sum(  # pyright: ignore [reportUnknownMemberType]
+                    w_r[n_j + 1: n_k]
+                )
 
             # right partial index
             if n_k < n:
