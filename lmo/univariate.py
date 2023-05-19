@@ -43,8 +43,8 @@ def tl_moment(
     r: int,
     /,
     trim: Trimming = 1,
-    *,
     axis: int | None = None,
+    *,
     sort: SortKind = None,
 ) -> ScalarOrArray[np.float_]:
     """
@@ -113,8 +113,8 @@ def tl_ratio(
     /,
     k: int = 2,
     trim: Trimming = 1,
-    *,
     axis: int | None = None,
+    *,
     sort: SortKind = None,
 ) -> ScalarOrArray[np.float_]:
     """
@@ -156,6 +156,7 @@ def tl_loc(
     a: AnyTensor,
     /,
     trim: Trimming = 1,
+    axis: int | None = None,
     **kwargs: Any,
 ) -> ScalarOrArray[np.float_]:
     """
@@ -165,46 +166,49 @@ def tl_loc(
     See Also:
          [lmo.tl_moment][lmo.univariate.tl_moment]
     """
-    return tl_moment(a, 1, trim, **kwargs)
+    return tl_moment(a, 1, trim, axis=axis, **kwargs)
 
 
 def tl_scale(
     a: AnyTensor,
     /,
     trim: Trimming = 1,
+    axis: int | None = None,
     **kwargs: Any,
 ) -> ScalarOrArray[np.float_]:
     """
     Sample TL-scale estimator, $\\lambda_2^{(t_1, t_2)}$, the second TL-moment.
     A robust alternative of the sample standard deviation.
     """
-    return tl_moment(a, 2, trim, **kwargs)
+    return tl_moment(a, 2, trim, axis=axis, **kwargs)
 
 
 def tl_skew(
     a: AnyTensor,
     /,
     trim: Trimming = 1,
+    axis: int | None = None,
     **kwargs: Any,
 ) -> ScalarOrArray[np.float_]:
     """
     TL-skewness coefficient, $\\tau_3^{(t_1, t_2)}$; the 3rd sample TL-moment
     ratio.
     """
-    return tl_ratio(a, 3, trim=trim, **kwargs)
+    return tl_ratio(a, 3, trim=trim, axis=axis, **kwargs)
 
 
 def tl_kurt(
     a: AnyTensor,
     /,
     trim: Trimming = 1,
+    axis: int | None = None,
     **kwargs: Any,
 ) -> ScalarOrArray[np.float_]:
     """
     TL-kurtosis coefficient, $\\tau_4^{(t_1, t_2)}$; the 4th sample TL-moment
     ratio.
     """
-    return tl_ratio(a, 4, trim=trim, **kwargs)
+    return tl_ratio(a, 4, trim=trim, axis=axis, **kwargs)
 
 
 # L-moment aliasses
@@ -213,6 +217,7 @@ def l_moment(
     a: AnyTensor,
     r: int,
     /,
+    axis: int | None = None,
     **kwargs: Any,
 ) -> ScalarOrArray[np.float_]:
     """
@@ -224,7 +229,7 @@ def l_moment(
         - [L-moment - Wikipedia](https://wikipedia.org/wiki/L-moment)
 
     """
-    return tl_moment(a, r, trim=0, **kwargs)
+    return tl_moment(a, r, trim=0, axis=axis, **kwargs)
 
 
 def l_ratio(
@@ -232,6 +237,7 @@ def l_ratio(
     r: int,
     /,
     k: int = 2,
+    axis: int | None = None,
     **kwargs: Any,
 ) -> ScalarOrArray[np.float_]:
     """
@@ -247,10 +253,15 @@ def l_ratio(
         Tthe L-moment ratio's are bounded within the interval $[-1, 1)$.
 
     """
-    return tl_ratio(a, r, k, trim=0, **kwargs)
+    return tl_ratio(a, r, k, trim=0, axis=axis, **kwargs)
 
 
-def l_loc(a: AnyTensor, /, **kwargs: Any) -> ScalarOrArray[np.float_]:
+def l_loc(
+    a: AnyTensor,
+    /,
+    axis: int | None = None,
+    **kwargs: Any,
+) -> ScalarOrArray[np.float_]:
     """
     L-location: the first sample L-moment.
     Equivalent to [`lmo.tl_loc(a, 0, **kwargs)`][lmo.univariate.tl_loc].
@@ -259,10 +270,15 @@ def l_loc(a: AnyTensor, /, **kwargs: Any) -> ScalarOrArray[np.float_]:
         The L-location is equivalent to the (arithmetic) sample mean.
 
     """
-    return l_moment(a, 1, **kwargs)
+    return l_moment(a, 1, axis=axis, **kwargs)
 
 
-def l_scale(a: AnyTensor, /, **kwargs: Any) -> ScalarOrArray[np.float_]:
+def l_scale(
+    a: AnyTensor,
+    /,
+    axis: int | None = None,
+    **kwargs: Any,
+) -> ScalarOrArray[np.float_]:
     """
     L-scale: the second L-moment.
     Equivalent to [`lmo.tl_scale(a, 0, **kwargs)`][lmo.univariate.tl_scale].
@@ -272,18 +288,28 @@ def l_scale(a: AnyTensor, /, **kwargs: Any) -> ScalarOrArray[np.float_]:
         https://wikipedia.org/wiki/Mean_absolute_difference).
 
     """
-    return l_moment(a, 2, **kwargs)
+    return l_moment(a, 2, axis=axis, **kwargs)
 
 
-def l_skew(a: AnyTensor, /, **kwargs: Any) -> ScalarOrArray[np.float_]:
+def l_skew(
+    a: AnyTensor,
+    /,
+    axis: int | None = None,
+    **kwargs: Any,
+) -> ScalarOrArray[np.float_]:
     """
     L-skewness coefficient; the 3rd sample L-moment ratio.
     Equivalent to [`lmo.tl_skew(a, 0, **kwargs)`][lmo.univariate.tl_skew].
     """
-    return l_ratio(a, 3, **kwargs)
+    return l_ratio(a, 3, axis=axis, **kwargs)
 
 
-def l_kurt(a: AnyTensor, /, **kwargs: Any) -> ScalarOrArray[np.float_]:
+def l_kurt(
+    a: AnyTensor,
+    /,
+    axis: int | None = None,
+    **kwargs: Any,
+) -> ScalarOrArray[np.float_]:
     """
     L-kurtosis coefficient; the 4th sample L-moment ratio.
     Equivalent to [`lmo.tl_kurt(a, 0, **kwargs)`][lmo.univariate.tl_kurt].
@@ -294,4 +320,4 @@ def l_kurt(a: AnyTensor, /, **kwargs: Any) -> ScalarOrArray[np.float_]:
         $5 \\tau_3^2 - 1 \\le 4 \\tau_4$.
 
     """
-    return l_ratio(a, 4, **kwargs)
+    return l_ratio(a, 4, axis=axis, **kwargs)
