@@ -38,7 +38,12 @@ AnyTensor: TypeAlias = AnyMatrix | Sequence['AnyTensor']
 ScalarOrArray: TypeAlias = _R | np.ndarray[Any, np.dtype[_R]]
 
 # for numpy.sort
-SortKind: TypeAlias = Literal['quicksort', 'mergesort', 'heapsort', 'stable']
+SortKind: TypeAlias = Literal[
+    'quicksort',
+    'mergesort',
+    'heapsort',
+    'stable',
+] | None
 
 # trim length
 _Trim0: TypeAlias = tuple[()]

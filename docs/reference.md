@@ -1,9 +1,34 @@
-# Documentation for `lmo`
+# Lmo reference
 
-::: lmo.univariate
+## Univariate
+
+### L-moments 
+
+::: lmo
     options:
-        handler: python
-        members_order: source
-        show_root_toc_entry: false
-        show_root_full_path: false
-        show_submodules: true
+        filters: ["^l_[^co]"]
+        heading_level: 4
+
+### TL-moments
+
+::: lmo
+    options:
+        filters: ["^tl_[^co]"]
+        heading_level: 4
+
+
+## Multivariate
+
+### L-comoments 
+
+::: lmo
+    options:
+        filters: ["^l_[co]"]
+        heading_level: 4
+
+### TL-comoments
+
+::: lmo
+    options:
+        filters: ["^tl_[co]"]
+        heading_level: 4

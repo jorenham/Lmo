@@ -49,20 +49,26 @@ def tl_comoment(
     Based on the proposed definition by Serfling & Xiao (2007) for L-moments.
     Modified to be compatible with (the more general) TL-moments.
 
-    Args:
-        a: A 1-D or 2-D array containing `m` variables and `n` observations.
-          Each row of `a` represents a variable, and each column a single
-          observation of all those variables. Also see `rowvar` below.
-        r: The order of the TL-moment; strictly positive integer.
-        trim: Amount of samples to trim on both sides, or a tuple of the amount
+    Parameters:
+        a:
+            A 1-D or 2-D array containing `m` variables and `n` observations.
+            Each row of `a` represents a variable, and each column a single
+            observation of all those variables. Also see `rowvar` below.
+        r:
+            The order of the TL-moment; strictly positive integer.
+        trim:
+            Amount of samples to trim on both sides, or a tuple of the amount
             to trim on the left and right sides. Default is 1.
+        rowvar:
+            If `rowvar` is True (default), then each row
+            represents a variable, with observations in the columns. Otherwise,
+            the relationship is transposed: each column represents a variable,
+            while the rows contain observations.
 
-        rowvar (optional): If `rowvar` is True (default), then each row
-          represents a variable, with observations in the columns. Otherwise,
-          the relationship is transposed: each column represents a variable,
-          while the rows contain observations.
-        sort (opional): Sorting algorithm to use, default is 'quicksort'. See
-          `numpy.sort` for more info.
+    Other parameters:
+        sort:
+            Sorting algorithm to use, default is 'quicksort'. See
+            `numpy.sort` for more info.
 
     Returns:
         L: Matrix of shape (m, m) with r-th TL-comoments.

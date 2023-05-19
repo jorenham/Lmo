@@ -34,14 +34,20 @@ plugins:
   - include-markdown
   - autorefs
   - mkdocstrings:
+      default_handler: python
       handlers:
         python:
           options:
-            annotations_path: 'full'
+            annotations_path: 'source'
+            docstring_section_style: 'spacy'
+            load_external_modules: true
             members_order: source
-            show_source: false
+            show_root_full_path: true
+            show_root_members_full_path: true
             show_root_toc_entry: false
-            show_root_full_path: false
+            show_source: false
+            show_submodules: true
+            signature_crossrefs: true
 
 markdown_extensions:
   - admonition

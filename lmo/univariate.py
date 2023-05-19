@@ -45,34 +45,43 @@ def tl_moment(
     trim: Trimming = 1,
     *,
     axis: int | None = None,
-    sort: SortKind | None = None,
+    sort: SortKind = None,
 ) -> ScalarOrArray[np.float_]:
     """
     Estimate the $r$-th sample TL-moment, $\\lambda_{r}^{(t_1, t_2)}$, for
     left and right trim lengths $t_1$ and $t_2$.
 
     Parameters:
-        a: Array-like with samples.
-        r: The order of the TL-moment; strictly positive integer.
-        trim:
+        a (array_like):
+            Array containing numbers whose TL-moment is desired. If `a` is not
+            an array, a conversion is attempted.
+        r (int):
+            The order of the TL-moment. Some special cases cases include
+
+            - `0`: Like the zeroth moment, the zeroth TL-moment  is always `1`.
+            - `1`: The TL-location, the analogue of the mean. See
+                [`tl_loc`][lmo.tl_loc].
+            - `2`: The TL-scale, analogous to the standard deviation. See
+                [`tl_scale`][lmo.tl_scale].
+
+        trim (int | tuple[int, int]):
             Amount of samples to trim as either
 
-            - `(t1: int, t2: int)` for left and right trimming,
-            - `t: int`, or `(t: int)` as alias for `(t, t)`, or
-            - `()` as alias for `(0, 0)`.
+            - `t: int` for symmetric trimming, equivalent to `(t, t)`.
+            - `(t1: int, t2: int)` for asymmetric trimming, or
 
-            If not provided, `1` will be used by default.
+            If `0` is passed, the L-moment is returned.
 
     Other parameters:
-        axis:
+        axis (int?):
             Axis along wich to calculate the TL-moments.
             If `None` (default), all samples in the array will be used.
-        sort:
+        sort ('quicksort' | 'mergesort' | 'heapsort' | 'stable'):
             Sorting algorithm, see [`numpy.sort`](
             https://numpy.org/doc/stable/reference/generated/numpy.sort).
 
     Returns:
-        Scalar or array; the r-th TL-moment(s).
+        Scalar or array; the $r$-th TL-moment(s).
 
     """
     x = np.sort(np.asanyarray(a), axis=axis, kind=sort)
@@ -106,7 +115,7 @@ def tl_ratio(
     trim: Trimming = 1,
     *,
     axis: int | None = None,
-    sort: SortKind | None = None,
+    sort: SortKind = None,
 ) -> ScalarOrArray[np.float_]:
     """
     Ratio of the r-th and k-th (2nd by default) sample TL-moments:
