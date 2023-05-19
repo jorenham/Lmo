@@ -1,7 +1,7 @@
-__all__ = 'tl_weights', 'l_weights'
+__all__ = 'tl_weights', 'l_weights', 'reweight'
 
 from math import comb, fsum
-from typing import TypeVar
+from typing import Any, TypeVar
 
 import numpy as np
 import numpy.typing as npt
@@ -94,3 +94,98 @@ def l_weights(
     Alias for [`tl_weights(n, r, 0)`][lmo.weights.tl_weights].
     """
     return tl_weights(n, r, 0, dtype=dtype)
+
+
+def reweight(
+    w_r: npt.NDArray[np.floating[_T]],
+    w_x: npt.NDArray[np.floating[Any]],
+) -> npt.NDArray[np.floating[_T]]:
+    """
+    Redistributes the TL-weights relative to the sample weights.
+
+    Relatively large sample weights "absorb" TL-weights of the neighbours,
+    whereas small weights result in a fraction of the local TL-weights.
+
+    The TL-weights can be thought of as vertical bars, with heights
+    proportional to the weights. Similarly, the sample weights are the
+    horizontal component, effectively squeezing or stretching the width of each
+    sample. The reweighted TL-weights are the resulting areas per sample.
+
+    To my (Joren Hammudoglu, @jorenham) knowledge, this algorithm for weighted
+    (T)L-moments is the first of its kind.
+
+    Both time- and space- complexity are `O(n)`.
+
+    Args:
+        w_r:
+            1-D array of TL-weights, see [`tl_weights`][lmo.weights.tl_weights].
+        w_x:
+            1-D array of observation (reliability) weights, relative to
+            the *sorted* observations vector `x`. All weights must be finite
+            and positive. Larger weights indicate a more important sample.
+            If all weights are equal, the reweighted TL-weights will be equal
+            to the original TL-weights.
+
+    Returns:
+        v_r: 1-D array of reweighted TL-weights.
+
+    """
+    if w_r.ndim != 1:
+        raise TypeError('weights must be 1-D')
+    if w_r.shape != w_x.shape:
+        raise TypeError('shape mismatch')
+
+    n = len(w_r)
+    v_r = np.zeros_like(w_r)
+
+    # integrate, and rescale so that `s.max() == s[-1] == n`
+    s = np.cumsum(w_x)
+    s *= n / s[-1]
+
+    n_j, s_j = 0, 0.0
+    for k in range(n):
+        s_k = s[k]
+
+        if s_k < s_j:
+            raise ValueError('negative weights are not allowed')
+        if s_k == s_j:
+            if s_k == s[-1]:
+                break
+            continue
+
+        n_k = int(s_k)
+
+        ds = s_k - s_j
+        dn = n_k - n_j
+
+        assert ds > 0
+        assert 0 <= dn <= ds + 1, (dn, ds)
+
+        if dn:
+            ds_j = n_j + 1 - s_j
+            ds_k = s_k - n_k
+
+            assert 0 <= ds_j <= 1
+            assert 0 <= ds_k < 1
+            assert (ds - ds_j - ds_k) % 1 == 0
+
+            # left partial indices
+            v_r[k] = ds_j * w_r[n_j]
+
+            # "inner" integer indices
+            if dn > 1:
+                assert ds > 1, (ds, dn)
+                v_r[k] += w_r[n_j + 1: n_k].sum(0)
+
+            # right partial index
+            if n_k < n:
+                v_r[k] += ds_k * w_r[n_k]
+        else:
+            assert ds < 1
+            assert n_j == n_k
+
+            v_r[k] = ds * w_r[n_k]
+
+        n_j, s_j = n_k, s_k
+
+    return v_r

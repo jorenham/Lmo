@@ -3,7 +3,7 @@ import numpy as np
 
 # noinspection PyProtectedMember
 from lmo._utils import expand_trimming
-from lmo.weights import l_weights, tl_weights
+from lmo.weights import l_weights, tl_weights, reweight
 
 
 st_n = st.integers(32, 1024)
@@ -63,3 +63,12 @@ def test_tl_sum2p(n, r, trim):
     w = tl_weights(n, r, trim)
 
     assert np.allclose(np.sum(w), 0)
+
+
+@given(n=st_n, r=st_r, trim=st_trim, const=st.floats(0.1, 10))
+def test_reweight_identity(n, r, trim, const):
+    w_r = tl_weights(n, r, trim)
+    w_x = np.full_like(w_r, const)
+
+    v_r = reweight(w_r, w_x)
+    assert np.allclose(v_r, w_r)
