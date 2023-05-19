@@ -19,7 +19,7 @@ def tl_weights(
     /,
     trim: Trimming = 1,
     *,
-    dtype: type[np.floating[_T]] = np.float_,
+    dtype: type[np.floating[_T]] | np.dtype[np.floating[_T]] = np.float_,
 ) -> npt.NDArray[np.floating[_T]]:
     """
     Linear sample weights for calculation of the r-th TL-moment.
@@ -49,10 +49,7 @@ def tl_weights(
 
     """
 
-    if not issubclass(
-        dtype,
-        np.floating
-    ):  # pyright: ignore [reportUnnecessaryIsInstance]
+    if not issubclass(np.dtype(dtype).type, np.floating):
         raise TypeError(
             f'dtype must be a subclass of numpy.floating, got {dtype!r}'
         )
@@ -67,7 +64,11 @@ def tl_weights(
 
     # pre-calculate the terms that are independent on j
     m = r * comb(n, r + tl + tr)
-    w_k = np.empty(r, dtype=dtype)
+
+    # https://github.com/numpy/numpy/issues/23783
+    # w_k = np.empty(r, dtype=dtype)
+    w_k = np.empty(r)
+
     for k in range(r):
         w_k[k] = (-1) ** k * comb(r - 1, k) / m
 
@@ -98,7 +99,7 @@ def l_weights(
 
 def reweight(
     w_r: npt.NDArray[np.floating[_T]],
-    w_x: npt.NDArray[np.floating[Any]],
+    w_x: npt.NDArray[np.bool_ | np.integer[Any] | np.floating[Any]],
 ) -> npt.NDArray[np.floating[_T]]:
     """
     Redistributes the TL-weights relative to the sample weights.
@@ -139,7 +140,7 @@ def reweight(
     v_r = np.zeros_like(w_r)
 
     # integrate, and rescale so that `s.max() == s[-1] == n`
-    s = np.cumsum(w_x)
+    s = np.cumsum(w_x, dtype=np.float_)
     s *= n / s[-1]
 
     n_j, s_j = 0, 0.0
