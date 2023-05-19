@@ -46,8 +46,11 @@ plugins:
             show_root_members_full_path: true
             show_root_toc_entry: false
             show_source: false
-            show_submodules: true
+            show_submodules: false
             signature_crossrefs: true
+            preload_modules:
+              - lmo.weights
+              - lmo.typing
 
 markdown_extensions:
   - admonition

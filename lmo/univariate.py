@@ -33,9 +33,10 @@ __all__ = (
 from typing import Any
 
 import numpy as np
+import numpy.typing as npt
 
 from .typing import AnyTensor, ScalarOrArray, SortKind, Trimming
-from .weights import tl_weights
+from .weights import tl_weights, reweight
 
 
 def tl_moment(
@@ -45,6 +46,7 @@ def tl_moment(
     trim: Trimming = 1,
     axis: int | None = None,
     *,
+    weights: AnyTensor | None = None,
     sort: SortKind = None,
 ) -> ScalarOrArray[np.float_]:
     """
@@ -63,7 +65,6 @@ def tl_moment(
                 [`tl_loc`][lmo.tl_loc].
             - `2`: The TL-scale, analogous to the standard deviation. See
                 [`tl_scale`][lmo.tl_scale].
-
         trim (int | tuple[int, int]):
             Amount of samples to trim as either
 
@@ -71,12 +72,25 @@ def tl_moment(
             - `(t1: int, t2: int)` for asymmetric trimming, or
 
             If `0` is passed, the L-moment is returned.
+        weights (array_like, optional):
+            An array of weights associated with the values in `a`. Each value
+            in `a` contributes to the average according to its associated
+            weight.
+            The weights array can either be 1-D (in which case its length must
+            be the size of a along the given axis) or of the same shape as `a`.
+            If `weights=None`, then all data in `a` are assumed to have a
+            weight equal to one.
+
+            All `weights` must be `>=0`, and the sum must be nonzero.
+
+            The algorithm is similar to that of the weighted median. See
+            [`lmo.weights.reweight`][lmo.weights.reweight] for details.
 
     Other parameters:
         axis (int?):
             Axis along wich to calculate the TL-moments.
             If `None` (default), all samples in the array will be used.
-        sort ('quicksort' | 'mergesort' | 'heapsort' | 'stable'):
+        sort ('quick' | 'heap' | 'stable' | 'merge'):
             Sorting algorithm, see [`numpy.sort`](
             https://numpy.org/doc/stable/reference/generated/numpy.sort).
 
@@ -84,27 +98,57 @@ def tl_moment(
         Scalar or array; the $r$-th TL-moment(s).
 
     """
-    x = np.sort(np.asanyarray(a), axis=axis, kind=sort)
-    n = x.shape[axis or 0]
+    x = np.asanyarray(a)
+    w_x = None if weights is None else np.asanyarray(weights)
+
+    # ensure that the samples are along the first axis (shape standardization)
+    # this way we don't have the bother with the specific axis from here on
+    if axis is None:
+        x = x.ravel()
+    if x.ndim > 1 and w_x is not None:
+        x, w_x = np.broadcast_arrays(x, w_x)
+    if axis and (ax := axis % x.ndim):
+        x = np.moveaxis(x, ax, 0)
+        if w_x is not None:
+            w_x = np.moveaxis(x, ax, 0)
+
+    n = len(x)
 
     if r == 0:
-        # zeroth (TL-)moment is 1
-        return np.ones(x.size // n) if x.ndim > 1 else np.float_(1)
+        # zeroth (TL-)moment is always 1
+        # the _[()] ensures that those annoying 0d "arrays" become scalars
+        return np.ones(x.shape[1:])[()]
 
-    w = tl_weights(n, r, trim)
+    # calculate the TL-weight vector (it anoly depends on n and r, not on the
+    # amount of variables)
+    w_r = tl_weights(n, r, trim)
 
-    _axis = (axis or 0) % x.ndim
-    assert _axis >= 0
+    def _apply_weights_1d(
+        _x: npt.NDArray[np.floating[Any]],
+        _w_x: npt.NDArray[Any] | None = None
+    ) -> npt.NDArray[np.float_]:
+        assert _x.ndim == 1
+        assert _w_x is None or _w_x.shape == _x.shape
 
-    if _axis == 0:
-        # apply along the first axis
-        return w @ x
+        if _w_x is None:
+            _x_k, _w = np.sort(_x, kind=sort), w_r
+        else:
+            i_k = np.argsort(_x, kind=sort)
+            _x_k, _w = _x[i_k], reweight(w_r, _w_x[i_k])
 
-    if x.ndim == 2 or _axis == x.ndim - 1:
-        # apply along the last axis
-        return x @ w
+        return _x_k @ _w
 
-    return np.apply_along_axis(np.inner, _axis, x, w)
+    if x.ndim == 1:
+        return _apply_weights_1d(x, w_x)
+
+    if w_x is None:
+        return np.apply_along_axis(_apply_weights_1d, 0, x)
+
+    # manual version of numpy.apply_along_axis, which handles only one array
+    out = np.empty(x.shape[1:], dtype=np.result_type(x, w_r, w_x))
+    for jj in np.ndindex(*out.shape):
+        out[jj] = _apply_weights_1d(x[jj], w_x[jj])
+    return out
 
 
 def tl_ratio(
@@ -114,8 +158,7 @@ def tl_ratio(
     k: int = 2,
     trim: Trimming = 1,
     axis: int | None = None,
-    *,
-    sort: SortKind = None,
+    **kwargs: Any,
 ) -> ScalarOrArray[np.float_]:
     """
     Ratio of the r-th and k-th (2nd by default) sample TL-moments:
@@ -132,16 +175,16 @@ def tl_ratio(
     $\\tau_{r, 2}^{(1, 1)}$, or $\\tau_r^{(1)}$ for short.
 
     """
-    x = np.sort(np.asanyarray(a), axis=axis, kind=sort)
+    x = np.asanyarray(a)
 
-    l_r = tl_moment(x, r, trim, axis=axis)
+    l_r = tl_moment(x, r, trim, axis=axis, **kwargs)
 
     if k == 0:
         return l_r
     if k == r:
         return np.ones_like(l_r)[()]
 
-    l_k = l_r if k == r else tl_moment(x, k, trim, axis=axis)
+    l_k = l_r if k == r else tl_moment(x, k, trim, axis=axis, **kwargs)
 
     # i.e. `x / 0 = 0 if x == 0 else np.nan`
     return np.divide(

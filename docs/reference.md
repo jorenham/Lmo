@@ -2,14 +2,14 @@
 
 ## Univariate
 
-### L-moments 
+### L
 
 ::: lmo
     options:
         filters: ["^l_[^co]"]
         heading_level: 4
 
-### TL-moments
+### TL
 
 ::: lmo
     options:
@@ -19,16 +19,26 @@
 
 ## Multivariate
 
-### L-comoments 
+### L
 
 ::: lmo
     options:
         filters: ["^l_[co]"]
         heading_level: 4
 
-### TL-comoments
+### TL
 
 ::: lmo
     options:
         filters: ["^tl_[co]"]
         heading_level: 4
+
+
+## Low-level
+
+### Weights
+
+::: lmo.weights
+    options:
+        heading_level: 4
+        show_source: true
