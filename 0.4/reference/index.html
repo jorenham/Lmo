@@ -1266,7 +1266,7 @@ weight equal to one.</p>
             <p>
                 <span class="doc-param-annotation">
                   <b>TYPE:</b>
-                    <code>array_like?</code>
+                    <code>array_like</code>
                 </span>
                 <span class="doc-param-default">
                   <b>DEFAULT:</b> 
@@ -1293,7 +1293,7 @@ weight equal to one.</p>
             <p>
                 <span class="doc-param-annotation">
                   <b>TYPE:</b>
-                    <code><span title="lmo.typing.SortKind">SortKind</span></code>
+                    <code>quick | heap | stable | merge</code>
                 </span>
             </p>
           </td>
@@ -1637,7 +1637,8 @@ Alias for <code>tl_coratio(a, r, k, 0, 0, **kwargs)</code>.</p>
 
   <div class="doc doc-contents ">
   
-      <p>Multivariate extension of the sample TL-moments: the TL-comoment matrix.</p>
+      <p>Multivariate extension of the sample TL-moments: the TL-comoment matrix
+<span class="arithmatex">\(\Lambda_{r}^{(t_1, t_2)} = (\lambda_{r [ij]}^{(t_1, t_2)})_{m      imes m}\)</span>.</p>
 <p>Based on the proposed definition by Serfling &amp; Xiao (2007) for L-moments.
 Modified to be compatible with (the more general) TL-moments.</p>
 
@@ -1652,7 +1653,7 @@ Modified to be compatible with (the more general) TL-moments.</p>
         <tr>
           <td><code>a</code></td>
           <td class="doc-param-details">
-            <p>A 1-D or 2-D array containing <code>v</code> variables and <code>n</code> observations.
+            <p>A 2-D array-like containing <code>m</code> variables and <code>n</code> observations.
 Each row of <code>a</code> represents a variable, and each column a single
 observation of all those variables. Also see <code>rowvar</code> below.</p>
             <p>
@@ -1718,9 +1719,10 @@ while the rows contain observations.</p>
         <tr>
           <td><code>weights</code></td>
           <td class="doc-param-details">
-            <p>An array of weights associated with the values in <code>a</code>. Each value
-in <code>a</code> contributes to the average according to its associated
-weight.
+            <p>An 1-D or 2-D array-like of weights associated with the values in
+<code>a</code>.
+Each value in <code>a</code> contributes to the average according to its
+associated weight.
 The weights array can either be 1-D (in which case its length must
 be the size of a along the given axis) or of the same shape as <code>a</code>.
 If <code>weights=None</code>, then all data in <code>a</code> are assumed to have a
@@ -1731,7 +1733,7 @@ weight equal to one.</p>
             <p>
                 <span class="doc-param-annotation">
                   <b>TYPE:</b>
-                    <code>array_like?</code>
+                    <code>array_like</code>
                 </span>
                 <span class="doc-param-default">
                   <b>DEFAULT:</b> 
@@ -1779,7 +1781,7 @@ weight equal to one.</p>
               <code>L</code>
           </td>
           <td class="doc-returns-details">
-            <p>Matrix of shape (v, v) with r-th TL-comoments.</p>
+            <p>Array of shape <code>(m, m)</code> with r-th TL-comoments.</p>
               <p>
                 <span class="doc-returns-annotation">
                   <b>TYPE:</b>
