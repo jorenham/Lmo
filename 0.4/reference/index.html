@@ -1474,7 +1474,7 @@ ratio.</p>
 
 
 <h4 id="lmo.l_comoment" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_comoment</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_comoment</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">rowvar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
 </h4>
 
@@ -1493,7 +1493,7 @@ Alias for <code>tl_comoment(a, r, 0, 0, **kwargs)</code>.</p>
 
 
 <h4 id="lmo.l_coratio" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_coratio</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_coratio</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">rowvar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
 </h4>
 
@@ -1512,7 +1512,7 @@ Alias for <code>tl_coratio(a, r, k, 0, 0, **kwargs)</code>.</p>
 
 
 <h4 id="lmo.l_coloc" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_coloc</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_coloc</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">rowvar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
 </h4>
 
@@ -1530,7 +1530,7 @@ Alias for <code>tl_coratio(a, r, k, 0, 0, **kwargs)</code>.</p>
 
 
 <h4 id="lmo.l_coscale" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_coscale</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_coscale</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">rowvar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
 </h4>
 
@@ -1548,7 +1548,7 @@ Alias for <code>tl_coratio(a, r, k, 0, 0, **kwargs)</code>.</p>
 
 
 <h4 id="lmo.l_corr" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_corr</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_corr</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">rowvar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
 </h4>
 
@@ -1567,7 +1567,7 @@ Alias for <code>tl_coratio(a, r, k, 0, 0, **kwargs)</code>.</p>
 
 
 <h4 id="lmo.l_coskew" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_coskew</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_coskew</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">rowvar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
 </h4>
 
@@ -1585,7 +1585,7 @@ Alias for <code>tl_coratio(a, r, k, 0, 0, **kwargs)</code>.</p>
 
 
 <h4 id="lmo.l_cokurt" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_cokurt</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_cokurt</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">rowvar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
 </h4>
 
@@ -1637,15 +1637,25 @@ Alias for <code>tl_coratio(a, r, k, 0, 0, **kwargs)</code>.</p>
 
   <div class="doc doc-contents ">
   
-      <p>Multivariate extension of the sample TL-moments: the TL-comoment matrix</p>
+      <p>Multivariate extension of the sample TL-moments. Calculates the
+TL-comoment matrix of sample TL-comoments:</p>
 <div class="arithmatex">\[
 \mathbf \Lambda_{r}^{(t_1, t_2)} =
     \bigg[
         \lambda_{r [ij]}^{(t_1, t_2)}
     \bigg]_{m \times m}
-.
 \]</div>
-<p>Based on the proposed definition by Serfling &amp; Xiao (2007) for L-moments.
+<p>Whereas the TL-moments are calculated using the order statistics of the
+observations, i.e. by sorting, the TL-comoment sorts <span class="arithmatex">\(x_i\)</span> using the
+order of <span class="arithmatex">\(x_j\)</span>. This means that in general,
+<span class="arithmatex">\(\lambda_{r [ij]}^{(t_1, t_2)} \neq \lambda_{r [ji]}^{(t_1, t_2)}\)</span>, i.e.
+<span class="arithmatex">\(\mathbf \Lambda_{r}^{(t_1, t_2)}\)</span> is not symmetric.</p>
+<p>The <span class="arithmatex">\(r\)</span>-th TL-comoment <span class="arithmatex">\(\lambda_{r [ij]}^{(t_1, t_2)}\)</span> reduces to the
+TL-moment if <span class="arithmatex">\(i=j\)</span>, and can therefore be seen as a generalization of the
+(univariate) TL-moments. Similar to how the diagonal of a covariance matrix
+contains the variances, the diagonal of the TL-comoment matrix contains the
+TL-moments.</p>
+<p>Based on the proposed definition by Serfling &amp; Xiao (2007) for L-comoments.
 Modified to be compatible with (the more general) TL-moments.</p>
 
   <table>
@@ -1815,7 +1825,7 @@ weight equal to one.</p>
 
 
 <h4 id="lmo.tl_coratio" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">tl_coratio</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">rowvar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">tl_coratio</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">rowvar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
 </h4>
 
@@ -1827,8 +1837,8 @@ weight equal to one.</p>
 <details class="references" open>
   <summary>References</summary>
   <ul>
-<li>Serfling, R. and Xiao, P., 2006. A Contribution to Multivariate
-  L-Moments: L-Comoment Matrices.</li>
+<li>Serfling, R. and Xiao, P., 2007. A Contribution to Multivariate
+    L-Moments: L-Comoment Matrices.</li>
 </ul>
 </details>
   </div>
@@ -1840,7 +1850,7 @@ weight equal to one.</p>
 
 
 <h4 id="lmo.tl_coloc" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">tl_coloc</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">tl_coloc</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">rowvar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
 </h4>
 
@@ -1853,7 +1863,7 @@ weight equal to one.</p>
   <summary>Notes</summary>
   <ul>
 <li>If you figure out how to interpret this, or how this can be applied,
-  please tell me (github: @jorenham).</li>
+    please tell me (github: @jorenham).</li>
 </ul>
 </details>
   </div>
@@ -1865,7 +1875,7 @@ weight equal to one.</p>
 
 
 <h4 id="lmo.tl_coscale" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">tl_coscale</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">tl_coscale</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">rowvar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
 </h4>
 
@@ -1887,7 +1897,7 @@ symmetric.</p>
 
 
 <h4 id="lmo.tl_corr" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">tl_corr</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">tl_corr</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">rowvar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
 </h4>
 
@@ -1913,7 +1923,7 @@ is typically asymmetric.</p>
 
 
 <h4 id="lmo.tl_coskew" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">tl_coskew</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">tl_coskew</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">rowvar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
 </h4>
 
@@ -1932,7 +1942,7 @@ is typically asymmetric.</p>
 
 
 <h4 id="lmo.tl_cokurt" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">tl_cokurt</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">tl_cokurt</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">rowvar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
 </h4>
 
