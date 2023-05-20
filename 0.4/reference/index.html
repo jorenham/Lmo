@@ -21,7 +21,7 @@
         <link rel="next" href="../contributing/">
       
       <link rel="icon" href="../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.13">
+      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.14">
     
     
       
@@ -2483,7 +2483,12 @@ to the original TL-weights.</p>
 <span class="normal">194</span>
 <span class="normal">195</span>
 <span class="normal">196</span>
-<span class="normal">197</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">reweight</span><span class="p">(</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">reweight</span><span class="p">(</span>
     <span class="n">w_r</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">[</span><span class="n">_T</span><span class="p">]],</span>
     <span class="n">w_x</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">[</span><span class="n">Any</span><span class="p">]],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">[</span><span class="n">_T</span><span class="p">]]:</span>
@@ -2522,6 +2527,11 @@ to the original TL-weights.</p>
     <span class="k">if</span> <span class="n">w_r</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">w_x</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;shape mismatch&#39;</span><span class="p">)</span>
 
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">w_r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">w_r</span><span class="p">):</span>
+        <span class="c1"># all the same, e.g. for r=1 and trim=0</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">w_x</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">*</span> <span class="n">w_r</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>  <span class="c1"># pyright: ignore [reportUnknownMemberType]</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">w_x</span> <span class="o">/</span> <span class="n">s</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">w_r</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
     <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">w_r</span><span class="p">)</span>
     <span class="n">v_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">w_r</span><span class="p">)</span>
 
@@ -2554,7 +2564,7 @@ to the original TL-weights.</p>
 
             <span class="k">assert</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">ds_j</span> <span class="o">&lt;=</span> <span class="mi">1</span>
             <span class="k">assert</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">ds_k</span> <span class="o">&lt;</span> <span class="mi">1</span>
-            <span class="k">assert</span> <span class="p">(</span><span class="n">ds</span> <span class="o">-</span> <span class="n">ds_j</span> <span class="o">-</span> <span class="n">ds_k</span><span class="p">)</span> <span class="o">%</span> <span class="mi">1</span> <span class="o">==</span> <span class="mi">0</span>
+            <span class="k">assert</span> <span class="nb">round</span><span class="p">(</span><span class="n">ds</span> <span class="o">-</span> <span class="n">ds_j</span> <span class="o">-</span> <span class="n">ds_k</span><span class="p">,</span> <span class="mi">15</span><span class="p">)</span> <span class="o">%</span> <span class="mi">1</span> <span class="o">==</span> <span class="mi">0</span>
 
             <span class="c1"># left partial indices</span>
             <span class="n">v_r</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">ds_j</span> <span class="o">*</span> <span class="n">w_r</span><span class="p">[</span><span class="n">n_j</span><span class="p">]</span>
