@@ -1,11 +1,12 @@
 site_name: Lmo
 site_description: Robust statistics with (T)L-Moments.
 site_author: Joren Hammudoglu
-strict: true
 site_url: https://jorenham.github.io/lmo
 
 repo_name: jorenham/lmo
 repo_url: https://github.com/jorenham/lmo
+
+strict: true
 
 nav:
   - Overview: index.md
@@ -23,16 +24,19 @@ theme:
   font:
     text: Fira Sans
     code: Fira Mono
+  custom_dir: docs/jinja
 
 extra:
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/jorenham
+  version:
+    provider: mike
 
 plugins:
-  - search
   - include-markdown
   - autorefs
+  - search
   - mkdocstrings:
       default_handler: python
       handlers:
