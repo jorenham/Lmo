@@ -6,6 +6,8 @@ import numpy as np
 
 import lmo
 
+_SEED = 12345
+
 _R_MAX = 8
 _S_MAX = _T_MAX = 2
 _N_MIN = _R_MAX + _S_MAX + _T_MAX
@@ -44,12 +46,50 @@ def test_tl_comoment_zero(a: np.ndarray, trim):
     assert np.array_equal(l_aa, np.eye(len(a)))
 
 
+@given(a=st_a, r=st_r, trim=st_trim, w_const=st.floats(0.1, 10))
+def test_tl_comoment_weights_const(a, r, trim, w_const):
+    l_aa = lmo.tl_comoment(a, r, trim)
+    assert np.all(np.isfinite(l_aa))
+
+    w = np.full_like(a, w_const)
+    l_aa_w = lmo.tl_comoment(a, r, trim, weights=w)
+
+    assert np.allclose(l_aa_w, l_aa)
+
+
+@given(a=st_a, r=st_r, trim=st_trim, w_const=st.floats(0.1, 10))
+def test_tl_comoment_weights_const(a, r, trim, w_const):
+    l_aa = lmo.tl_comoment(a, r, trim)
+    assert np.all(np.isfinite(l_aa))
+
+    w = np.full_like(a, w_const)
+    l_aa_w = lmo.tl_comoment(a, r, trim, weights=w)
+
+    assert np.allclose(l_aa_w, l_aa)
+
+
+@given(a=st_a, r=st_r, trim=st_trim)
+def test_tl_comoment_weights_broadcast(a, r, trim):
+    m, n = a.shape
+
+    w = np.random.default_rng(_SEED).uniform(0.1, 1, n)
+    wm = np.tile(w, (m, 1))
+    assert wm.shape == a.shape
+
+    l_aa_w = lmo.tl_comoment(a, r, trim, weights=w)
+    assert np.all(np.isfinite(l_aa_w))
+
+    l_aa_wm = lmo.tl_comoment(a, r, trim, weights=wm)
+    assert np.allclose(l_aa_wm, l_aa_w)
+
+
+
 @given(a=st_a, r=st_r, trim=st_trim)
 def test_tl_comoment_rowvar(a: np.ndarray, r: int, trim):
     l_aa = lmo.tl_comoment(a, r, trim)
     l_aa_t = lmo.tl_comoment(a.T, r, trim, rowvar=False)
 
-    assert np.all(l_aa == l_aa_t)
+    assert np.array_equal(l_aa, l_aa_t)
 
 
 @given(a=st_a, r=st_r, trim=st_trim)

@@ -139,6 +139,10 @@ def reweight(
     if w_r.shape != w_x.shape:
         raise TypeError('shape mismatch')
 
+    if np.all(w_r[0] == w_r):
+        # all the same, e.g. for r=1 and trim=0
+        return w_x / (w_x.sum() * w_r.sum())
+
     n = len(w_r)
     v_r = np.zeros_like(w_r)
 
@@ -171,7 +175,7 @@ def reweight(
 
             assert 0 <= ds_j <= 1
             assert 0 <= ds_k < 1
-            assert (ds - ds_j - ds_k) % 1 == 0
+            assert round(ds - ds_j - ds_k, 15) % 1 == 0
 
             # left partial indices
             v_r[k] = ds_j * w_r[n_j]

@@ -154,7 +154,7 @@ def tl_comoment(
     # ordering from x[j]
     L_ij = np.empty((m, m), dtype=dtype, order='F')
     for j, ii in enumerate(np.argsort(x, kind=sort)):
-        w = w_r if w_x is None else _weights.reweight(w_r, w_x[j])
+        w = w_r if w_x is None else _weights.reweight(w_r, w_x[j, ii])
         L_ij[:, j] = x[:, ii] @ w
 
     return L_ij
