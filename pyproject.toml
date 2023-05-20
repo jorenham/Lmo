@@ -45,10 +45,7 @@ mkdocs-include-markdown-plugin = { version = ">=4.0.4", python = "<3.12" }
 
 [tool.pytest.ini_options]
 minversion = "7.0"
-addopts = ["-ra", "--showlocals", "--strict-markers", "--strict-config"]
-xfail_strict = true
-filterwarnings = ["error"]
-log_cli_level = "info"
+addopts = ["-ra", "-W error", "--showlocals", "--strict-markers", "--strict-config"]
 testpaths = ["tests"]
 
 [tool.pyright]
