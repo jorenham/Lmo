@@ -57,17 +57,6 @@ def test_tl_comoment_weights_const(a, r, trim, w_const):
     assert np.allclose(l_aa_w, l_aa)
 
 
-@given(a=st_a, r=st_r, trim=st_trim, w_const=st.floats(0.1, 10))
-def test_tl_comoment_weights_const(a, r, trim, w_const):
-    l_aa = lmo.tl_comoment(a, r, trim)
-    assert np.all(np.isfinite(l_aa))
-
-    w = np.full_like(a, w_const)
-    l_aa_w = lmo.tl_comoment(a, r, trim, weights=w)
-
-    assert np.allclose(l_aa_w, l_aa)
-
-
 @given(a=st_a, r=st_r, trim=st_trim)
 def test_tl_comoment_weights_broadcast(a, r, trim):
     m, n = a.shape

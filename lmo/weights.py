@@ -141,7 +141,8 @@ def reweight(
 
     if np.all(w_r[0] == w_r):
         # all the same, e.g. for r=1 and trim=0
-        return (w_x / (w_x.sum() * w_r.sum())).astype(w_r.dtype)
+        s = w_x.sum() * w_r.sum()  # pyright: ignore [reportUnknownMemberType]
+        return (w_x / s).astype(w_r.dtype)
 
     n = len(w_r)
     v_r = np.zeros_like(w_r)
