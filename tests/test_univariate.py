@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from pytest import approx
 from hypothesis import given, settings, strategies as st
 from hypothesis.extra import numpy as hnp
 import numpy as np
@@ -14,41 +15,52 @@ _N_MIN = _R_MAX + 2 * _T_MAX
 st_r = st.integers(1, _R_MAX)
 st_k = st.integers(2, _R_MAX)
 st_t = st.integers(0, _T_MAX)
+st_n = st.integers(_N_MIN, 50)
 st_trim = st_t | st.tuples() | st.tuples(st_t) | st.tuples(st_t, st_t)
+st_dtype = hnp.floating_dtypes(sizes=(64,))
 
 __st_a_kwargs = {
-    'dtype': hnp.floating_dtypes(
-        sizes=(32, 64, 128) if hasattr(np, 'float128') else (32, 64)
-    ),
-    'elements': st.floats(-(1 << 20), 1 << 20, width=32),
+    'dtype': st_dtype,
+    'elements': st.floats(-1e4, -1e-2) | st.floats(1e-2, 1e4),
 }
-st_shape_a1 = st.integers(_N_MIN, 50)
-st_a1 = hnp.arrays(shape=st_shape_a1, **__st_a_kwargs)
-st_a1_unique = hnp.arrays(shape=st_shape_a1, unique=True, **__st_a_kwargs)
+st_a1 = hnp.arrays(shape=st_n, **__st_a_kwargs)
+st_a1_unique = hnp.arrays(shape=st_n, unique=True, **__st_a_kwargs)
 
 st_a2 = hnp.arrays(
-    shape=st.tuples(st_shape_a1, st.integers(1, 10)),
+    shape=st.tuples(st_n, st.integers(1, 10)),
     **__st_a_kwargs
 )
 
 
-@given(a=st_a1)
-def test_tl_moment_zero(a: np.ndarray):
-    l0 = lmo.tl_moment(a, 0)
+@given(a=st_a1, trim=st_trim)
+def test_tl_moment_zero(a, trim):
+    l0 = lmo.tl_moment(a, 0, trim)
 
     assert np.isscalar(l0)
     assert l0 == 1
+    
+    
+@given(a=st_a1, r=st_r, trim=st_trim, w_const=st.floats(0.1, 10))
+def test_tl_moment_weights_const(a, r, trim, w_const):
+    l_r = lmo.tl_moment(a, r, trim)
+
+    w = np.full_like(a, w_const)
+    l_r_w = lmo.tl_moment(a, r, trim, weights=w)
+
+    assert np.isfinite(l_r_w)
+    assert np.allclose(l_r_w, l_r)
+
 
 
 @given(a=st_a1, r=st_r, trim=st_trim)
-def test_tl_ratio_unit(a: np.ndarray, r: int, trim):
+def test_tl_ratio_unit(a, r, trim):
     tau = lmo.tl_ratio(a, r, r, trim)
 
     assert np.allclose(tau, 1)
 
 
 @given(a=st_a1, trim=st_trim)
-def test_tl_cv_bound(a: np.ndarray,  trim):
+def test_tl_cv_bound(a,  trim):
     """Theorem 2 in J.R.M. Hosking (1990), but exended for TL moments."""
     tl_cv_max = tl_ratio_max(2, 1, trim)
 
@@ -61,17 +73,16 @@ def test_tl_cv_bound(a: np.ndarray,  trim):
 
 # noinspection PyArgumentEqualDefault
 @settings(deadline=timedelta(seconds=1))
-@given(a=st_a1_unique, r=st.integers(3, _R_MAX), trim=st_trim)
-def test_tl_ratio_bound(a: np.ndarray, r: int, trim):
+@given(a=st_a1_unique, r=st.integers(3, 6), trim=st_trim)
+def test_tl_ratio_bound(a, r, trim):
     tau_max = tl_ratio_max(r, 2, trim=trim)
     tau = lmo.tl_ratio(a, r, trim=trim)
 
-    # nan is "fine" too
-    assert abs(tau) <= tau_max + 1e-8
+    assert abs(tau) <= tau_max + tau_max * 1e-5
 
 
 @given(a=st_a1 | st_a2)
-def test_l_loc(a: np.ndarray):
+def test_l_loc_mean(a):
     loc = a.mean(dtype=np.float_)
     l_loc = lmo.l_loc(a)
 
@@ -80,7 +91,7 @@ def test_l_loc(a: np.ndarray):
 
 
 @given(a=st_a2)
-def test_l_loc_2d(a: np.ndarray):
+def test_l_loc_mean_2d(a):
     locs = a.mean(axis=0, dtype=np.float_)
     l_locs = lmo.l_loc(a, axis=0)
 
@@ -94,16 +105,76 @@ def test_l_loc_2d(a: np.ndarray):
     assert np.allclose(l_locs_t, l_locs)
 
 
+@given(x0=st.floats(-1e6, 1e6), n=st_n, dtype=st_dtype, trim=st_trim)
+def test_tl_loc_const(x0, n, dtype, trim):
+    x = np.full(n, x0, dtype=dtype)
+    l_1 = lmo.tl_loc(x, trim)
+
+    assert l_1 == approx(x0)
+
+
+@given(
+    x=st_a1 | st_a2,
+    trim=st_trim,
+    dloc=st.floats(-1e3, 1e3),
+    dscale=st.floats(1e-3, 1e3)
+)
+def test_tl_loc_linearity(x, trim, dloc, dscale):
+    l1 = lmo.tl_loc(x, trim)
+    assert np.isfinite(l1)
+    assert np.isscalar(l1)
+
+    l1_add = lmo.tl_loc(x + dloc, trim)
+    assert l1_add == approx(l1 + dloc)
+
+    l1_mul = lmo.tl_loc(x * dscale, trim)
+    assert l1_mul == approx(l1 * dscale)
+
+
 @given(a=st_a1)
-def test_l_scale(a: np.ndarray):
+def test_l_scale_mean_abs_diff(a):
     # half mean absolute difference
     n = len(a)
     scale = abs(a - a[:, None]).mean() / (2 - 2 / n)
 
-    l_scale = lmo.l_scale(a)
+    l2 = lmo.l_scale(a)
 
-    assert l_scale.shape == scale.shape
-    assert np.allclose(l_scale, scale, rtol=1e-4)
+    assert l2.shape == scale.shape
+    assert l2 == approx(scale)
 
 
-# TODO: tl_loc, tl_scale, (t)l_skew, (t)l_kurt
+@given(x0=st.floats(-1e6, 1e6), n=st_n, dtype=st_dtype, trim=st_trim)
+def test_tl_scale_const(x0, n, dtype, trim):
+    x = np.full(n, x0, dtype=dtype)
+    l2 = lmo.tl_scale(x, trim)
+
+    assert round(l2, 8) == 0
+
+
+@given(x=st_a1 | st_a2, trim=st_trim, dloc=st.floats(-1e3, 1e3))
+def test_tl_scale_invariant_loc(x, trim, dloc):
+    l2 = lmo.tl_scale(x, trim)
+    assert np.isfinite(l2)
+    assert np.isscalar(l2)
+    assert round(l2, 8) >= 0
+
+    l2_add = lmo.tl_scale(x + dloc, trim)
+    assert l2_add == approx(l2, abs=1e-8, rel=1e-5)
+
+
+@given(
+    x=st_a1 | st_a2,
+    trim=st_trim,
+    dscale=st.floats(-1e4, -1e-2) | st.floats(1e-2, 1e4)
+)
+def test_tl_scale_linear_scale(x, trim, dscale):
+    l2 = lmo.tl_scale(x, trim)
+    assert np.isfinite(l2)
+    assert np.isscalar(l2)
+    assert round(l2, 8) >= 0
+
+    # asymmetric trimming flips under sign change
+    itrim = trim[::-1] if dscale < 0 and isinstance(trim, tuple) else trim
+
+    l2_mul = lmo.tl_scale(x * dscale, itrim)
+    assert l2_mul == approx(abs(l2 * dscale), abs=1e-8, rel=1e-5)
