@@ -1,33 +1,21 @@
 """
-Estimators of the sample L-moments, and derived summary statistics.
-
-According to [Wikipedia](https://wikipedia.org/wiki/L-moment):
-
-> L-moments are far more meaningful when dealing with outliers in data
-> than conventional moments.
-
-Note that L-moments are robust to outliers, but not resistant to extreme
-values.
-
-Often the Method of L-moment (LMM) outperforms the conventional method of
-moments (MM) and maximum likelihood estimation (MLE), e.g. ftting of the
-``scipy.stats.genextreme`` (generalized extreme value, GED) distribution.
-
-
-See Also:
-  * [J.R.M. Hosking (1990) - L-Moments: Analysis and Estimation of
-    Distributions Using Linear Combinations of
-    Order Statistics](https://jstor.org/stable/2345653)
-  * [E. Elmamir & A. Seheult (2003) -
-    Trimmed L-moments](https://doi.org/10.1016/S0167-9473(02)00250-5)
-  * [J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
-    L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
-
+Estimators of the sample L- and TL-moments, and related summary statistics.
 """
 
 __all__ = (
-    'l_moment', 'l_ratio', 'l_loc', 'l_scale', 'l_skew', 'l_kurt',
-    'tl_moment', 'tl_ratio', 'tl_loc', 'tl_scale', 'tl_skew', 'tl_kurt',
+    'l_moment',
+    'l_ratio',
+    'l_loc',
+    'l_scale',
+    'l_skew',
+    'l_kurt',
+
+    'tl_moment',
+    'tl_ratio',
+    'tl_loc',
+    'tl_scale',
+    'tl_skew',
+    'tl_kurt',
 )
 
 from typing import Any
@@ -57,6 +45,7 @@ def tl_moment(
         a (array_like):
             Array containing numbers whose TL-moment is desired. If `a` is not
             an array, a conversion is attempted.
+
         r (int):
             The order of the TL-moment. Some special cases cases include
 
@@ -65,6 +54,7 @@ def tl_moment(
                 [`tl_loc`][lmo.tl_loc].
             - `2`: The TL-scale, analogous to the standard deviation. See
                 [`tl_scale`][lmo.tl_scale].
+
         trim (int | tuple[int, int]):
             Amount of samples to trim as either
 
@@ -72,6 +62,11 @@ def tl_moment(
             - `(t1: int, t2: int)` for asymmetric trimming, or
 
             If `0` is passed, the L-moment is returned.
+
+        axis (int?):
+            Axis along wich to calculate the TL-moments.
+            If `None` (default), all samples in the array will be used.
+
         weights (array_like, optional):
             An array of weights associated with the values in `a`. Each value
             in `a` contributes to the average according to its associated
@@ -87,15 +82,18 @@ def tl_moment(
             [`lmo.weights.reweight`][lmo.weights.reweight] for details.
 
     Other parameters:
-        axis (int?):
-            Axis along wich to calculate the TL-moments.
-            If `None` (default), all samples in the array will be used.
         sort ('quick' | 'heap' | 'stable' | 'merge'):
             Sorting algorithm, see [`numpy.sort`](
             https://numpy.org/doc/stable/reference/generated/numpy.sort).
 
     Returns:
         Scalar or array; the $r$-th TL-moment(s).
+
+    See Also:
+        - [E. Elmamir & A. Seheult (2003) - Trimmed L-moments](
+            https://doi.org/10.1016/S0167-9473(02)00250-5)
+        - [J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
+            L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
 
     """
     x = np.asanyarray(a)
@@ -266,6 +264,19 @@ def l_moment(
     """
     The $r$-th sample L-moment, $\\lambda_r$.
     Alias of [`lmo.tl_moment(..., trim=0)`][lmo.univariate.tl_moment].
+
+    According to [Wikipedia](https://wikipedia.org/wiki/L-moment):
+
+    > L-moments are far more meaningful when dealing with outliers in data
+    > than conventional moments.
+
+    Note that L-moments are robust to outliers, but not resistant to extreme
+    values.
+
+    Often the Method of L-moment (LMM) outperforms the conventional method of
+    moments (MM) and maximum likelihood estimation (MLE), e.g. ftting of the
+    ``scipy.stats.genextreme`` (generalized extreme value, GED) distribution.
+
 
     See Also:
         - [J.R.M. Hosking (1990)](https://jstor.org/stable/2345653)
