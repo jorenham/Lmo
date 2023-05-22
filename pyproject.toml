@@ -46,8 +46,15 @@ mike = "^1.1.2"
 
 [tool.pytest.ini_options]
 minversion = "7.0"
-addopts = ["-ra", "-W error", "--showlocals", "--strict-markers", "--strict-config"]
-testpaths = ["tests"]
+addopts = [
+    "-ra",
+    "-W error",
+    "--showlocals",
+    "--strict-markers",
+    "--strict-config",
+    "--doctest-modules",
+]
+doctest_optionflags = ["NORMALIZE_WHITESPACE", "IGNORE_EXCEPTION_DETAIL"]
 
 [tool.pyright]
 include = ["lmo"]
