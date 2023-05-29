@@ -1,5 +1,5 @@
 """
-Estimators of the sample L- and TL-moments, and related summary statistics.
+Unbiased sample estimators of the generalized trimmed L-moments.
 """
 
 __all__ = (
@@ -7,371 +7,355 @@ __all__ = (
     'l_ratio',
     'l_loc',
     'l_scale',
+    'l_variation',
     'l_skew',
-    'l_kurt',
-
-    'tl_moment',
-    'tl_ratio',
-    'tl_loc',
-    'tl_scale',
-    'tl_skew',
-    'tl_kurt',
+    'l_kurtosis',
 )
 
-from typing import Any
+from typing import Any, TypeVar, cast
 
 import numpy as np
 import numpy.typing as npt
 
-from .typing import AnyTensor, ScalarOrArray, SortKind, Trimming
-from .weights import tl_weights, reweight
+from ._utils import clean_order, ensure_axis_at
+from .stats import order_stats
+from .typing import AnyInt, IntVector, SortKind
+from .weights import l_weights
+
+T = TypeVar('T', bound=np.floating[Any])
 
 
-def tl_moment(
-    a: AnyTensor,
-    r: int,
+def l_moment(
+    a: npt.ArrayLike,
+    r: AnyInt | IntVector,
     /,
-    trim: Trimming = 1,
+    trim: tuple[int, int] = (0, 0),
     axis: int | None = None,
+    dtype: np.dtype[T] | type[T] = np.float_,
     *,
-    weights: AnyTensor | None = None,
-    sort: SortKind = None,
-) -> ScalarOrArray[np.float_]:
+    fweights: IntVector | None = None,
+    aweights: npt.ArrayLike | None = None,
+    sort: SortKind | None = 'stable',
+) -> T | npt.NDArray[T]:
     """
-    Estimate the $r$-th sample TL-moment, $\\lambda_{r}^{(t_1, t_2)}$, for
-    left and right trim lengths $t_1$ and $t_2$.
+    Estimates the generalized trimmed L-moment $\\lambda^{(t_1, t_2)}_r$ from
+    the samples along the specified axis. By default, this will be the regular
+    L-moment, $\\lambda_r = \\lambda^{(0, 0)}_r$.
 
     Parameters:
-        a (array_like):
-            Array containing numbers whose TL-moment is desired. If `a` is not
-            an array, a conversion is attempted.
+        a:
+            Array containing numbers whose L-moments is desired.
+            If `a` is not an array, a conversion is attempted.
 
-        r (int):
-            The order of the TL-moment. Some special cases cases include
+        r:
+            The L-moment order(s), non-negative integer or array.
 
-            - `0`: Like the zeroth moment, the zeroth TL-moment  is always `1`.
-            - `1`: The TL-location, the analogue of the mean. See
-                [`tl_loc`][lmo.tl_loc].
-            - `2`: The TL-scale, analogous to the standard deviation. See
-                [`tl_scale`][lmo.tl_scale].
+        trim:
+            Left- and right-trim orders $(t_1, t_2)$, non-negative integers
+            that are bound by $t_1 + t_2 < n - r$.
 
-        trim (int | tuple[int, int]):
-            Amount of samples to trim as either
+            Some special cases include:
 
-            - `t: int` for symmetric trimming, equivalent to `(t, t)`.
-            - `(t1: int, t2: int)` for asymmetric trimming, or
+            - $(0, 0)$: The original **L**-moment, introduced by Hosking (1990).
+                Useful for fitting the e.g. log-normal and generalized extreme
+                value (GEV) distributions.
+            - $(0, m)$: **LL**-moment (**L**inear combination of **L**owest
+                order statistics), instroduced by Bayazit & Onoz (2002).
+                Assigns more weight to smaller observations.
+            - $(s, 0)$: **LH**-moment (**L**inear combination of **H**igher
+                order statistics), by Wang (1997).
+                Assigns more weight to larger observations.
+            - $(t, t)$: **TL**-moment (**T**rimmed L-moment) $\\lambda_r^t$,
+                with symmetric trimming. First introduced by
+                Elamir & Seheult (2003).
+                Generally more robust than L-moments.
+                Useful for fitting heavy-tailed distributions, such as the
+                Cauchy distribution.
 
-            If `0` is passed, the L-moment is returned.
+        axis:
+            Axis along wich to calculate the moments. If `None` (default),
+            all samples in the array will be used.
 
-        axis (int?):
-            Axis along wich to calculate the TL-moments.
-            If `None` (default), all samples in the array will be used.
+        dtype:
+            Floating type to use in computing the L-moments. Default is
+            [`numpy.float64`][numpy.float64].
 
-        weights (array_like, optional):
+        fweights:
+            1-D array of integer frequency weights; the number of times each
+            observation vector should be repeated.
+
+        aweights:
             An array of weights associated with the values in `a`. Each value
             in `a` contributes to the average according to its associated
             weight.
             The weights array can either be 1-D (in which case its length must
             be the size of a along the given axis) or of the same shape as `a`.
-            If `weights=None`, then all data in `a` are assumed to have a
-            weight equal to one.
+            If `aweights=None` (default), then all data in `a` are assumed to
+            have a weight equal to one.
 
-            All `weights` must be `>=0`, and the sum must be nonzero.
+            All `aweights` must be `>=0`, and the sum must be nonzero.
 
-            The algorithm is similar to that of the weighted median. See
-            [`lmo.weights.reweight`][lmo.weights.reweight] for details.
+            The algorithm is similar to that for weighted quantiles.
 
-    Other parameters:
-        sort ('quick' | 'heap' | 'stable' | 'merge'):
-            Sorting algorithm, see [`numpy.sort`](
-            https://numpy.org/doc/stable/reference/generated/numpy.sort).
+        sort ('quick' | 'stable' | 'heap'):
+            Sorting algorithm, see [`numpy.sort`][numpy.sort].
 
     Returns:
-        Scalar or array; the $r$-th TL-moment(s).
+        l:
+            The L-moment(s) of the input This is a scalar iff a is 1-d and
+            r is a scalar. Otherwise, this is an array with
+            `np.ndim(r) + np.ndim(a) - 1` dimensions and shape like
+            `(*np.shape(r), *(d for d in np.shape(a) if d != axis))`.
 
     See Also:
+        - [L-moment - Wikipedia](https://wikipedia.org/wiki/L-moment)
+        - [`scipy.stats.moment`][scipy.stats.moment]
+
+    References:
+        - [J.R.M. Hosking (1990)](https://jstor.org/stable/2345653)
         - [E. Elmamir & A. Seheult (2003) - Trimmed L-moments](
             https://doi.org/10.1016/S0167-9473(02)00250-5)
         - [J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
             L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
 
     """
-    x = np.asanyarray(a)
-    w_x = None if weights is None else np.asanyarray(weights)
+    # weight-adjusted $x_{i:n}$
+    x_k = order_stats(
+        a,
+        axis=axis,
+        dtype=dtype,
+        fweights=fweights,
+        aweights=aweights,
+        sort=sort,
+    )
+    x_k = ensure_axis_at(x_k, axis, -1)
 
-    # ensure that the samples are along the first axis (shape standardization)
-    # this way we don't have the bother with the specific axis from here on
-    if axis is None:
-        x = x.ravel()
-    if x.ndim > 1 and w_x is not None:
-        x, w_x = np.broadcast_arrays(x, w_x)
-    if axis and (ax := axis % x.ndim):
-        x = np.moveaxis(x, ax, 0)
-        if w_x is not None:
-            w_x = np.moveaxis(x, ax, 0)
+    r_max: int = clean_order(cast(
+        int,
+        np.max(np.asarray(r))  # pyright: ignore [reportUnknownMemberType]
+    ))
+    n = x_k.shape[-1]
 
-    n = len(x)
+    # projection matrix
+    P_r = l_weights(r_max, n, trim, dtype=dtype)
 
-    if r == 0:
-        # zeroth (TL-)moment is always 1
-        # the _[()] ensures that those annoying 0d "arrays" become scalars
-        return np.ones(x.shape[1:])[()]
+    l_r = np.inner(P_r, x_k)
 
-    # calculate the TL-weight vector (it anoly depends on n and r, not on the
-    # amount of variables)
-    w_r = tl_weights(n, r, trim)
+    # we like 0-based indexing; so if P_r starts at r=1, prepend all 1's
+    # for r=0 (any zeroth moment is defined to be 1)
+    l_r = np.r_[np.ones((1, *l_r.shape[1:]), dtype=l_r.dtype), l_r]
 
-    def _apply_weights_1d(
-        _x: npt.NDArray[np.floating[Any]],
-        _w_x: npt.NDArray[Any] | None = None
-    ) -> npt.NDArray[np.float_]:
-        assert _x.ndim == 1
-        assert _w_x is None or _w_x.shape == _x.shape
+    assert np.all(l_r[0] == 1)
+    assert len(l_r) == r_max + 1, (l_r.shape, r_max)
 
-        if _w_x is None:
-            _x_k, _w = np.sort(_x, kind=sort), w_r
-        else:
-            i_k = np.argsort(_x, kind=sort)
-            _x_k, _w = _x[i_k], reweight(w_r, _w_x[i_k])
-
-        return _x_k @ _w
-
-    if x.ndim == 1:
-        return _apply_weights_1d(x, w_x)
-
-    if w_x is None:
-        return np.apply_along_axis(_apply_weights_1d, 0, x)
-
-    # manual version of numpy.apply_along_axis, which handles only one array
-    out = np.empty(x.shape[1:], dtype=np.result_type(x, w_r, w_x))
-    for jj in np.ndindex(*out.shape):
-        out[jj] = _apply_weights_1d(x[jj], w_x[jj])
-    return out
-
-
-def tl_ratio(
-    a: AnyTensor,
-    r: int,
-    /,
-    k: int = 2,
-    trim: Trimming = 1,
-    axis: int | None = None,
-    **kwargs: Any,
-) -> ScalarOrArray[np.float_]:
-    """
-    Ratio of the r-th and k-th (2nd by default) sample TL-moments:
-
-    $$
-    \\tau_{r, k}^{(t_1, t_2)} = \\frac{
-        \\lambda_{r}^{(t_1, t_2)}
-    }{
-        \\lambda_{k}^{(t_1, t_2)}
-    }
-    $$
-
-    By default, $k = 2$ and $t_1 = t_2 = 1$ are used, i.e.
-    $\\tau_{r, 2}^{(1, 1)}$, or $\\tau_r^{(1)}$ for short.
-
-    """
-    x = np.asanyarray(a)
-
-    l_r = tl_moment(x, r, trim, axis=axis, **kwargs)
-
-    if k == 0:
-        return l_r
-    if k == r:
-        return np.ones_like(l_r)[()]
-
-    l_k = l_r if k == r else tl_moment(x, k, trim, axis=axis, **kwargs)
-
-    # i.e. `x / 0 = 0 if x == 0 else np.nan`
-    return np.divide(
-        l_r,
-        l_k,
-        out=np.where(l_r == 0, 0.0, np.nan),
-        where=l_k != 0
-    )[()]  # [()] converts any 0-dimensional arrays to scalar
-
-
-def tl_loc(
-    a: AnyTensor,
-    /,
-    trim: Trimming = 1,
-    axis: int | None = None,
-    **kwargs: Any,
-) -> ScalarOrArray[np.float_]:
-    """
-    Sample estimator of the TL-location, $\\lambda_1^{(t_1, t_2)}$; the first
-    TL-moment.
-
-    See Also:
-         [lmo.tl_moment][lmo.univariate.tl_moment]
-    """
-    return tl_moment(a, 1, trim, axis=axis, **kwargs)
-
-
-def tl_scale(
-    a: AnyTensor,
-    /,
-    trim: Trimming = 1,
-    axis: int | None = None,
-    **kwargs: Any,
-) -> ScalarOrArray[np.float_]:
-    """
-    Sample TL-scale estimator, $\\lambda_2^{(t_1, t_2)}$, the second TL-moment.
-    A robust alternative of the sample standard deviation.
-    """
-    return tl_moment(a, 2, trim, axis=axis, **kwargs)
-
-
-def tl_skew(
-    a: AnyTensor,
-    /,
-    trim: Trimming = 1,
-    axis: int | None = None,
-    **kwargs: Any,
-) -> ScalarOrArray[np.float_]:
-    """
-    TL-skewness coefficient, $\\tau_3^{(t_1, t_2)}$; the 3rd sample TL-moment
-    ratio.
-    """
-    return tl_ratio(a, 3, trim=trim, axis=axis, **kwargs)
-
-
-def tl_kurt(
-    a: AnyTensor,
-    /,
-    trim: Trimming = 1,
-    axis: int | None = None,
-    **kwargs: Any,
-) -> ScalarOrArray[np.float_]:
-    """
-    TL-kurtosis coefficient, $\\tau_4^{(t_1, t_2)}$; the 4th sample TL-moment
-    ratio.
-    """
-    return tl_ratio(a, 4, trim=trim, axis=axis, **kwargs)
-
-
-# L-moment aliasses
-
-def l_moment(
-    a: AnyTensor,
-    r: int,
-    /,
-    axis: int | None = None,
-    **kwargs: Any,
-) -> ScalarOrArray[np.float_]:
-    """
-    The $r$-th sample L-moment, $\\lambda_r$.
-    Alias of [`lmo.tl_moment(..., trim=0)`][lmo.univariate.tl_moment].
-
-    According to [Wikipedia](https://wikipedia.org/wiki/L-moment):
-
-    > L-moments are far more meaningful when dealing with outliers in data
-    > than conventional moments.
-
-    Note that L-moments are robust to outliers, but not resistant to extreme
-    values.
-
-    Often the Method of L-moment (LMM) outperforms the conventional method of
-    moments (MM) and maximum likelihood estimation (MLE), e.g. ftting of the
-    ``scipy.stats.genextreme`` (generalized extreme value, GED) distribution.
-
-
-    See Also:
-        - [J.R.M. Hosking (1990)](https://jstor.org/stable/2345653)
-        - [L-moment - Wikipedia](https://wikipedia.org/wiki/L-moment)
-
-    """
-    return tl_moment(a, r, trim=0, axis=axis, **kwargs)
+    # l[r] fails when r is e.g. a tuple (valid sequence).
+    return l_r.take(r, 0)
 
 
 def l_ratio(
-    a: AnyTensor,
-    r: int,
+    a: npt.ArrayLike,
+    r: AnyInt | IntVector,
+    s: AnyInt | IntVector,
     /,
-    k: int = 2,
+    trim: tuple[int, int] = (0, 0),
     axis: int | None = None,
+    dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
-) -> ScalarOrArray[np.float_]:
+) -> T | npt.NDArray[T]:
     """
-    Ratio of the r-th and k-th (2nd by default) sample L-moments:
+    Estimates the generalized L-moment ratio:
 
     $$
-    \\tau_{r, k} = \\frac{\\lambda_{r}}{\\lambda_{k}}
+    \\tau^{(t_1, t_2)}_{rs} = \\frac{
+        \\lambda^{(t_1, t_2)}_r
+    }{
+        \\lambda^{(t_1, t_2)}_s
+    }
     $$
 
-    Alias of [`lmo.tl_ratio(..., trim=0)`][lmo.univariate.tl_ratio].
+    Equivalent to `lmo.l_moment(a, r, *, **) / lmo.l_moment(a, s, *, **)`.
 
-    Notes:
-        Tthe L-moment ratio's are bounded within the interval $[-1, 1)$.
+    See Also:
+        - [`lmo.l_moment`][lmo.l_moment]
 
     """
-    return tl_ratio(a, r, k, trim=0, axis=axis, **kwargs)
+    _r, _s = np.asarray(r), np.asarray(s)
+    rs = np.stack(np.broadcast_arrays(_r, _s))
+
+    l_rs = cast(
+        npt.NDArray[T],
+        l_moment(a, rs, trim, axis=axis, dtype=dtype, **kwargs)
+    )
+
+    r_eq_s = _r == _s
+    with np.errstate(divide='ignore'):
+        return np.where(
+            r_eq_s,
+            np.ones_like(l_rs[0]),
+            np.divide(l_rs[0], l_rs[1], where=~r_eq_s)
+        )[()]
 
 
 def l_loc(
-    a: AnyTensor,
+    a: npt.ArrayLike,
     /,
+    trim: tuple[int, int] = (0, 0),
     axis: int | None = None,
+    dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
-) -> ScalarOrArray[np.float_]:
+) -> T | npt.NDArray[T]:
     """
-    L-location: the first sample L-moment.
-    Equivalent to [`lmo.tl_loc(a, 0, **kwargs)`][lmo.univariate.tl_loc].
+    *L-location* (or *L-loc*): unbiased estimator of the first L-moment,
+    $\\lambda^{(t_1, t_2)}_1$.
+
+    Alias for [`lmo.l_moment(a, 1, *, **)`][lmo.l_moment].
+
+    Examples:
+        TODO
 
     Notes:
-        The L-location is equivalent to the (arithmetic) sample mean.
+        If `trim = (0, 0)` (default), the L-location is equivalent to the
+        [arithmetic mean](https://wikipedia.org/wiki/Arithmetic_mean).
+
+    See Also:
+        - [`lmo.l_moment`][lmo.l_moment]
+        - [`numpy.average`][numpy.average]
 
     """
-    return l_moment(a, 1, axis=axis, **kwargs)
+    return l_moment(a, 1, trim , axis, dtype, **kwargs)
 
 
 def l_scale(
-    a: AnyTensor,
+    a: npt.ArrayLike,
     /,
+    trim: tuple[int, int] = (0, 0),
     axis: int | None = None,
+    dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
-) -> ScalarOrArray[np.float_]:
+) -> T | npt.NDArray[T]:
     """
-    L-scale: the second L-moment.
-    Equivalent to [`lmo.tl_scale(a, 0, **kwargs)`][lmo.univariate.tl_scale].
+    *L-scale*: unbiased estimator of the second L-moment,
+    $\\lambda^{(t_1, t_2)}_2$
+
+    Alias for [`lmo.l_moment(a, 2, *, **)`][lmo.l_moment].
+
+    Examples:
+        TODO
 
     Notes:
-        The L-scale is equivalent to half the [mean absolute difference](
-        https://wikipedia.org/wiki/Mean_absolute_difference).
+        If `trim = (0, 0)` (default), the L-scale is equivalent to half the
+        [Gini mean difference (GMD)](
+        https://wikipedia.org/wiki/Gini_mean_difference).
+
+    See Also:
+        - [`lmo.l_moment`][lmo.l_moment]
+        - [`numpy.std`][numpy.std]
 
     """
-    return l_moment(a, 2, axis=axis, **kwargs)
+    return l_moment(a, 2, trim , axis, dtype, **kwargs)
+
+
+def l_variation(
+    a: npt.ArrayLike,
+    /,
+    trim: tuple[int, int] = (0, 0),
+    axis: int | None = None,
+    dtype: np.dtype[T] | type[T] = np.float_,
+    **kwargs: Any,
+) -> T | npt.NDArray[T]:
+    """
+    The *coefficient of L-variation* (or *L-CV*) unbiased sample estimator:
+
+    $$
+    \\tau^{(t_1, t_2)} = \\frac{
+        \\lambda^{(t_1, t_2)}_2
+    }{
+        \\lambda^{(t_1, t_2)}_1
+    }
+    $$
+
+    Alias for [`lmo.l_ratio(a, 2, 1, *, **)`][lmo.l_ratio].
+
+    Examples:
+        TODO
+
+    Notes:
+        If `trim = (0, 0)` (default), this is equivalent to the
+        [Gini coefficient](https://wikipedia.org/wiki/Arithmetic_mean),
+        and lies within the interval $(0, 1)$.
+
+    See Also:
+        - [Gini coefficient - Wikipedia](
+            https://wikipedia.org/wiki/Gini_coefficient)
+        - [`lmo.l_ratio`][lmo.l_ratio]
+        - [`scipy.stats.variation.l_ratio`][scipy.stats.variation]
+
+    """
+    return l_ratio(a, 2, 1, trim , axis, dtype, **kwargs)
 
 
 def l_skew(
-    a: AnyTensor,
+    a: npt.ArrayLike,
     /,
+    trim: tuple[int, int] = (0, 0),
     axis: int | None = None,
+    dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
-) -> ScalarOrArray[np.float_]:
+) -> T | npt.NDArray[T]:
     """
-    L-skewness coefficient; the 3rd sample L-moment ratio.
-    Equivalent to [`lmo.tl_skew(a, 0, **kwargs)`][lmo.univariate.tl_skew].
+    Unbiased sample estimator of the *coefficient of L-skewness*, or *L-skew*
+    for short:
+
+    $$
+    \\tau^{(t_1, t_2)}_3
+        = \\frac{
+            \\lambda^{(t_1, t_2)}_3
+        }{
+            \\lambda^{(t_1, t_2)}_2
+        }
+    $$
+
+    Alias for [`lmo.l_ratio(a, 3, 2, *, **)`][lmo.l_ratio].
+
+    See Also:
+        - [`lmo.l_ratio`][lmo.l_ratio]
+        - [`scipy.stats.skew`][scipy.stats.skew]
+
     """
-    return l_ratio(a, 3, axis=axis, **kwargs)
+    return l_ratio(a, 3, 2, trim , axis, dtype, **kwargs)
 
 
-def l_kurt(
-    a: AnyTensor,
+def l_kurtosis(
+    a: npt.ArrayLike,
     /,
+    trim: tuple[int, int] = (0, 0),
     axis: int | None = None,
+    dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
-) -> ScalarOrArray[np.float_]:
+) -> T | npt.NDArray[T]:
     """
     L-kurtosis coefficient; the 4th sample L-moment ratio.
-    Equivalent to [`lmo.tl_kurt(a, 0, **kwargs)`][lmo.univariate.tl_kurt].
+
+    $$
+    \\tau^{(t_1, t_2)}_4
+        = \\frac{
+            \\lambda^{(t_1, t_2)}_4
+        }{
+            \\lambda^{(t_1, t_2)}_2
+        }
+    $$
+
+    Alias for [`lmo.l_ratio(a, 4, 2, *, **)`][lmo.l_ratio].
 
     Notes:
         The L-kurtosis $\\tau_4$ lies within the interval
         $[-\\frac{1}{4}, 1)$, and by the L-skewness $\\tau_3$ as
         $5 \\tau_3^2 - 1 \\le 4 \\tau_4$.
 
+    See Also:
+        - [`lmo.l_ratio`][lmo.l_ratio]
+        - [`scipy.stats.kurtosis`][scipy.stats.kurtosis]
+
     """
-    return l_ratio(a, 4, axis=axis, **kwargs)
+    return l_ratio(a, 4, 2, trim , axis, dtype, **kwargs)
+

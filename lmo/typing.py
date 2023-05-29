@@ -1,52 +1,66 @@
 __all__ = (
+    'AnyNDArray',
+
     'AnyBool',
     'AnyInt',
     'AnyFloat',
-    'AnyVector',
-    'AnyMatrix',
-    'AnyTensor',
-    'ScalarOrArray',
+
+    'IntVector',
+    'IntMatrix',
+    'IntTensor',
+
+    'FloatVector',
+    'FloatMatrix',
+    'FloatTensor',
+
     'SortKind',
-    'Trimming',
+    'IndexOrder',
 )
 
 from typing import (
     Any,
     Literal,
+    Protocol,
     Sequence,
-    SupportsFloat,
     TypeAlias,
     TypeVar,
+    runtime_checkable,
 )
 
 import numpy as np
+import numpy.typing as npt
+
+
+T = TypeVar('T', bound=np.generic)
+T_co = TypeVar('T_co', covariant=True, bound=np.generic)
+
+@runtime_checkable
+class _SupportsArray(Protocol[T_co]):
+    def __array__(self) -> npt.NDArray[T_co]: ...
+
 
 # scalar types
-AnyBool: TypeAlias = bool | np.bool_
-AnyInt: TypeAlias = int | np.integer[Any] | AnyBool
-AnyFloat: TypeAlias = float | np.floating[Any] | AnyInt
+_NumpyBool: TypeAlias = np.bool_
+_NumpyInteger: TypeAlias = np.integer[Any] | _NumpyBool
+_NumpyFloating: TypeAlias = np.floating[Any] | _NumpyInteger
 
-_R = TypeVar('_R', bound=np.floating[Any] | np.integer[Any] | np.bool_)
-_AnyR = TypeVar('_AnyR', bound=SupportsFloat)
+AnyBool: TypeAlias = _NumpyBool | bool
+AnyInt: TypeAlias = _NumpyInteger | int | bool
+AnyFloat: TypeAlias = _NumpyFloating | float | int | bool
 
 # array-like flavours (still waiting on numpy's shape typing)
-AnyVector: TypeAlias = np.ndarray[Any, np.dtype[Any]] | Sequence[SupportsFloat]
-AnyMatrix: TypeAlias = AnyVector | Sequence[AnyVector]
-AnyTensor: TypeAlias = AnyMatrix | Sequence['AnyTensor']
+AnyNDArray: TypeAlias = npt.NDArray[T] | _SupportsArray[T]
 
-# complex numbers aren't relevant (and calling them scalars is far-fetched IMHO)
-ScalarOrArray: TypeAlias = _R | np.ndarray[Any, np.dtype[_R]]
+IntVector: TypeAlias = AnyNDArray[_NumpyInteger] | Sequence[AnyInt]
+IntMatrix: TypeAlias = AnyNDArray[_NumpyInteger] | Sequence[IntVector]
+IntTensor: TypeAlias = AnyNDArray[_NumpyInteger] | Sequence['IntTensor']
+
+FloatVector: TypeAlias = AnyNDArray[_NumpyFloating] | Sequence[AnyFloat]
+FloatMatrix: TypeAlias = AnyNDArray[_NumpyFloating] | Sequence[FloatVector]
+FloatTensor: TypeAlias = AnyNDArray[_NumpyFloating] | Sequence['FloatTensor']
+
+
 
 # for numpy.sort
-SortKind: TypeAlias = Literal[
-    'quicksort',
-    'mergesort',
-    'heapsort',
-    'stable',
-] | None
-
-# trim length
-_Trim0: TypeAlias = tuple[()]
-_Trim1: TypeAlias = tuple[int] | int
-_Trim2: TypeAlias = tuple[int, int]
-Trimming: TypeAlias = _Trim0 | _Trim1 | _Trim2
+SortKind: TypeAlias = Literal['quicksort', 'heapsort', 'stable']
+IndexOrder: TypeAlias = Literal['C', 'F', 'A', 'K']

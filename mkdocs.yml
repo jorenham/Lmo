@@ -30,8 +30,6 @@ extra:
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/jorenham
-  version:
-    provider: mike
 
 plugins:
   - include-markdown
@@ -41,9 +39,13 @@ plugins:
       default_handler: python
       handlers:
         python:
+          import:
+            - url: https://numpy.org/doc/stable/objects.inv
+            - url: https://docs.scipy.org/doc/scipy/objects.inv
           options:
             annotations_path: 'source'
             docstring_section_style: 'spacy'
+            line_length: 80
             load_external_modules: true
             members_order: source
             show_root_full_path: true

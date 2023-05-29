@@ -1,202 +1,214 @@
-__all__ = 'tl_weights', 'l_weights', 'reweight'
+__all__ = 'p_weights', 'l0_weights', 'l_weights'
 
-from math import comb, fsum
-from typing import Any, TypeVar
+from typing import TypeVar
 
 import numpy as np
 import numpy.typing as npt
 
-from ._utils import expand_trimming
-from .typing import Trimming
+from .linalg import sh_legendre, tl_jacobi
 
 
-_T = TypeVar('_T', bound=npt.NBitBase)
+T = TypeVar('T', bound=npt.NBitBase)
 
-
-def tl_weights(
-    n: int,
+def p_weights(
     r: int,
+    n: int,
     /,
-    trim: Trimming = 1,
-    *,
-    dtype: type[np.floating[_T]] | np.dtype[np.floating[_T]] = np.float_,
-) -> npt.NDArray[np.floating[_T]]:
+    dtype: type[np.floating[T]] | np.dtype[np.floating[T]] = np.float_,
+) -> npt.NDArray[np.floating[T]]:
     """
-    Linear sample weights for calculation of the r-th TL-moment.
+    Probability Weighted moment (PWM) projection matrix $B$  of the
+    unbiased estimator for $\\beta_{k} = M_{1,k,0}$ for $k = 0, \\dots, r - 1$.
+
+    The PWM's are estimated by linear projection of the sample of order
+    statistics, i.e. $b = B x_{i:n}$
 
     Parameters:
-        n: Sample size.
-        r: L-moment order, e.g. 1 for location, and 2 for scale.
-        trim:
-            Amount of samples to trim as either
-
-            - `(t1: int, t2: int)` for left and right trimming,
-            - `t: int`, or `(t: int)` as alias for `(t, t)`, or
-            - `()` as alias for `(0, 0)`.
-
-            If not provided, `1` will be used by default.
-
-    Other parameters:
-        dtype:
-            Desired output floating type for the weights, e.g,
-            `numpy.float128`. Default is `numpy.float64`.
-            Must be a (strict) subclass of `numpy.floating`.
+        r: The amount of orders to evaluate, i.e. $k = 0, \\dots, r - 1$.
+        n: Sample count.
+        dtype: Desired output floating data type.
 
     Returns:
-        w_r:
-            A vector of size `n`, with linear weights for each of the
-            (ordered) samples.
+        P_b: Upper-triangular projection matrix of shape `(r, n)`.
+
+    Examples:
+        >>> import lmo.weights
+        >>> lmo.weights.p_weights(4, 5)
+        array([[0.2       , 0.2       , 0.2       , 0.2       , 0.2       ],
+               [0.        , 0.05      , 0.1       , 0.15      , 0.2       ],
+               [0.        , 0.        , 0.03333333, 0.1       , 0.2       ],
+               [0.        , 0.        , 0.        , 0.05      , 0.2       ]])
 
     """
+    if not (0 <= r <= n):
+        raise ValueError(f'expected 0 <= r <= n, got {r=} and {n=}')
 
-    if not issubclass(  # pyright: ignore [reportUnnecessaryIsInstance]
-        np.dtype(dtype).type,
-        np.floating
-    ):
-        raise TypeError(
-            f'dtype must be a subclass of numpy.floating, got {dtype!r}'
-        )
+    # pyright throws a tantrum with numpy.arange for some reason...
+    # i1 = np.arange(1, n + 1)
+    i1 = np.linspace(1, n, n)
 
-    if r <= 0:
-        raise ValueError(f'expected r > 0, got {r} <= 0')
+    w_r = np.zeros((r, n), dtype)
+    if w_r.size == 0:
+        return w_r
 
-    tl, tr = expand_trimming(trim)
+    w_r[0] = 1.
 
-    if n < r + tl + tr:
-        raise ValueError(f'expected n >= r + s + t, got {n} < {r + tl + tr}')
+    for k in range(1, r):
+        w_r[k, k:] = w_r[k - 1, k:] * i1[:-k] / (n - k)
 
-    # pre-calculate the terms that are independent on j
-    m = r * comb(n, r + tl + tr)
+    # the + 0. eliminates negative zeros
+    return w_r / n + 0.
 
-    # https://github.com/numpy/numpy/issues/23783
-    # w_k = np.empty(r, dtype=dtype)
-    w_k = np.empty(r)
 
-    for k in range(r):
-        w_k[k] = (-1) ** k * comb(r - 1, k) / m
+def l0_weights(
+    r: int,
+    n: int,
+    /,
+    dtype: type[np.floating[T]] | np.dtype[np.floating[T]] = np.float_,
+    *,
+    enforce_symmetry: bool = True,
+) -> npt.NDArray[np.floating[T]]:
+    """
+    Efficiently calculates the projection matrix $P = [p_{k, i}]_{r \\times n}$
+    for the order statistics $x_{i:n}$.
+    This way, the $1, 2, ..., r$-th order sample L-moments of some sample vector
+    $x$, can be estimated with `np.sort(x) @ l_weights(len(x), r)`.
 
-    # sample weights
-    w_r = np.zeros(n, dtype=dtype)
-    for j in range(tl, n - tr):
-        # divide inside the loop, to avoid overflows
-        w_r[j] = fsum(
-            comb(j, r + tl - k - 1) * comb(n - j - 1, tr + k) * w_k[k]
-            for k in range(r)
-        )
+    Parameters:
+        r: The amount of orders to evaluate, i.e. $k = 1, \\dots, r$.
+        n: Sample count.
+        dtype: Desired output floating data type.
 
-    return w_r
+    Other parameters:
+        enforce_symmetry:
+            If set to False, disables symmetry-based numerical noise correction.
+
+    Returns:
+        P_r: 2-D array of shape `(r, n)`.
+
+    Examples:
+        >>> import lmo.weights
+        >>> lmo.weights.l0_weights(3, 4)
+        array([[ 0.25      ,  0.25      ,  0.25      ,  0.25      ],
+               [-0.25      , -0.08333333,  0.08333333,  0.25      ],
+               [ 0.25      , -0.25      , -0.25      ,  0.25      ]])
+        >>> _ @ [-1, 0, 1 / 2, 3 / 2]
+        array([0.25      , 0.66666667, 0.        ])
+
+    References:
+        - [J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
+            L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
+
+    """
+    P_r = np.empty((r, n), dtype)
+
+    if r == 0:
+        return P_r
+
+    np.matmul(sh_legendre(r), p_weights(r, n, dtype), out=P_r)
+
+    if enforce_symmetry:
+        # enforce rotational symmetry of even orders `r = 2, 4, ...`, naturally
+        # centering them around 0
+        for k in range(2, r + 1, 2):
+            p_k: npt.NDArray[np.floating[T]] = P_r[k - 1]
+
+            med = 0.0
+            pk_neg, pk_pos = p_k < med, p_k > med
+            # n_neg, n_pos = pk_neg.sum(), pk_pos.sum()
+            n_neg, n_pos = np.count_nonzero(pk_neg), np.count_nonzero(pk_pos)
+
+            # attempt to correct 1-off asymmetry
+            if abs(n_neg - n_pos) == 1:
+                if n % 2:
+                    # balance the #negative and #positive for odd `n` by
+                    # ignoring the center
+                    mid = (n - 1) // 2
+                    pk_neg[mid] = pk_pos[mid] = False
+                    # n_neg, n_pos = pk_neg.sum(), pk_pos.sum()
+                    n_neg = np.count_nonzero(pk_neg)
+                    n_pos = np.count_nonzero(pk_pos)
+                else:
+                    # if one side is half of n, set the other to it's negation
+                    mid = n // 2
+                    if n_neg == mid:
+                        pk_pos = ~pk_neg
+                        n_pos = n_neg
+                    elif n_pos == mid:
+                        pk_neg = ~pk_pos
+                        n_neg = n_pos
+
+            # attempt to correct any large asymmetry offsets
+            # and don't worry; median is O(n)
+            if abs(n_neg - n_pos) > 1 and (med := np.median(p_k)):
+                pk_neg, pk_pos = p_k < med, p_k > med
+                n_neg = np.count_nonzero(pk_neg)
+                n_pos = np.count_nonzero(pk_pos)
+
+            if n_neg == n_pos:
+                # it's pretty rare that this isn't the case
+                p_k[pk_neg] = -p_k[pk_pos][::-1]
+
+        # enforce horizontal (axis 1) symmetry for the odd orders (except k=1)
+        # and shift to zero mean
+        P_r[2::2, :n // 2] = P_r[2::2, :(n - 1) // 2: -1]
+        P_r[2::2] -= P_r[2::2].mean(1, keepdims=True)
+
+    return P_r
 
 
 def l_weights(
-    n: int,
     r: int,
+    n: int,
     /,
-    *,
-    dtype: type[np.floating[_T]] = np.float_,
-) -> npt.NDArray[np.floating[_T]]:
+    trim: tuple[int, int] = (0, 0),
+    dtype: type[np.floating[T]] | np.dtype[np.floating[T]] = np.float_,
+) -> npt.NDArray[np.floating[T]]:
     """
-    Alias for [`tl_weights(n, r, 0)`][lmo.weights.tl_weights].
-    """
-    return tl_weights(n, r, 0, dtype=dtype)
+    Projection matrix of the first $r$ (T)L-moments for $n$ samples.
+    Uses the recurrence relations from Hosking (2007),
 
+    $$
+    (2k + t_1 + t_2 - 1) \\lambda^{(t_1, t_2)}_k
+        = (k + t_1 + t_2) \\lambda^{(t_1 - 1, t_2)}_k
+        + \\frac{1}{k} (k + 1) (k + t_2) \\lambda^{(t_1 - 1, t_2)}_{k+1}
+    $$
 
-def reweight(
-    w_r: npt.NDArray[np.floating[_T]],
-    w_x: npt.NDArray[np.bool_ | np.integer[Any] | np.floating[Any]],
-) -> npt.NDArray[np.floating[_T]]:
-    """
-    Redistributes the TL-weights relative to the sample weights.
+    for $t_1 > 0$, and
 
-    Relatively large sample weights "absorb" TL-weights of the neighbours,
-    whereas small weights result in a fraction of the local TL-weights.
+    $$
+    (2k + t_1 + t_2 - 1) \\lambda^{(t_1, t_2)}_k
+        = (k + t_1 + t_2) \\lambda^{(t_1, t_2 - 1)}_k
+        - \\frac{1}{k} (k + 1) (k + t_1) \\lambda^{(t_1, t_2 - 1)}_{k+1}
+    $$
 
-    The TL-weights can be thought of as vertical bars, with heights
-    proportional to the weights. Similarly, the sample weights are the
-    horizontal component, effectively squeezing or stretching the width of each
-    sample. The reweighted TL-weights are the resulting areas per sample.
-
-    To my (Joren Hammudoglu, @jorenham) knowledge, this algorithm for weighted
-    (T)L-moments is the first of its kind.
-
-    Both time- and space- complexity are `O(n)`.
-
-    Args:
-        w_r:
-            1-D array of TL-weights, see [`tl_weights`][lmo.weights.tl_weights].
-        w_x:
-            1-D array of observation (reliability) weights, relative to
-            the *sorted* observations vector `x`. All weights must be finite
-            and positive. Larger weights indicate a more important sample.
-            If all weights are equal, the reweighted TL-weights will be equal
-            to the original TL-weights.
+    for $t_2 > 0$.
 
     Returns:
-        v_r: 1-D array of reweighted TL-weights.
+        P_r: 2-D array of shape `(r, n)`.
 
     """
-    if w_r.ndim != 1:
-        raise TypeError('weights must be 1-D')
-    if w_r.shape != w_x.shape:
-        raise TypeError('shape mismatch')
+    if sum(trim) == 0:
+        return l0_weights(r, n, dtype)
 
-    if np.all(w_r[0] == w_r):
-        # all the same, e.g. for r=1 and trim=0
-        s = w_x.sum() * w_r.sum()  # pyright: ignore [reportUnknownMemberType]
-        return (w_x / s).astype(w_r.dtype)
+    P_r = np.empty((r, n), dtype)
 
-    n = len(w_r)
-    v_r = np.zeros_like(w_r)
+    if r == 0:
+        return P_r
 
-    # integrate, and rescale so that `s.max() == s[-1] == n`
-    s = np.cumsum(w_x, dtype=np.float_)
-    s *= n / s[-1]
+    # the k-th TL-(t_1, t_2) weights are a linear combination of L-weights
+    # with orders k, ..., k + t_1 + t_2
 
-    n_j, s_j = 0, 0.0
-    for k in range(n):
-        s_k = s[k]
+    np.matmul(
+        tl_jacobi(r, trim),
+        l0_weights(r + sum(trim), n),
+        out=P_r
+    )
 
-        if s_k < s_j:
-            raise ValueError('negative weights are not allowed')
-        if s_k == s_j:
-            if s_k == s[-1]:
-                break
-            continue
+    # remove numerical noise from the trimmings, and correct for potential
+    # shifts in means
+    t1, t2 = trim
+    P_r[:, :t1] = P_r[:, n - t2:] = 0
+    P_r[1:, t1:n - t2] -= P_r[1:, t1:n - t2].mean(1, keepdims=True)
 
-        n_k = int(s_k)
-
-        ds = s_k - s_j
-        dn = n_k - n_j
-
-        assert ds > 0
-        assert 0 <= dn <= ds + 1
-
-        if dn:
-            ds_j = n_j + 1 - s_j
-            ds_k = s_k - n_k
-
-            assert 0 <= ds_j <= 1
-            assert 0 <= ds_k < 1
-            assert round(ds - ds_j - ds_k, 15) % 1 == 0
-
-            # left partial indices
-            v_r[k] = ds_j * w_r[n_j]
-
-            # "inner" integer indices
-            if dn > 1:
-                assert ds > 1, (ds, dn)
-                v_r[k] += np.sum(  # pyright: ignore [reportUnknownMemberType]
-                    w_r[n_j + 1: n_k]
-                )
-
-            # right partial index
-            if n_k < n:
-                v_r[k] += ds_k * w_r[n_k]
-        else:
-            assert ds < 1
-            assert n_j == n_k
-
-            v_r[k] = ds * w_r[n_k]
-
-        n_j, s_j = n_k, s_k
-
-    return v_r
+    return P_r

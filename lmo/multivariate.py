@@ -1,371 +1,319 @@
-"""
-The multivariate (co-) variants of the univariate L-moment estimators.
-
-Based on the work by Robert Serﬂing and Peng Xiao - "A contribution to
-multivariate L-moments: L-comoment matrices"
-"""
-
 __all__ = (
-    'tl_comoment',
-    'tl_coratio',
-    'tl_coloc',
-    'tl_coscale',
-    'tl_corr',
-    'tl_coskew',
-    'tl_cokurt',
-
     'l_comoment',
     'l_coratio',
     'l_coloc',
     'l_coscale',
     'l_corr',
     'l_coskew',
-    'l_cokurt',
+    'l_cokurtosis',
 )
 
-from typing import Any, cast
+from typing import Any, TypeVar, cast
 
 import numpy as np
 from numpy import typing as npt
 
-from . import univariate, weights as _weights
-from .typing import AnyMatrix, SortKind, Trimming
+from ._utils import clean_order
+from .stats import order_stats
+from .typing import AnyInt, IntVector, SortKind
+from .weights import l_weights
 
-
-# noinspection PyPep8Naming
-def tl_comoment(
-    a: AnyMatrix,
-    r: int,
-    /,
-    trim: Trimming = 1,
-    rowvar: bool = True,
-    *,
-    weights: AnyMatrix | None = None,
-    sort: SortKind | None = None,
-) -> npt.NDArray[np.float_]:
-    """
-    Multivariate extension of the sample TL-moments. Calculates the
-    TL-comoment matrix of sample TL-comoments:
-
-    $$
-    \\mathbf \\Lambda_{r}^{(t_1, t_2)} =
-        \\bigg[
-            \\lambda_{r [ij]}^{(t_1, t_2)}
-        \\bigg]_{m \\times m}
-    $$
-
-    Whereas the TL-moments are calculated using the order statistics of the
-    observations, i.e. by sorting, the TL-comoment sorts $x_i$ using the
-    order of $x_j$. This means that in general,
-    $\\lambda_{r [ij]}^{(t_1, t_2)} \\neq \\lambda_{r [ji]}^{(t_1, t_2)}$, i.e.
-    $\\mathbf \\Lambda_{r}^{(t_1, t_2)}$ is not symmetric.
-
-    The $r$-th TL-comoment $\\lambda_{r [ij]}^{(t_1, t_2)}$ reduces to the
-    TL-moment if $i=j$, and can therefore be seen as a generalization of the
-    (univariate) TL-moments. Similar to how the diagonal of a covariance matrix
-    contains the variances, the diagonal of the TL-comoment matrix contains the
-    TL-moments.
-
-    Based on the proposed definition by Serfling & Xiao (2007) for L-comoments.
-    Modified to be compatible with (the more general) TL-moments.
-
-    Parameters:
-        a (array_like):
-            A 2-D array-like containing `m` variables and `n` observations.
-            Each row of `a` represents a variable, and each column a single
-            observation of all those variables. Also see `rowvar` below.
-
-        r:
-            The order of the TL-moment, a strictly positive integer.
-
-        trim (int | tuple[int, int]):
-            Amount of samples to trim as either
-
-            - `t: int` for symmetric trimming, equivalent to `(t, t)`.
-            - `(t1: int, t2: int)` for asymmetric trimming, or
-
-            If `0` is passed, the L-comoment is returned.
-
-        rowvar:
-            If `rowvar` is True (default), then each row
-            represents a variable, with observations in the columns. Otherwise,
-            the relationship is transposed: each column represents a variable,
-            while the rows contain observations.
-
-        weights (array_like, optional):
-            An 1-D or 2-D array-like of weights associated with the values in
-            `a`.
-            Each value in `a` contributes to the average according to its
-            associated weight.
-            The weights array can either be 1-D (in which case its length must
-            be the size of a along the given axis) or of the same shape as `a`.
-            If `weights=None`, then all data in `a` are assumed to have a
-            weight equal to one.
-
-            All `weights` must be `>=0`, and the sum must be nonzero.
-
-            The algorithm is similar to that of the weighted median. See
-            [`lmo.weights.reweight`][lmo.weights.reweight] for details.
-
-    Other parameters:
-        sort ('quick' | 'heap' | 'stable' | 'merge'):
-            Sorting algorithm, see [`numpy.sort`](
-            https://numpy.org/doc/stable/reference/generated/numpy.sort).
-
-    Returns:
-        L: Array of shape `(m, m)` with r-th TL-comoments.
-
-    References:
-        * Serfling, R. and Xiao, P., 2006. A Contribution to Multivariate
-          L-Moments: L-Comoment Matrices.
-
-    """
-    if r < 0:
-        raise ValueError('r must be >=0')
-
-    # ensure `x` is shape (v, n) and `w_x` is None or of shape `(v, n)`
-    x = np.asanyarray(a)
-    if weights is None:
-        w_x = None
-    else:
-        x, w_x = np.broadcast_arrays(x, np.asanyarray(weights))
-
-    if x.ndim != 2:
-        raise ValueError(f'sample array must be 2-D, got {x.ndim}')
-    elif not rowvar:
-        x = x.T
-        if w_x is not None:
-            w_x = w_x.T
-
-    m, n = x.shape
-    dtype = np.result_type(x, np.float_)
-
-    if not m or not x.size:
-        return np.empty((0, 0), dtype)
-
-    if r == 0:
-        # The zeroth (TL-)co-moment matrix is the identity matrix, right..?
-        return np.eye(m, dtype=dtype)
-
-    # vector of size n
-    w_r = _weights.tl_weights(n, r, trim, dtype=dtype)
-
-    # x[i] is the "concotaminant" w.r.t. x[j], i.e. x[i] is sorted using the
-    # ordering from x[j]
-    L_ij = np.empty((m, m), dtype=dtype, order='F')
-    for j, ii in enumerate(np.argsort(x, kind=sort)):
-        w = w_r if w_x is None else _weights.reweight(w_r, w_x[j, ii])
-        L_ij[:, j] = x[:, ii] @ w
-
-    return L_ij
-
-
-# noinspection PyPep8Naming
-def tl_coratio(
-    a: AnyMatrix,
-    r: int,
-    /,
-    k: int = 2,
-    trim: Trimming = 1,
-    rowvar: bool = True,
-    **kwargs: Any,
-) -> npt.NDArray[np.float_]:
-    """
-    TL-comoment ratio matrix `L_r[i, j] / l_k[j]`.
-
-    References:
-        - Serfling, R. and Xiao, P., 2007. A Contribution to Multivariate
-            L-Moments: L-Comoment Matrices.
-
-    """
-    L_k = tl_comoment(a, r, trim, rowvar=rowvar, **kwargs)
-
-    if k == 0:
-        return L_k
-
-    axis = +rowvar
-    l_r = cast(npt.NDArray[np.float_], (
-        np.diag(L_k) if k == r
-        else univariate.tl_moment(a, k, trim, axis=axis, **kwargs)
-    ))
-
-    return L_k / l_r[:, np.newaxis]
-
-
-def tl_coloc(
-    a: AnyMatrix,
-    /,
-    trim: Trimming = 1,
-    rowvar: bool = True,
-    **kwargs: Any,
-) -> npt.NDArray[np.float_]:
-    """
-    TL-co-locations; the 1st TL-comoment matrix.
-
-    Notes:
-        - If you figure out how to interpret this, or how this can be applied,
-            please tell me (github: @jorenham).
-
-    """
-    return tl_comoment(a, 1, trim, rowvar=rowvar, **kwargs)
-
-
-def tl_coscale(
-    a: AnyMatrix,
-    /,
-    trim: Trimming = 1,
-    rowvar: bool = True,
-    **kwargs: Any,
-) -> npt.NDArray[np.float_]:
-    """
-    TL-coscale coefficients; the 2nd TL-comoment matrix.
-
-    Analogous to the (auto-) covariance matrix, the TL-coscale matrix is
-    positive semi-definite, and its main diagonal contains the TL-scale's.
-    But unlike the variance-covariance matrix, the TL-coscale matrix is not
-    symmetric.
-    """
-    return tl_comoment(a, 2, trim, rowvar=rowvar, **kwargs)
-
-
-def tl_corr(
-    a: AnyMatrix,
-    /,
-    trim: Trimming = 1,
-    rowvar: bool = True,
-    **kwargs: Any,
-) -> npt.NDArray[np.float_]:
-    """
-    Sample TL-correlation coefficient matrix; the ratio of the TL-coscale
-    matrix over the TL-scale **column**-vectors, i.e. the TL-correlation matrix
-    is typically asymmetric.
-
-    The diagonal contains only ones.
-
-    Notes:
-        Where the pearson correlation coefficient measures linearity, the
-        (T)L-correlation coefficient measures monotonicity.
-
-    """
-    return tl_coratio(a, 2, trim=trim, rowvar=rowvar, **kwargs)
-
-
-def tl_coskew(
-    a: AnyMatrix,
-    /,
-    trim: Trimming = 1,
-    rowvar: bool = True,
-    **kwargs: Any,
-) -> npt.NDArray[np.float_]:
-    """
-    TL-coskewness coefficients; the 3rd TL-comoment ratio matrix.
-
-    The main diagonal cantains the TL-skewness coefficients.
-    """
-    return tl_coratio(a, 3, trim=trim, rowvar=rowvar, **kwargs)
-
-
-def tl_cokurt(
-    a: AnyMatrix,
-    /,
-    trim: Trimming = 1,
-    rowvar: bool = True,
-    **kwargs: Any,
-) -> npt.NDArray[np.float_]:
-    """
-    TL-cokurtosis coefficients; the 4th TL-comoment ratio matrix.
-
-    The main diagonal contains the TL-kurtosis coefficients.
-    """
-    return tl_coratio(a, 4, trim=trim, rowvar=rowvar, **kwargs)
+T = TypeVar('T', bound=np.floating[Any])
 
 
 def l_comoment(
-    a: AnyMatrix,
-    r: int,
+    a: npt.ArrayLike,
+    r: AnyInt | IntVector,
     /,
+    trim: tuple[int, int] = (0, 0),
     rowvar: bool = True,
-    **kwargs: Any,
-) -> npt.NDArray[np.float_]:
+    dtype: np.dtype[T] | type[T] = np.float_,
+    *,
+    sort: SortKind | None = 'stable',
+) -> npt.NDArray[T]:
     """
-    The r-th sample L-comoment matrix.
-    Alias for ``tl_comoment(a, r, 0, 0, **kwargs)``.
+    Multivariate extension of [`lmo.l_moment`][lmo.l_moment]. Estimates the
+    L-comoment matrix:
+
+    $$
+    \\Lambda_{r}^{(t_1, t_2)} =
+        \\left[
+            \\lambda_{r [ij]}^{(t_1, t_2)}
+        \\right]_{m \\times m}
+    $$
+
+    Whereas the L-moments are calculated using the order statistics of the
+    observations, i.e. by sorting, the L-comoment sorts $x_i$ using the
+    order of $x_j$. This means that in general,
+    $\\lambda_{r [ij]}^{(t_1, t_2)} \\neq \\lambda_{r [ji]}^{(t_1, t_2)}$, i.e.
+    $\\Lambda_{r}^{(t_1, t_2)}$ is not symmetric.
+
+    The $r$-th L-comoment $\\lambda_{r [ij]}^{(t_1, t_2)}$ reduces to the
+    L-moment if $i=j$, and can therefore be seen as a generalization of the
+    (univariate) L-moments. Similar to how the diagonal of a covariance matrix
+    contains the variances, the diagonal of the L-comoment matrix contains the
+    L-moments.
+
+    Based on the proposed definition by Serfling & Xiao (2007) for L-comoments.
+    Extended to allow for generalized trimming.
+
+    Parameters:
+        a:
+            1-D or 2-D array-like containing `m` variables and `n` observations.
+            Each row of `a` represents a variable, and each column a single
+            observation of all those variables. Also see `rowvar` below.
+            If `a` is not an array, a conversion is attempted.
+
+        r:
+            The L-moment order(s), non-negative integer or array.
+
+        trim:
+            Left- and right-trim orders $(t_1, t_2)$, non-negative integers
+            that are bound by $t_1 + t_2 < n - r$.
+
+            Some special cases include:
+
+            - $(0, 0)$: The original **L**-moment, introduced by Hosking (1990).
+                Useful for fitting the e.g. log-normal and generalized extreme
+                value (GEV) distributions.
+            - $(0, m)$: **LL**-moment (**L**inear combination of **L**owest
+                order statistics), instroduced by Bayazit & Onoz (2002).
+                Assigns more weight to smaller observations.
+            - $(s, 0)$: **LH**-moment (**L**inear combination of **H**igher
+                order statistics), by Wang (1997).
+                Assigns more weight to larger observations.
+            - $(t, t)$: **TL**-moment (**T**rimmed L-moment) $\\lambda_r^t$,
+                with symmetric trimming. First introduced by
+                Elamir & Seheult (2003).
+                Generally more robust than L-moments.
+                Useful for fitting heavy-tailed distributions, such as the
+                Cauchy distribution.
+
+        rowvar:
+            If `rowvar` is True (default), then each row (axis 0) represents a
+            variable, with observations in the columns (axis 1).
+            Otherwise, the relationship is transposed: each column represents
+            a variable, while the rows contain observations.
+
+        dtype:
+            Floating type to use in computing the L-moments. Default is
+            [`numpy.float64`][numpy.float64].
+
+        sort ('quick' | 'stable' | 'heap'):
+            Sorting algorithm, see [`numpy.sort`][numpy.sort].
+
+    Returns:
+        L: Array of shape `(*r.shape, m, m)` with r-th L-comoments.
+
+    References:
+        * [R. Serfling & P. Xiao (2007) - A Contribution to Multivariate
+            L-Moments: L-Comoment Matrices](https://doi.org/10.1016/j.jmva.2007.01.008)
+
     """
-    return tl_comoment(a, r, 0, rowvar=rowvar, **kwargs)
+    def _clean_array(arr: npt.ArrayLike) -> npt.NDArray[T]:
+        out = np.asanyarray(arr, dtype=dtype)
+        return out if rowvar else out.T
+
+    x = np.atleast_2d(_clean_array(a))
+    if x.ndim != 2:
+        raise ValueError(f'sample array must be 2-D, got {x.ndim}')
+
+    _r = np.asarray(r)
+    r_max: int = clean_order(cast(
+        int,
+        np.max(_r)  # pyright: ignore [reportUnknownMemberType]
+    ))
+    m, n = x.shape
+
+    if not m:
+        return np.empty(np.shape(_r) + (0, 0), dtype=dtype)
+
+    # projection matrix of shape (r, n)
+    P_r = l_weights(r_max, n, trim, dtype=dtype)
+
+    # L-comoment matrices for r = 0, ..., r_max
+    L_ij = np.empty((r_max + 1, m, m), dtype=dtype)
+
+    # the zeroth L-comoment is the delta function, so the L-comoment
+    # matrix is the identity matrix
+    L_ij[0] = np.eye(m, dtype=dtype)
+
+    kwargs = {'axis': -1, 'dtype': dtype, 'sort': sort}
+    for j in range(m):
+        # concomitants of x[i] w.r.t. x[j] for all i
+        x_k_ij = order_stats(x, x[j], **kwargs)
+
+        L_ij[1:, :, j] = np.inner(P_r, x_k_ij)
+
+    return L_ij.take(_r, 0)  # pyright: ignore [reportUnknownMemberType]
 
 
 def l_coratio(
-    a: AnyMatrix,
-    r: int,
-    k: int = 2,
+    a: npt.ArrayLike,
+    r: AnyInt | IntVector,
+    s: AnyInt | IntVector,
     /,
+    trim: tuple[int, int] = (0, 0),
     rowvar: bool = True,
+    dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
-) -> npt.NDArray[np.float_]:
+) -> npt.NDArray[T]:
     """
-    L-comoment ratio matrix `L_r[i, j] / l_k[j]`.
-    Alias for ``tl_coratio(a, r, k, 0, 0, **kwargs)``.
+    Estimate the generalized matrix of L-comoment ratio's:
+
+    $$
+    \\tilde \\Lambda_{rs}^{(t_1, t_2)} =
+        \\left[
+            \\left. \\lambda_{r [ij]}^{(t_1, t_2)} \\right/
+            \\lambda_{s [jj]}^{(t_1, t_2)}
+        \\right]_{m \\times m}
+    $$
+
+    See Also:
+        - [`lmo.l_comoment`][lmo.l_comoment]
+        - [`lmo.l_ratio`][lmo.l_ratio]
+
     """
-    return tl_coratio(a, r, k, 0, rowvar=rowvar, **kwargs)
+    rs = np.stack(np.broadcast_arrays(np.asarray(r), np.asarray(s)))
+    L_r, L_s = l_comoment(a, rs, trim, rowvar=rowvar, dtype=dtype, **kwargs)
+
+    l_s = np.diagonal(L_s, axis1=-2, axis2=-1)
+
+    return L_r / np.expand_dims(l_s, -1)
 
 
 def l_coloc(
-    a: AnyMatrix,
+    a: npt.ArrayLike,
     /,
+    trim: tuple[int, int] = (0, 0),
     rowvar: bool = True,
+    dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
-) -> npt.NDArray[np.float_]:
+) -> npt.NDArray[T]:
     """
-    L-colocation matrix, i.e. each `L[i, j]` is the sample mean of `a[i]`.
+    L-colocation matrix of 1st L-comoment estimates, $\\Lambda^{(t_1, t_2)}_1$.
+
+    Alias for [`lmo.l_comoment(a, 1, *, **)`][lmo.l_comoment].
+
+    Examples:
+        TODO
+
+    Notes:
+        If `trim = (0, 0)` (default), the L-colocation for $[ij]$ is the
+        L-location $\\lambda_1$ of $x_i$, independent of $x_j$.
+
+    See Also:
+        - [`lmo.l_comoment`][lmo.l_comoment]
+        - [`lmo.l_loc`][lmo.l_loc]
+        - [`numpy.mean`][numpy.mean]
+
     """
-    return l_comoment(a, 1, rowvar=rowvar, **kwargs)
+    return l_comoment(a, 1, trim, rowvar=rowvar, dtype=dtype, **kwargs)
 
 
 def l_coscale(
-    a: AnyMatrix,
+    a: npt.ArrayLike,
     /,
+    trim: tuple[int, int] = (0, 0),
     rowvar: bool = True,
+    dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
-) -> npt.NDArray[np.float_]:
+) -> npt.NDArray[T]:
     """
-    L-scale: the second L-comoment matrix.
+    L-coscale matrix of 2nd L-comoment estimates, $\\Lambda^{(t_1, t_2)}_2$.
+
+    Alias for [`lmo.l_comoment(a, 2, *, **)`][lmo.l_comoment].
+
+    Analogous to the (auto-) variance-covariance matrix, the L-coscale matrix
+    is positive semi-definite, and its main diagonal contains the L-scale's.
+    conversely, the L-coscale matrix is inherently assymmetric, thus yielding
+    more information.
+
+    Examples:
+        TODO
+
+    See Also:
+        - [`lmo.l_comoment`][lmo.l_comoment]
+        - [`lmo.l_scale`][lmo.l_scale]
+        - [`numpy.cov`][numpy.cov]
+
     """
-    return l_comoment(a, 2, rowvar=rowvar, **kwargs)
+    return l_comoment(a, 2, trim, rowvar=rowvar, dtype=dtype, **kwargs)
 
 
 def l_corr(
-    a: AnyMatrix,
+    a: npt.ArrayLike,
     /,
+    trim: tuple[int, int] = (0, 0),
     rowvar: bool = True,
+    dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
-) -> npt.NDArray[np.float_]:
+) -> npt.NDArray[T]:
     """
-    L-correlation coefficients; the 2nd L-comoment ratio matrix.
+    Sample L-correlation coefficient matrix $\\tilde\\Lambda^{(t_1, t_2)}_2$;
+    the ratio of the L-coscale matrix over the L-scale **column**-vectors.
 
-    Unlike the TL-correlation, the L-correlation is bounded within [-1, 1].
+    Alias for [`lmo.l_coratio(a, 2, 2, *, **)`][lmo.l_coratio].
+
+    The diagonal consists of all 1's.
+
+    Where the pearson correlation coefficient measures linearity, the
+    (T)L-correlation coefficient measures monotonicity.
+
+    Examples:
+        TODO
+
+    See Also:
+        - [`lmo.l_coratio`][lmo.l_coratio]
+        - [`numpy.corrcoef`][numpy.corrcoef]
+
     """
-    return l_coratio(a, 2, rowvar=rowvar, **kwargs)
+    return l_coratio(a, 2, 2, trim, rowvar=rowvar, dtype=dtype, **kwargs)
 
 
 def l_coskew(
-    a: AnyMatrix,
+    a: npt.ArrayLike,
     /,
+    trim: tuple[int, int] = (0, 0),
     rowvar: bool = True,
+    dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
-) -> npt.NDArray[np.float_]:
+) -> npt.NDArray[T]:
     """
-    L-coskewness coefficients; the 3rd L-comoment ratio matrix.
+    Sample L-coskewness coefficient matrix $\\tilde\\Lambda^{(t_1, t_2)}_3$.
+
+    Alias for [`lmo.l_coratio(a, 3, 2, *, **)`][lmo.l_coratio].
+
+    Examples:
+        TODO
+
+    See Also:
+        - [`lmo.l_coratio`][lmo.l_coratio]
+        - [`lmo.l_skew`][lmo.l_skew]
+
     """
-    return l_coratio(a, 3, rowvar=rowvar, **kwargs)
+    return l_coratio(a, 3, 2, trim, rowvar=rowvar, dtype=dtype, **kwargs)
 
 
-def l_cokurt(
-    a: AnyMatrix,
+def l_cokurtosis(
+    a: npt.ArrayLike,
     /,
+    trim: tuple[int, int] = (0, 0),
     rowvar: bool = True,
+    dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
-) -> npt.NDArray[np.float_]:
+) -> npt.NDArray[T]:
     """
-    L-cokurtosis coefficients; the 4th L-comoment ratio matrix.
+    Sample L-cokurtosis coefficient matrix $\\tilde\\Lambda^{(t_1, t_2)}_4$.
+
+    Alias for [`lmo.l_coratio(a, 4, 2, *, **)`][lmo.l_coratio].
+
+    Examples:
+        TODO
+
+    See Also:
+        - [`lmo.l_coratio`][lmo.l_coratio]
+        - [`lmo.l_kurtosis`][lmo.l_kurtosis]
+
     """
-    return l_coratio(a, 4, rowvar=rowvar, **kwargs)
+    return l_coratio(a, 4, 2, trim, rowvar=rowvar, dtype=dtype, **kwargs)
