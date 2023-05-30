@@ -1,5 +1,5 @@
 site_name: Lmo
-site_description: Robust statistics with (T)L-Moments.
+site_description: Robust statistics with generalized trimmed L-Moments.
 site_author: Joren Hammudoglu
 site_url: https://jorenham.github.io/lmo
 
@@ -54,9 +54,6 @@ plugins:
             show_source: false
             show_submodules: false
             signature_crossrefs: true
-            preload_modules:
-              - lmo.weights
-              - lmo.typing
 
 markdown_extensions:
   - admonition

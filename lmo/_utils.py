@@ -5,7 +5,7 @@ from typing import Any, SupportsIndex, TypeVar
 import numpy as np
 import numpy.typing as npt
 
-from lmo.typing import IndexOrder
+from .typing import IndexOrder
 
 T = TypeVar('T', bound=np.generic)
 

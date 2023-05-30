@@ -27,6 +27,6 @@ pip install lmo
 - [x] Sample L-, and TL-moment estimators
 - [x] Sample L- and TL- co-moments (multivariate) estimators
 - [x] Support for observation weights.
-- [ ] Variance structure of sample (T)L moments [#4](https://github.com/jorenham/lmo/issues/4)
-- [ ] Fitting of distributions with known TL- or L-moments [#5](https://github.com/jorenham/lmo/issues/5)
-- [ ] Population (T)L-moment estimation from quantile functions [#6](https://github.com/jorenham/lmo/issues/6)
+- [x] L-moments (co)variance structure [#4](https://github.com/jorenham/lmo/issues/4)
+- [ ] Fitting of distributions with known L-moments [#5](https://github.com/jorenham/lmo/issues/5)
+- [ ] Population L-moment estimation from quantile functions [#6](https://github.com/jorenham/lmo/issues/6)

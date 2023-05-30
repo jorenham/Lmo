@@ -1,6 +1,6 @@
 # Lmo reference
 
-## Univariate
+## Univariate L-moments
 
 ::: lmo
     options:
@@ -8,7 +8,7 @@
         heading_level: 3
 
 
-## Multivariate
+## Multivariate L-comoments
 
 ::: lmo
     options:

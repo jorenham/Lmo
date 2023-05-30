@@ -3,8 +3,7 @@ from hypothesis.extra import numpy as hnp
 
 import numpy as np
 
-from lmo.weights import l0_weights, l_weights
-
+from lmo._lm import l0_weights, l_weights
 
 st_n = st.integers(32, 1024)
 st_r = st.integers(1, 8)

@@ -2,7 +2,9 @@ __all__ = (
     '__version__',
 
     'l_moment',
+    'l_moment_cov',
     'l_ratio',
+    # 'l_ratio_cov',
     'l_loc',
     'l_scale',
     'l_variation',
@@ -19,10 +21,11 @@ __all__ = (
 )
 
 from typing import Final as _Final
-
 from ._meta import get_version as _get_version
 
-from .univariate import (
+from ._lm import (
+    l_weights,
+
     l_moment,
     l_ratio,
     l_loc,
@@ -30,8 +33,12 @@ from .univariate import (
     l_variation,
     l_skew,
     l_kurtosis,
+
+    l_moment_cov,
+    # l_ratio_cov,
+    l_ratio_max,
 )
-from .multivariate import (
+from ._lm_co import (
     l_comoment,
     l_coratio,
     l_coloc,
@@ -40,6 +47,5 @@ from .multivariate import (
     l_coskew,
     l_cokurtosis,
 )
-
 
 __version__: _Final[str] = _get_version()

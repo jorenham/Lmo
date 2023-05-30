@@ -3,6 +3,8 @@ Unbiased sample estimators of the generalized trimmed L-moments.
 """
 
 __all__ = (
+    'l_weights',
+
     'l_moment',
     'l_ratio',
     'l_loc',
@@ -10,20 +12,184 @@ __all__ = (
     'l_variation',
     'l_skew',
     'l_kurtosis',
+
+    'l_moment_cov',
+    # 'l_ratio_cov',
+    'l_ratio_max',
 )
 
+import math
 from typing import Any, TypeVar, cast
 
 import numpy as np
 import numpy.typing as npt
 
+from ._pwm import b_moment_cov, b_weights
 from ._utils import clean_order, ensure_axis_at
+from .linalg import hosking_jacobi, sandwich, sh_legendre
 from .stats import order_stats
 from .typing import AnyInt, IntVector, SortKind
-from .weights import l_weights
 
 T = TypeVar('T', bound=np.floating[Any])
 
+
+# Low-level methods
+
+def l0_weights(
+    r: int,
+    n: int,
+    /,
+    dtype: type[np.floating[T]] | np.dtype[np.floating[T]] = np.float_,
+    *,
+    enforce_symmetry: bool = True,
+) -> npt.NDArray[np.floating[T]]:
+    """
+    Efficiently calculates the projection matrix $P = [p_{k, i}]_{r \\times n}$
+    for the order statistics $x_{i:n}$.
+    This way, the $1, 2, ..., r$-th order sample L-moments of some sample vector
+    $x$, can be estimated with `np.sort(x) @ l_weights(len(x), r)`.
+
+    Parameters:
+        r: The amount of orders to evaluate, i.e. $k = 1, \\dots, r$.
+        n: Sample count.
+        dtype: Desired output floating data type.
+
+    Other parameters:
+        enforce_symmetry:
+            If set to False, disables symmetry-based numerical noise correction.
+
+    Returns:
+        P_r: 2-D array of shape `(r, n)`.
+
+    References:
+        - [J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
+            L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
+
+    """
+    P_r = np.empty((r, n), dtype)
+
+    if r == 0:
+        return P_r
+
+    np.matmul(sh_legendre(r), b_weights(r, n, dtype), out=P_r)
+
+    if enforce_symmetry:
+        # enforce rotational symmetry of even orders `r = 2, 4, ...`, naturally
+        # centering them around 0
+        for k in range(2, r + 1, 2):
+            p_k: npt.NDArray[np.floating[T]] = P_r[k - 1]
+
+            med = 0.0
+            pk_neg, pk_pos = p_k < med, p_k > med
+            # n_neg, n_pos = pk_neg.sum(), pk_pos.sum()
+            n_neg, n_pos = np.count_nonzero(pk_neg), np.count_nonzero(pk_pos)
+
+            # attempt to correct 1-off asymmetry
+            if abs(n_neg - n_pos) == 1:
+                if n % 2:
+                    # balance the #negative and #positive for odd `n` by
+                    # ignoring the center
+                    mid = (n - 1) // 2
+                    pk_neg[mid] = pk_pos[mid] = False
+                    # n_neg, n_pos = pk_neg.sum(), pk_pos.sum()
+                    n_neg = np.count_nonzero(pk_neg)
+                    n_pos = np.count_nonzero(pk_pos)
+                else:
+                    # if one side is half of n, set the other to it's negation
+                    mid = n // 2
+                    if n_neg == mid:
+                        pk_pos = ~pk_neg
+                        n_pos = n_neg
+                    elif n_pos == mid:
+                        pk_neg = ~pk_pos
+                        n_neg = n_pos
+
+            # attempt to correct any large asymmetry offsets
+            # and don't worry; median is O(n)
+            if abs(n_neg - n_pos) > 1 and (med := np.median(p_k)):
+                pk_neg, pk_pos = p_k < med, p_k > med
+                n_neg = np.count_nonzero(pk_neg)
+                n_pos = np.count_nonzero(pk_pos)
+
+            if n_neg == n_pos:
+                # it's pretty rare that this isn't the case
+                p_k[pk_neg] = -p_k[pk_pos][::-1]
+
+        # enforce horizontal (axis 1) symmetry for the odd orders (except k=1)
+        # and shift to zero mean
+        P_r[2::2, :n // 2] = P_r[2::2, :(n - 1) // 2: -1]
+        P_r[2::2] -= P_r[2::2].mean(1, keepdims=True)
+
+    return P_r
+
+
+def l_weights(
+    r: int,
+    n: int,
+    /,
+    trim: tuple[int, int] = (0, 0),
+    dtype: type[np.floating[T]] | np.dtype[np.floating[T]] = np.float_,
+) -> npt.NDArray[np.floating[T]]:
+    """
+    Projection matrix of the first $r$ (T)L-moments for $n$ samples.
+    Uses the recurrence relations from Hosking (2007),
+
+    $$
+    (2k + t_1 + t_2 - 1) \\lambda^{(t_1, t_2)}_k
+        = (k + t_1 + t_2) \\lambda^{(t_1 - 1, t_2)}_k
+        + \\frac{1}{k} (k + 1) (k + t_2) \\lambda^{(t_1 - 1, t_2)}_{k+1}
+    $$
+
+    for $t_1 > 0$, and
+
+    $$
+    (2k + t_1 + t_2 - 1) \\lambda^{(t_1, t_2)}_k
+        = (k + t_1 + t_2) \\lambda^{(t_1, t_2 - 1)}_k
+        - \\frac{1}{k} (k + 1) (k + t_1) \\lambda^{(t_1, t_2 - 1)}_{k+1}
+    $$
+
+    for $t_2 > 0$.
+
+    Returns:
+        P_r: 2-D array of shape `(r, n)`.
+
+    Examples:
+        >>> import lmo
+        >>> lmo.l_weights(3, 4)
+        array([[ 0.25      ,  0.25      ,  0.25      ,  0.25      ],
+               [-0.25      , -0.08333333,  0.08333333,  0.25      ],
+               [ 0.25      , -0.25      , -0.25      ,  0.25      ]])
+        >>> _ @ [-1, 0, 1 / 2, 3 / 2]
+        array([0.25      , 0.66666667, 0.        ])
+
+    """
+    if sum(trim) == 0:
+        return l0_weights(r, n, dtype)
+
+    P_r = np.empty((r, n), dtype)
+
+    if r == 0:
+        return P_r
+
+    # the k-th TL-(t_1, t_2) weights are a linear combination of L-weights
+    # with orders k, ..., k + t_1 + t_2
+
+    np.matmul(
+        hosking_jacobi(r, trim),
+        l0_weights(r + sum(trim), n),
+        out=P_r
+    )
+
+    # remove numerical noise from the trimmings, and correct for potential
+    # shifts in means
+    t1, t2 = trim
+    P_r[:, :t1] = P_r[:, n - t2:] = 0
+    P_r[1:, t1:n - t2] -= P_r[1:, t1:n - t2].mean(1, keepdims=True)
+
+    return P_r
+
+
+# Summary statistics
 
 def l_moment(
     a: npt.ArrayLike,
@@ -121,7 +287,7 @@ def l_moment(
 
     References:
         - [J.R.M. Hosking (1990)](https://jstor.org/stable/2345653)
-        - [E. Elmamir & A. Seheult (2003) - Trimmed L-moments](
+        - [E. Elamir & A. Seheult (2003) - Trimmed L-moments](
             https://doi.org/10.1016/S0167-9473(02)00250-5)
         - [J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
             L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
@@ -158,6 +324,72 @@ def l_moment(
 
     # l[r] fails when r is e.g. a tuple (valid sequence).
     return l_r.take(r, 0)
+
+
+def l_moment_cov(
+    a: npt.ArrayLike,
+    rs: int,
+    /,
+    trim: tuple[int, int] = (0, 0),
+    axis: int | None = None,
+    dtype: np.dtype[T] | type[T] = np.float_,
+    **kwargs: Any,
+) -> npt.NDArray[T]:
+    """
+    Non-parmateric auto-covariance matrix of the generalized trimmed
+    L-moment point estimates with orders `r = 1, ..., rs`.
+
+    Returns:
+        S_l: Variance-covariance matrix/tensor of shape `(rs, rs, ...)`
+
+    Examples:
+        Fitting of the cauchy distribution with TL-moments. The location is
+        equal to the TL-location, and scale should be $0.698$ times the
+        TL(1)-scale, see Elamir & Seheult (2003).
+
+        >>> import lmo, numpy as np
+        >>> rng = np.random.default_rng(12345)
+        >>> x = rng.standard_cauchy(1337)
+        >>> lmo.l_moment(x, [1, 2], trim=(1, 1))
+        array([0.08142405, 0.68884917])
+
+        The L-moment estimates seem to make sense. Let's check their standard
+        errors, by taking the square root of the variances (the diagnoal of the
+        covariance matrix):
+
+        >>> lmo.l_moment_cov(x, 2, trim=(1, 1))
+        array([[ 4.89407076e-03, -4.26419310e-05],
+               [-4.26419310e-05,  1.30898414e-03]])
+        >>> np.sqrt(_.diagonal())
+        array([0.06995764, 0.03617989])
+
+    See Also:
+        - [`lmo.l_moment`][lmo.l_moment]
+        - [Covariance matrix - Wikipedia](
+            https://wikipedia.org/wiki/Covariance_matrix)
+
+    References:
+        - [E. Elamir & A. Seheult (2003) - Trimmed L-moments](
+            https://doi.org/10.1016/S0167-9473(02)00250-5)
+        - [E. Elamir & A. Seheult (2004) - Exact variance structure of sample
+            L-moments](https://doi.org/10.1016/S0378-3758(03)00213-1)
+
+    """
+    ks = rs + sum(trim)
+    if ks < rs:
+        raise ValueError('trimmings must be positive')
+
+    # PWM covariance matrix
+    S_b = b_moment_cov(a, ks, axis=axis, dtype=dtype, **kwargs)
+
+    # projection matrix: PWMs -> generalized trimmed L-moments
+    P_l: npt.NDArray[np.floating[Any]]
+    P_l = hosking_jacobi(rs, trim=trim, dtype=dtype) @ sh_legendre(ks)
+    # clean some numerical noise
+    P_l = np.round(P_l, 12) + 0.  # pyright: ignore [reportUnknownMemberType]
+
+    # tasty, eh?
+    return sandwich(P_l, S_b, dtype=dtype)
 
 
 def l_ratio(
@@ -217,6 +449,57 @@ def l_ratio(
             np.ones_like(l_rs[0]),
             np.divide(l_rs[0], l_rs[1], where=~r_eq_s)
         )[()]
+
+
+def l_ratio_cov(
+    a: npt.ArrayLike,
+    rs: int,
+    /,
+    trim: tuple[int, int] = (0, 0),
+    axis: int | None = None,
+    dtype: np.dtype[T] | type[T] = np.float_,
+    **kwargs: Any,
+) -> npt.NDArray[T]:
+    ...  # TODO
+
+def l_ratio_max(
+    r: int,
+    s: int = 2,
+    /,
+    trim: tuple[int, int] = (0, 0),
+) -> float:
+    """
+    The theoretical upper bound on the absolute TL-ratios, i.e.::
+
+        abs(lmo.l_ratio(a, r, s, trim)) <= tl_ratio_max(r, s, trim)
+
+    is True for all samples `a`.
+
+    References:
+        - [J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
+            L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
+            Page 6, equation 14.
+    """
+
+    # the zeroth (TL-)moment is 1. I.e. the total area under the pdf (or the
+    # sum of the ppf if discrete) is 1.
+    _r = clean_order(r)
+    _s = clean_order(s, name='s')
+
+    if _r in (0, _s):
+        return 1.0
+    if not _s:
+        return float('inf')
+
+    t1, t2 = trim
+    m = min(t1, t2)
+
+    # disclaimer: the `k` instead of a `2` here is just a guess
+    return (
+        _s * math.factorial(m + _s - 1) * math.factorial(t1 + t2 + _r) /
+        (_r * math.factorial(m + _r - 1) * math.factorial(t1 + t2 + _s))
+    )
+
 
 
 def l_loc(
@@ -418,4 +701,3 @@ def l_kurtosis(
 
     """
     return l_ratio(a, 4, 2, trim, axis, dtype, **kwargs)
-
