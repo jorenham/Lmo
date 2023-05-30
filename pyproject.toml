@@ -42,7 +42,7 @@ mkdocs = "^1.4.3"
 mkdocs-material = ">=9.1.9"
 mkdocstrings = {extras = ["python"], version = ">=0.21.2,<1.0"}
 mkdocs-include-markdown-plugin = { version = ">=4.0.4", python = "<3.12" }
-mike = "^1.1.2"
+
 
 [tool.pytest.ini_options]
 minversion = "7.0"
@@ -55,6 +55,7 @@ addopts = [
     "--doctest-modules",
 ]
 doctest_optionflags = ["NORMALIZE_WHITESPACE", "IGNORE_EXCEPTION_DETAIL"]
+
 
 [tool.pyright]
 include = ["lmo"]
@@ -73,6 +74,7 @@ venvPath = ".venv"
 pythonVersion = "3.10"
 pythonPlatform = "Linux"
 typeCheckingMode = "strict"
+
 
 [tool.ruff]
 line-length = 80
