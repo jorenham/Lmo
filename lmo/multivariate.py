@@ -105,6 +105,22 @@ def l_comoment(
     Returns:
         L: Array of shape `(*r.shape, m, m)` with r-th L-comoments.
 
+    Examples:
+        Estimation of the second L-comoment (the L-coscale) from biviariate
+        normal samples:
+
+        >>> import lmo, numpy as np
+        >>> rng = np.random.default_rng(12345)
+        >>> x = rng.multivariate_normal([0, 0], [[6, -3], [-3, 3.5]], 99).T
+        >>> lmo.l_comoment(x, 2)
+        array([[ 1.2766793 , -0.83299947],
+               [-0.71547941,  1.05990727]])
+
+        The diagonal contains the univariate L-moments:
+
+        >>> lmo.l_moment(x, 2, axis=-1)
+        array([1.2766793 , 1.05990727])
+
     References:
         * [R. Serfling & P. Xiao (2007) - A Contribution to Multivariate
             L-Moments: L-Comoment Matrices](https://doi.org/10.1016/j.jmva.2007.01.008)
@@ -195,12 +211,33 @@ def l_coloc(
 
     Alias for [`lmo.l_comoment(a, 1, *, **)`][lmo.l_comoment].
 
-    Examples:
-        TODO
-
     Notes:
         If `trim = (0, 0)` (default), the L-colocation for $[ij]$ is the
         L-location $\\lambda_1$ of $x_i$, independent of $x_j$.
+
+    Examples:
+        Without trimming, the L-colocation only provides marginal information:
+
+        >>> import lmo, numpy as np
+        >>> rng = np.random.default_rng(12345)
+        >>> x = rng.multivariate_normal([0, 0], [[6, -3], [-3, 3.5]], 99).T
+        >>> lmo.l_loc(x, axis=-1)
+        array([-0.02678225,  0.03008309])
+        >>> lmo.l_coloc(x)
+        array([[-0.02678225, -0.02678225],
+               [ 0.03008309,  0.03008309]])
+
+        But the trimmed L-locations are a different story...
+
+        >>> lmo.l_loc(x, trim=(1, 1), axis=-1)
+        array([-0.10488868, -0.00625729])
+        >>> lmo.l_coloc(x, trim=(1, 1))
+        array([[-0.10488868, -0.03797989],
+               [ 0.03325074, -0.00625729]])
+
+        What this tells us, is somehwat of a mystery: trimmed L-comoments have
+        been only been briefly *mentioned* once or twice in the literature.
+
 
     See Also:
         - [`lmo.l_comoment`][lmo.l_comoment]
@@ -230,7 +267,14 @@ def l_coscale(
     more information.
 
     Examples:
-        TODO
+        >>> import lmo, numpy as np
+        >>> rng = np.random.default_rng(12345)
+        >>> x = rng.multivariate_normal([0, 0], [[6, -3], [-3, 3.5]], 99).T
+        >>> lmo.l_scale(x, trim=(1, 1), axis=-1)
+        array([0.66698774, 0.54440895])
+        >>> lmo.l_coscale(x, trim=(1, 1))
+        array([[ 0.66698774, -0.41025416],
+               [-0.37918065,  0.54440895]])
 
     See Also:
         - [`lmo.l_comoment`][lmo.l_comoment]
@@ -261,7 +305,26 @@ def l_corr(
     (T)L-correlation coefficient measures monotonicity.
 
     Examples:
-        TODO
+        >>> import lmo, numpy as np
+        >>> rng = np.random.default_rng(12345)
+        >>> cov = np.array([[6, -3], [-3, 3.5]])
+        >>> x = rng.multivariate_normal([0, 0], [[6, -3], [-3, 3.5]], 99).T
+        >>> lmo.l_corr(x)
+        array([[ 1.        , -0.65247355],
+               [-0.67503962,  1.        ]])
+
+        Let's compare this with the theoretical correlation
+
+        >>> cov[0, 1] / np.sqrt(cov[0, 0] * cov[1, 1])
+        -0.6546536707079772
+
+        and the (Pearson) correlation coefficient matrix:
+
+        >>> np.corrcoef(x)
+        array([[ 1.        , -0.66383285],
+               [-0.66383285,  1.        ]])
+
+
 
     See Also:
         - [`lmo.l_coratio`][lmo.l_coratio]
@@ -284,9 +347,6 @@ def l_coskew(
 
     Alias for [`lmo.l_coratio(a, 3, 2, *, **)`][lmo.l_coratio].
 
-    Examples:
-        TODO
-
     See Also:
         - [`lmo.l_coratio`][lmo.l_coratio]
         - [`lmo.l_skew`][lmo.l_skew]
@@ -307,9 +367,6 @@ def l_cokurtosis(
     Sample L-cokurtosis coefficient matrix $\\tilde\\Lambda^{(t_1, t_2)}_4$.
 
     Alias for [`lmo.l_coratio(a, 4, 2, *, **)`][lmo.l_coratio].
-
-    Examples:
-        TODO
 
     See Also:
         - [`lmo.l_coratio`][lmo.l_coratio]

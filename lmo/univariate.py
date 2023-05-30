@@ -107,6 +107,14 @@ def l_moment(
             `np.ndim(r) + np.ndim(a) - 1` dimensions and shape like
             `(*np.shape(r), *(d for d in np.shape(a) if d != axis))`.
 
+    Examples:
+        >>> import lmo, numpy as np
+        >>> x = np.random.default_rng(12345).standard_normal(20)
+        >>> lmo.l_moment(x, [1, 2, 3, 4])
+        array([0.00106117, 0.65354263, 0.01436636, 0.04280225])
+        >>> lmo.l_moment(x, [1, 2, 3, 4], trim=(1, 1))
+        array([-0.0133052 ,  0.36644423, -0.00823471, -0.01034343])
+
     See Also:
         - [L-moment - Wikipedia](https://wikipedia.org/wiki/L-moment)
         - [`scipy.stats.moment`][scipy.stats.moment]
@@ -175,6 +183,21 @@ def l_ratio(
 
     Equivalent to `lmo.l_moment(a, r, *, **) / lmo.l_moment(a, s, *, **)`.
 
+    Notes:
+        The L-moment with `r=0` is `1`, so the `l_ratio(a, r, 0, *, **)` is
+        equivalent to `l_moment(a, r, *, **)`
+
+    Examples:
+        Estimate the L-location, L-scale, L-skewness and L-kurtosis
+        simultaneously:
+
+        >>> import lmo, numpy as np
+        >>> x = np.random.default_rng(12345).lognormal(size=99)
+        >>> lmo.l_ratio(x, [1, 2, 3, 4], [0, 0, 2, 2])
+        array([1.53196368, 0.77549561, 0.4463163 , 0.29752178])
+        >>> lmo.l_ratio(x, [1, 2, 3, 4], [0, 0, 2, 2], trim=(0, 1))
+        array([0.75646807, 0.32203446, 0.23887609, 0.07917904])
+
     See Also:
         - [`lmo.l_moment`][lmo.l_moment]
 
@@ -211,7 +234,14 @@ def l_loc(
     Alias for [`lmo.l_moment(a, 1, *, **)`][lmo.l_moment].
 
     Examples:
-        TODO
+        >>> import lmo, numpy as np
+        >>> x = np.random.default_rng(12345).standard_cauchy(99)
+        >>> x.mean()
+        -7.564850346291148
+        >>> lmo.l_loc(x)
+        -7.56485034629115
+        >>> lmo.l_loc(x, trim=(1, 1))
+        -0.1592418019341137
 
     Notes:
         If `trim = (0, 0)` (default), the L-location is equivalent to the
@@ -222,7 +252,7 @@ def l_loc(
         - [`numpy.average`][numpy.average]
 
     """
-    return l_moment(a, 1, trim , axis, dtype, **kwargs)
+    return l_moment(a, 1, trim, axis, dtype, **kwargs)
 
 
 def l_scale(
@@ -240,7 +270,14 @@ def l_scale(
     Alias for [`lmo.l_moment(a, 2, *, **)`][lmo.l_moment].
 
     Examples:
-        TODO
+        >>> import lmo, numpy as np
+        >>> x = np.random.default_rng(12345).standard_cauchy(99)
+        >>> x.std()
+        72.8771524453277
+        >>> lmo.l_scale(x)
+        9.501123995203486
+        >>> lmo.l_scale(x, trim=(1, 1))
+        0.6589932797072331
 
     Notes:
         If `trim = (0, 0)` (default), the L-scale is equivalent to half the
@@ -252,7 +289,7 @@ def l_scale(
         - [`numpy.std`][numpy.std]
 
     """
-    return l_moment(a, 2, trim , axis, dtype, **kwargs)
+    return l_moment(a, 2, trim, axis, dtype, **kwargs)
 
 
 def l_variation(
@@ -277,7 +314,14 @@ def l_variation(
     Alias for [`lmo.l_ratio(a, 2, 1, *, **)`][lmo.l_ratio].
 
     Examples:
-        TODO
+        >>> import lmo, numpy as np
+        >>> x = np.random.default_rng(12345).pareto(4.2, 99)
+        >>> x.std() / x.mean()
+        1.321611129357151
+        >>> lmo.l_variation(x)
+        0.5907363914181409
+        >>> lmo.l_variation(x, trim=(0, 1))
+        0.5539504469144685
 
     Notes:
         If `trim = (0, 0)` (default), this is equivalent to the
@@ -291,7 +335,7 @@ def l_variation(
         - [`scipy.stats.variation.l_ratio`][scipy.stats.variation]
 
     """
-    return l_ratio(a, 2, 1, trim , axis, dtype, **kwargs)
+    return l_ratio(a, 2, 1, trim, axis, dtype, **kwargs)
 
 
 def l_skew(
@@ -317,12 +361,20 @@ def l_skew(
 
     Alias for [`lmo.l_ratio(a, 3, 2, *, **)`][lmo.l_ratio].
 
+    Examples:
+        >>> import lmo, numpy as np
+        >>> x = np.random.default_rng(12345).standard_exponential(99)
+        >>> lmo.l_skew(x)
+        0.38524343888616047
+        >>> lmo.l_skew(x, trim=(0, 1))
+        0.2711613932338941
+
     See Also:
         - [`lmo.l_ratio`][lmo.l_ratio]
         - [`scipy.stats.skew`][scipy.stats.skew]
 
     """
-    return l_ratio(a, 3, 2, trim , axis, dtype, **kwargs)
+    return l_ratio(a, 3, 2, trim, axis, dtype, **kwargs)
 
 
 def l_kurtosis(
@@ -347,6 +399,14 @@ def l_kurtosis(
 
     Alias for [`lmo.l_ratio(a, 4, 2, *, **)`][lmo.l_ratio].
 
+    Examples:
+        >>> import lmo, numpy as np
+        >>> x = np.random.default_rng(12345).standard_t(2, 99)
+        >>> lmo.l_kurtosis(x)
+        0.28912787109746096
+        >>> lmo.l_kurtosis(x, trim=(1, 1))
+        0.19928182131774994
+
     Notes:
         The L-kurtosis $\\tau_4$ lies within the interval
         $[-\\frac{1}{4}, 1)$, and by the L-skewness $\\tau_3$ as
@@ -357,5 +417,5 @@ def l_kurtosis(
         - [`scipy.stats.kurtosis`][scipy.stats.kurtosis]
 
     """
-    return l_ratio(a, 4, 2, trim , axis, dtype, **kwargs)
+    return l_ratio(a, 4, 2, trim, axis, dtype, **kwargs)
 
