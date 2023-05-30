@@ -10,15 +10,9 @@
 [![license](https://img.shields.io/github/license/jorenham/lmo?style=flat-square)](https://github.com/jorenham/lmo/blob/master/LICENSE?)
 
 
-Streamlined calculation of L-moments and TL-moments.
+Generalized trimmed **L-mo**ments for robust statistics. 
 
 ---
 <!--head-end-->
 
-[Documentation](https://jorenham.github.io/lmo/)
-
----
-
-*Examples coming soon*.
-
-
+See the [documentation](https://jorenham.github.io/lmo/) for usage examples and code reference.
