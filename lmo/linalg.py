@@ -1,19 +1,44 @@
-__all__ = 'sh_legendre', 'succession_matrix', 'tl_jacobi'
+__all__ = 'sandwich', 'sh_legendre', 'succession_matrix', 'hosking_jacobi'
 
 from typing import Any, TypeVar
 
 import numpy as np
 import numpy.typing as npt
 
-_T = TypeVar('_T', bound=npt.NBitBase)
-_N = TypeVar('_N', bound=np.number[Any])
+T = TypeVar('T', bound=np.number[Any])
+
+
+def sandwich(
+    A: npt.NDArray[np.number[Any]],
+    X: npt.NDArray[T | np.number[Any]],
+    /,
+    dtype: np.dtype[T] | type[T] = np.float_,
+) -> npt.NDArray[T]:
+    """
+    Calculates the "sandwich" matrix product (`A @ X @ A.T`) along the
+    specified `X` axis.
+
+    Args:
+        A: 2-D array of shape `(s, r)`, the "bread".
+        dtype: The data type of the result.
+        X: Array of shape `(r, r, ...)`.
+    Returns:
+        C: Array of shape `(s, s, ...)`.
+
+    See Also:
+        - https://wikipedia.org/wiki/Covariance_matrix
+
+    """
+    # if X is 1 - d, this is equivalent to: C @ S_b @ C.T
+    spec = 'ui, ij..., vj -> uv...'
+    return np.einsum(spec, A, X, A, dtype=dtype)  # pyright: ignore
 
 
 def sh_legendre(
     m : int,
     /,
-    dtype: type[_N] = np.int_,
-) -> npt.NDArray[_N]:
+    dtype: type[T] = np.int_,
+) -> npt.NDArray[T]:
     """
     Shifted legendre polynomial coefficient matrix $P^*$ of shape `(m, m)`,
     where the $k$-th coefficient of the shifted Legendre polynomial of
@@ -73,7 +98,7 @@ def sh_legendre(
     return lp
 
 
-def succession_matrix(c: npt.NDArray[_N], /) -> npt.NDArray[_N]:
+def succession_matrix(c: npt.NDArray[T], /) -> npt.NDArray[T]:
     # TODO: docsstring + tests
 
     n, k = np.atleast_1d(c).shape
@@ -86,11 +111,11 @@ def succession_matrix(c: npt.NDArray[_N], /) -> npt.NDArray[_N]:
     return out
 
 
-def tl_jacobi(
+def hosking_jacobi(
     r: int,
     /,
     trim: tuple[int, int],
-    dtype: type[_N] = np.float_,
+    dtype: np.dtype[T] | type[T] = np.float_,
 ) -> npt.NDArray[np.floating[Any]]:
     # TODO: docsstring + tests
 
@@ -120,12 +145,12 @@ def tl_jacobi(
             # ((r+s+t) * _[r+0] - (r+1) * (r+s) * _[r+1] / r) / (2r+s+t-1)
             c1 = -(rr + 1) * (rr + s) / (rr * nc)
             m0 = succession_matrix(np.c_[c0, c1])
-            m1 = tl_jacobi(r + 1, (s, t - 1), dtype)
+            m1 = hosking_jacobi(r + 1, (s, t - 1), dtype)
             return m0 @ m1
         case (s, t) if s >= t:
             c1 = (rr + 1) * (rr + t) / (rr * nc)
             m0 = succession_matrix(np.c_[c0, c1])
-            m1 = tl_jacobi(r + 1, (s - 1, t), dtype)
+            m1 = hosking_jacobi(r + 1, (s - 1, t), dtype)
             return m0 @ m1
         case _ as wtf:
             assert False, wtf

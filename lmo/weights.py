@@ -5,7 +5,7 @@ from typing import TypeVar
 import numpy as np
 import numpy.typing as npt
 
-from .linalg import sh_legendre, tl_jacobi
+from .linalg import sh_legendre, hosking_jacobi
 
 
 T = TypeVar('T', bound=npt.NBitBase)
@@ -200,7 +200,7 @@ def l_weights(
     # with orders k, ..., k + t_1 + t_2
 
     np.matmul(
-        tl_jacobi(r, trim),
+        hosking_jacobi(r, trim),
         l0_weights(r + sum(trim), n),
         out=P_r
     )
