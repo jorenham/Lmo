@@ -5,7 +5,7 @@ Primarily used as an intermediate step for L-moment estimation.
 """
 __all__ = 'b_weights', 'b_moment_cov'
 
-from typing import Any, TypeVar
+from typing import Any, TypeVar, cast
 
 import numpy as np
 import numpy.typing as npt
@@ -19,8 +19,8 @@ def b_weights(
     r: int,
     n: int,
     /,
-    dtype: type[np.floating[T]] | np.dtype[np.floating[T]] = np.float_,
-) -> npt.NDArray[np.floating[T]]:
+    dtype: np.dtype[T] | type[T] = np.float_,
+) -> npt.NDArray[T]:
     """
     Probability Weighted moment (PWM) projection matrix $B$  of the
     unbiased estimator for $\\beta_{k} = M_{1,k,0}$ for $k = 0, \\dots, r - 1$.
@@ -61,7 +61,7 @@ def b_weights(
         w_r[k, k:] = w_r[k - 1, k:] * i1[:-k] / (n - k)
 
     # the + 0. eliminates negative zeros
-    return w_r / n + 0.
+    return cast(npt.NDArray[T], w_r / n + 0.)
 
 
 def b_moment_cov(

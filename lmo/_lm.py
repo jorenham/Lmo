@@ -6,16 +6,17 @@ __all__ = (
     'l_weights',
 
     'l_moment',
+    'l_moment_cov',
+
     'l_ratio',
+    'l_ratio_se',
+    'l_ratio_max',
+
     'l_loc',
     'l_scale',
     'l_variation',
     'l_skew',
     'l_kurtosis',
-
-    'l_moment_cov',
-    # 'l_ratio_cov',
-    'l_ratio_max',
 )
 
 import math
@@ -39,10 +40,10 @@ def l0_weights(
     r: int,
     n: int,
     /,
-    dtype: type[np.floating[T]] | np.dtype[np.floating[T]] = np.float_,
+    dtype: np.dtype[T] | type[T] = np.float_,
     *,
     enforce_symmetry: bool = True,
-) -> npt.NDArray[np.floating[T]]:
+) -> npt.NDArray[T]:
     """
     Efficiently calculates the projection matrix $P = [p_{k, i}]_{r \\times n}$
     for the order statistics $x_{i:n}$.
@@ -77,7 +78,7 @@ def l0_weights(
         # enforce rotational symmetry of even orders `r = 2, 4, ...`, naturally
         # centering them around 0
         for k in range(2, r + 1, 2):
-            p_k: npt.NDArray[np.floating[T]] = P_r[k - 1]
+            p_k: npt.NDArray[T] = P_r[k - 1]
 
             med = 0.0
             pk_neg, pk_pos = p_k < med, p_k > med
@@ -128,8 +129,8 @@ def l_weights(
     n: int,
     /,
     trim: tuple[int, int] = (0, 0),
-    dtype: type[np.floating[T]] | np.dtype[np.floating[T]] = np.float_,
-) -> npt.NDArray[np.floating[T]]:
+    dtype: np.dtype[T] | type[T] = np.float_,
+) -> npt.NDArray[T]:
     """
     Projection matrix of the first $r$ (T)L-moments for $n$ samples.
     Uses the recurrence relations from Hosking (2007),
@@ -328,7 +329,7 @@ def l_moment(
 
 def l_moment_cov(
     a: npt.ArrayLike,
-    rs: int,
+    r_max: AnyInt,
     /,
     trim: tuple[int, int] = (0, 0),
     axis: int | None = None,
@@ -337,10 +338,10 @@ def l_moment_cov(
 ) -> npt.NDArray[T]:
     """
     Non-parmateric auto-covariance matrix of the generalized trimmed
-    L-moment point estimates with orders `r = 1, ..., rs`.
+    L-moment point estimates with orders `r = 1, ..., r_max`.
 
     Returns:
-        S_l: Variance-covariance matrix/tensor of shape `(rs, rs, ...)`
+        S_l: Variance-covariance matrix/tensor of shape `(r_max, r_max, ...)`
 
     Examples:
         Fitting of the cauchy distribution with TL-moments. The location is
@@ -375,8 +376,8 @@ def l_moment_cov(
             L-moments](https://doi.org/10.1016/S0378-3758(03)00213-1)
 
     """
-    ks = rs + sum(trim)
-    if ks < rs:
+    ks = int(r_max + sum(trim))
+    if ks < r_max:
         raise ValueError('trimmings must be positive')
 
     # PWM covariance matrix
@@ -384,7 +385,7 @@ def l_moment_cov(
 
     # projection matrix: PWMs -> generalized trimmed L-moments
     P_l: npt.NDArray[np.floating[Any]]
-    P_l = hosking_jacobi(rs, trim=trim, dtype=dtype) @ sh_legendre(ks)
+    P_l = hosking_jacobi(int(r_max), trim=trim, dtype=dtype) @ sh_legendre(ks)
     # clean some numerical noise
     P_l = np.round(P_l, 12) + 0.  # pyright: ignore [reportUnknownMemberType]
 
@@ -451,16 +452,81 @@ def l_ratio(
         )[()]
 
 
-def l_ratio_cov(
+
+def l_ratio_se(
     a: npt.ArrayLike,
-    rs: int,
+    r: AnyInt | IntVector,
+    s: AnyInt | IntVector,
     /,
     trim: tuple[int, int] = (0, 0),
     axis: int | None = None,
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
 ) -> npt.NDArray[T]:
-    ...  # TODO
+    """
+    Non-parametric estimates of the Standard Error (SE) in the L-ratio
+    estimates from [`lmo.l_ratio`][lmo.l_ratio].
+
+    Examples:
+        Estimate the values and errors of the TL-loc, scale, skew and kurtosis
+        for Cauchy-distributed samples. The theoretical values are
+        `[0.0, 0.698, 0.0, 0.343]` (Elamir & Seheult, 2003), respectively.
+
+        >>> import lmo, numpy as np
+        >>> rng = np.random.default_rng(12345)
+        >>> x = rng.standard_cauchy(42)
+        >>> lmo.l_ratio(x, [1, 2, 3, 4], [0, 0, 2, 2], trim=(1, 1))
+        array([-0.25830513,  0.61738638, -0.03069701,  0.25550176])
+        >>> lmo.l_ratio_se(x, [1, 2, 3, 4], [0, 0, 2, 2], trim=(1, 1))
+        array([0.32857302, 0.12896501, 0.13835403, 0.07188138])
+
+    See Also:
+        - [`lmo.l_ratio`][lmo.l_ratio]
+        - [`lmo.l_moment_cov`][lmo.l_moment_cov]
+        - [Propagation of uncertainty](
+            https://wikipedia.org/wiki/Propagation_of_uncertainty)
+
+    References:
+        - [E. Elamir & A. Seheult (2003) - Trimmed L-moments](
+            https://doi.org/10.1016/S0167-9473(02)00250-5)
+        - [E. Elamir & A. Seheult (2004) - Exact variance structure of sample
+            L-moments](https://doi.org/10.1016/S0378-3758(03)00213-1)
+
+    """
+    _r, _s = np.broadcast_arrays(np.asarray(r), np.asarray(s))
+    _rs = np.stack((_r, _s))
+    r_max: AnyInt = np.amax(  # pyright: ignore [reportUnknownMemberType]
+        np.r_[_r, _s].ravel()
+    )
+
+    # L-moments
+    l_rs = cast(npt.NDArray[T], l_moment(a, _rs, trim, axis, dtype, **kwargs))
+    l_r, l_s = l_rs[0], l_rs[1]
+
+    # L-moment auto-covariance matrix
+    S_l = l_moment_cov(a, r_max, trim, axis, dtype, **kwargs)
+    # prepend the "zeroth" moment, with has 0 (co)variance
+    S_l = np.pad(S_l, (1, 0), constant_values=0)
+
+    s_rr = S_l[_r, _r]  # Var[l_r]
+    s_ss = S_l[_s, _s]  # Var[l_r]
+    s_rs = S_l[_r, _s]  # Cov[l_r, l_s]
+
+    # the classic approximation to propagation of uncertainty for an RV ratio
+    with np.errstate(divide='ignore', invalid='ignore'):
+        # TODO: np.piecewiese ?
+        _s_tt = (l_r / l_s)**2 * (
+            s_rr / l_r**2 +
+            s_ss / l_s**2 -
+            2 * s_rs / (l_r * l_s)
+        )
+        # Var[l_r / l_r] = Var[1] = 0
+        _s_tt = np.where(_s == 0, s_rr, _s_tt)
+        # Var[l_r / l_0] == Var[l_r / 1] == Var[l_r]
+        s_tt = np.where(_r == _s, 0, _s_tt)
+
+    return np.sqrt(s_tt)
+
 
 def l_ratio_max(
     r: int,

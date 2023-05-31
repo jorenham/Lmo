@@ -1,10 +1,12 @@
 __all__ = (
     '__version__',
 
+    'l_weights',
     'l_moment',
     'l_moment_cov',
     'l_ratio',
-    # 'l_ratio_cov',
+    'l_ratio_se',
+    'l_ratio_max',
     'l_loc',
     'l_scale',
     'l_variation',
@@ -25,22 +27,21 @@ from ._meta import get_version as _get_version
 
 from ._lm import (
     l_weights,
-
     l_moment,
+    l_moment_cov,
     l_ratio,
+    l_ratio_se,
+    l_ratio_max,
     l_loc,
     l_scale,
     l_variation,
     l_skew,
     l_kurtosis,
-
-    l_moment_cov,
-    # l_ratio_cov,
-    l_ratio_max,
 )
 from ._lm_co import (
     l_comoment,
     l_coratio,
+
     l_coloc,
     l_coscale,
     l_corr,
