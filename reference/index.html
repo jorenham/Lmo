@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Robust statistics with (T)L-Moments.">
+        <meta name="description" content="Robust statistics with generalized trimmed L-Moments.">
       
       
         <meta name="author" content="Joren Hammudoglu">
@@ -271,12 +271,19 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#univariate" class="md-nav__link">
-    Univariate
+  <a href="#univariate-l-moments" class="md-nav__link">
+    Univariate L-moments
   </a>
   
-    <nav class="md-nav" aria-label="Univariate">
+    <nav class="md-nav" aria-label="Univariate L-moments">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lmo.l_weights" class="md-nav__link">
+    l_weights()
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#lmo.l_moment" class="md-nav__link">
@@ -286,8 +293,22 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#lmo.l_moment_cov" class="md-nav__link">
+    l_moment_cov()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#lmo.l_ratio" class="md-nav__link">
     l_ratio()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.l_ratio_se" class="md-nav__link">
+    l_ratio_se()
   </a>
   
 </li>
@@ -333,11 +354,11 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#multivariate" class="md-nav__link">
-    Multivariate
+  <a href="#multivariate-l-comoments" class="md-nav__link">
+    Multivariate L-comoments
   </a>
   
-    <nav class="md-nav" aria-label="Multivariate">
+    <nav class="md-nav" aria-label="Multivariate L-comoments">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -444,12 +465,19 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#univariate" class="md-nav__link">
-    Univariate
+  <a href="#univariate-l-moments" class="md-nav__link">
+    Univariate L-moments
   </a>
   
-    <nav class="md-nav" aria-label="Univariate">
+    <nav class="md-nav" aria-label="Univariate L-moments">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lmo.l_weights" class="md-nav__link">
+    l_weights()
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#lmo.l_moment" class="md-nav__link">
@@ -459,8 +487,22 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#lmo.l_moment_cov" class="md-nav__link">
+    l_moment_cov()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#lmo.l_ratio" class="md-nav__link">
     l_ratio()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.l_ratio_se" class="md-nav__link">
+    l_ratio_se()
   </a>
   
 </li>
@@ -506,11 +548,11 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#multivariate" class="md-nav__link">
-    Multivariate
+  <a href="#multivariate-l-comoments" class="md-nav__link">
+    Multivariate L-comoments
   </a>
   
-    <nav class="md-nav" aria-label="Multivariate">
+    <nav class="md-nav" aria-label="Multivariate L-comoments">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -586,7 +628,7 @@
 
 
 <h1 id="lmo-reference">Lmo reference</h1>
-<h2 id="univariate">Univariate</h2>
+<h2 id="univariate-l-moments">Univariate L-moments</h2>
 
 
 <div class="doc doc-object doc-module">
@@ -606,6 +648,89 @@
 
 
 
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="lmo.l_weights" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_weights</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">)</span></code>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Projection matrix of the first <span class="arithmatex">\(r\)</span> (T)L-moments for <span class="arithmatex">\(n\)</span> samples.</p>
+<p>The matrix is a linear combination of the Power Weighted Moment
+(PWM) weight matrix (the sample estimator of <span class="arithmatex">\(beta_{r_1}\)</span>), and the
+shifted Legendre polynomials.</p>
+<p>If <code>trim != (0, 1)</code>, a linearized (and corrected) adaptation of the
+recurrence relations from <em>Hosking (2007)</em> are applied, as well.</p>
+<div class="arithmatex">\[
+(2k + t_1 + t_2 - 1) \lambda^{(t_1, t_2)}_k
+    = (k + t_1 + t_2) \lambda^{(t_1 - 1, t_2)}_k
+    + \frac{1}{k} (k + 1) (k + t_2) \lambda^{(t_1 - 1, t_2)}_{k+1}
+\]</div>
+<p>for <span class="arithmatex">\(t_1 &gt; 0\)</span>, and</p>
+<div class="arithmatex">\[
+(2k + t_1 + t_2 - 1) \lambda^{(t_1, t_2)}_k
+    = (k + t_1 + t_2) \lambda^{(t_1, t_2 - 1)}_k
+    - \frac{1}{k} (k + 1) (k + t_1) \lambda^{(t_1, t_2 - 1)}_{k+1}
+\]</div>
+<p>for <span class="arithmatex">\(t_2 &gt; 0\)</span>.</p>
+
+<details class="tldr" open>
+  <summary>TLDR</summary>
+  <p>This matrix (linearly) transforms <span class="arithmatex">\(x_{i:n}\)</span> (i.e. the sorted
+observation vector(s) of size <span class="arithmatex">\(n\)</span>), into (an unbiased estimate of) the
+<em>generalized trimmed L-moments</em>, with orders <span class="arithmatex">\(\le r\)</span>.</p>
+</details>
+  <table>
+    <thead>
+      <tr>
+        <th><b>RETURNS</b></th>
+        <th><b>DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+              <code>P_r</code>
+          </td>
+          <td class="doc-returns-details">
+            <p>2-D array of shape <code>(r, n)</code>.</p>
+              <p>
+                <span class="doc-returns-annotation">
+                  <b>TYPE:</b>
+                    <code><a class="autorefs autorefs-external" title="numpy.typing" href="https://numpy.org/doc/stable/reference/typing.html#module-numpy.typing">npt</a>.<a class="autorefs autorefs-external" title="numpy.typing.NDArray" href="https://numpy.org/doc/stable/reference/typing.html#numpy.typing.NDArray">NDArray</a>[<span title="lmo._lm.T">T</span>]</code>
+                </span>
+              </p>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+<p><strong>Examples:</strong></p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">lmo</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lmo</span><span class="o">.</span><span class="n">l_weights</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="go">array([[ 0.25      ,  0.25      ,  0.25      ,  0.25      ],</span>
+<span class="go">       [-0.25      , -0.08333333,  0.08333333,  0.25      ],</span>
+<span class="go">       [ 0.25      , -0.25      , -0.25      ,  0.25      ]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">@</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span> <span class="o">/</span> <span class="mi">2</span><span class="p">]</span>
+<span class="go">array([0.25      , 0.66666667, 0.        ])</span>
+</code></pre></div>
+
+<details class="references" open>
+  <summary>References</summary>
+  <ul>
+<li><a href="https://doi.org/10.1016/j.jspi.2006.12.002">J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
+    L-moments</a></li>
+</ul>
+</details>
+  </div>
+
+</div>
 
 <div class="doc doc-object doc-function">
 
@@ -716,7 +841,7 @@ all samples in the array will be used.</p>
             <p>
                 <span class="doc-param-annotation">
                   <b>TYPE:</b>
-                    <code><a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a class="autorefs autorefs-external" title="numpy.dtype" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype">dtype</a>[<span title="lmo.univariate.T">T</span>] | type[<span title="lmo.univariate.T">T</span>]</code>
+                    <code><a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a class="autorefs autorefs-external" title="numpy.dtype" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype">dtype</a>[<span title="lmo._lm.T">T</span>] | type[<span title="lmo._lm.T">T</span>]</code>
                 </span>
                 <span class="doc-param-default">
                   <b>DEFAULT:</b> 
@@ -805,7 +930,7 @@ r is a scalar. Otherwise, this is an array with
               <p>
                 <span class="doc-returns-annotation">
                   <b>TYPE:</b>
-                    <code><span title="lmo.univariate.T">T</span> | <a class="autorefs autorefs-external" title="numpy.typing" href="https://numpy.org/doc/stable/reference/typing.html#module-numpy.typing">npt</a>.<a class="autorefs autorefs-external" title="numpy.typing.NDArray" href="https://numpy.org/doc/stable/reference/typing.html#numpy.typing.NDArray">NDArray</a>[<span title="lmo.univariate.T">T</span>]</code>
+                    <code><span title="lmo._lm.T">T</span> | <a class="autorefs autorefs-external" title="numpy.typing" href="https://numpy.org/doc/stable/reference/typing.html#module-numpy.typing">npt</a>.<a class="autorefs autorefs-external" title="numpy.typing.NDArray" href="https://numpy.org/doc/stable/reference/typing.html#numpy.typing.NDArray">NDArray</a>[<span title="lmo._lm.T">T</span>]</code>
                 </span>
               </p>
           </td>
@@ -833,8 +958,87 @@ r is a scalar. Otherwise, this is an array with
   <summary>References</summary>
   <ul>
 <li><a href="https://jstor.org/stable/2345653">J.R.M. Hosking (1990)</a></li>
-<li><a href="https://doi.org/10.1016/S0167-9473(02)00250-5">E. Elmamir &amp; A. Seheult (2003) - Trimmed L-moments</a></li>
+<li><a href="https://doi.org/10.1016/S0167-9473(02)00250-5">E. Elamir &amp; A. Seheult (2003) - Trimmed L-moments</a></li>
 <li><a href="https://doi.org/10.1016/j.jspi.2006.12.002">J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
+    L-moments</a></li>
+</ul>
+</details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="lmo.l_moment_cov" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_moment_cov</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">r_max</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Non-parmateric auto-covariance matrix of the generalized trimmed
+L-moment point estimates with orders <code>r = 1, ..., r_max</code>.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>RETURNS</b></th>
+        <th><b>DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+              <code>S_l</code>
+          </td>
+          <td class="doc-returns-details">
+            <p>Variance-covariance matrix/tensor of shape <code>(r_max, r_max, ...)</code></p>
+              <p>
+                <span class="doc-returns-annotation">
+                  <b>TYPE:</b>
+                    <code><a class="autorefs autorefs-external" title="numpy.typing" href="https://numpy.org/doc/stable/reference/typing.html#module-numpy.typing">npt</a>.<a class="autorefs autorefs-external" title="numpy.typing.NDArray" href="https://numpy.org/doc/stable/reference/typing.html#numpy.typing.NDArray">NDArray</a>[<span title="lmo._lm.T">T</span>]</code>
+                </span>
+              </p>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+<p><strong>Examples:</strong></p>
+    <p>Fitting of the cauchy distribution with TL-moments. The location is
+equal to the TL-location, and scale should be <span class="arithmatex">\(0.698\)</span> times the
+TL(1)-scale, see Elamir &amp; Seheult (2003).</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">lmo</span><span class="o">,</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">standard_cauchy</span><span class="p">(</span><span class="mi">1337</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lmo</span><span class="o">.</span><span class="n">l_moment</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="go">array([0.08142405, 0.68884917])</span>
+</code></pre></div>
+    <p>The L-moment estimates seem to make sense. Let's check their standard
+errors, by taking the square root of the variances (the diagnoal of the
+covariance matrix):</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">lmo</span><span class="o">.</span><span class="n">l_moment_cov</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="go">array([[ 4.89407076e-03, -4.26419310e-05],</span>
+<span class="go">       [-4.26419310e-05,  1.30898414e-03]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">_</span><span class="o">.</span><span class="n">diagonal</span><span class="p">())</span>
+<span class="go">array([0.06995764, 0.03617989])</span>
+</code></pre></div>
+
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <ul>
+<li><a class="autorefs autorefs-internal" href="#lmo.l_moment"><code>lmo.l_moment</code></a></li>
+<li><a href="https://wikipedia.org/wiki/Covariance_matrix">Covariance matrix - Wikipedia</a></li>
+</ul>
+</details>
+<details class="references" open>
+  <summary>References</summary>
+  <ul>
+<li><a href="https://doi.org/10.1016/S0167-9473(02)00250-5">E. Elamir &amp; A. Seheult (2003) - Trimmed L-moments</a></li>
+<li><a href="https://doi.org/10.1016/S0378-3758(03)00213-1">E. Elamir &amp; A. Seheult (2004) - Exact variance structure of sample
     L-moments</a></li>
 </ul>
 </details>
@@ -884,6 +1088,54 @@ simultaneously:</p>
   <summary>See Also</summary>
   <ul>
 <li><a class="autorefs autorefs-internal" href="#lmo.l_moment"><code>lmo.l_moment</code></a></li>
+</ul>
+</details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="lmo.l_ratio_se" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_ratio_se</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Non-parametric estimates of the Standard Error (SE) in the L-ratio
+estimates from <a class="autorefs autorefs-internal" href="#lmo.l_ratio"><code>lmo.l_ratio</code></a>.</p>
+
+<p><strong>Examples:</strong></p>
+    <p>Estimate the values and errors of the TL-loc, scale, skew and kurtosis
+for Cauchy-distributed samples. The theoretical values are
+<code>[0.0, 0.698, 0.0, 0.343]</code> (Elamir &amp; Seheult, 2003), respectively.</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">lmo</span><span class="o">,</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">standard_cauchy</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lmo</span><span class="o">.</span><span class="n">l_ratio</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="go">array([-0.25830513,  0.61738638, -0.03069701,  0.25550176])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lmo</span><span class="o">.</span><span class="n">l_ratio_se</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="go">array([0.32857302, 0.12896501, 0.13835403, 0.07188138])</span>
+</code></pre></div>
+
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <ul>
+<li><a class="autorefs autorefs-internal" href="#lmo.l_ratio"><code>lmo.l_ratio</code></a></li>
+<li><a class="autorefs autorefs-internal" href="#lmo.l_moment_cov"><code>lmo.l_moment_cov</code></a></li>
+<li><a href="https://wikipedia.org/wiki/Propagation_of_uncertainty">Propagation of uncertainty</a></li>
+</ul>
+</details>
+<details class="references" open>
+  <summary>References</summary>
+  <ul>
+<li><a href="https://doi.org/10.1016/S0167-9473(02)00250-5">E. Elamir &amp; A. Seheult (2003) - Trimmed L-moments</a></li>
+<li><a href="https://doi.org/10.1016/S0378-3758(03)00213-1">E. Elamir &amp; A. Seheult (2004) - Exact variance structure of sample
+    L-moments</a></li>
 </ul>
 </details>
   </div>
@@ -1126,7 +1378,7 @@ for short:</p>
 
   </div>
 
-</div><h2 id="multivariate">Multivariate</h2>
+</div><h2 id="multivariate-l-comoments">Multivariate L-comoments</h2>
 
 
 <div class="doc doc-object doc-module">
@@ -1277,7 +1529,7 @@ a variable, while the rows contain observations.</p>
             <p>
                 <span class="doc-param-annotation">
                   <b>TYPE:</b>
-                    <code><a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a class="autorefs autorefs-external" title="numpy.dtype" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype">dtype</a>[<span title="lmo.multivariate.T">T</span>] | type[<span title="lmo.multivariate.T">T</span>]</code>
+                    <code><a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a class="autorefs autorefs-external" title="numpy.dtype" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype">dtype</a>[<span title="lmo._lm_co.T">T</span>] | type[<span title="lmo._lm_co.T">T</span>]</code>
                 </span>
                 <span class="doc-param-default">
                   <b>DEFAULT:</b> 
@@ -1322,7 +1574,7 @@ a variable, while the rows contain observations.</p>
               <p>
                 <span class="doc-returns-annotation">
                   <b>TYPE:</b>
-                    <code><a class="autorefs autorefs-external" title="numpy.typing" href="https://numpy.org/doc/stable/reference/typing.html#module-numpy.typing">npt</a>.<a class="autorefs autorefs-external" title="numpy.typing.NDArray" href="https://numpy.org/doc/stable/reference/typing.html#numpy.typing.NDArray">NDArray</a>[<span title="lmo.multivariate.T">T</span>]</code>
+                    <code><a class="autorefs autorefs-external" title="numpy.typing" href="https://numpy.org/doc/stable/reference/typing.html#module-numpy.typing">npt</a>.<a class="autorefs autorefs-external" title="numpy.typing.NDArray" href="https://numpy.org/doc/stable/reference/typing.html#numpy.typing.NDArray">NDArray</a>[<span title="lmo._lm_co.T">T</span>]</code>
                 </span>
               </p>
           </td>
