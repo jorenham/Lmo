@@ -128,7 +128,13 @@ def l_weights(
 ) -> npt.NDArray[T]:
     """
     Projection matrix of the first $r$ (T)L-moments for $n$ samples.
-    Uses the recurrence relations from Hosking (2007),
+
+    The matrix is a linear combination of the Power Weighted Moment
+    (PWM) weight matrix (the sample estimator of $beta_{r_1}$), and the
+    shifted Legendre polynomials.
+
+    If `trim != (0, 1)`, a linearized (and corrected) adaptation of the
+    recurrence relations from *Hosking (2007)* are applied, as well.
 
     $$
     (2k + t_1 + t_2 - 1) \\lambda^{(t_1, t_2)}_k
@@ -146,6 +152,11 @@ def l_weights(
 
     for $t_2 > 0$.
 
+    TLDR:
+        This matrix (linearly) transforms $x_{i:n}$ (i.e. the sorted
+        observation vector(s) of size $n$), into (an unbiased estimate of) the
+        *generalized trimmed L-moments*, with orders $\\le r$.
+
     Returns:
         P_r: 2-D array of shape `(r, n)`.
 
@@ -157,6 +168,10 @@ def l_weights(
                [ 0.25      , -0.25      , -0.25      ,  0.25      ]])
         >>> _ @ [-1, 0, 1 / 2, 3 / 2]
         array([0.25      , 0.66666667, 0.        ])
+
+    References:
+        - [J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
+            L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
 
     """
     if sum(trim) == 0:
