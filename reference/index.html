@@ -1162,11 +1162,11 @@ for Cauchy-distributed samples. The theoretical values are
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">lmo</span><span class="o">,</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">)</span><span class="o">.</span><span class="n">standard_cauchy</span><span class="p">(</span><span class="mi">99</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-<span class="go">-7.564850346291148</span>
+<span class="go">-7.56485034...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lmo</span><span class="o">.</span><span class="n">l_loc</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-<span class="go">-7.56485034629115</span>
+<span class="go">-7.56485034...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lmo</span><span class="o">.</span><span class="n">l_loc</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-<span class="go">-0.1592418019341137</span>
+<span class="go">-0.15924180...</span>
 </code></pre></div>
 
 <details class="notes" open>
@@ -1205,11 +1205,11 @@ for Cauchy-distributed samples. The theoretical values are
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">lmo</span><span class="o">,</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">)</span><span class="o">.</span><span class="n">standard_cauchy</span><span class="p">(</span><span class="mi">99</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
-<span class="go">72.8771524453277</span>
+<span class="go">72.87715244...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lmo</span><span class="o">.</span><span class="n">l_scale</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-<span class="go">9.501123995203486</span>
+<span class="go">9.501123995...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lmo</span><span class="o">.</span><span class="n">l_scale</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-<span class="go">0.6589932797072331</span>
+<span class="go">0.658993279...</span>
 </code></pre></div>
 
 <details class="notes" open>
@@ -1254,11 +1254,11 @@ for Cauchy-distributed samples. The theoretical values are
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">lmo</span><span class="o">,</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">)</span><span class="o">.</span><span class="n">pareto</span><span class="p">(</span><span class="mf">4.2</span><span class="p">,</span> <span class="mi">99</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="o">.</span><span class="n">std</span><span class="p">()</span> <span class="o">/</span> <span class="n">x</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-<span class="go">1.321611129357151</span>
+<span class="go">1.32161112...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lmo</span><span class="o">.</span><span class="n">l_variation</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-<span class="go">0.5907363914181409</span>
+<span class="go">0.59073639...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lmo</span><span class="o">.</span><span class="n">l_variation</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-<span class="go">0.5539504469144685</span>
+<span class="go">0.55395044...</span>
 </code></pre></div>
 
 <details class="notes" open>
@@ -1307,9 +1307,9 @@ for short:</p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">lmo</span><span class="o">,</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">)</span><span class="o">.</span><span class="n">standard_exponential</span><span class="p">(</span><span class="mi">99</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lmo</span><span class="o">.</span><span class="n">l_skew</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-<span class="go">0.38524343888616047</span>
+<span class="go">0.38524343...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lmo</span><span class="o">.</span><span class="n">l_skew</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-<span class="go">0.2711613932338941</span>
+<span class="go">0.27116139...</span>
 </code></pre></div>
 
 <details class="see-also" open>
@@ -1350,9 +1350,9 @@ for short:</p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">lmo</span><span class="o">,</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">)</span><span class="o">.</span><span class="n">standard_t</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">99</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lmo</span><span class="o">.</span><span class="n">l_kurtosis</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-<span class="go">0.28912787109746096</span>
+<span class="go">0.28912787...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lmo</span><span class="o">.</span><span class="n">l_kurtosis</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-<span class="go">0.19928182131774994</span>
+<span class="go">0.19928182...</span>
 </code></pre></div>
 
 <details class="notes" open>
