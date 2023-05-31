@@ -1,7 +1,5 @@
-from datetime import timedelta
-
 from pytest import approx
-from hypothesis import given, settings, strategies as st
+from hypothesis import given, strategies as st
 from hypothesis.extra import numpy as hnp
 import numpy as np
 
@@ -56,28 +54,6 @@ def test_l_ratio_unit(a, r, trim):
     tau = lmo.l_ratio(a, r, r, trim)
 
     assert np.allclose(tau, 1)
-
-
-@given(a=st_a1, trim=st_trim)
-def test_l_variation_bound(a,  trim):
-    """Theorem 2 in J.R.M. Hosking (1990), but exended for TL moments."""
-    tl_cv_max = lmo.l_ratio_max(2, 1, trim)
-
-    a = np.abs(a) + 0.1  # ensure positive and nonzero mean
-    tl_cv = lmo.l_variation(a, trim)
-
-    # nan is "fine" too
-    assert tl_cv <= tl_cv_max
-
-
-# noinspection PyArgumentEqualDefault
-@settings(deadline=timedelta(seconds=1))
-@given(a=st_a1_unique, r=st.integers(3, 6), trim=st_trim)
-def test_l_ratio_bound(a, r, trim):
-    tau_max = lmo.l_ratio_max(r, 2, trim=trim)
-    tau = lmo.l_ratio(a, r, 2, trim=trim)
-
-    assert abs(tau) <= tau_max + tau_max * 1e-5
 
 
 @given(a=st_a1 | st_a2)

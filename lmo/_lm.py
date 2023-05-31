@@ -4,14 +4,10 @@ Unbiased sample estimators of the generalized trimmed L-moments.
 
 __all__ = (
     'l_weights',
-
     'l_moment',
     'l_moment_cov',
-
     'l_ratio',
     'l_ratio_se',
-    'l_ratio_max',
-
     'l_loc',
     'l_scale',
     'l_variation',
@@ -19,7 +15,6 @@ __all__ = (
     'l_kurtosis',
 )
 
-import math
 from typing import Any, TypeVar, cast
 
 import numpy as np
@@ -526,46 +521,6 @@ def l_ratio_se(
         s_tt = np.where(_r == _s, 0, _s_tt)
 
     return np.sqrt(s_tt)
-
-
-def l_ratio_max(
-    r: int,
-    s: int = 2,
-    /,
-    trim: tuple[int, int] = (0, 0),
-) -> float:
-    """
-    The theoretical upper bound on the absolute TL-ratios, i.e.::
-
-        abs(lmo.l_ratio(a, r, s, trim)) <= tl_ratio_max(r, s, trim)
-
-    is True for all samples `a`.
-
-    References:
-        - [J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
-            L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
-            Page 6, equation 14.
-    """
-
-    # the zeroth (TL-)moment is 1. I.e. the total area under the pdf (or the
-    # sum of the ppf if discrete) is 1.
-    _r = clean_order(r)
-    _s = clean_order(s, name='s')
-
-    if _r in (0, _s):
-        return 1.0
-    if not _s:
-        return float('inf')
-
-    t1, t2 = trim
-    m = min(t1, t2)
-
-    # disclaimer: the `k` instead of a `2` here is just a guess
-    return (
-        _s * math.factorial(m + _s - 1) * math.factorial(t1 + t2 + _r) /
-        (_r * math.factorial(m + _r - 1) * math.factorial(t1 + t2 + _s))
-    )
-
 
 
 def l_loc(
