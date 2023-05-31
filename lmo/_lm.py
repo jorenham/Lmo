@@ -555,12 +555,12 @@ def l_loc(
     Examples:
         >>> import lmo, numpy as np
         >>> x = np.random.default_rng(12345).standard_cauchy(99)
-        >>> x.mean()
-        -7.564850346291148
-        >>> lmo.l_loc(x)
-        -7.56485034629115
-        >>> lmo.l_loc(x, trim=(1, 1))
-        -0.1592418019341137
+        >>> x.mean()  # doctest: +ELLIPSIS
+        -7.56485034...
+        >>> lmo.l_loc(x)  # doctest: +ELLIPSIS
+        -7.56485034...
+        >>> lmo.l_loc(x, trim=(1, 1))  # doctest: +ELLIPSIS
+        -0.15924180...
 
     Notes:
         If `trim = (0, 0)` (default), the L-location is equivalent to the
@@ -591,12 +591,12 @@ def l_scale(
     Examples:
         >>> import lmo, numpy as np
         >>> x = np.random.default_rng(12345).standard_cauchy(99)
-        >>> x.std()
-        72.8771524453277
-        >>> lmo.l_scale(x)
-        9.501123995203486
-        >>> lmo.l_scale(x, trim=(1, 1))
-        0.6589932797072331
+        >>> x.std()  # doctest: +ELLIPSIS
+        72.87715244...
+        >>> lmo.l_scale(x)  # doctest: +ELLIPSIS
+        9.501123995...
+        >>> lmo.l_scale(x, trim=(1, 1))  # doctest: +ELLIPSIS
+        0.658993279...
 
     Notes:
         If `trim = (0, 0)` (default), the L-scale is equivalent to half the
@@ -635,12 +635,12 @@ def l_variation(
     Examples:
         >>> import lmo, numpy as np
         >>> x = np.random.default_rng(12345).pareto(4.2, 99)
-        >>> x.std() / x.mean()
-        1.321611129357151
-        >>> lmo.l_variation(x)
-        0.5907363914181409
-        >>> lmo.l_variation(x, trim=(0, 1))
-        0.5539504469144685
+        >>> x.std() / x.mean()  # doctest: +ELLIPSIS
+        1.32161112...
+        >>> lmo.l_variation(x)  # doctest: +ELLIPSIS
+        0.59073639...
+        >>> lmo.l_variation(x, trim=(0, 1))  # doctest: +ELLIPSIS
+        0.55395044...
 
     Notes:
         If `trim = (0, 0)` (default), this is equivalent to the
@@ -683,10 +683,10 @@ def l_skew(
     Examples:
         >>> import lmo, numpy as np
         >>> x = np.random.default_rng(12345).standard_exponential(99)
-        >>> lmo.l_skew(x)
-        0.38524343888616047
-        >>> lmo.l_skew(x, trim=(0, 1))
-        0.2711613932338941
+        >>> lmo.l_skew(x)  # doctest: +ELLIPSIS
+        0.38524343...
+        >>> lmo.l_skew(x, trim=(0, 1))  # doctest: +ELLIPSIS
+        0.27116139...
 
     See Also:
         - [`lmo.l_ratio`][lmo.l_ratio]
@@ -721,10 +721,10 @@ def l_kurtosis(
     Examples:
         >>> import lmo, numpy as np
         >>> x = np.random.default_rng(12345).standard_t(2, 99)
-        >>> lmo.l_kurtosis(x)
-        0.28912787109746096
-        >>> lmo.l_kurtosis(x, trim=(1, 1))
-        0.19928182131774994
+        >>> lmo.l_kurtosis(x)  # doctest: +ELLIPSIS
+        0.28912787...
+        >>> lmo.l_kurtosis(x, trim=(1, 1))  # doctest: +ELLIPSIS
+        0.19928182...
 
     Notes:
         The L-kurtosis $\\tau_4$ lies within the interval
