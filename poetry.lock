@@ -185,13 +185,13 @@ colorama = ">=0.4"
 
 [[package]]
 name = "hypothesis"
-version = "6.75.9"
+version = "6.76.0"
 description = "A library for property-based testing"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "hypothesis-6.75.9-py3-none-any.whl", hash = "sha256:a971fe32c916ac7a210e2d6a66b33f841a76ec81c7d4146a2a25ae0141d14967"},
-    {file = "hypothesis-6.75.9.tar.gz", hash = "sha256:d006279cbfaef990ac60273fc598a5052a10ae40ea30b7860ade0a767a2e6fc2"},
+    {file = "hypothesis-6.76.0-py3-none-any.whl", hash = "sha256:034f73dd485933b0f4c319d7c3c58230492fdd7b16e821d67d150a78138adb93"},
+    {file = "hypothesis-6.76.0.tar.gz", hash = "sha256:526657eb3e4f2076b0383f722b2e6a92fd15d1d42db532decae8c41b14cab801"},
 ]
 
 [package.dependencies]
@@ -452,13 +452,13 @@ python-legacy = ["mkdocstrings-python-legacy (>=0.2.1)"]
 
 [[package]]
 name = "mkdocstrings-python"
-version = "1.1.0"
+version = "1.1.2"
 description = "A Python handler for mkdocstrings."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "mkdocstrings_python-1.1.0-py3-none-any.whl", hash = "sha256:4e9a9d728e6ba742ecbd7379f5091f3a32b16d723881963bb457b2149656e167"},
-    {file = "mkdocstrings_python-1.1.0.tar.gz", hash = "sha256:00cca5e47bf63eb2aece08b9887421b6828bdb939a13a481e4e8b495569e8101"},
+    {file = "mkdocstrings_python-1.1.2-py3-none-any.whl", hash = "sha256:c2b652a850fec8e85034a9cdb3b45f8ad1a558686edc20ed1f40b4e17e62070f"},
+    {file = "mkdocstrings_python-1.1.2.tar.gz", hash = "sha256:f28bdcacb9bcdb44b6942a5642c1ea8b36870614d33e29e3c923e204a8d8ed61"},
 ]
 
 [package.dependencies]
@@ -836,7 +836,7 @@ files = [
 name = "scipy"
 version = "1.10.1"
 description = "Fundamental algorithms for scientific computing in Python"
-optional = true
+optional = false
 python-versions = "<3.12,>=3.8"
 files = [
     {file = "scipy-1.10.1-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:e7354fd7527a4b0377ce55f286805b34e8c54b91be865bac273f527e1b839019"},
@@ -975,10 +975,7 @@ files = [
 [package.extras]
 watchmedo = ["PyYAML (>=3.10)"]
 
-[extras]
-scipy = ["scipy"]
-
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "b787a5ed8246c6c55c57160f497b7aab30505901c1735733024cfe1e7e521433"
+content-hash = "3124c1788ec2259750b7e01e9c5a07972e786d8a47d281ec667b4faf10fa27f4"
