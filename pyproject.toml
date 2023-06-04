@@ -60,7 +60,11 @@ addopts = [
     "--strict-config",
     "--doctest-modules",
 ]
-doctest_optionflags = ["NORMALIZE_WHITESPACE", "IGNORE_EXCEPTION_DETAIL"]
+doctest_optionflags = [
+    "NORMALIZE_WHITESPACE",
+    "IGNORE_EXCEPTION_DETAIL",
+    "ELLIPSIS",
+]
 
 
 [tool.pyright]

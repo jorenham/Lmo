@@ -555,11 +555,11 @@ def l_loc(
     Examples:
         >>> import lmo, numpy as np
         >>> x = np.random.default_rng(12345).standard_cauchy(99)
-        >>> x.mean()  # doctest: +ELLIPSIS
+        >>> x.mean()
         -7.56485034...
-        >>> lmo.l_loc(x)  # doctest: +ELLIPSIS
+        >>> lmo.l_loc(x)
         -7.56485034...
-        >>> lmo.l_loc(x, trim=(1, 1))  # doctest: +ELLIPSIS
+        >>> lmo.l_loc(x, trim=(1, 1))
         -0.15924180...
 
     Notes:
@@ -591,11 +591,11 @@ def l_scale(
     Examples:
         >>> import lmo, numpy as np
         >>> x = np.random.default_rng(12345).standard_cauchy(99)
-        >>> x.std()  # doctest: +ELLIPSIS
+        >>> x.std()
         72.87715244...
-        >>> lmo.l_scale(x)  # doctest: +ELLIPSIS
+        >>> lmo.l_scale(x)
         9.501123995...
-        >>> lmo.l_scale(x, trim=(1, 1))  # doctest: +ELLIPSIS
+        >>> lmo.l_scale(x, trim=(1, 1))
         0.658993279...
 
     Notes:
@@ -635,11 +635,11 @@ def l_variation(
     Examples:
         >>> import lmo, numpy as np
         >>> x = np.random.default_rng(12345).pareto(4.2, 99)
-        >>> x.std() / x.mean()  # doctest: +ELLIPSIS
+        >>> x.std() / x.mean()
         1.32161112...
-        >>> lmo.l_variation(x)  # doctest: +ELLIPSIS
+        >>> lmo.l_variation(x)
         0.59073639...
-        >>> lmo.l_variation(x, trim=(0, 1))  # doctest: +ELLIPSIS
+        >>> lmo.l_variation(x, trim=(0, 1))
         0.55395044...
 
     Notes:
@@ -683,9 +683,9 @@ def l_skew(
     Examples:
         >>> import lmo, numpy as np
         >>> x = np.random.default_rng(12345).standard_exponential(99)
-        >>> lmo.l_skew(x)  # doctest: +ELLIPSIS
+        >>> lmo.l_skew(x)
         0.38524343...
-        >>> lmo.l_skew(x, trim=(0, 1))  # doctest: +ELLIPSIS
+        >>> lmo.l_skew(x, trim=(0, 1))
         0.27116139...
 
     See Also:
@@ -721,9 +721,9 @@ def l_kurtosis(
     Examples:
         >>> import lmo, numpy as np
         >>> x = np.random.default_rng(12345).standard_t(2, 99)
-        >>> lmo.l_kurtosis(x)  # doctest: +ELLIPSIS
+        >>> lmo.l_kurtosis(x)
         0.28912787...
-        >>> lmo.l_kurtosis(x, trim=(1, 1))  # doctest: +ELLIPSIS
+        >>> lmo.l_kurtosis(x, trim=(1, 1))
         0.19928182...
 
     Notes:
