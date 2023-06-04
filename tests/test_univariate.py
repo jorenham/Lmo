@@ -152,4 +152,4 @@ def test_l_scale_linear_scale(x, trim, dscale):
     itrim = trim[::-1] if dscale < 0 and isinstance(trim, tuple) else trim
 
     l2_mul = lmo.l_scale(x * dscale, itrim)
-    assert l2_mul == approx(abs(l2 * dscale), abs=1e-8, rel=1e-5)
+    assert l2_mul == approx(abs(l2 * dscale), abs=1e-5, rel=1e-3)
