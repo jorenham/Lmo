@@ -15,7 +15,7 @@ from numpy import typing as npt
 
 from ._utils import clean_order
 from ._lm import l_weights
-from .stats import order_stats
+from .stats import ordered
 from .typing import AnyInt, IntVector, SortKind
 
 T = TypeVar('T', bound=np.floating[Any])
@@ -157,7 +157,7 @@ def l_comoment(
     kwargs = {'axis': -1, 'dtype': dtype, 'sort': sort}
     for j in range(m):
         # concomitants of x[i] w.r.t. x[j] for all i
-        x_k_ij = order_stats(x, x[j], **kwargs)
+        x_k_ij = ordered(x, x[j], **kwargs)
 
         L_ij[1:, :, j] = np.inner(P_r, x_k_ij)
 

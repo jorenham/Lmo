@@ -10,7 +10,7 @@ from typing import Any, TypeVar, cast
 import numpy as np
 import numpy.typing as npt
 
-from .stats import order_stats
+from .stats import ordered
 
 T = TypeVar('T', bound=np.floating[Any])
 
@@ -87,7 +87,7 @@ def b_moment_cov(
             L-moments](https://doi.org/10.1016/S0378-3758(03)00213-1)
 
     """
-    x = order_stats(a, axis=axis, dtype=dtype, **kwargs)
+    x = ordered(a, axis=axis, dtype=dtype, **kwargs)
 
     # ensure the samples are "in front" (along axis=0)
     if axis and x.ndim > 1:

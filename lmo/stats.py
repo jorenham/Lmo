@@ -1,4 +1,4 @@
-__all__ = 'order_stats',
+__all__ = 'ordered',
 
 from typing import Any, TypeVar
 
@@ -45,7 +45,7 @@ def _apply_aweights(
     return np.swapaxes(out, -1, axis) if swap_axes else out
 
 
-def order_stats(
+def ordered(
     x: npt.ArrayLike,
     y: npt.ArrayLike | None = None,
     /,

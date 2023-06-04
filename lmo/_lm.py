@@ -23,7 +23,7 @@ import numpy.typing as npt
 from ._pwm import b_moment_cov, b_weights
 from ._utils import clean_order, ensure_axis_at
 from .linalg import hosking_jacobi, sandwich, sh_legendre
-from .stats import order_stats
+from .stats import ordered
 from .typing import AnyInt, IntVector, SortKind
 
 T = TypeVar('T', bound=np.floating[Any])
@@ -305,7 +305,7 @@ def l_moment(
 
     """
     # weight-adjusted $x_{i:n}$
-    x_k = order_stats(
+    x_k = ordered(
         a,
         axis=axis,
         dtype=dtype,
