@@ -1,14 +1,18 @@
-__all__ = 'ordered',
+__all__ = 'ordered', 'ppf_order_stat'
 
-from typing import Any, TypeVar
+from types import EllipsisType
+from typing import Any, Callable, TypeVar
 
 import numpy as np
 import numpy.typing as npt
+import scipy.special
+import scipy.integrate
 
 from ._utils import as_float_array
 from .typing import IntVector, SortKind
 
 T = TypeVar('T', bound=np.floating[Any])
+K = TypeVar('K', bound=float | npt.NDArray[np.float_])
 
 
 def _apply_aweights(
@@ -104,3 +108,34 @@ def ordered(
 
     w_k = _sort_like(_clean_array(aweights))
     return _apply_aweights(x_k, w_k, axis=axis or 0)
+
+
+
+def ppf_order_stat(
+    ppf: Callable[[K], K],
+    n: int,
+    i: int | npt.NDArray[np.int_] = ...,
+    /,
+    p_min: float = 0.0,
+    p_max: float = 1.0,
+    **quad_options: Any,
+) -> float | npt.NDArray[np.float_]:
+    # TODO: docs + tests
+
+    j = np.asarray(i)
+
+    if not np.all((0 <= j) & (j < n)):
+        raise ValueError(f'expected 0 <= i < n, got i = {j} and {n = }')
+
+    nj = n - j - 1
+
+    # n! / ( i! * (n - i - 1)! )
+    c = n * scipy.special.comb(n - 1, j, legacy=False)
+
+    def u_ppf(
+        p: float | npt.NDArray[np.float_],
+        /,
+    ) -> float | npt.NDArray[np.float_]:
+        return c * p**j * (1 - p)**nj * ppf(p)
+
+    return scipy.integrate.quad_vec(u_ppf, p_min, p_max, **quad_options)[0]
