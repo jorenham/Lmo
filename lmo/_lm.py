@@ -454,6 +454,11 @@ def l_ratio(
     )
 
     r_eq_s = _r == _s
+    if r_eq_s.ndim < l_rs.ndim - 1:
+        r_eq_s = r_eq_s.reshape(
+            r_eq_s.shape + (1,) * (l_rs.ndim - r_eq_s.ndim - 1)
+        )
+
     with np.errstate(divide='ignore'):
         return np.where(
             r_eq_s,
