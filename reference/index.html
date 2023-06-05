@@ -415,6 +415,26 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#statistical-test-and-tools" class="md-nav__link">
+    Statistical test and tools
+  </a>
+  
+    <nav class="md-nav" aria-label="Statistical test and tools">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lmo.diagnostic.normaltest" class="md-nav__link">
+    normaltest()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -609,6 +629,26 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#statistical-test-and-tools" class="md-nav__link">
+    Statistical test and tools
+  </a>
+  
+    <nav class="md-nav" aria-label="Statistical test and tools">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lmo.diagnostic.normaltest" class="md-nav__link">
+    normaltest()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -699,7 +739,9 @@ observation vector(s) of size <span class="arithmatex">\(n\)</span>), into (an u
               <code>P_r</code>
           </td>
           <td class="doc-returns-details">
-            <p>2-D array of shape <code>(r, n)</code>.</p>
+            <div class="doc-md-description">
+              <p>2-D array of shape <code>(r, n)</code>.</p>
+            </div>
               <p>
                 <span class="doc-returns-annotation">
                   <b>TYPE:</b>
@@ -759,8 +801,10 @@ L-moment, <span class="arithmatex">\(\lambda_r = \lambda^{(0, 0)}_r\)</span>.</p
         <tr>
           <td><code>a</code></td>
           <td class="doc-param-details">
-            <p>Array containing numbers whose L-moments is desired.
+            <div class="doc-md-description">
+              <p>Array containing numbers whose L-moments is desired.
 If <code>a</code> is not an array, a conversion is attempted.</p>
+            </div>
             <p>
                 <span class="doc-param-annotation">
                   <b>TYPE:</b>
@@ -772,7 +816,9 @@ If <code>a</code> is not an array, a conversion is attempted.</p>
         <tr>
           <td><code>r</code></td>
           <td class="doc-param-details">
-            <p>The L-moment order(s), non-negative integer or array.</p>
+            <div class="doc-md-description">
+              <p>The L-moment order(s), non-negative integer or array.</p>
+            </div>
             <p>
                 <span class="doc-param-annotation">
                   <b>TYPE:</b>
@@ -784,7 +830,8 @@ If <code>a</code> is not an array, a conversion is attempted.</p>
         <tr>
           <td><code>trim</code></td>
           <td class="doc-param-details">
-            <p>Left- and right-trim orders <span class="arithmatex">\((t_1, t_2)\)</span>, non-negative integers
+            <div class="doc-md-description">
+              <p>Left- and right-trim orders <span class="arithmatex">\((t_1, t_2)\)</span>, non-negative integers
 that are bound by <span class="arithmatex">\(t_1 + t_2 &lt; n - r\)</span>.</p>
 <p>Some special cases include:</p>
 <ul>
@@ -804,6 +851,7 @@ that are bound by <span class="arithmatex">\(t_1 + t_2 &lt; n - r\)</span>.</p>
     Useful for fitting heavy-tailed distributions, such as the
     Cauchy distribution.</li>
 </ul>
+            </div>
             <p>
                 <span class="doc-param-annotation">
                   <b>TYPE:</b>
@@ -819,8 +867,10 @@ that are bound by <span class="arithmatex">\(t_1 + t_2 &lt; n - r\)</span>.</p>
         <tr>
           <td><code>axis</code></td>
           <td class="doc-param-details">
-            <p>Axis along wich to calculate the moments. If <code>None</code> (default),
+            <div class="doc-md-description">
+              <p>Axis along wich to calculate the moments. If <code>None</code> (default),
 all samples in the array will be used.</p>
+            </div>
             <p>
                 <span class="doc-param-annotation">
                   <b>TYPE:</b>
@@ -836,8 +886,10 @@ all samples in the array will be used.</p>
         <tr>
           <td><code>dtype</code></td>
           <td class="doc-param-details">
-            <p>Floating type to use in computing the L-moments. Default is
+            <div class="doc-md-description">
+              <p>Floating type to use in computing the L-moments. Default is
 <a class="autorefs autorefs-external" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64"><code>numpy.float64</code></a>.</p>
+            </div>
             <p>
                 <span class="doc-param-annotation">
                   <b>TYPE:</b>
@@ -853,8 +905,10 @@ all samples in the array will be used.</p>
         <tr>
           <td><code>fweights</code></td>
           <td class="doc-param-details">
-            <p>1-D array of integer frequency weights; the number of times each
+            <div class="doc-md-description">
+              <p>1-D array of integer frequency weights; the number of times each
 observation vector should be repeated.</p>
+            </div>
             <p>
                 <span class="doc-param-annotation">
                   <b>TYPE:</b>
@@ -870,7 +924,8 @@ observation vector should be repeated.</p>
         <tr>
           <td><code>aweights</code></td>
           <td class="doc-param-details">
-            <p>An array of weights associated with the values in <code>a</code>. Each value
+            <div class="doc-md-description">
+              <p>An array of weights associated with the values in <code>a</code>. Each value
 in <code>a</code> contributes to the average according to its associated
 weight.
 The weights array can either be 1-D (in which case its length must
@@ -879,6 +934,7 @@ If <code>aweights=None</code> (default), then all data in <code>a</code> are ass
 have a weight equal to one.</p>
 <p>All <code>aweights</code> must be <code>&gt;=0</code>, and the sum must be nonzero.</p>
 <p>The algorithm is similar to that for weighted quantiles.</p>
+            </div>
             <p>
                 <span class="doc-param-annotation">
                   <b>TYPE:</b>
@@ -894,7 +950,9 @@ have a weight equal to one.</p>
         <tr>
           <td><code>sort</code></td>
           <td class="doc-param-details">
-            <p>Sorting algorithm, see <a class="autorefs autorefs-external" href="https://numpy.org/doc/stable/reference/generated/numpy.sort.html#numpy.sort"><code>numpy.sort</code></a>.</p>
+            <div class="doc-md-description">
+              <p>Sorting algorithm, see <a class="autorefs autorefs-external" href="https://numpy.org/doc/stable/reference/generated/numpy.sort.html#numpy.sort"><code>numpy.sort</code></a>.</p>
+            </div>
             <p>
                 <span class="doc-param-annotation">
                   <b>TYPE:</b>
@@ -923,10 +981,12 @@ have a weight equal to one.</p>
               <code>l</code>
           </td>
           <td class="doc-returns-details">
-            <p>The L-moment(s) of the input This is a scalar iff a is 1-d and
+            <div class="doc-md-description">
+              <p>The L-moment(s) of the input This is a scalar iff a is 1-d and
 r is a scalar. Otherwise, this is an array with
 <code>np.ndim(r) + np.ndim(a) - 1</code> dimensions and shape like
 <code>(*np.shape(r), *(d for d in np.shape(a) if d != axis))</code>.</p>
+            </div>
               <p>
                 <span class="doc-returns-annotation">
                   <b>TYPE:</b>
@@ -995,7 +1055,9 @@ L-moment point estimates with orders <code>r = 1, ..., r_max</code>.</p>
               <code>S_l</code>
           </td>
           <td class="doc-returns-details">
-            <p>Variance-covariance matrix/tensor of shape <code>(r_max, r_max, ...)</code></p>
+            <div class="doc-md-description">
+              <p>Variance-covariance matrix/tensor of shape <code>(r_max, r_max, ...)</code></p>
+            </div>
               <p>
                 <span class="doc-returns-annotation">
                   <b>TYPE:</b>
@@ -1443,10 +1505,12 @@ Extended to allow for generalized trimming.</p>
         <tr>
           <td><code>a</code></td>
           <td class="doc-param-details">
-            <p>1-D or 2-D array-like containing <code>m</code> variables and <code>n</code> observations.
+            <div class="doc-md-description">
+              <p>1-D or 2-D array-like containing <code>m</code> variables and <code>n</code> observations.
 Each row of <code>a</code> represents a variable, and each column a single
 observation of all those variables. Also see <code>rowvar</code> below.
 If <code>a</code> is not an array, a conversion is attempted.</p>
+            </div>
             <p>
                 <span class="doc-param-annotation">
                   <b>TYPE:</b>
@@ -1458,7 +1522,9 @@ If <code>a</code> is not an array, a conversion is attempted.</p>
         <tr>
           <td><code>r</code></td>
           <td class="doc-param-details">
-            <p>The L-moment order(s), non-negative integer or array.</p>
+            <div class="doc-md-description">
+              <p>The L-moment order(s), non-negative integer or array.</p>
+            </div>
             <p>
                 <span class="doc-param-annotation">
                   <b>TYPE:</b>
@@ -1470,7 +1536,8 @@ If <code>a</code> is not an array, a conversion is attempted.</p>
         <tr>
           <td><code>trim</code></td>
           <td class="doc-param-details">
-            <p>Left- and right-trim orders <span class="arithmatex">\((t_1, t_2)\)</span>, non-negative integers
+            <div class="doc-md-description">
+              <p>Left- and right-trim orders <span class="arithmatex">\((t_1, t_2)\)</span>, non-negative integers
 that are bound by <span class="arithmatex">\(t_1 + t_2 &lt; n - r\)</span>.</p>
 <p>Some special cases include:</p>
 <ul>
@@ -1490,6 +1557,7 @@ that are bound by <span class="arithmatex">\(t_1 + t_2 &lt; n - r\)</span>.</p>
     Useful for fitting heavy-tailed distributions, such as the
     Cauchy distribution.</li>
 </ul>
+            </div>
             <p>
                 <span class="doc-param-annotation">
                   <b>TYPE:</b>
@@ -1505,10 +1573,12 @@ that are bound by <span class="arithmatex">\(t_1 + t_2 &lt; n - r\)</span>.</p>
         <tr>
           <td><code>rowvar</code></td>
           <td class="doc-param-details">
-            <p>If <code>rowvar</code> is True (default), then each row (axis 0) represents a
+            <div class="doc-md-description">
+              <p>If <code>rowvar</code> is True (default), then each row (axis 0) represents a
 variable, with observations in the columns (axis 1).
 Otherwise, the relationship is transposed: each column represents
 a variable, while the rows contain observations.</p>
+            </div>
             <p>
                 <span class="doc-param-annotation">
                   <b>TYPE:</b>
@@ -1524,8 +1594,10 @@ a variable, while the rows contain observations.</p>
         <tr>
           <td><code>dtype</code></td>
           <td class="doc-param-details">
-            <p>Floating type to use in computing the L-moments. Default is
+            <div class="doc-md-description">
+              <p>Floating type to use in computing the L-moments. Default is
 <a class="autorefs autorefs-external" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64"><code>numpy.float64</code></a>.</p>
+            </div>
             <p>
                 <span class="doc-param-annotation">
                   <b>TYPE:</b>
@@ -1541,7 +1613,9 @@ a variable, while the rows contain observations.</p>
         <tr>
           <td><code>sort</code></td>
           <td class="doc-param-details">
-            <p>Sorting algorithm, see <a class="autorefs autorefs-external" href="https://numpy.org/doc/stable/reference/generated/numpy.sort.html#numpy.sort"><code>numpy.sort</code></a>.</p>
+            <div class="doc-md-description">
+              <p>Sorting algorithm, see <a class="autorefs autorefs-external" href="https://numpy.org/doc/stable/reference/generated/numpy.sort.html#numpy.sort"><code>numpy.sort</code></a>.</p>
+            </div>
             <p>
                 <span class="doc-param-annotation">
                   <b>TYPE:</b>
@@ -1570,7 +1644,9 @@ a variable, while the rows contain observations.</p>
               <code>L</code>
           </td>
           <td class="doc-returns-details">
-            <p>Array of shape <code>(*r.shape, m, m)</code> with r-th L-comoments.</p>
+            <div class="doc-md-description">
+              <p>Array of shape <code>(*r.shape, m, m)</code> with r-th L-comoments.</p>
+            </div>
               <p>
                 <span class="doc-returns-annotation">
                   <b>TYPE:</b>
@@ -1831,6 +1907,159 @@ the ratio of the L-coscale matrix over the L-scale <strong>column</strong>-vecto
 <li><a class="autorefs autorefs-internal" href="#lmo.l_coratio"><code>lmo.l_coratio</code></a></li>
 <li><a class="autorefs autorefs-internal" href="#lmo.l_kurtosis"><code>lmo.l_kurtosis</code></a></li>
 </ul>
+</details>
+  </div>
+
+</div>
+
+
+
+  </div>
+
+  </div>
+
+</div><h2 id="statistical-test-and-tools">Statistical test and tools</h2>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+  <div class="doc doc-contents first">
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="lmo.diagnostic.normaltest" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">diagnostic</span><span class="o">.</span><span class="n">normaltest</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Test the null hypothesis that a sample comes from a normal distribution.
+Based on the Harri &amp; Coble (2011) test, and includes Hosking's correction.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>PARAMETER</b></th>
+        <th><b>DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>a</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>The array-like data.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><a class="autorefs autorefs-external" title="numpy.typing" href="https://numpy.org/doc/stable/reference/typing.html#module-numpy.typing">npt</a>.<a class="autorefs autorefs-external" title="numpy.typing.ArrayLike" href="https://numpy.org/doc/stable/reference/typing.html#numpy.typing.ArrayLike">ArrayLike</a></code>
+                </span>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td><code>axis</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Axis along which to compute the test.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code>int | None</code>
+                </span>
+                <span class="doc-param-default">
+                  <b>DEFAULT:</b> 
+                    <code>None</code>
+                </span>
+            </p>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>RETURNS</b></th>
+        <th><b>DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+              <code>statistic</code>
+          </td>
+          <td class="doc-returns-details">
+            <div class="doc-md-description">
+              <p>The <span class="arithmatex">\(\tau^2_{3, 4}\)</span> test statistic.</p>
+            </div>
+              <p>
+                <span class="doc-returns-annotation">
+                  <b>TYPE:</b>
+                    <code><span title="lmo.diagnostic.NormaltestResult">NormaltestResult</span></code>
+                </span>
+              </p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+              <code>pvalue</code>
+          </td>
+          <td class="doc-returns-details">
+            <div class="doc-md-description">
+              <p>A 2-sided chi squared probability for the hypothesis test.</p>
+            </div>
+              <p>
+                <span class="doc-returns-annotation">
+                  <b>TYPE:</b>
+                    <code><span title="lmo.diagnostic.NormaltestResult">NormaltestResult</span></code>
+                </span>
+              </p>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+<p><strong>Examples:</strong></p>
+    <p>Compare the testing power with
+<a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.normaltest.html#scipy.stats.normaltest"><code>scipy.stats.normaltest</code></a> given 10.000 samples
+from a contaminated normal distribution.</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">lmo.diagnostic</span> <span class="kn">import</span> <span class="n">normaltest</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">normaltest</span> <span class="k">as</span> <span class="n">normaltest_scipy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">n</span> <span class="o">=</span> <span class="mi">10_000</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="mf">0.9</span> <span class="o">*</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">normaltest</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+<span class="go">0.04806618...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">normaltest_scipy</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+<span class="go">0.08435627...</span>
+</code></pre></div>
+
+<details class="references" open>
+  <summary>References</summary>
+  <p><a href="https://doi.org/10.1080/02664763.2010.498508">A. Harri &amp; K.H. Coble (2011) - Normality testing: Two new tests
+using L-moments</a></p>
 </details>
   </div>
 
