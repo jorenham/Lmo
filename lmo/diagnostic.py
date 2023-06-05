@@ -46,6 +46,10 @@ def normaltest(
         >>> normaltest_scipy(x)[1]
         0.08435627...
 
+    References:
+        [A. Harri & K.H. Coble (2011) - Normality testing: Two new tests
+        using L-moments](https://doi.org/10.1080/02664763.2010.498508)
+
     """
     x = np.asanyarray(a)
 
