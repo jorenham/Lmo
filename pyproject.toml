@@ -30,8 +30,8 @@ Documentation = "https://jorenham.github.io/lmo/"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-numpy = "^1.21"
-scipy = { version = "^1.8", python = "<3.12" }
+numpy = "^1.22"
+scipy = { version = "^1.9", python = "<3.12" }
 
 
 [tool.poetry.group.dev.dependencies]
