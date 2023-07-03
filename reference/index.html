@@ -21,7 +21,7 @@
         <link rel="next" href="../contributing/">
       
       <link rel="icon" href="../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.15">
+      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.17">
     
     
       
@@ -694,7 +694,7 @@
 
 
 <h3 id="lmo.l_weights" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_weights</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_weights</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
 
 </h3>
 
@@ -779,7 +779,7 @@ observation vector(s) of size <span class="arithmatex">\(n\)</span>), into (an u
 
 
 <h3 id="lmo.l_moment" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_moment</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">fweights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">aweights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="s1">&#39;stable&#39;</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_moment</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">fweights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">aweights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="s1">&#39;stable&#39;</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
 
 </h3>
 
@@ -961,6 +961,26 @@ have a weight equal to one.</p>
                 <span class="doc-param-default">
                   <b>DEFAULT:</b> 
                     <code>&#39;stable&#39;</code>
+                </span>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td><code>cache</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Set to <code>True</code> to speed up future L-moment calculations that have
+the same number of observations in <code>a</code>, equal <code>trim</code>, and equal or
+smaller <code>r</code>.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code>bool</code>
+                </span>
+                <span class="doc-param-default">
+                  <b>DEFAULT:</b> 
+                    <code>False</code>
                 </span>
             </p>
           </td>
@@ -1466,7 +1486,7 @@ for short:</p>
 
 
 <h3 id="lmo.l_comoment" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_comoment</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">rowvar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="s1">&#39;stable&#39;</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_comoment</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">rowvar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="s1">&#39;stable&#39;</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
 
 </h3>
 
@@ -1624,6 +1644,26 @@ a variable, while the rows contain observations.</p>
                 <span class="doc-param-default">
                   <b>DEFAULT:</b> 
                     <code>&#39;stable&#39;</code>
+                </span>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td><code>cache</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Set to <code>True</code> to speed up future L-moment calculations that have
+the same number of observations in <code>a</code>, equal <code>trim</code>, and equal or
+smaller <code>r</code>.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code>bool</code>
+                </span>
+                <span class="doc-param-default">
+                  <b>DEFAULT:</b> 
+                    <code>False</code>
                 </span>
             </p>
           </td>
@@ -2127,13 +2167,19 @@ using L-moments</a></p>
     <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.b4d07000.min.js"></script>
+      <script src="../assets/javascripts/bundle.b425cdc4.min.js"></script>
       
-        <script src="../scripts/mathjax.js"></script>
+        
+          <script src="../scripts/mathjax.js"></script>
+        
       
-        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+        
+          <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+        
       
-        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+        
+          <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+        
       
     
   </body>
