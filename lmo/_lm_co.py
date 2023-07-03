@@ -30,6 +30,7 @@ def l_comoment(
     dtype: np.dtype[T] | type[T] = np.float_,
     *,
     sort: SortKind | None = 'stable',
+    cache: bool = False,
 ) -> npt.NDArray[T]:
     """
     Multivariate extension of [`lmo.l_moment`][lmo.l_moment]. Estimates the
@@ -102,6 +103,11 @@ def l_comoment(
         sort ('quick' | 'stable' | 'heap'):
             Sorting algorithm, see [`numpy.sort`][numpy.sort].
 
+        cache:
+            Set to `True` to speed up future L-moment calculations that have
+            the same number of observations in `a`, equal `trim`, and equal or
+            smaller `r`.
+
     Returns:
         L: Array of shape `(*r.shape, m, m)` with r-th L-comoments.
 
@@ -145,7 +151,7 @@ def l_comoment(
         return np.empty(np.shape(_r) + (0, 0), dtype=dtype)
 
     # projection matrix of shape (r, n)
-    P_r = l_weights(r_max, n, trim, dtype=dtype)
+    P_r = l_weights(r_max, n, trim, dtype=dtype, cache=cache)
 
     # L-comoment matrices for r = 0, ..., r_max
     L_ij = np.empty((r_max + 1, m, m), dtype=dtype)
@@ -154,10 +160,9 @@ def l_comoment(
     # matrix is the identity matrix
     L_ij[0] = np.eye(m, dtype=dtype)
 
-    kwargs = {'axis': -1, 'dtype': dtype, 'sort': sort}
     for j in range(m):
         # concomitants of x[i] w.r.t. x[j] for all i
-        x_k_ij = ordered(x, x[j], **kwargs)
+        x_k_ij = ordered(x, x[j], axis=-1, dtype=dtype, sort=sort)
 
         L_ij[1:, :, j] = np.inner(P_r, x_k_ij)
 

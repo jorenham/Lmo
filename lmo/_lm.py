@@ -15,7 +15,7 @@ __all__ = (
     'l_kurtosis',
 )
 
-from typing import Any, TypeVar, cast
+from typing import Any, Final, TypeVar, cast
 
 import numpy as np
 import numpy.typing as npt
@@ -29,9 +29,16 @@ from .typing import AnyInt, IntVector, SortKind
 T = TypeVar('T', bound=np.floating[Any])
 
 
-# Low-level methods
+# Low-level weight methods
 
-def l0_weights(
+_L_WEIGHTS_CACHE: Final[
+    dict[
+        tuple[int, int, int],  # (n, t_1, t_2)
+        npt.NDArray[np.floating[Any]]
+    ]
+] = {}
+
+def _l0_weights(
     r: int,
     n: int,
     /,
@@ -125,6 +132,8 @@ def l_weights(
     /,
     trim: tuple[int, int] = (0, 0),
     dtype: np.dtype[T] | type[T] = np.float_,
+    *,
+    cache: bool = False
 ) -> npt.NDArray[T]:
     """
     Projection matrix of the first $r$ (T)L-moments for $n$ samples.
@@ -174,8 +183,22 @@ def l_weights(
             L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
 
     """
+    cache_key = n, *trim
+    if (
+        cache_key in _L_WEIGHTS_CACHE
+        and (P_r := _L_WEIGHTS_CACHE[cache_key]).shape[0] <= r
+    ):
+        if P_r.dtype is not np.dtype(dtype):
+            P_r = P_r.view(dtype)
+        if P_r.shape[0] < r:
+            P_r = P_r[:r]
+
+        assert P_r.shape == (r, n)
+        return cast(npt.NDArray[T], P_r)
+
+
     if sum(trim) == 0:
-        return l0_weights(r, n, dtype)
+        return _l0_weights(r, n, dtype)
 
     P_r = np.empty((r, n), dtype)
 
@@ -187,7 +210,7 @@ def l_weights(
 
     np.matmul(
         hosking_jacobi(r, trim),
-        l0_weights(r + sum(trim), n),
+        _l0_weights(r + sum(trim), n),
         out=P_r
     )
 
@@ -196,6 +219,11 @@ def l_weights(
     t1, t2 = trim
     P_r[:, :t1] = P_r[:, n - t2:] = 0
     P_r[1:, t1:n - t2] -= P_r[1:, t1:n - t2].mean(1, keepdims=True)
+
+    if cache:
+        # memoize, and mark as readonly to avoid corruping the cache
+        P_r.setflags(write=False)
+        _L_WEIGHTS_CACHE[cache_key] = P_r
 
     return P_r
 
@@ -213,6 +241,7 @@ def l_moment(
     fweights: IntVector | None = None,
     aweights: npt.ArrayLike | None = None,
     sort: SortKind | None = 'stable',
+    cache: bool = False,
 ) -> T | npt.NDArray[T]:
     """
     Estimates the generalized trimmed L-moment $\\lambda^{(t_1, t_2)}_r$ from
@@ -277,6 +306,11 @@ def l_moment(
         sort ('quick' | 'stable' | 'heap'):
             Sorting algorithm, see [`numpy.sort`][numpy.sort].
 
+        cache:
+            Set to `True` to speed up future L-moment calculations that have
+            the same number of observations in `a`, equal `trim`, and equal or
+            smaller `r`.
+
     Returns:
         l:
             The L-moment(s) of the input This is a scalar iff a is 1-d and
@@ -322,7 +356,7 @@ def l_moment(
     n = x_k.shape[-1]
 
     # projection matrix
-    P_r = l_weights(r_max, n, trim, dtype=dtype)
+    P_r = l_weights(r_max, n, trim, dtype=dtype, cache=cache)
 
     l_r = np.inner(P_r, x_k)
 

@@ -3,7 +3,7 @@ from hypothesis.extra import numpy as hnp
 
 import numpy as np
 
-from lmo._lm import l0_weights, l_weights
+from lmo._lm import l_weights
 
 st_n = st.integers(32, 1024)
 st_r = st.integers(1, 8)
@@ -26,7 +26,7 @@ st_dtype_real = st.one_of(
 
 @given(n=st_n, r=st_r, trim0=st.just((0, 0)))
 def test_l_weights_alias(n, r, trim0):
-    w_l = l0_weights(r, n)
+    w_l = l_weights(r, n)
     w_tl = l_weights(r, n, trim0)
 
     assert np.array_equal(w_l, w_tl)
