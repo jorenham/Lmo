@@ -193,8 +193,10 @@ def l_weights(
         if P_r.shape[0] < r:
             P_r = P_r[:r]
 
-        assert P_r.shape == (r, n)
-        return cast(npt.NDArray[T], P_r)
+        # ignore if r is larger that what's cached
+        if P_r.shape[0] == r:
+            assert P_r.shape == (r, n)
+            return cast(npt.NDArray[T], P_r)
 
 
     if sum(trim) == 0:
