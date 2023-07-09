@@ -35,16 +35,17 @@ scipy = { version = "^1.9", python = "<3.12" }
 
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^7.3"
-hypothesis = {extras = ["numpy"], version = "^6.75"}
+pytest = "^7.4"
+hypothesis = {extras = ["numpy"], version = "^6.80"}
 pyright = "^1.1"
-ruff = ">=0.0.263,<1.0"
+ruff = ">=0.0.277,<1.0"
+ipython = "^8.14"
 
 [tool.poetry.group.docs.dependencies]
-mkdocs = "^1.4.3"
-mkdocs-material = ">=9.1.9"
-mkdocs-include-markdown-plugin = { version = ">=4.0.4", python = "<3.12" }
-mkdocstrings = {extras = ["python"], version = ">=0.21.2,<1.0"}
+mkdocs = "^1.4"
+mkdocs-material = "^9.1"
+mkdocs-include-markdown-plugin = { version = ">=4.0", python = "<3.12" }
+mkdocstrings = {extras = ["python"], version = ">=0.22,<1.0"}
 
 
 [tool.pytest.ini_options]
@@ -70,8 +71,10 @@ exclude = [
     "**/__pycache__",
     "**/.pytest_cache",
     "**/.hypothesis",
-    "**./.pytest_cache",
+    "**/.pytest_cache",
     "**/.ruff_cache",
+    "**/.vscode",
+    "**/.idea",
     ".git",
     ".github",
     "dist",
@@ -85,7 +88,7 @@ pythonPlatform = "Linux"
 typeCheckingMode = "strict"
 reportMissingImports = true
 reportMissingTypeStubs = false
-
+useLibraryCodeForTypes = false
 
 [tool.ruff]
 line-length = 80
