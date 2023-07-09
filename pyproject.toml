@@ -22,6 +22,9 @@ classifiers = [
     "Topic :: Scientific/Engineering",
     "Topic :: Utilities",
     "Typing :: Typed",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
 ]
 
 [tool.poetry.urls]
@@ -31,8 +34,7 @@ Documentation = "https://jorenham.github.io/lmo/"
 [tool.poetry.dependencies]
 python = "^3.10"
 numpy = "^1.22"
-scipy = { version = "^1.9", python = "<3.12" }
-
+scipy = "^1.9"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4"

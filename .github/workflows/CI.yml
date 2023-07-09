@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.10', '3.11']
+        python-version: ['3.10', '3.11', '3.12']
 
     steps:
       - name: checkout
@@ -28,7 +28,7 @@ jobs:
           cache: poetry
 
       - name: install
-        run: poetry install --sync
+        run: poetry install --sync --without doocs
 
       - name: ruff
         run: poetry run ruff check lmo
