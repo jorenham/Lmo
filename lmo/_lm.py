@@ -15,14 +15,14 @@ __all__ = (
     'l_kurtosis',
 )
 
-from typing import Any, Final, TypeVar, cast
+from typing import Any, Callable, Final, TypeVar, cast
 
 import numpy as np
 import numpy.typing as npt
 
 from ._pwm import b_moment_cov, b_weights
 from ._utils import clean_order, ensure_axis_at
-from .linalg import hosking_jacobi, sandwich, sh_legendre
+from .linalg import trim_matrix, sandwich, sh_legendre
 from .stats import ordered
 from .typing import AnyInt, IntVector, SortKind
 
@@ -211,7 +211,7 @@ def l_weights(
     # with orders k, ..., k + t_1 + t_2
 
     np.matmul(
-        hosking_jacobi(r, trim),
+        trim_matrix(r, trim),
         _l0_weights(r + sum(trim), n),
         out=P_r
     )
@@ -431,7 +431,7 @@ def l_moment_cov(
 
     # projection matrix: PWMs -> generalized trimmed L-moments
     P_l: npt.NDArray[np.floating[Any]]
-    P_l = hosking_jacobi(int(r_max), trim=trim, dtype=dtype) @ sh_legendre(ks)
+    P_l = trim_matrix(int(r_max), trim=trim, dtype=dtype) @ sh_legendre(ks)
     # clean some numerical noise
     P_l = np.round(P_l, 12) + 0.  # pyright: ignore [reportUnknownMemberType]
 

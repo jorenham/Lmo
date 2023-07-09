@@ -1,22 +1,44 @@
 # Lmo reference
 
-## Univariate L-moments
+
+## High-level API
+
+### L-moments
 
 ::: lmo
     options:
-        filters: ["^l_[^co]"]
-        heading_level: 3
+      filters: 
+      - "!l_weights"
+      - "!^l_co"
+      heading_level: 4
 
-
-## Multivariate L-comoments
+### Mixed L-(co)moments
 
 ::: lmo
     options:
-        filters: ["^l_[co]"]
-        heading_level: 3
+      filters: ["^l_co"]
+      heading_level: 4
 
-## Statistical test and tools 
+### Statistical test and tools 
 
 ::: lmo.diagnostic
     options:
-        heading_level: 3
+      heading_level: 4
+
+
+
+## Low-level API
+
+
+::: lmo
+    options:
+      members:
+      - l_weights
+      heading_level: 3
+
+### `linalg`
+
+::: lmo.linalg
+    options:
+      heading_level: 4
+      show_root_full_path: true
