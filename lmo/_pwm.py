@@ -3,13 +3,15 @@ Power-Weighted Moment (PWM) estimators.
 
 Primarily used as an intermediate step for L-moment estimation.
 """
-__all__ = 'b_weights', 'b_moment_cov'
+__all__ = 'b_weights', 'b_moment_cov', 'b_from_ppf'
 
-from typing import Any, TypeVar, cast
+from typing import Any, Callable, TypeVar, cast
 
 import numpy as np
 import numpy.typing as npt
+import scipy.integrate
 
+from .typing import AnyInt
 from .stats import ordered
 
 T = TypeVar('T', bound=np.floating[Any])
@@ -22,8 +24,8 @@ def b_weights(
     dtype: np.dtype[T] | type[T] = np.float_,
 ) -> npt.NDArray[T]:
     """
-    Probability Weighted moment (PWM) projection matrix $B$  of the
-    unbiased estimator for $\\beta_{k} = M_{1,k,0}$ for $k = 0, \\dots, r - 1$.
+    Probability Weighted moment (PWM) projection matrix $B$ of the
+    unbiased estimator for $\\beta_k = M_{1,k,0}$ for $k = 0, \\dots, r - 1$.
 
     The PWM's are estimated by linear projection of the sample of order
     statistics, i.e. $b = B x_{i:n}$
@@ -66,18 +68,26 @@ def b_weights(
 
 def b_moment_cov(
     a: npt.ArrayLike,
-    ks: int,
+    r: int,
     /,
     axis: int | None = None,
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
 ) -> npt.NDArray[T]:
     """
-    Distribution-free variance-covariance matrix of the $\\beta$ PWM point
-    estimates with orders `k = 0, ..., ks`.
+    Distribution-free variance-covariance matrix of the probability weighted
+    moment (PWM) point estimates $\\beta_k = M_{1,k,0}$, with orders
+    $k = 0, \\dots, r - 1$.
+
+    Parameters:
+        a: Array-like with observations.
+        r: The amount of orders to evaluate, i.e. $k = 0, \\dots, r - 1$.
+        axis: The axis along which to calculate the covariance matrices.
+        dtype: Desired output floating data type.
+        **kwargs: Additional keywords to pass to `lmo.stats.ordered`.
 
     Returns:
-        S_b: Variance-covariance matrix/tensor of shape `(ks, ks, ...)`
+        S_b: Variance-covariance matrix/tensor of shape `(r, ...)`
 
     See Also:
         - https://wikipedia.org/wiki/Covariance_matrix
@@ -94,23 +104,23 @@ def b_moment_cov(
         x = np.moveaxis(x, axis, 0)
 
     n = len(x)
-    P_k = b_weights(ks, n, dtype=dtype)
+    P_k = b_weights(r, n, dtype=dtype)
 
     # beta pwm estimates
     b = P_k @ x if x.ndim == 1 else np.inner(P_k, x.T)
-    assert b.shape == (ks, *x.shape[1:])
+    assert b.shape == (r, *x.shape[1:])
 
     # the covariance matrix
-    S_b = np.empty((ks, *b.shape), dtype=dtype)
+    S_b = np.empty((r, *b.shape), dtype=dtype)
 
     # dynamic programming approach for falling factorial ratios:
     # w_ki[k, i] = i^(k) / (n-1)^(k))
-    ffact = np.ones((ks, n), dtype=dtype)
-    for k in range(1, ks):
+    ffact = np.ones((r, n), dtype=dtype)
+    for k in range(1, r):
         ffact[k] = ffact[k - 1] * np.linspace((1 - k) / (n - k), 1, n)
 
     # ensure that at most ffact[..., -k_max] will give 0
-    ffact = np.c_[ffact, np.zeros((ks, ks))]
+    ffact = np.c_[ffact, np.zeros((r, r))]
 
     spec = 'i..., i...'
 
@@ -119,7 +129,7 @@ def b_moment_cov(
     #     2 * i^(k) * (j-k-1)^(k) * x[i] * x[j]
     #     for j in range(i + 1, n)
     # ) / n^(k+l+2)
-    for k in range(ks):
+    for k in range(r):
         j_k = np.arange(-k, n - k - 1)  # pyright: ignore
         v_ki = np.empty(x.shape, dtype=dtype)
         for i in range(n):
@@ -140,7 +150,7 @@ def b_moment_cov(
     #     * x[i] * x[j]
     #     for j in range(i + 1, n)
     # ) / n^(k+l+2)
-    for k, m in zip(*np.tril_indices(ks, -1)):
+    for k, m in zip(*np.tril_indices(r, -1)):
         j_k: npt.NDArray[np.int_] = np.arange(-k, n - k - 1)  # pyright: ignore
         j_l: npt.NDArray[np.int_] = np.arange(-m, n - m - 1)  # pyright: ignore
 
@@ -159,3 +169,45 @@ def b_moment_cov(
         S_b[k, m] = S_b[m, k] = b[k] * b[m] - m_bb
 
     return S_b
+
+
+X = TypeVar('X', bound=float | npt.NDArray[np.floating[Any]])
+
+
+def _db_dp(p: float, ppf: Callable[[float], X], k: AnyInt) -> X:
+    return cast(X, ppf(p) * p**k)
+
+
+def b_from_ppf(ppf: Callable[[float], X], k: AnyInt, **kwargs: Any) -> X:
+    """
+    Evaluate the theoretical PWMs $\\beta_k = M_{1,k,0}$ of a random variable
+    with the given percentile-point function (i.e. the quantile function).
+
+    This function is not vectorized, but supports multivariate distributions.
+
+    TODO:
+        - `@typing.overload`
+        - better docstring
+        - example
+        - tests
+
+    """
+    if k < 0:
+        raise ValueError('k must be >= 0')
+
+    # handle endpoint singularities
+    points = set(kwargs.get('points', set()))
+    lb, ub = ppf(0), ppf(1)
+    if not np.all(np.isfinite(lb)):
+        points.add(0)
+    if not np.all(np.isfinite(ub)):
+        points.add(1)
+    kwargs['points'] = list(points)
+    
+    if np.isscalar(lb):
+        assert np.isscalar(ub), (lb, ub)
+        quad = scipy.integrate.quad  # type: ignore
+    else:
+        quad = scipy.integrate.quad_vec  # type: ignore
+
+    return cast(X, quad(_db_dp, 0, 1, args=(ppf, k), **kwargs)[0])
