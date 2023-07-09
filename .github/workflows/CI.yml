@@ -28,7 +28,7 @@ jobs:
           cache: poetry
 
       - name: install
-        run: poetry install --sync --without doocs
+        run: poetry install --sync --without docs --without debug
 
       - name: ruff
         run: poetry run ruff check lmo
