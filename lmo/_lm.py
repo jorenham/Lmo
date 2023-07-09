@@ -15,7 +15,7 @@ __all__ = (
     'l_kurtosis',
 )
 
-from typing import Any, Callable, Final, TypeVar, cast
+from typing import Any, Final, TypeVar, cast
 
 import numpy as np
 import numpy.typing as npt

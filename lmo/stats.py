@@ -2,12 +2,12 @@ __all__ = 'ordered', 'ostat_from_ppf', 'l_moment_from_ppf'
 
 import functools
 import math
-from typing import Any, Callable, TypeVar
+from typing import Any, Callable, TypeVar, cast
 
 import numpy as np
 import numpy.typing as npt
-from scipy import special as scipy_special
-from scipy import integrate as scipy_integrate
+import scipy.integrate
+import scipy.special
 
 from ._utils import as_float_array
 from .typing import AnyInt, IntVector, SortKind
@@ -121,12 +121,10 @@ def ostat_from_ppf(
     p_min: float = 0.0,
     p_max: float = 1.0,
     cache: bool = True,
-
-    **quad_options: Any,
-) -> Callable[[int, int], R]:
+) -> Callable[[AnyInt, AnyInt], R]:
     # TODO: docstring, example, tests
 
-    ppf_cached = functools.cache(ppf) if cache else ppf
+    ppf_cached: Callable[[float], R] = functools.cache(ppf) if cache else ppf
 
     def u_ppf(
         p: float,
@@ -134,7 +132,8 @@ def ostat_from_ppf(
         n: int,
         /,
     ) -> R:
-        return (
+        return cast(
+            R,
             ppf_cached(p)
             * p**(i - 1)
             * (1 - p)**(n - i)
@@ -142,18 +141,16 @@ def ostat_from_ppf(
             * n
         )
 
-    def u_mean(i: int, n: int, /) -> R:
+    def u_mean(i: AnyInt, n: AnyInt, /) -> R:
         if not (0 < i <= n):
             raise ValueError(f'expected 0 < i <= n, got {i = } and {n = }')
 
-        val = scipy_integrate.quad(
+        return scipy.integrate.quad( # type: ignore
             u_ppf,
             p_min,
             p_max,
-            args=(i, n),
-            **quad_options
+            args=(int(i), int(n)),
         )[0]
-        return np.round(val, 15)
 
     return u_mean
 
@@ -166,10 +163,14 @@ def l_moment_from_ppf(
     **options: Any,
 ) -> float | npt.NDArray[np.float_]:
     # TODO: docstring, example, tests
+
     t1, t2 = trim
+    if t1 < 0 or t2 < 0:
+        raise ValueError('trim values must be non-negative')
+
     u = ostat_from_ppf(ppf, **options)
 
-    def l_moment(_r: int) -> float | npt.NDArray[np.float_]:
+    def l_moment(_r: AnyInt) -> float | npt.NDArray[np.float_]:
         if _r < 0:
             raise ValueError(f'r must be >=0, got {_r}')
         if _r == 0:
@@ -177,14 +178,14 @@ def l_moment_from_ppf(
 
         return np.array([
             (-1) ** _k
-            * scipy_special.comb(_r - 1, _k, exact=True, legacy=False)
+            * math.comb(_r - 1, _k)
             * u(t1 + _r - _k, t1 + t2 + _r)
-            for _k in range(_r)
+            for _k in range(int(_r))
         ]).mean()
 
-    rs = np.asarray(r)
-    if rs.ndim == 0:
-        return l_moment(rs[()])
+    rs = np.asarray(r, np.int_).ravel()
+    if rs.size == 0:
+        return l_moment(rs[0])
 
     l_r = np.empty(rs.shape)
     for ix in np.ndindex(*rs.shape):
