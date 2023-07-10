@@ -1,16 +1,12 @@
-__all__ = 'ordered', 'ostat_from_ppf', 'l_moment_from_ppf'
+__all__ = 'ordered',
 
-import functools
-import math
-from typing import Any, Callable, TypeVar, cast
+from typing import Any, TypeVar
 
 import numpy as np
 import numpy.typing as npt
-import scipy.integrate
-import scipy.special
 
 from ._utils import as_float_array
-from .typing import AnyInt, IntVector, SortKind
+from .typing import IntVector, SortKind
 
 T = TypeVar('T', bound=np.floating[Any])
 
@@ -108,87 +104,3 @@ def ordered(
 
     w_k = _sort_like(_clean_array(aweights))
     return _apply_aweights(x_k, w_k, axis=axis or 0)
-
-
-
-R = TypeVar('R', bound=float | npt.NDArray[np.float_])
-
-
-def ostat_from_ppf(
-    ppf: Callable[[float], R],
-    /,
-    *,
-    p_min: float = 0.0,
-    p_max: float = 1.0,
-    cache: bool = True,
-) -> Callable[[AnyInt, AnyInt], R]:
-    # TODO: docstring, example, tests
-
-    ppf_cached: Callable[[float], R] = functools.cache(ppf) if cache else ppf
-
-    def u_ppf(
-        p: float,
-        i: int,
-        n: int,
-        /,
-    ) -> R:
-        return cast(
-            R,
-            ppf_cached(p)
-            * p**(i - 1)
-            * (1 - p)**(n - i)
-            * math.comb(n - 1, i - 1)
-            * n
-        )
-
-    def u_mean(i: AnyInt, n: AnyInt, /) -> R:
-        if not (0 < i <= n):
-            raise ValueError(f'expected 0 < i <= n, got {i = } and {n = }')
-
-        return scipy.integrate.quad( # type: ignore
-            u_ppf,
-            p_min,
-            p_max,
-            args=(int(i), int(n)),
-        )[0]
-
-    return u_mean
-
-
-def l_moment_from_ppf(
-    ppf: Callable[[float], R],
-    r: AnyInt | IntVector,
-    /,
-    trim: tuple[int, int] = (0, 0),
-    **options: Any,
-) -> float | npt.NDArray[np.float_]:
-    # TODO: docstring, example, tests
-
-    t1, t2 = trim
-    if t1 < 0 or t2 < 0:
-        raise ValueError('trim values must be non-negative')
-
-    u = ostat_from_ppf(ppf, **options)
-
-    def l_moment(_r: AnyInt) -> float | npt.NDArray[np.float_]:
-        if _r < 0:
-            raise ValueError(f'r must be >=0, got {_r}')
-        if _r == 0:
-            return 1.0
-
-        return np.array([
-            (-1) ** _k
-            * math.comb(_r - 1, _k)
-            * u(t1 + _r - _k, t1 + t2 + _r)
-            for _k in range(int(_r))
-        ]).mean()
-
-    rs = np.asarray(r, np.int_).ravel()
-    if rs.size == 0:
-        return l_moment(rs[0])
-
-    l_r = np.empty(rs.shape)
-    for ix in np.ndindex(*rs.shape):
-        l_r[ix] = l_moment(rs[ix])
-
-    return np.round(l_r, 12)

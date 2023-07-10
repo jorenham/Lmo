@@ -19,6 +19,9 @@ __all__ = (
     'l_corr',
     'l_coskew',
     'l_cokurtosis',
+
+    'l_moment_from_cdf',
+    'l_moment_from_ppf',
 )
 
 from typing import Final as _Final
@@ -35,6 +38,8 @@ from ._lm import (
     l_variation,
     l_skew,
     l_kurtosis,
+    l_moment_from_cdf,
+    l_moment_from_ppf,
 )
 from ._lm_co import (
     l_comoment,

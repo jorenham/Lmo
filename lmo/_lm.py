@@ -13,18 +13,24 @@ __all__ = (
     'l_variation',
     'l_skew',
     'l_kurtosis',
+
+    'l_moment_from_cdf',
+    'l_moment_from_ppf',
 )
 
-from typing import Any, Final, TypeVar, cast
+import functools
+import math
+from typing import Any, Callable, Final, TypeVar, cast
+import warnings
 
 import numpy as np
 import numpy.typing as npt
 
 from ._pwm import b_moment_cov, b_weights
 from ._utils import clean_order, ensure_axis_at
-from .linalg import trim_matrix, sandwich, sh_legendre
+from .linalg import trim_matrix, sandwich, sh_legendre, sh_jacobi
 from .stats import ordered
-from .typing import AnyInt, IntVector, SortKind
+from .typing import AnyFloat, AnyInt, IntVector, SortKind
 
 T = TypeVar('T', bound=np.floating[Any])
 
@@ -350,12 +356,9 @@ def l_moment(
         sort=sort,
     )
     x_k = ensure_axis_at(x_k, axis, -1)
-
-    r_max: int = clean_order(cast(
-        int,
-        np.max(np.asarray(r))  # pyright: ignore [reportUnknownMemberType]
-    ))
     n = x_k.shape[-1]
+
+    r_max = clean_order(np.max(np.asarray(r)))
 
     # projection matrix
     P_r = l_weights(r_max, n, trim, dtype=dtype, cache=cache)
@@ -778,3 +781,172 @@ def l_kurtosis(
 
     """
     return l_ratio(a, 4, 2, trim, axis, dtype, **kwargs)
+
+
+# Numerical calculation of population L-moments
+
+
+def l_moment_from_cdf(
+    cdf: Callable[[float], float],
+    r: AnyInt | IntVector,
+    /,
+    trim: tuple[AnyFloat, AnyFloat] = (0, 0),
+    support: tuple[AnyFloat, AnyFloat] = (-np.inf, np.inf),
+) -> float | npt.NDArray[np.float_]:
+    # TODO: docstring
+    # TODO: r <= 1
+
+    _r = np.asanyarray(r)
+    if not np.issubdtype(_r.dtype, np.integer):
+        raise TypeError(f'r must be integer-valued, got {_r.dtype.str!r}')
+    if _r.size == 0:
+        raise ValueError('no r provided')
+    if np.any((_r < 0) | (_r == 1)):
+        # TODO: figure out a r=1 that doesn't need the pdf
+        raise ValueError('r must be >=0 and not 1')
+
+    s, t = np.asanyarray(trim)
+
+    r_max = clean_order(np.max(_r))
+    r_vals, r_idxs = np.unique(_r, return_inverse=True)
+    assert r_vals.ndim == 1
+
+    def _w(x: float, *args: Any) -> tuple[float, float]:
+        p = cdf(x, *args)
+        return p, p ** (s + 1) * (1 - p) ** (t + 1)
+
+    # caching the weight function only makes sense for multiple quad calls
+    w = functools.cache(_w) if len(r_vals) > 1 else _w
+
+    # shifted Jacobi polynomial coefficients
+    j = sh_jacobi(r_max - 1, t + 1, s + 1)
+
+    # lazy import (don't worry; python imports are cached)
+    from scipy.integrate import quad, IntegrationWarning  # type: ignore
+
+    l_r = np.empty(r_vals.shape)
+    for i, r_val in np.ndenumerate(r_vals):
+        if r_val == 0:
+            # zeroth l-moment is always 1
+            l_r[i] = 1
+            continue
+
+        # prepare the powers to use for evaluating the polynomial
+        k = cast(npt.NDArray[np.int_], np.arange(r_val - 1))
+        # grab the non-zero jacobi polynomial coefficients for k=r-1
+        j_k = j[r_val - 2, :r_val - 1]
+
+        def integrand(x: float, *args: Any) -> float:
+            # evaluate the jacobi polynomial for p at r-1 with (t, s)
+            # and multiply by the weight function
+            p, w_p = w(x, *args)
+            return w_p * (j_k @ p**k)  # type: ignore
+
+        # numerical integration
+        quad_val, _, _, *quad_tail = cast(
+            tuple[float, float, dict[str, Any]]
+            | tuple[float, float, dict[str, Any], str],
+            quad(integrand, *support, full_output=True)
+        )
+        if quad_tail:
+            quad_msg = quad_tail[0]
+            warnings.warn(
+                f"'scipy.integrate.quad' failed: \n{quad_msg}",
+                cast(type[UserWarning], IntegrationWarning),
+                stacklevel=2
+            )
+            l_r[i] = np.nan
+            continue
+
+        # constant combinatorial factor
+        const = np.exp(
+            math.lgamma(r_val - 1)
+            + math.lgamma(r_val + s + t + 1)
+            - math.lgamma(r_val + s)
+            - math.lgamma(r_val + t)
+        ) / r_val
+
+        l_r[i] = const * quad_val
+
+    return np.round(l_r, 12)[r_idxs if _r.ndim > 0 else 0] + .0
+
+
+def l_moment_from_ppf(
+    ppf: Callable[[float], float],
+    r: AnyInt | IntVector,
+    /,
+    trim: tuple[AnyFloat, AnyFloat] = (0, 0),
+    support: tuple[AnyFloat, AnyFloat] = (0, 1),
+) -> float | npt.NDArray[np.float_]:
+    # TODO: docstring
+
+    _r = np.asanyarray(r)
+    if not np.issubdtype(_r.dtype, np.integer):
+        raise TypeError(f'r must be integer-valued, got {_r.dtype.str!r}')
+    if _r.size == 0:
+        raise ValueError('no r provided')
+    if np.any(_r < 0):
+        raise ValueError('r must be non-negative')
+
+    s, t = np.asanyarray(trim)
+
+    r_max = clean_order(np.max(_r))
+    r_vals, r_idxs = np.unique(_r, return_inverse=True)
+    assert r_vals.ndim == 1
+
+    def _w(p: float, *args: Any) -> float:
+        return p**s * (1 - p)**t * ppf(p, *args)
+
+    # caching the weight function only makes sense for multiple quad calls
+    w = functools.cache(_w) if len(r_vals) > 1 else _w
+
+    # shifted Jacobi polynomial coefficients
+    j = sh_jacobi(r_max, t, s)
+
+    # lazy import (don't worry; python imports are cached)
+    from scipy.integrate import quad, IntegrationWarning  # type: ignore
+
+    l_r = np.empty(r_vals.shape)
+    for i, r_val in np.ndenumerate(r_vals):
+        if r_val == 0:
+            # zeroth l-moment is always 1
+            l_r[i] = 1
+            continue
+
+        # prepare the powers to use for evaluating the polynomial
+        k = cast(npt.NDArray[np.int_], np.arange(r_val))
+        # grab the non-zero jacobi polynomial coefficients for k=r-1
+        j_k = j[r_val - 1, :r_val]
+
+        def integrand(p: float) -> float:
+            # evaluate the jacobi polynomial for p at r-1 with (t, s)
+            # and multiply by the weight function
+            return w(p) * (j_k @ p**k)  # type: ignore
+
+        # numerical integration
+        quad_val, _, _, *quad_tail = cast(
+            tuple[float, float, dict[str, Any]]
+            | tuple[float, float, dict[str, Any], str],
+            quad(integrand, *support, full_output=True)
+        )
+        if quad_tail:
+            quad_msg = quad_tail[0]
+            warnings.warn(
+                f"'scipy.integrate.quad' failed: \n{quad_msg}",
+                cast(type[UserWarning], IntegrationWarning),
+                stacklevel=2
+            )
+            l_r[i] = np.nan
+            continue
+
+        # constant combinatorial factor
+        const = np.exp(
+            math.lgamma(r_val)
+            + math.lgamma(r_val + s + t + 1)
+            - math.lgamma(r_val + s)
+            - math.lgamma(r_val + t)
+        ) / r_val
+
+        l_r[i] = const * quad_val
+
+    return np.round(l_r, 12)[r_idxs if _r.ndim > 0 else 0] + .0
