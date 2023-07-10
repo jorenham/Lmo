@@ -43,11 +43,7 @@ def sandwich(
     return np.einsum(spec, A, X, A, dtype=dtype)  # pyright: ignore
 
 
-def sh_legendre(
-    k : int,
-    /,
-    dtype: type[T] = np.int_,
-) -> npt.NDArray[T]:
+def sh_legendre(k : int, /, dtype: type[T] = np.int_) -> npt.NDArray[T]:
     """
     Shifted Legendre polynomial coefficient matrix $\\widetilde{P}$ of
     shape `(k, k)`, where the $j$-th coefficient of the shifted Legendre
@@ -56,9 +52,6 @@ def sh_legendre(
     $$
     \\widetilde{p}_{k, j} = (-1)^{k - j} \\binom{k}{j} \\binom{k + j}{j}
     $$
-
-    Implemented as the elementwise product of of the symmetric Pascal matrix
-    with the inverse of the lower Pascal matrix.
 
     Useful for transforming probability-weighted moments into L-moments.
 
@@ -87,24 +80,7 @@ def sh_legendre(
         - https://wikipedia.org/wiki/Pascal_matrix
 
     """
-    if k < 0:
-        raise ValueError
-    if k == 0:
-        return np.zeros((0, 0), dtype=dtype)
-
-    # Calculate both the lower inverse- and symmetric Pascal matrices
-    lp = np.zeros((k, k), dtype=dtype)
-    p2 = np.ones((k, k), dtype=dtype)
-
-    lp[0, 0] = 1
-    for i in range(1, k):
-        lp[i, 0] = (-1) ** i
-        for j in range(1, k):
-            lp[i, j] = lp[i - 1, j - 1] - lp[i - 1, j]
-            p2[i, j] = p2[i - 1, j] + p2[i, j - 1]
-
-    np.multiply(lp, p2, out=lp)
-    return lp
+    return sh_jacobi(k, 0, 0).astype(dtype)
 
 
 def _sh_jacobi_i(k: int, a: int, b: int, dtype: type[T]) -> npt.NDArray[T]:
@@ -144,11 +120,11 @@ def _sh_jacobi_f(k: int, a: float, b: float, dtype: type[T]) -> npt.NDArray[T]:
 
 def sh_jacobi(
     k: AnyInt,
-    a: T,
-    b: T,
+    a: T | int,
+    b: T | int,
     /,
     dtype: type[T] | None = None,
-) -> npt.NDArray[T]:
+) -> npt.NDArray[T | np.int_]:
     """
     Shifted Jacobi polynomial coefficient matrix $\\widetilde{P}^{(a,b)}$ of
     shape `(k, k)`, where the $j$-th coefficient of the shifted Jacobi
