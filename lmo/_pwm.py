@@ -3,16 +3,14 @@ Power-Weighted Moment (PWM) estimators.
 
 Primarily used as an intermediate step for L-moment estimation.
 """
-__all__ = 'b_weights', 'b_moment_cov', 'b_from_ppf'
+__all__ = 'b_weights', 'b_moment_cov'
 
-from typing import Any, Callable, TypeVar, cast
+from typing import Any, TypeVar, cast
 
 import numpy as np
 import numpy.typing as npt
-import scipy.integrate
 
-from .typing import AnyInt
-from .stats import ordered
+from ._utils import ordered
 
 T = TypeVar('T', bound=np.floating[Any])
 
@@ -169,45 +167,3 @@ def b_moment_cov(
         S_b[k, m] = S_b[m, k] = b[k] * b[m] - m_bb
 
     return S_b
-
-
-X = TypeVar('X', bound=float | npt.NDArray[np.floating[Any]])
-
-
-def _db_dp(p: float, ppf: Callable[[float], X], k: AnyInt) -> X:
-    return cast(X, ppf(p) * p**k)
-
-
-def b_from_ppf(ppf: Callable[[float], X], k: AnyInt, **kwargs: Any) -> X:
-    """
-    Evaluate the theoretical PWMs $\\beta_k = M_{1,k,0}$ of a random variable
-    with the given percentile-point function (i.e. the quantile function).
-
-    This function is not vectorized, but supports multivariate distributions.
-
-    TODO:
-        - `@typing.overload`
-        - better docstring
-        - example
-        - tests
-
-    """
-    if k < 0:
-        raise ValueError('k must be >= 0')
-
-    # handle endpoint singularities
-    points = set(kwargs.get('points', set()))
-    lb, ub = ppf(0), ppf(1)
-    if not np.all(np.isfinite(lb)):
-        points.add(0)
-    if not np.all(np.isfinite(ub)):
-        points.add(1)
-    kwargs['points'] = list(points)
-    
-    if np.isscalar(lb):
-        assert np.isscalar(ub), (lb, ub)
-        quad = scipy.integrate.quad  # type: ignore
-    else:
-        quad = scipy.integrate.quad_vec  # type: ignore
-
-    return cast(X, quad(_db_dp, 0, 1, args=(ppf, k), **kwargs)[0])

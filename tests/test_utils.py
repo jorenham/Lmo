@@ -1,9 +1,11 @@
+# type: ignore
+
 import numpy as np
 
 from hypothesis import given, strategies as st
 from hypothesis.extra import numpy as hnp
 
-from lmo.stats import ordered
+from lmo._utils import ordered
 
 
 st_n = st.integers(2, 50)

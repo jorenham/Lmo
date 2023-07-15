@@ -13,9 +13,8 @@ from typing import Any, TypeVar, cast
 import numpy as np
 from numpy import typing as npt
 
-from ._utils import clean_order
+from ._utils import clean_order, ordered
 from ._lm import l_weights
-from .stats import ordered
 from .typing import AnyInt, IntVector, SortKind
 
 T = TypeVar('T', bound=np.floating[Any])
