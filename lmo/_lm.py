@@ -25,6 +25,7 @@ import warnings
 
 import numpy as np
 import numpy.typing as npt
+from scipy.special import betainc  # type: ignore [reportUnknownVariableType]
 
 from ._pwm import b_moment_cov, b_weights
 from ._utils import clean_order, ensure_axis_at
@@ -794,16 +795,14 @@ def l_moment_from_cdf(
     support: tuple[AnyFloat, AnyFloat] = (-np.inf, np.inf),
 ) -> float | npt.NDArray[np.float_]:
     # TODO: docstring
-    # TODO: r <= 1
 
     _r = np.asanyarray(r)
     if not np.issubdtype(_r.dtype, np.integer):
         raise TypeError(f'r must be integer-valued, got {_r.dtype.str!r}')
     if _r.size == 0:
         raise ValueError('no r provided')
-    if np.any((_r < 0) | (_r == 1)):
-        # TODO: figure out a r=1 that doesn't need the pdf
-        raise ValueError('r must be >=0 and not 1')
+    if np.any(_r < 0):
+        raise ValueError('r must be non-negative')
 
     s, t = np.asanyarray(trim)
 
@@ -811,12 +810,8 @@ def l_moment_from_cdf(
     r_vals, r_idxs = np.unique(_r, return_inverse=True)
     assert r_vals.ndim == 1
 
-    def _w(x: float, *args: Any) -> tuple[float, float]:
-        p = cdf(x, *args)
-        return p, p ** (s + 1) * (1 - p) ** (t + 1)
-
-    # caching the weight function only makes sense for multiple quad calls
-    w = functools.cache(_w) if len(r_vals) > 1 else _w
+    # caching F(x) function only makes sense for multiple quad calls
+    F = functools.cache(cdf) if np.count_nonzero(r_vals) > 1 else cdf
 
     # shifted Jacobi polynomial coefficients
     j = sh_jacobi(r_max - 1, t + 1, s + 1)
@@ -831,16 +826,35 @@ def l_moment_from_cdf(
             l_r[i] = 1
             continue
 
-        # prepare the powers to use for evaluating the polynomial
-        k = cast(npt.NDArray[np.int_], np.arange(r_val - 1))
-        # grab the non-zero jacobi polynomial coefficients for k=r-1
-        j_k = j[r_val - 2, :r_val - 1]
+        if r_val == 1:
+            if s == t == 0:
+                def integrand(x: float, *args: Any) -> float:
+                    return (x >= 0) - F(x, *args)
+            else:
+                def integrand(x: float, *args: Any) -> float:
+                    p = F(x, *args)
+                    return (x >= 0) - betainc(s + 1, t + 1, p)  # type: ignore
 
-        def integrand(x: float, *args: Any) -> float:
-            # evaluate the jacobi polynomial for p at r-1 with (t, s)
-            # and multiply by the weight function
-            p, w_p = w(x, *args)
-            return w_p * (j_k @ p**k)  # type: ignore
+            const = 1
+
+        else:
+            # prepare the powers to use for evaluating the polynomial
+            k = cast(npt.NDArray[np.int_], np.arange(r_val - 1))
+            # grab the non-zero jacobi polynomial coefficients for k=r-1
+            j_k = j[r_val - 2, :r_val - 1]
+
+            def integrand(x: float, *args: Any) -> float:
+                # evaluate the jacobi polynomial for p at r-1 with (t, s)
+                # and multiply by the weight function
+                p = F(x, *args)
+                return p ** (s + 1) * (1 - p) ** (t + 1) * (j_k @ p**k)
+
+            const = np.exp(
+                math.lgamma(r_val - 1)
+                + math.lgamma(r_val + s + t + 1)
+                - math.lgamma(r_val + s)
+                - math.lgamma(r_val + t)
+            ) / r_val
 
         # numerical integration
         quad_val, _, _, *quad_tail = cast(
@@ -848,6 +862,7 @@ def l_moment_from_cdf(
             | tuple[float, float, dict[str, Any], str],
             quad(integrand, *support, full_output=True)
         )
+
         if quad_tail:
             quad_msg = quad_tail[0]
             warnings.warn(
@@ -857,14 +872,6 @@ def l_moment_from_cdf(
             )
             l_r[i] = np.nan
             continue
-
-        # constant combinatorial factor
-        const = np.exp(
-            math.lgamma(r_val - 1)
-            + math.lgamma(r_val + s + t + 1)
-            - math.lgamma(r_val + s)
-            - math.lgamma(r_val + t)
-        ) / r_val
 
         l_r[i] = const * quad_val
 
