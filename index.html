@@ -75,7 +75,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#lmo" class="md-skip">
+        <a href="#lmo-trimmed-l-moments-and-l-comoments" class="md-skip">
           Skip to content
         </a>
       
@@ -254,6 +254,13 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#key-features" class="md-nav__link">
+    Key Features:
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#installation" class="md-nav__link">
     Installation
   </a>
@@ -261,8 +268,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#roadmap" class="md-nav__link">
-    Roadmap
+  <a href="#dependencies" class="md-nav__link">
+    Dependencies
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#foundational-literature" class="md-nav__link">
+    Foundational Literature
   </a>
   
 </li>
@@ -332,6 +346,13 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#key-features" class="md-nav__link">
+    Key Features:
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#installation" class="md-nav__link">
     Installation
   </a>
@@ -339,8 +360,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#roadmap" class="md-nav__link">
-    Roadmap
+  <a href="#dependencies" class="md-nav__link">
+    Dependencies
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#foundational-literature" class="md-nav__link">
+    Foundational Literature
   </a>
   
 </li>
@@ -363,41 +391,87 @@
   
 
 
-<!-- BEGIN INCLUDE ../README.md '&lt;!--head-start--&gt;' '&lt;!--head-end--&gt;' -->
+<!-- BEGIN INCLUDE ../README.md '&lt;!--overview-start--&gt;' '&lt;!--overview-end--&gt;' -->
 
 <p><img src="https://jorenham.github.io/lmo/img/lmo.svg" alt="jorenham/lmo" width="128" align="right"></p>
-<h1 id="lmo">Lmo</h1>
+<h1 id="lmo-trimmed-l-moments-and-l-comoments">Lmo - Trimmed L-moments and L-comoments</h1>
 <p><img alt="GitHub Workflow Status (with branch)" src="https://img.shields.io/github/actions/workflow/status/jorenham/lmo/CI.yml?branch=master&amp;style=flat-square" />
 <a href="https://pypi.org/project/lmo/"><img alt="PyPI" src="https://img.shields.io/pypi/v/lmo?style=flat-square" /></a>
 <a href="https://github.com/jorenham/lmo"><img alt="versions" src="https://img.shields.io/pypi/pyversions/lmo?style=flat-square" /></a>
 <a href="https://github.com/jorenham/lmo/blob/master/LICENSE?"><img alt="license" src="https://img.shields.io/github/license/jorenham/lmo?style=flat-square" /></a></p>
-<p>Generalized trimmed <strong>L-mo</strong>ments for robust statistics. </p>
-<hr />
-<!-- END INCLUDE -->
+<div class="highlight"><pre><span></span><code>Is your tail too heavy? 
+Can&#39;t find a moment? 
+Are the swans black? 
+The distribution pathological?
 
-<p>Lmo is a lightweight library with pythonic syntax. Some features include:</p>
+... then look no further: Lmo&#39;s got you covered!
+
+Uniform or multi-dimensional, Lmo can summarize it all with one quick glance!
+</code></pre></div>
+<p>Unlike the legacy <a href="https://wikipedia.org/wiki/Moment_(mathematics)">moments</a>,
+<a href="https://wikipedia.org/wiki/L-moment">L-moments</a> <strong>uniquely describe</strong> a 
+probability distribution.
+The "L" stands for Linear; it is a linear combination of order statistics.
+So Lmo is as fast as sorting your samples (in terms of time-complexity).</p>
+<p>Even if your data is pathological like <a href="https://wikipedia.org/wiki/Cauchy_distribution">Cauchy</a>, 
+and the L-moments are not defined, the trimmed L-moments (TL-moments) can be 
+used instead:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">lmo</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">1980</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">standard_cauchy</span><span class="p">(</span><span class="mi">96</span><span class="p">)</span>  <span class="c1"># pickle me, Lmo</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">x</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>  <span class="c1"># don&#39;t try this at home</span>
+<span class="go">(-1.7113440959133905, 19.573507308373326)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lmo</span><span class="o">.</span><span class="n">l_loc</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">lmo</span><span class="o">.</span><span class="n">l_scale</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> 
+<span class="go">(-0.17937038148581977, 0.6828766469913776)</span>
+</code></pre></div>
+<p>For reference; the theoretical TL-location and TL-scale of the standard 
+Cauchy distribution are <span class="arithmatex">\(\lambda^{(1, 1)}_{1} = 0\)</span> and 
+<span class="arithmatex">\(\lambda^{(1, 1)}_2 \approx 0.7\)</span> 
+(<a href="https://doi.org/10.1016/S0167-9473(02)00250-5">Elamir &amp; Seheult, 2003</a>).</p>
+<h2 id="key-features">Key Features:</h2>
 <ul>
-<li>Robust alternatives to conventional <a href="https://wikipedia.org/wiki/Moment_(mathematics)">moments</a>: even the <a href="https://wikipedia.org/wiki/Cauchy_distribution">Cauchy distribution</a> poses no threat!</li>
-<li>Handles both univariate and multivariate cases</li>
-<li>Support for custom sample weights</li>
-<li>Lightweight; it only requires <a href="https://numpy.org/doc/stable/index.html">numpy</a></li>
-<li>Scales to millions of samples, with <span class="arithmatex">\(O(n \\log(n))\)</span> time-complexity and <span class="arithmatex">\(O(n)\)</span> space-complexity. </li>
-<li>Clean code style: linted with <a href="https://github.com/charliermarsh/ruff">ruff</a>, and valid in <a href="https://github.com/microsoft/pyright">pyright</a>'s strict mode</li>
-<li>Thoroughly tested with <a href="https://hypothesis.readthedocs.io/en/latest/">hypothesis</a></li>
-<li>Red and fluffy</li>
+<li>Calculates trimmed L-moments and L-<em>co</em>moments, from data and distributions.</li>
+<li>Exact non-parametric variance structure of the sample estimates.</li>
+<li>Coming soon: ~Robust distribution fitting; the method of L-moments~.</li>
+<li>Complete <a href="https://jorenham.github.io/lmo/">docs</a>, including overly 
+  complex <span class="arithmatex">\(\TeX\)</span> spaghetti equations.</li>
+<li>Clean Pythonic syntax for ease of use.</li>
+<li>Vectorized functions for very fast fitting.</li>
+<li>Fully typed, tested, and tickled.</li>
 </ul>
+<hr />
+<p>See the <a href="https://jorenham.github.io/lmo/">documentation</a> for usage examples and code reference.</p>
 <h2 id="installation">Installation</h2>
+<p>Lmo is on <a href="https://pypi.org/project/lmo/">PyPI</a>, so you can do something like:</p>
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>lmo
 </code></pre></div>
-<h2 id="roadmap">Roadmap</h2>
-<ul class="task-list">
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Sample L-, and TL-moment estimators</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Sample L- and TL- co-moments (multivariate) estimators</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Support for observation weights.</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> L-moments (co)variance structure <a href="https://github.com/jorenham/lmo/issues/4">#4</a></li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Fitting of distributions with known L-moments <a href="https://github.com/jorenham/lmo/issues/5">#5</a></li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Population L-moment estimation from quantile functions <a href="https://github.com/jorenham/lmo/issues/6">#6</a></li>
+<h2 id="dependencies">Dependencies</h2>
+<ul>
+<li><code>python &gt;= 3.10</code></li>
+<li><code>numpy &gt;= 1.22</code></li>
+<li><code>scipy &gt;= 1.9</code></li>
 </ul>
+<h2 id="foundational-literature">Foundational Literature</h2>
+<ul>
+<li><a href="https://doi.org/10.1111/j.2517-6161.1990.tb01775.x"><em>J.R.M. Hosking</em> (1990) &ndash; L-moments: Analysis and Estimation of 
+  Distributions using Linear Combinations of Order Statistics
+  </a></li>
+<li><a href="https://doi.org/10.1016/S0167-9473(02)00250-5"><em>E.A.H. Elamir &amp; A.H. Seheult</em> (2003) &ndash; Trimmed L-moments
+  </a></li>
+<li><a href="https://doi.org/10.1016/S0378-3758(03)00213-1"><em>E.A.H. Elamir &amp; A.H. Seheult</em> (2004) &ndash; Exact variance structure of 
+  sample L-moments</a></li>
+<li><a href="https://doi.org/10.1016/j.jspi.2006.12.002"><em>J.R.M. Hosking</em> (2007) &ndash; Some theory and practical uses of trimmed 
+  L-moments</a></li>
+<li><a href="https://doi.org/10.1016/j.jmva.2007.01.008"><em>R. Serﬂing &amp; P. Xiao</em> (2007) &ndash; A contribution to multivariate 
+  L-moments: L-comoment matrices</a></li>
+<li><a href="https://hdl.handle.net/2346/ETD-TTU-2011-05-1319"><em>W.H. Asquith</em> (2011) &ndash; Univariate Distributional Analysis with 
+  L-moment Statistics</a></li>
+<li><a href="https://doi.org/10.1080/03610926.2015.1073313"><em>C. Dutang</em> (2017) &ndash; Theoretical L-moments and TL-moments Using
+  Combinatorial Identities and Finite Operators
+  </a></li>
+</ul>
+<!-- END INCLUDE -->
 
 
 

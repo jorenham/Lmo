@@ -363,16 +363,36 @@
   
 
 
-<h1 id="contributing-to-lmo">Contributing to <em>lmo</em></h1>
-<p>Any contributions to <em>lmo</em> are appreciated!</p>
+<h1 id="contributing-to-lmo">Contributing to <em>Lmo</em></h1>
+<p>Any contributions to <em>Lmo</em> are appreciated!</p>
 <h2 id="issues">Issues</h2>
 <p>Questions, feature requests and bug reports are all welcome as issues.</p>
-<p>When reporting a bug, make sure to include the versions of <code>lmo</code>, <code>python</code> and <code>numpy</code>
-you are using, and provide a <strong>reproducable</strong> example of the bug.</p>
+<p>When reporting a bug, make sure to include the versions of <code>lmo</code>, <code>python</code>, 
+<code>numpy</code> and <code>scipy</code> you are using, and provide a <strong>reproducible</strong> example of 
+the bug.</p>
 <h2 id="development">Development</h2>
-<p>Ensure you have <a href="https://python-poetry.org/docs/#installation">poetry</a> installed, then</p>
-<div class="highlight"><pre><span></span><code>poetry<span class="w"> </span>install
+<p>Ensure you have <a href="https://python-poetry.org/docs/#installation">poetry</a> 
+installed, then clone your fork, and install with</p>
+<div class="highlight"><pre><span></span><code>poetry<span class="w"> </span>install<span class="w"> </span>--sync
 </code></pre></div>
+<p>It can help to use Lmo's lowest-supported Python version, so that you don't
+accidentally use those bleeding-edge Python features that you shouldn't, 
+<code>poetry env use python3.x</code></p>
+<p>Now you can go ahead and do your thing. 
+And don't forget the type annotations, add tests, and to lint it all. </p>
+<p>If you're a 10x developer that doesn't wait on CI workflows, you can use the 
+following 1337 shellscript (keep in mind that the CI runs this on all supported
+Python versions):</p>
+<div class="highlight"><pre><span></span><code>poetry<span class="w"> </span>run<span class="w"> </span>ruff<span class="w"> </span>check<span class="w"> </span>lmo
+poetry<span class="w"> </span>run<span class="w"> </span>pyright
+poetry<span class="w"> </span>run<span class="w"> </span>py.test
+</code></pre></div>
+<p>If your change involves documentation updates, you can conjure up a live 
+preview:</p>
+<div class="highlight"><pre><span></span><code>poetry<span class="w"> </span>run<span class="w"> </span>mkdocs<span class="w"> </span>serve
+</code></pre></div>
+<p>But don't worry about building the docs, or bumping the version;
+Lmo's personal assistant will do that on release.</p>
 
 
 
