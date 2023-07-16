@@ -3,7 +3,7 @@
 
 ## High-level API
 
-### L-moments
+### Sample L-moments
 
 ::: lmo
     options:
@@ -12,12 +12,19 @@
       - "!^l_co"
       heading_level: 4
 
-### Mixed L-(co)moments
+### Sample L-comoments
 
 ::: lmo
     options:
       filters: ["^l_co"]
       heading_level: 4
+
+### Population L-moments
+
+::: lmo.theoretical
+    options:
+      heading_level: 4
+
 
 ### Statistical test and tools 
 

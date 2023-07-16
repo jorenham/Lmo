@@ -58,7 +58,55 @@ def l_moment_from_cdf(
     trim: tuple[AnyFloat, AnyFloat] = (0, 0),
     support: tuple[AnyFloat, AnyFloat] = (-np.inf, np.inf),
 ) -> float | npt.NDArray[np.float_]:
-    # TODO: docstring
+    """
+    Evaluate the population L-moment of a continuous probability distribution,
+    using its Cumulative Distribution Function (CDF) $F_X(x) = P(X \\le x)$.
+
+    Notes:
+        Numerical integration is performed with
+        [`scipy.integrate.quad`][scipy.integrate.quad], which cannot verify
+        whether the integral exists and is finite. If it returns an error
+        message, an `IntegrationWarning` is issues, and `nan` is returned
+        (even if `quad` returned a finite result).
+
+    Args:
+        cdf:
+            Cumulative Distribution Function (CDF), $F_X(x) = P(X \\le x)$.
+            Must be a continuous monotone increasing function with
+            signature `(float) -> float`, whose return value lies in $[0, 1]$.
+        r:
+            L-moment order(s), non-negative integer or array-like of integers.
+        trim:
+            Left- and right- trim. Must be a tuple of two non-negative ints
+            or floats (!).
+        support:
+            The subinterval of the nonzero domain of `cdf`.
+
+    Raises:
+        TypeError: `r` is not integer-valued
+        ValueError: `r` is empty or negative
+
+    Returns:
+        lmbda:
+            The population L-moment(s), a scalar or float array like `r`.
+            If `nan`, consult the related `IntegrationWarning` message.
+
+    References:
+        - [E. Elamir & A. Seheult (2003) - Trimmed L-moments](
+            https://doi.org/10.1016/S0167-9473(02)00250-5)
+        - [J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
+            L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
+
+    See Also:
+        - [`theoretical.l_moment_from_ppf`][lmo.theoretical.l_moment_from_ppf]:
+          population L-moment, using the inverse CDF
+        - [`l_moment`][lmo.l_moment]: sample L-moment
+
+    TODO:
+        - The equations used for the r=0, r=1, and r>1 cases.
+        - Optional cdf args and kwargs with ParamSpec.
+
+    """
 
     _r = np.asanyarray(r)
     if not np.issubdtype(_r.dtype, np.integer):
@@ -167,7 +215,56 @@ def l_moment_from_ppf(
     trim: tuple[AnyFloat, AnyFloat] = (0, 0),
     support: tuple[AnyFloat, AnyFloat] = (0, 1),
 ) -> float | npt.NDArray[np.float_]:
-    # TODO: docstring
+    """
+    Evaluate the population L-moment of a continuous probability distribution,
+    using its Percentile Function (PPF) $Q_X(p) = F^{-1}_X(p)$,
+    i.e. the inverse of the CDF, commonly known as the quantile function.
+
+    Notes:
+        Numerical integration is performed with
+        [`scipy.integrate.quad`][scipy.integrate.quad], which cannot verify
+        whether the integral exists and is finite. If it returns an error
+        message, an `IntegrationWarning` is issues, and `nan` is returned
+        (even if `quad` returned a finite result).
+
+    Args:
+        ppf:
+            The quantile function, a monotonically continuous increasing
+            function with signature `(float) -> float`, that maps a
+            probability in $[0, 1]$, to the domain of the distribution.
+        r:
+            L-moment order(s), non-negative integer or array-like of integers.
+        trim:
+            Left- and right- trim. Must be a tuple of two non-negative ints
+            or floats (!).
+        support:
+            The subinterval of the nonzero domain of `cdf`.
+
+    Raises:
+        TypeError: `r` is not integer-valued
+        ValueError: `r` is empty or negative
+
+    Returns:
+        lmbda:
+            The population L-moment(s), a scalar or float array like `r`.
+            If `nan`, consult the related `IntegrationWarning` message.
+
+    References:
+        - [E. Elamir & A. Seheult (2003) - Trimmed L-moments](
+            https://doi.org/10.1016/S0167-9473(02)00250-5)
+        - [J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
+            L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
+
+    See Also:
+        - [`theoretical.l_moment_from_cdf`][lmo.theoretical.l_moment_from_cdf]:
+          population L-moment, using the CDF (i.e. the inverse PPF)
+        - [`l_moment`][lmo.l_moment]: sample L-moment
+
+    TODO:
+        - The equations used for the r=0, r>0 cases.
+        - Optional ppf args and kwargs with ParamSpec.
+
+    """
 
     _r = np.asanyarray(r)
     if not np.issubdtype(_r.dtype, np.integer):
