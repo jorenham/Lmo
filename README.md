@@ -29,7 +29,8 @@ The "L" stands for Linear; it is a linear combination of order statistics.
 So Lmo is as fast as sorting your samples (in terms of time-complexity).
 
 Even if your data is pathological like [Cauchy](https://wikipedia.org/wiki/Cauchy_distribution), 
-Lmo can be trimmed, to find the TL-moments:
+and the L-moments are not defined, the trimmed L-moments (TL-moments) can be 
+used instead:
 
 ```pycon
 >>> import numpy as np
@@ -90,7 +91,7 @@ pip install lmo
   ](https://doi.org/10.1016/S0167-9473(02)00250-5)
 - [*E.A.H. Elamir & A.H. Seheult* (2004) &ndash; Exact variance structure of 
   sample L-moments](https://doi.org/10.1016/S0378-3758(03)00213-1)
-  [*J.R.M. Hosking* (1990) &ndash; Some theory and practical uses of trimmed 
+- [*J.R.M. Hosking* (2007) &ndash; Some theory and practical uses of trimmed 
   L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
 - [*R. Serﬂing & P. Xiao* (2007) &ndash; A contribution to multivariate 
   L-moments: L-comoment matrices](https://doi.org/10.1016/j.jmva.2007.01.008)
