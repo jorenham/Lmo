@@ -1,4 +1,6 @@
-__all__ = 'normaltest',
+"""Statistical test and tools."""
+
+__all__ = ('normaltest',)
 
 from typing import NamedTuple, cast
 
@@ -18,7 +20,7 @@ def normaltest(
     /,
     axis: int | None = None,
 ) -> NormaltestResult:
-    """
+    r"""
     Test the null hypothesis that a sample comes from a normal distribution.
     Based on the Harri & Coble (2011) test, and includes Hosking's correction.
 
@@ -27,7 +29,7 @@ def normaltest(
         axis: Axis along which to compute the test.
 
     Returns:
-        statistic: The $\\tau^2_{3, 4}$ test statistic.
+        statistic: The $\tau^2_{3, 4}$ test statistic.
         pvalue: A 2-sided chi squared probability for the hypothesis test.
 
     Examples:
@@ -49,7 +51,6 @@ def normaltest(
     References:
         [A. Harri & K.H. Coble (2011) - Normality testing: Two new tests
         using L-moments](https://doi.org/10.1080/02664763.2010.498508)
-
     """
     x = np.asanyarray(a)
 
@@ -65,12 +66,12 @@ def normaltest(
 
     z3 = (t3 - tau3) / np.sqrt(
         0.1866 / n
-        + (np.sqrt(0.8000) / n)**2
+        + (np.sqrt(0.8000) / n)**2,
     )
     z4 = (t4 - tau4) / np.sqrt(
         0.0883 / n
         + (np.sqrt(0.6800) / n)**2
-        + (np.cbrt(4.9000) / n)**3
+        + (np.cbrt(4.9000) / n)**3,
     )
 
     k2 = z3**2 + z4**2

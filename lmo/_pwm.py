@@ -21,15 +21,15 @@ def b_weights(
     /,
     dtype: np.dtype[T] | type[T] = np.float_,
 ) -> npt.NDArray[T]:
-    """
+    r"""
     Probability Weighted moment (PWM) projection matrix $B$ of the
-    unbiased estimator for $\\beta_k = M_{1,k,0}$ for $k = 0, \\dots, r - 1$.
+    unbiased estimator for $\beta_k = M_{1,k,0}$ for $k = 0, \dots, r - 1$.
 
     The PWM's are estimated by linear projection of the sample of order
     statistics, i.e. $b = B x_{i:n}$
 
     Parameters:
-        r: The amount of orders to evaluate, i.e. $k = 0, \\dots, r - 1$.
+        r: The amount of orders to evaluate, i.e. $k = 0, \dots, r - 1$.
         n: Sample count.
         dtype: Desired output floating data type.
 
@@ -45,11 +45,10 @@ def b_weights(
 
     """
     if not (0 <= r <= n):
-        raise ValueError(f'expected 0 <= r <= n, got {r=} and {n=}')
+        msg = f'expected 0 <= r <= n, got {r=} and {n=}'
+        raise ValueError(msg)
 
-    # pyright throws a tantrum with numpy.arange for some reason...
-    # i1 = np.arange(1, n + 1)
-    i1 = np.linspace(1, n, n)
+    i1 = np.arange(1, n + 1)
 
     w_r = np.zeros((r, n), dtype)
     if w_r.size == 0:
@@ -72,14 +71,14 @@ def b_moment_cov(
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
 ) -> npt.NDArray[T]:
-    """
+    r"""
     Distribution-free variance-covariance matrix of the probability weighted
-    moment (PWM) point estimates $\\beta_k = M_{1,k,0}$, with orders
-    $k = 0, \\dots, r - 1$.
+    moment (PWM) point estimates $\beta_k = M_{1,k,0}$, with orders
+    $k = 0, \dots, r - 1$.
 
     Parameters:
         a: Array-like with observations.
-        r: The amount of orders to evaluate, i.e. $k = 0, \\dots, r - 1$.
+        r: The amount of orders to evaluate, i.e. $k = 0, \dots, r - 1$.
         axis: The axis along which to calculate the covariance matrices.
         dtype: Desired output floating data type.
         **kwargs: Additional keywords to pass to `lmo.stats.ordered`.
@@ -93,7 +92,6 @@ def b_moment_cov(
     References:
         - [E. Elmamir & A. Seheult (2004) - Exact variance structure of sample
             L-moments](https://doi.org/10.1016/S0378-3758(03)00213-1)
-
     """
     x = ordered(a, axis=axis, dtype=dtype, **kwargs)
 
@@ -102,14 +100,14 @@ def b_moment_cov(
         x = np.moveaxis(x, axis, 0)
 
     n = len(x)
-    P_k = b_weights(r, n, dtype=dtype)
+    p_k = b_weights(r, n, dtype=dtype)
 
     # beta pwm estimates
-    b = P_k @ x if x.ndim == 1 else np.inner(P_k, x.T)
+    b = p_k @ x if x.ndim == 1 else np.inner(p_k, x.T)
     assert b.shape == (r, *x.shape[1:])
 
     # the covariance matrix
-    S_b = np.empty((r, *b.shape), dtype=dtype)
+    s_b = np.empty((r, *b.shape), dtype=dtype)
 
     # dynamic programming approach for falling factorial ratios:
     # w_ki[k, i] = i^(k) / (n-1)^(k))
@@ -140,7 +138,7 @@ def b_moment_cov(
         # (n-k-1)^(k+1)
         denom = n * (n - 2 * k - 1) * ffact[k, n - k - 1]
         m_bb = np.einsum(spec, v_ki, x) / denom  # pyright: ignore
-        S_b[k, k] = b[k]**2 - m_bb
+        s_b[k, k] = b[k]**2 - m_bb
 
     # for k != l (actually k > l since symmetric)
     # sum(
@@ -148,7 +146,7 @@ def b_moment_cov(
     #     * x[i] * x[j]
     #     for j in range(i + 1, n)
     # ) / n^(k+l+2)
-    for k, m in zip(*np.tril_indices(r, -1)):
+    for k, m in zip(*np.tril_indices(r, -1), strict=True):
         j_k: npt.NDArray[np.int_] = np.arange(-k, n - k - 1)  # pyright: ignore
         j_l: npt.NDArray[np.int_] = np.arange(-m, n - m - 1)  # pyright: ignore
 
@@ -159,11 +157,11 @@ def b_moment_cov(
                 ffact[m, i] * ffact[k, j_l[i:]]
             ) @ x[i + 1:]
 
-        # (n-k-1)^(l+1)
+        # `(n-k-1)^(l+1)`
         denom = n * (n - k - m - 1) * ffact[m, n - k - 1]
         m_bb = np.einsum(spec, v_ki, x) / denom  # pyright: ignore
 
         # because s_bb.T == s_bb
-        S_b[k, m] = S_b[m, k] = b[k] * b[m] - m_bb
+        s_b[k, m] = s_b[m, k] = b[k] * b[m] - m_bb
 
-    return S_b
+    return s_b

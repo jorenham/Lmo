@@ -1,3 +1,5 @@
+"""Numpy-related type aliasses for internal use."""
+
 __all__ = (
     'AnyNDArray',
 
@@ -17,11 +19,11 @@ __all__ = (
     'IndexOrder',
 )
 
+from collections.abc import Sequence
 from typing import (
     Any,
     Literal,
     Protocol,
-    Sequence,
     TypeAlias,
     TypeVar,
     runtime_checkable,
@@ -29,7 +31,6 @@ from typing import (
 
 import numpy as np
 import numpy.typing as npt
-
 
 T = TypeVar('T', bound=np.generic)
 T_co = TypeVar('T_co', covariant=True, bound=np.generic)
@@ -58,8 +59,6 @@ IntTensor: TypeAlias = AnyNDArray[_NumpyInteger] | Sequence['IntTensor']
 FloatVector: TypeAlias = AnyNDArray[_NumpyFloating] | Sequence[AnyFloat]
 FloatMatrix: TypeAlias = AnyNDArray[_NumpyFloating] | Sequence[FloatVector]
 FloatTensor: TypeAlias = AnyNDArray[_NumpyFloating] | Sequence['FloatTensor']
-
-
 
 # for numpy.sort
 SortKind: TypeAlias = Literal['quicksort', 'heapsort', 'stable']

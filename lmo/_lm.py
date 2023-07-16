@@ -1,6 +1,4 @@
-"""
-Unbiased sample estimators of the generalized trimmed L-moments.
-"""
+"""Unbiased sample estimators of the generalized trimmed L-moments."""
 
 __all__ = (
     'l_weights',
@@ -22,7 +20,7 @@ import numpy.typing as npt
 
 from ._pwm import b_moment_cov, b_weights
 from ._utils import clean_order, ensure_axis_at, ordered
-from .linalg import trim_matrix, sandwich, sh_legendre
+from .linalg import sandwich, sh_legendre, trim_matrix
 from .typing import AnyInt, IntVector, SortKind
 
 T = TypeVar('T', bound=np.floating[Any])
@@ -33,7 +31,7 @@ T = TypeVar('T', bound=np.floating[Any])
 _L_WEIGHTS_CACHE: Final[
     dict[
         tuple[int, int, int],  # (n, t_1, t_2)
-        npt.NDArray[np.floating[Any]]
+        npt.NDArray[np.floating[Any]],
     ]
 ] = {}
 
@@ -45,14 +43,14 @@ def _l0_weights(
     *,
     enforce_symmetry: bool = True,
 ) -> npt.NDArray[T]:
-    """
-    Efficiently calculates the projection matrix $P = [p_{k, i}]_{r \\times n}$
+    r"""
+    Efficiently calculates the projection matrix $P = [p_{k, i}]_{r \times n}$
     for the order statistics $x_{i:n}$.
-    This way, the $1, 2, ..., r$-th order sample L-moments of some sample vector
-    $x$, can be estimated with `np.sort(x) @ l_weights(len(x), r)`.
+    This way, the $1, 2, ..., r$-th order sample L-moments of some sample
+    vector $x$, can be estimated with `np.sort(x) @ l_weights(len(x), r)`.
 
     Parameters:
-        r: The amount of orders to evaluate, i.e. $k = 1, \\dots, r$.
+        r: The amount of orders to evaluate, i.e. $k = 1, \dots, r$.
         n: Sample count.
         dtype: Desired output floating data type.
 
@@ -66,20 +64,19 @@ def _l0_weights(
     References:
         - [J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
             L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
-
     """
-    P_r = np.empty((r, n), dtype)
+    p_r = np.empty((r, n), dtype)
 
     if r == 0:
-        return P_r
+        return p_r
 
-    np.matmul(sh_legendre(r), b_weights(r, n, dtype), out=P_r)
+    np.matmul(sh_legendre(r), b_weights(r, n, dtype), out=p_r)
 
     if enforce_symmetry:
         # enforce rotational symmetry of even orders `r = 2, 4, ...`, naturally
         # centering them around 0
         for k in range(2, r + 1, 2):
-            p_k: npt.NDArray[T] = P_r[k - 1]
+            p_k: npt.NDArray[T] = p_r[k - 1]
 
             med = 0.0
             pk_neg, pk_pos = p_k < med, p_k > med
@@ -119,10 +116,10 @@ def _l0_weights(
 
         # enforce horizontal (axis 1) symmetry for the odd orders (except k=1)
         # and shift to zero mean
-        P_r[2::2, :n // 2] = P_r[2::2, :(n - 1) // 2: -1]
-        P_r[2::2] -= P_r[2::2].mean(1, keepdims=True)
+        p_r[2::2, :n // 2] = p_r[2::2, :(n - 1) // 2: -1]
+        p_r[2::2] -= p_r[2::2].mean(1, keepdims=True)
 
-    return P_r
+    return p_r
 
 
 def l_weights(
@@ -132,9 +129,9 @@ def l_weights(
     trim: tuple[int, int] = (0, 0),
     dtype: np.dtype[T] | type[T] = np.float_,
     *,
-    cache: bool = False
+    cache: bool = False,
 ) -> npt.NDArray[T]:
-    """
+    r"""
     Projection matrix of the first $r$ (T)L-moments for $n$ samples.
 
     The matrix is a linear combination of the Power Weighted Moment
@@ -145,17 +142,17 @@ def l_weights(
     recurrence relations from *Hosking (2007)* are applied, as well.
 
     $$
-    (2k + t_1 + t_2 - 1) \\lambda^{(t_1, t_2)}_k
-        = (k + t_1 + t_2) \\lambda^{(t_1 - 1, t_2)}_k
-        + \\frac{1}{k} (k + 1) (k + t_2) \\lambda^{(t_1 - 1, t_2)}_{k+1}
+    (2k + t_1 + t_2 - 1) \lambda^{(t_1, t_2)}_k
+        = (k + t_1 + t_2) \lambda^{(t_1 - 1, t_2)}_k
+        + \frac{1}{k} (k + 1) (k + t_2) \lambda^{(t_1 - 1, t_2)}_{k+1}
     $$
 
     for $t_1 > 0$, and
 
     $$
-    (2k + t_1 + t_2 - 1) \\lambda^{(t_1, t_2)}_k
-        = (k + t_1 + t_2) \\lambda^{(t_1, t_2 - 1)}_k
-        - \\frac{1}{k} (k + 1) (k + t_1) \\lambda^{(t_1, t_2 - 1)}_{k+1}
+    (2k + t_1 + t_2 - 1) \lambda^{(t_1, t_2)}_k
+        = (k + t_1 + t_2) \lambda^{(t_1, t_2 - 1)}_k
+        - \frac{1}{k} (k + 1) (k + t_1) \lambda^{(t_1, t_2 - 1)}_{k+1}
     $$
 
     for $t_2 > 0$.
@@ -163,7 +160,7 @@ def l_weights(
     TLDR:
         This matrix (linearly) transforms $x_{i:n}$ (i.e. the sorted
         observation vector(s) of size $n$), into (an unbiased estimate of) the
-        *generalized trimmed L-moments*, with orders $\\le r$.
+        *generalized trimmed L-moments*, with orders $\le r$.
 
     Returns:
         P_r: 2-D array of shape `(r, n)`.
@@ -180,31 +177,30 @@ def l_weights(
     References:
         - [J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
             L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
-
     """
     cache_key = n, *trim
     if (
         cache_key in _L_WEIGHTS_CACHE
-        and (P_r := _L_WEIGHTS_CACHE[cache_key]).shape[0] <= r
+        and (p_r := _L_WEIGHTS_CACHE[cache_key]).shape[0] <= r
     ):
-        if P_r.dtype is not np.dtype(dtype):
-            P_r = P_r.view(dtype)
-        if P_r.shape[0] < r:
-            P_r = P_r[:r]
+        if p_r.dtype is not np.dtype(dtype):
+            p_r = p_r.view(dtype)
+        if p_r.shape[0] < r:
+            p_r = p_r[:r]
 
         # ignore if r is larger that what's cached
-        if P_r.shape[0] == r:
-            assert P_r.shape == (r, n)
-            return cast(npt.NDArray[T], P_r)
+        if p_r.shape[0] == r:
+            assert p_r.shape == (r, n)
+            return cast(npt.NDArray[T], p_r)
 
 
     if sum(trim) == 0:
         return _l0_weights(r, n, dtype)
 
-    P_r = np.empty((r, n), dtype)
+    p_r = np.empty((r, n), dtype)
 
     if r == 0:
-        return P_r
+        return p_r
 
     # the k-th TL-(t_1, t_2) weights are a linear combination of L-weights
     # with orders k, ..., k + t_1 + t_2
@@ -212,21 +208,21 @@ def l_weights(
     np.matmul(
         trim_matrix(r, trim),
         _l0_weights(r + sum(trim), n),
-        out=P_r
+        out=p_r,
     )
 
     # remove numerical noise from the trimmings, and correct for potential
     # shifts in means
     t1, t2 = trim
-    P_r[:, :t1] = P_r[:, n - t2:] = 0
-    P_r[1:, t1:n - t2] -= P_r[1:, t1:n - t2].mean(1, keepdims=True)
+    p_r[:, :t1] = p_r[:, n - t2:] = 0
+    p_r[1:, t1:n - t2] -= p_r[1:, t1:n - t2].mean(1, keepdims=True)
 
     if cache:
         # memoize, and mark as readonly to avoid corruping the cache
-        P_r.setflags(write=False)
-        _L_WEIGHTS_CACHE[cache_key] = P_r
+        p_r.setflags(write=False)
+        _L_WEIGHTS_CACHE[cache_key] = p_r
 
-    return P_r
+    return p_r
 
 
 # Summary statistics
@@ -244,10 +240,10 @@ def l_moment(
     sort: SortKind | None = 'stable',
     cache: bool = False,
 ) -> T | npt.NDArray[T]:
-    """
-    Estimates the generalized trimmed L-moment $\\lambda^{(t_1, t_2)}_r$ from
+    r"""
+    Estimates the generalized trimmed L-moment $\lambda^{(t_1, t_2)}_r$ from
     the samples along the specified axis. By default, this will be the regular
-    L-moment, $\\lambda_r = \\lambda^{(0, 0)}_r$.
+    L-moment, $\lambda_r = \lambda^{(0, 0)}_r$.
 
     Parameters:
         a:
@@ -337,9 +333,7 @@ def l_moment(
             https://doi.org/10.1016/S0167-9473(02)00250-5)
         - [J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
             L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
-
     """
-    # weight-adjusted $x_{i:n}$
     x_k = ordered(
         a,
         axis=axis,
@@ -353,10 +347,7 @@ def l_moment(
 
     r_max = clean_order(np.max(np.asarray(r)))
 
-    # projection matrix
-    P_r = l_weights(r_max, n, trim, dtype=dtype, cache=cache)
-
-    l_r = np.inner(P_r, x_k)
+    l_r = np.inner(l_weights(r_max, n, trim, dtype=dtype, cache=cache), x_k)
 
     # we like 0-based indexing; so if P_r starts at r=1, prepend all 1's
     # for r=0 (any zeroth moment is defined to be 1)
@@ -420,19 +411,21 @@ def l_moment_cov(
     """
     ks = int(r_max + sum(trim))
     if ks < r_max:
-        raise ValueError('trimmings must be positive')
+        msg = 'trimmings must be positive'
+        raise ValueError(msg)
 
-    # PWM covariance matrix
-    S_b = b_moment_cov(a, ks, axis=axis, dtype=dtype, **kwargs)
 
     # projection matrix: PWMs -> generalized trimmed L-moments
-    P_l: npt.NDArray[np.floating[Any]]
-    P_l = trim_matrix(int(r_max), trim=trim, dtype=dtype) @ sh_legendre(ks)
+    p_l: npt.NDArray[np.floating[Any]]
+    p_l = trim_matrix(int(r_max), trim=trim, dtype=dtype) @ sh_legendre(ks)
     # clean some numerical noise
-    P_l = np.round(P_l, 12) + 0.  # pyright: ignore [reportUnknownMemberType]
+    p_l = np.round(p_l, 12) + 0.
+
+    # PWM covariance matrix
+    s_b = b_moment_cov(a, ks, axis=axis, dtype=dtype, **kwargs)
 
     # tasty, eh?
-    return sandwich(P_l, S_b, dtype=dtype)
+    return sandwich(p_l, s_b, dtype=dtype)
 
 
 def l_ratio(
@@ -445,14 +438,14 @@ def l_ratio(
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
 ) -> T | npt.NDArray[T]:
-    """
+    r"""
     Estimates the generalized L-moment ratio:
 
     $$
-    \\tau^{(t_1, t_2)}_{rs} = \\frac{
-        \\lambda^{(t_1, t_2)}_r
+    \tau^{(t_1, t_2)}_{rs} = \frac{
+        \lambda^{(t_1, t_2)}_r
     }{
-        \\lambda^{(t_1, t_2)}_s
+        \lambda^{(t_1, t_2)}_s
     }
     $$
 
@@ -475,27 +468,26 @@ def l_ratio(
 
     See Also:
         - [`lmo.l_moment`][lmo.l_moment]
-
-    """
+    """  # noqa: D415
     _r, _s = np.asarray(r), np.asarray(s)
     rs = np.stack(np.broadcast_arrays(_r, _s))
 
     l_rs = cast(
         npt.NDArray[T],
-        l_moment(a, rs, trim, axis=axis, dtype=dtype, **kwargs)
+        l_moment(a, rs, trim, axis=axis, dtype=dtype, **kwargs),
     )
 
     r_eq_s = _r == _s
     if r_eq_s.ndim < l_rs.ndim - 1:
         r_eq_s = r_eq_s.reshape(
-            r_eq_s.shape + (1,) * (l_rs.ndim - r_eq_s.ndim - 1)
+            r_eq_s.shape + (1,) * (l_rs.ndim - r_eq_s.ndim - 1),
         )
 
     with np.errstate(divide='ignore'):
         return np.where(
             r_eq_s,
             np.ones_like(l_rs[0]),
-            np.divide(l_rs[0], l_rs[1], where=~r_eq_s)
+            np.divide(l_rs[0], l_rs[1], where=~r_eq_s),
         )[()]
 
 
@@ -542,26 +534,23 @@ def l_ratio_se(
     """
     _r, _s = np.broadcast_arrays(np.asarray(r), np.asarray(s))
     _rs = np.stack((_r, _s))
-    r_max: AnyInt = np.amax(  # pyright: ignore [reportUnknownMemberType]
-        np.r_[_r, _s].ravel()
-    )
+    r_max: AnyInt = np.amax(np.r_[_r, _s].ravel())
 
     # L-moments
     l_rs = cast(npt.NDArray[T], l_moment(a, _rs, trim, axis, dtype, **kwargs))
     l_r, l_s = l_rs[0], l_rs[1]
 
     # L-moment auto-covariance matrix
-    S_l = l_moment_cov(a, r_max, trim, axis, dtype, **kwargs)
+    k_l = l_moment_cov(a, r_max, trim, axis, dtype, **kwargs)
     # prepend the "zeroth" moment, with has 0 (co)variance
-    S_l = np.pad(S_l, (1, 0), constant_values=0)
+    k_l = np.pad(k_l, (1, 0), constant_values=0)
 
-    s_rr = S_l[_r, _r]  # Var[l_r]
-    s_ss = S_l[_s, _s]  # Var[l_r]
-    s_rs = S_l[_r, _s]  # Cov[l_r, l_s]
+    s_rr = k_l[_r, _r]  # Var[l_r]
+    s_ss = k_l[_s, _s]  # Var[l_r]
+    s_rs = k_l[_r, _s]  # Cov[l_r, l_s]
 
     # the classic approximation to propagation of uncertainty for an RV ratio
     with np.errstate(divide='ignore', invalid='ignore'):
-        # TODO: np.piecewiese ?
         _s_tt = (l_r / l_s)**2 * (
             s_rr / l_r**2 +
             s_ss / l_s**2 -
@@ -583,9 +572,9 @@ def l_loc(
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
 ) -> T | npt.NDArray[T]:
-    """
+    r"""
     *L-location* (or *L-loc*): unbiased estimator of the first L-moment,
-    $\\lambda^{(t_1, t_2)}_1$.
+    $\lambda^{(t_1, t_2)}_1$.
 
     Alias for [`lmo.l_moment(a, 1, *, **)`][lmo.l_moment].
 
@@ -606,7 +595,6 @@ def l_loc(
     See Also:
         - [`lmo.l_moment`][lmo.l_moment]
         - [`numpy.average`][numpy.average]
-
     """
     return l_moment(a, 1, trim, axis, dtype, **kwargs)
 
@@ -619,9 +607,9 @@ def l_scale(
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
 ) -> T | npt.NDArray[T]:
-    """
+    r"""
     *L-scale*: unbiased estimator of the second L-moment,
-    $\\lambda^{(t_1, t_2)}_2$
+    $\lambda^{(t_1, t_2)}_2$.
 
     Alias for [`lmo.l_moment(a, 2, *, **)`][lmo.l_moment].
 
@@ -643,7 +631,6 @@ def l_scale(
     See Also:
         - [`lmo.l_moment`][lmo.l_moment]
         - [`numpy.std`][numpy.std]
-
     """
     return l_moment(a, 2, trim, axis, dtype, **kwargs)
 
@@ -656,14 +643,14 @@ def l_variation(
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
 ) -> T | npt.NDArray[T]:
-    """
+    r"""
     The *coefficient of L-variation* (or *L-CV*) unbiased sample estimator:
 
     $$
-    \\tau^{(t_1, t_2)} = \\frac{
-        \\lambda^{(t_1, t_2)}_2
+    \tau^{(t_1, t_2)} = \frac{
+        \lambda^{(t_1, t_2)}_2
     }{
-        \\lambda^{(t_1, t_2)}_1
+        \lambda^{(t_1, t_2)}_1
     }
     $$
 
@@ -689,8 +676,7 @@ def l_variation(
             https://wikipedia.org/wiki/Gini_coefficient)
         - [`lmo.l_ratio`][lmo.l_ratio]
         - [`scipy.stats.variation.l_ratio`][scipy.stats.variation]
-
-    """
+    """  # noqa: D415
     return l_ratio(a, 2, 1, trim, axis, dtype, **kwargs)
 
 
@@ -702,16 +688,16 @@ def l_skew(
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
 ) -> T | npt.NDArray[T]:
-    """
+    r"""
     Unbiased sample estimator of the *coefficient of L-skewness*, or *L-skew*
     for short:
 
     $$
-    \\tau^{(t_1, t_2)}_3
-        = \\frac{
-            \\lambda^{(t_1, t_2)}_3
+    \tau^{(t_1, t_2)}_3
+        = \frac{
+            \lambda^{(t_1, t_2)}_3
         }{
-            \\lambda^{(t_1, t_2)}_2
+            \lambda^{(t_1, t_2)}_2
         }
     $$
 
@@ -728,8 +714,7 @@ def l_skew(
     See Also:
         - [`lmo.l_ratio`][lmo.l_ratio]
         - [`scipy.stats.skew`][scipy.stats.skew]
-
-    """
+    """  # noqa: D415
     return l_ratio(a, 3, 2, trim, axis, dtype, **kwargs)
 
 
@@ -741,15 +726,15 @@ def l_kurtosis(
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
 ) -> T | npt.NDArray[T]:
-    """
+    r"""
     L-kurtosis coefficient; the 4th sample L-moment ratio.
 
     $$
-    \\tau^{(t_1, t_2)}_4
-        = \\frac{
-            \\lambda^{(t_1, t_2)}_4
+    \tau^{(t_1, t_2)}_4
+        = \frac{
+            \lambda^{(t_1, t_2)}_4
         }{
-            \\lambda^{(t_1, t_2)}_2
+            \lambda^{(t_1, t_2)}_2
         }
     $$
 
@@ -764,13 +749,12 @@ def l_kurtosis(
         0.19928182...
 
     Notes:
-        The L-kurtosis $\\tau_4$ lies within the interval
-        $[-\\frac{1}{4}, 1)$, and by the L-skewness $\\tau_3$ as
-        $5 \\tau_3^2 - 1 \\le 4 \\tau_4$.
+        The L-kurtosis $\tau_4$ lies within the interval
+        $[-\frac{1}{4}, 1)$, and by the L-skewness $\\tau_3$ as
+        $5 \tau_3^2 - 1 \le 4 \tau_4$.
 
     See Also:
         - [`lmo.l_ratio`][lmo.l_ratio]
         - [`scipy.stats.kurtosis`][scipy.stats.kurtosis]
-
     """
     return l_ratio(a, 4, 2, trim, axis, dtype, **kwargs)

@@ -13,8 +13,8 @@ from typing import Any, TypeVar, cast
 import numpy as np
 from numpy import typing as npt
 
-from ._utils import clean_order, ordered
 from ._lm import l_weights
+from ._utils import clean_order, ordered
 from .typing import AnyInt, IntVector, SortKind
 
 T = TypeVar('T', bound=np.floating[Any])
@@ -31,24 +31,25 @@ def l_comoment(
     sort: SortKind | None = 'stable',
     cache: bool = False,
 ) -> npt.NDArray[T]:
-    """
-    Multivariate extension of [`lmo.l_moment`][lmo.l_moment]. Estimates the
-    L-comoment matrix:
+    r"""
+    Multivariate extension of [`lmo.l_moment`][lmo.l_moment].
+
+    Estimates the L-comoment matrix:
 
     $$
-    \\Lambda_{r}^{(t_1, t_2)} =
-        \\left[
-            \\lambda_{r [ij]}^{(t_1, t_2)}
-        \\right]_{m \\times m}
+    \Lambda_{r}^{(t_1, t_2)} =
+        \left[
+            \lambda_{r [ij]}^{(t_1, t_2)}
+        \right]_{m \times m}
     $$
 
     Whereas the L-moments are calculated using the order statistics of the
     observations, i.e. by sorting, the L-comoment sorts $x_i$ using the
     order of $x_j$. This means that in general,
-    $\\lambda_{r [ij]}^{(t_1, t_2)} \\neq \\lambda_{r [ji]}^{(t_1, t_2)}$, i.e.
-    $\\Lambda_{r}^{(t_1, t_2)}$ is not symmetric.
+    $\lambda_{r [ij]}^{(t_1, t_2)} \neq \lambda_{r [ji]}^{(t_1, t_2)}$, i.e.
+    $\Lambda_{r}^{(t_1, t_2)}$ is not symmetric.
 
-    The $r$-th L-comoment $\\lambda_{r [ij]}^{(t_1, t_2)}$ reduces to the
+    The $r$-th L-comoment $\lambda_{r [ij]}^{(t_1, t_2)}$ reduces to the
     L-moment if $i=j$, and can therefore be seen as a generalization of the
     (univariate) L-moments. Similar to how the diagonal of a covariance matrix
     contains the variances, the diagonal of the L-comoment matrix contains the
@@ -128,8 +129,7 @@ def l_comoment(
 
     References:
         * [R. Serfling & P. Xiao (2007) - A Contribution to Multivariate
-            L-Moments: L-Comoment Matrices](https://doi.org/10.1016/j.jmva.2007.01.008)
-
+          L-Moments: L-Comoment Matrices](https://doi.org/10.1016/j.jmva.2007.01.008)
     """
     def _clean_array(arr: npt.ArrayLike) -> npt.NDArray[T]:
         out = np.asanyarray(arr, dtype=dtype)
@@ -137,35 +137,33 @@ def l_comoment(
 
     x = np.atleast_2d(_clean_array(a))
     if x.ndim != 2:
-        raise ValueError(f'sample array must be 2-D, got {x.ndim}')
+        msg = f'sample array must be 2-D, got {x.ndim}'
+        raise ValueError(msg)
 
     _r = np.asarray(r)
-    r_max: int = clean_order(cast(
-        int,
-        np.max(_r)  # pyright: ignore [reportUnknownMemberType]
-    ))
+    r_max = clean_order(cast(int, np.max(_r)))
     m, n = x.shape
 
     if not m:
-        return np.empty(np.shape(_r) + (0, 0), dtype=dtype)
+        return np.empty((*np.shape(_r), 0, 0), dtype=dtype)
 
     # projection matrix of shape (r, n)
-    P_r = l_weights(r_max, n, trim, dtype=dtype, cache=cache)
+    p_r = l_weights(r_max, n, trim, dtype=dtype, cache=cache)
 
     # L-comoment matrices for r = 0, ..., r_max
-    L_ij = np.empty((r_max + 1, m, m), dtype=dtype)
+    l_ij = np.empty((r_max + 1, m, m), dtype=dtype)
 
     # the zeroth L-comoment is the delta function, so the L-comoment
     # matrix is the identity matrix
-    L_ij[0] = np.eye(m, dtype=dtype)
+    l_ij[0] = np.eye(m, dtype=dtype)
 
     for j in range(m):
         # concomitants of x[i] w.r.t. x[j] for all i
         x_k_ij = ordered(x, x[j], axis=-1, dtype=dtype, sort=sort)
 
-        L_ij[1:, :, j] = np.inner(P_r, x_k_ij)
+        l_ij[1:, :, j] = np.inner(p_r, x_k_ij)
 
-    return L_ij.take(_r, 0)  # pyright: ignore [reportUnknownMemberType]
+    return l_ij.take(_r, 0)  # pyright: ignore [reportUnknownMemberType]
 
 
 def l_coratio(
@@ -178,28 +176,27 @@ def l_coratio(
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
 ) -> npt.NDArray[T]:
-    """
-    Estimate the generalized matrix of L-comoment ratio's:
+    r"""
+    Estimate the generalized matrix of L-comoment ratio's.
 
     $$
-    \\tilde \\Lambda_{rs}^{(t_1, t_2)} =
-        \\left[
-            \\left. \\lambda_{r [ij]}^{(t_1, t_2)} \\right/
-            \\lambda_{s [jj]}^{(t_1, t_2)}
-        \\right]_{m \\times m}
+    \tilde \Lambda_{rs}^{(t_1, t_2)} =
+        \left[
+            \left. \lambda_{r [ij]}^{(t_1, t_2)} \right/
+            \lambda_{s [jj]}^{(t_1, t_2)}
+        \right]_{m \times m}
     $$
 
     See Also:
         - [`lmo.l_comoment`][lmo.l_comoment]
         - [`lmo.l_ratio`][lmo.l_ratio]
-
     """
     rs = np.stack(np.broadcast_arrays(np.asarray(r), np.asarray(s)))
-    L_r, L_s = l_comoment(a, rs, trim, rowvar=rowvar, dtype=dtype, **kwargs)
+    l_r, l_s = l_comoment(a, rs, trim, rowvar=rowvar, dtype=dtype, **kwargs)
 
-    l_s = np.diagonal(L_s, axis1=-2, axis2=-1)
+    l_s = np.diagonal(l_s, axis1=-2, axis2=-1)
 
-    return L_r / np.expand_dims(l_s, -1)
+    return l_r / np.expand_dims(l_s, -1)
 
 
 def l_coloc(
@@ -210,14 +207,14 @@ def l_coloc(
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
 ) -> npt.NDArray[T]:
-    """
-    L-colocation matrix of 1st L-comoment estimates, $\\Lambda^{(t_1, t_2)}_1$.
+    r"""
+    L-colocation matrix of 1st L-comoment estimates, $\Lambda^{(t_1, t_2)}_1$.
 
     Alias for [`lmo.l_comoment(a, 1, *, **)`][lmo.l_comoment].
 
     Notes:
         If `trim = (0, 0)` (default), the L-colocation for $[ij]$ is the
-        L-location $\\lambda_1$ of $x_i$, independent of $x_j$.
+        L-location $\lambda_1$ of $x_i$, independent of $x_j$.
 
     Examples:
         Without trimming, the L-colocation only provides marginal information:
@@ -247,7 +244,6 @@ def l_coloc(
         - [`lmo.l_comoment`][lmo.l_comoment]
         - [`lmo.l_loc`][lmo.l_loc]
         - [`numpy.mean`][numpy.mean]
-
     """
     return l_comoment(a, 1, trim, rowvar=rowvar, dtype=dtype, **kwargs)
 
@@ -260,8 +256,8 @@ def l_coscale(
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
 ) -> npt.NDArray[T]:
-    """
-    L-coscale matrix of 2nd L-comoment estimates, $\\Lambda^{(t_1, t_2)}_2$.
+    r"""
+    L-coscale matrix of 2nd L-comoment estimates, $\Lambda^{(t_1, t_2)}_2$.
 
     Alias for [`lmo.l_comoment(a, 2, *, **)`][lmo.l_comoment].
 
@@ -284,7 +280,6 @@ def l_coscale(
         - [`lmo.l_comoment`][lmo.l_comoment]
         - [`lmo.l_scale`][lmo.l_scale]
         - [`numpy.cov`][numpy.cov]
-
     """
     return l_comoment(a, 2, trim, rowvar=rowvar, dtype=dtype, **kwargs)
 
@@ -297,8 +292,8 @@ def l_corr(
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
 ) -> npt.NDArray[T]:
-    """
-    Sample L-correlation coefficient matrix $\\tilde\\Lambda^{(t_1, t_2)}_2$;
+    r"""
+    Sample L-correlation coefficient matrix $\tilde\Lambda^{(t_1, t_2)}_2$;
     the ratio of the L-coscale matrix over the L-scale **column**-vectors.
 
     Alias for [`lmo.l_coratio(a, 2, 2, *, **)`][lmo.l_coratio].
@@ -328,12 +323,9 @@ def l_corr(
         array([[ 1.        , -0.66383285],
                [-0.66383285,  1.        ]])
 
-
-
     See Also:
         - [`lmo.l_coratio`][lmo.l_coratio]
         - [`numpy.corrcoef`][numpy.corrcoef]
-
     """
     return l_coratio(a, 2, 2, trim, rowvar=rowvar, dtype=dtype, **kwargs)
 
@@ -346,15 +338,14 @@ def l_coskew(
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
 ) -> npt.NDArray[T]:
-    """
-    Sample L-coskewness coefficient matrix $\\tilde\\Lambda^{(t_1, t_2)}_3$.
+    r"""
+    Sample L-coskewness coefficient matrix $\tilde\Lambda^{(t_1, t_2)}_3$.
 
     Alias for [`lmo.l_coratio(a, 3, 2, *, **)`][lmo.l_coratio].
 
     See Also:
         - [`lmo.l_coratio`][lmo.l_coratio]
         - [`lmo.l_skew`][lmo.l_skew]
-
     """
     return l_coratio(a, 3, 2, trim, rowvar=rowvar, dtype=dtype, **kwargs)
 
@@ -367,14 +358,13 @@ def l_cokurtosis(
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
 ) -> npt.NDArray[T]:
-    """
-    Sample L-cokurtosis coefficient matrix $\\tilde\\Lambda^{(t_1, t_2)}_4$.
+    r"""
+    Sample L-cokurtosis coefficient matrix $\tilde\Lambda^{(t_1, t_2)}_4$.
 
     Alias for [`lmo.l_coratio(a, 4, 2, *, **)`][lmo.l_coratio].
 
     See Also:
         - [`lmo.l_coratio`][lmo.l_coratio]
         - [`lmo.l_kurtosis`][lmo.l_kurtosis]
-
     """
     return l_coratio(a, 4, 2, trim, rowvar=rowvar, dtype=dtype, **kwargs)

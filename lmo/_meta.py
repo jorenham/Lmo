@@ -1,4 +1,4 @@
-__all__ = 'get_version',
+__all__ = ('get_version',)
 
 import importlib.metadata
 

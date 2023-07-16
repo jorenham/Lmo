@@ -7,7 +7,6 @@ import numpy.typing as npt
 
 from .typing import IndexOrder, IntVector, SortKind
 
-
 T = TypeVar('T', bound=np.generic)
 
 
@@ -18,7 +17,8 @@ def clean_order(
     strict: bool = False,
 ) -> int:
     if (r := order.__index__()) < (r0 := int(strict)):
-        raise TypeError(f'expected {name} >= {r0}, got {r}')
+        msg = f'expected {name} >= {r0}, got {r}'
+        raise TypeError(msg)
 
     return r
 
@@ -48,7 +48,7 @@ def as_float_array(
     order: IndexOrder | None = None,
     *,
     check_finite: bool = False,
-    flat: bool = False
+    flat: bool = False,
 ) -> npt.NDArray[np.floating[Any]]:
     """
     Convert to array if needed, and only cast to float64 dtype if not a
@@ -86,7 +86,8 @@ def _apply_aweights(
     for j in np.ndindex(out.shape[:-1]):
         x_jk, w_jk = x[j], vv[j]
         if w_jk[-1] <= 0:
-            raise ValueError('weight sum must be positive')
+            msg = 'weight sum must be positive'
+            raise ValueError(msg)
 
         # linearly interpolate to effectively "stretch" samples with large
         # weight, and "compress" those with small weights
@@ -117,9 +118,9 @@ def ordered(
         r = np.asarray(fweights)
         # noinspection PyUnresolvedReferences
         if (gcd := np.gcd.reduce(r)) <= 0:
-            raise ValueError(
-                'fweights must be non-negative and have a positive sum'
-            )
+            msg = 'fweights must be non-negative and have a positive sum'
+            raise ValueError(msg)
+
         r = r // gcd if gcd > 1 else r
     else:
         r = None
@@ -132,7 +133,7 @@ def ordered(
 
     if aweights is None and y is None:
         return np.sort(_x, axis=axis, kind=sort)
-    elif y is not None:
+    if y is not None:
         _y = _clean_array(y)
         i_k = np.argsort(_y, axis=axis if _y.ndim > 1 else -1, kind=sort)
     else:
@@ -143,7 +144,7 @@ def ordered(
             np.take(  # pyright: ignore [reportUnknownMemberType]
                 a,
                 i_k,
-                axis=None if a.ndim == i_k.ndim else axis
+                axis=None if a.ndim == i_k.ndim else axis,
             )
             if min(a.ndim, i_k.ndim) <= 1
             else np.take_along_axis(a, i_k, axis)

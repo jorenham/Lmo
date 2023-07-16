@@ -38,6 +38,7 @@ scipy = [
     { version = "^1.9", python = "<3.12" },
     { version = "^1.11", python = "<3.13" },
 ]
+typing_extensions = { version = "^4.1", python = "<3.11"}
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4"
@@ -98,8 +99,57 @@ reportMissingTypeStubs = false
 useLibraryCodeForTypes = false
 
 [tool.ruff]
-line-length = 80
 target-version = "py310"
+
+src = ["lmo"]
+extend-exclude = ["tests"]
+
+line-length = 80
+format = "grouped"
+select = [
+    "F",    # pyflakes
+    "E",    # pycodestyle error ("W" for warning)
+    "C90",  # mccabe
+    "I",    # isort
+    "N",    # pep8-naming
+    "D",    # pydocstyle
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "A",    # flake8-builtins
+    "COM",  # flake8-commas
+    "C4",   # flake8-comprehensions
+    "EM",   # flake8-errmsg
+    "FA",   # flake8-future-annotations
+    "ISC",  # flake8-implicit-str-concat
+    "ICN",  # flake8-import-conventions
+    "INP",  # flake8-no-pep420
+    "PIE",  # flake8-pie
+    "T20",  # flake8-print
+    "Q",    # flake8-quotes
+    "RET",  # flake8-return
+    "SIM",  # flake8-simplify
+    "TD",   # flake8-todos
+    "TRY",  # tryceratops
+    "NPY",  # NumPy-specific rules
+    "PERF", # perflint,
+    "RUF",  # Ruff-specific rules
+]
+ignore = [
+    "D205", # blank-line-after-summary
+    "D212", # multi-line-summary-first-line
+    "B023", # function-uses-loop-variable
+]
 
 [tool.ruff.pydocstyle]
 convention = "google"
+ignore-decorators = [
+    "typing.overload",
+]
+
+[tool.ruff.isort]
+case-sensitive = true
+combine-as-imports = true
+force-wrap-aliases = true
+
+[tool.ruff.flake8-quotes]
+inline-quotes = "single"
