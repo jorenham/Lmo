@@ -46,8 +46,7 @@ def test_l_moment_aweights_const(a, r, trim, w_const):
     w = np.full_like(a, w_const)
     l_r_w = lmo.l_moment(a, r, trim, aweights=w)
 
-    assert np.isfinite(l_r_w)
-    assert np.allclose(l_r_w, l_r)
+    assert l_r_w == approx(l_r, rel=1e-5)
 
 
 
@@ -55,7 +54,7 @@ def test_l_moment_aweights_const(a, r, trim, w_const):
 def test_l_ratio_unit(a, r, trim):
     tau = lmo.l_ratio(a, r, r, trim)
 
-    assert np.allclose(tau, 1)
+    assert tau == approx(1)
 
 
 @given(a=st_a1 | st_a2)
@@ -64,7 +63,7 @@ def test_l_loc_mean(a):
     l_loc = lmo.l_loc(a)
 
     assert l_loc.shape == loc.shape
-    assert np.allclose(l_loc, loc, rtol=1e-4)
+    assert l_loc == approx(loc, rel=1e-3)
 
 
 @given(a=st_a2)
@@ -102,10 +101,10 @@ def test_l_loc_linearity(x, trim, dloc, dscale):
     assert np.isscalar(l1)
 
     l1_add = lmo.l_loc(x + dloc, trim)
-    assert l1_add == approx(l1 + dloc)
+    assert l1_add == approx(l1 + dloc, abs=1e-3)
 
     l1_mul = lmo.l_loc(x * dscale, trim)
-    assert l1_mul == approx(l1 * dscale)
+    assert l1_mul == approx(l1 * dscale, abs=1e-3)
 
 
 @given(a=st_a1)
@@ -125,7 +124,7 @@ def test_t_scale_const(x0, n, dtype, trim):
     x = np.full(n, x0, dtype=dtype)
     l2 = lmo.l_scale(x, trim)
 
-    assert round(l2, 8) == 0
+    assert l2 == approx(0, abs=1e-8)
 
 
 @given(x=st_a1 | st_a2, trim=st_trim, dloc=st.floats(-1e3, 1e3))

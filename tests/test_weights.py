@@ -1,3 +1,5 @@
+# type: ignore
+
 from hypothesis import given, strategies as st
 from hypothesis.extra import numpy as hnp
 
