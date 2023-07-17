@@ -103,6 +103,7 @@ reportUnusedVariable = true
 reportDuplicateImport = true
 useLibraryCodeForTypes = false
 
+
 [tool.ruff]
 target-version = "py310"
 
