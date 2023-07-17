@@ -898,7 +898,7 @@
 
 
 <h4 id="lmo.l_moment" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_moment</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">fweights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">aweights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="s1">&#39;stable&#39;</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_moment</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">fweights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">aweights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="s1">&#39;stable&#39;</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
 
 </h4>
 
@@ -965,7 +965,7 @@ that are bound by <span class="arithmatex">\(t_1 + t_2 &lt; n - r\)</span>.</p>
 <li><span class="arithmatex">\((s, 0)\)</span>: <strong>LH</strong>-moment (<strong>L</strong>inear combination of <strong>H</strong>igher
     order statistics), by Wang (1997).
     Assigns more weight to larger observations.</li>
-<li><span class="arithmatex">\((t, t)\)</span>: <strong>TL</strong>-moment (<strong>T</strong>rimmed L-moment) <span class="arithmatex">\(\lambda_r^t\)</span>,
+<li><span class="arithmatex">\((t, t)\)</span>: <strong>TL</strong>-moment (<strong>T</strong>rimmed L-moment) <span class="arithmatex">\(\\lambda_r^t\)</span>,
     with symmetric trimming. First introduced by
     Elamir &amp; Seheult (2003).
     Generally more robust than L-moments.
@@ -980,7 +980,7 @@ that are bound by <span class="arithmatex">\(t_1 + t_2 &lt; n - r\)</span>.</p>
                 </span>
                 <span class="doc-param-default">
                   <b>DEFAULT:</b> 
-                    <code>0, 0</code>
+                    <code>(0, 0)</code>
                 </span>
             </p>
           </td>
@@ -1178,7 +1178,7 @@ r is a scalar. Otherwise, this is an array with
 
 
 <h4 id="lmo.l_moment_cov" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_moment_cov</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">r_max</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_moment_cov</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">r_max</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
 </h4>
 
@@ -1264,7 +1264,7 @@ covariance matrix):</p>
 
 
 <h4 id="lmo.l_ratio" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_ratio</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_ratio</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
 </h4>
 
@@ -1315,7 +1315,7 @@ simultaneously:</p>
 
 
 <h4 id="lmo.l_ratio_se" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_ratio_se</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_ratio_se</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
 </h4>
 
@@ -1366,7 +1366,7 @@ for Cauchy-distributed samples. The theoretical values are
 
 
 <h4 id="lmo.l_loc" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_loc</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_loc</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
 </h4>
 
@@ -1412,7 +1412,7 @@ for Cauchy-distributed samples. The theoretical values are
 
 
 <h4 id="lmo.l_scale" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_scale</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_scale</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
 </h4>
 
@@ -1420,7 +1420,7 @@ for Cauchy-distributed samples. The theoretical values are
   <div class="doc doc-contents ">
   
       <p><em>L-scale</em>: unbiased estimator of the second L-moment,
-<span class="arithmatex">\(\lambda^{(t_1, t_2)}_2\)</span></p>
+<span class="arithmatex">\(\lambda^{(t_1, t_2)}_2\)</span>.</p>
 <p>Alias for <a class="autorefs autorefs-internal" href="#lmo.l_moment"><code>lmo.l_moment(a, 2, *, **)</code></a>.</p>
 
 
@@ -1458,7 +1458,7 @@ for Cauchy-distributed samples. The theoretical values are
 
 
 <h4 id="lmo.l_variation" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_variation</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_variation</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
 </h4>
 
@@ -1512,7 +1512,7 @@ and lies within the interval <span class="arithmatex">\((0, 1)\)</span>.</p>
 
 
 <h4 id="lmo.l_skew" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_skew</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_skew</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
 </h4>
 
@@ -1559,7 +1559,7 @@ for short:</p>
 
 
 <h4 id="lmo.l_kurtosis" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_kurtosis</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_kurtosis</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
 </h4>
 
@@ -1591,7 +1591,7 @@ for short:</p>
 <details class="notes" open>
   <summary>Notes</summary>
   <p>The L-kurtosis <span class="arithmatex">\(\tau_4\)</span> lies within the interval
-<span class="arithmatex">\([-\frac{1}{4}, 1)\)</span>, and by the L-skewness <span class="arithmatex">\(\tau_3\)</span> as
+<span class="arithmatex">\([-\frac{1}{4}, 1)\)</span>, and by the L-skewness <span class="arithmatex">\(\\tau_3\)</span> as
 <span class="arithmatex">\(5 \tau_3^2 - 1 \le 4 \tau_4\)</span>.</p>
 </details>
 <details class="see-also" open>
@@ -1638,15 +1638,15 @@ for short:</p>
 
 
 <h4 id="lmo.l_comoment" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_comoment</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">rowvar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="s1">&#39;stable&#39;</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_comoment</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">rowvar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="s1">&#39;stable&#39;</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
 
 </h4>
 
 
   <div class="doc doc-contents ">
   
-      <p>Multivariate extension of <a class="autorefs autorefs-internal" href="#lmo.l_moment"><code>lmo.l_moment</code></a>. Estimates the
-L-comoment matrix:</p>
+      <p>Multivariate extension of <a class="autorefs autorefs-internal" href="#lmo.l_moment"><code>lmo.l_moment</code></a>.</p>
+<p>Estimates the L-comoment matrix:</p>
 <div class="arithmatex">\[
 \Lambda_{r}^{(t_1, t_2)} =
     \left[
@@ -1724,7 +1724,7 @@ that are bound by <span class="arithmatex">\(t_1 + t_2 &lt; n - r\)</span>.</p>
 <li><span class="arithmatex">\((s, 0)\)</span>: <strong>LH</strong>-moment (<strong>L</strong>inear combination of <strong>H</strong>igher
     order statistics), by Wang (1997).
     Assigns more weight to larger observations.</li>
-<li><span class="arithmatex">\((t, t)\)</span>: <strong>TL</strong>-moment (<strong>T</strong>rimmed L-moment) <span class="arithmatex">\(\lambda_r^t\)</span>,
+<li><span class="arithmatex">\((t, t)\)</span>: <strong>TL</strong>-moment (<strong>T</strong>rimmed L-moment) <span class="arithmatex">\(\\lambda_r^t\)</span>,
     with symmetric trimming. First introduced by
     Elamir &amp; Seheult (2003).
     Generally more robust than L-moments.
@@ -1739,7 +1739,7 @@ that are bound by <span class="arithmatex">\(t_1 + t_2 &lt; n - r\)</span>.</p>
                 </span>
                 <span class="doc-param-default">
                   <b>DEFAULT:</b> 
-                    <code>0, 0</code>
+                    <code>(0, 0)</code>
                 </span>
             </p>
           </td>
@@ -1875,7 +1875,7 @@ normal samples:</p>
   <summary>References</summary>
   <ul>
 <li><a href="https://doi.org/10.1016/j.jmva.2007.01.008">R. Serfling &amp; P. Xiao (2007) - A Contribution to Multivariate
-    L-Moments: L-Comoment Matrices</a></li>
+  L-Moments: L-Comoment Matrices</a></li>
 </ul>
 </details>
   </div>
@@ -1888,14 +1888,14 @@ normal samples:</p>
 
 
 <h4 id="lmo.l_coratio" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_coratio</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">rowvar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_coratio</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">rowvar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
 </h4>
 
 
   <div class="doc doc-contents ">
   
-      <p>Estimate the generalized matrix of L-comoment ratio's:</p>
+      <p>Estimate the generalized matrix of L-comoment ratio's.</p>
 <div class="arithmatex">\[
 \tilde \Lambda_{rs}^{(t_1, t_2)} =
     \left[
@@ -1921,7 +1921,7 @@ normal samples:</p>
 
 
 <h4 id="lmo.l_coloc" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_coloc</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">rowvar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_coloc</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">rowvar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
 </h4>
 
@@ -1977,7 +1977,7 @@ been only been briefly <em>mentioned</em> once or twice in the literature.</p>
 
 
 <h4 id="lmo.l_coscale" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_coscale</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">rowvar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_coscale</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">rowvar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
 </h4>
 
@@ -2022,7 +2022,7 @@ more information.</p>
 
 
 <h4 id="lmo.l_corr" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_corr</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">rowvar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_corr</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">rowvar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
 </h4>
 
@@ -2074,7 +2074,7 @@ the ratio of the L-coscale matrix over the L-scale <strong>column</strong>-vecto
 
 
 <h4 id="lmo.l_coskew" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_coskew</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">rowvar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_coskew</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">rowvar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
 </h4>
 
@@ -2101,7 +2101,7 @@ the ratio of the L-coscale matrix over the L-scale <strong>column</strong>-vecto
 
 
 <h4 id="lmo.l_cokurtosis" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_cokurtosis</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">rowvar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_cokurtosis</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">rowvar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
 </h4>
 
@@ -2137,7 +2137,8 @@ the ratio of the L-coscale matrix over the L-scale <strong>column</strong>-vecto
 
   <div class="doc doc-contents first">
   
-      <p>Theoretical L-moments of known and unknown probability distributions.</p>
+      <p>Theoretical (population) L-moments of known univariate probability
+distributions.</p>
 
   
 
@@ -2157,7 +2158,7 @@ the ratio of the L-coscale matrix over the L-scale <strong>column</strong>-vecto
 
 
 <h4 id="lmo.theoretical.l_moment_from_cdf" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">theoretical</span><span class="o">.</span><span class="n">l_moment_from_cdf</span><span class="p">(</span><span class="n">cdf</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">support</span><span class="o">=-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">theoretical</span><span class="o">.</span><span class="n">l_moment_from_cdf</span><span class="p">(</span><span class="n">cdf</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">support</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">))</span></code>
 
 </h4>
 
@@ -2196,7 +2197,7 @@ signature <code>(float) -&gt; float</code>, whose return value lies in <span cla
             <p>
                 <span class="doc-param-annotation">
                   <b>TYPE:</b>
-                    <code><span title="typing.Callable">Callable</span>[[float], float]</code>
+                    <code><span title="collections.abc.Callable">Callable</span>[[float], float]</code>
                 </span>
             </p>
           </td>
@@ -2229,7 +2230,7 @@ or floats (!).</p>
                 </span>
                 <span class="doc-param-default">
                   <b>DEFAULT:</b> 
-                    <code>0, 0</code>
+                    <code>(0, 0)</code>
                 </span>
             </p>
           </td>
@@ -2247,7 +2248,7 @@ or floats (!).</p>
                 </span>
                 <span class="doc-param-default">
                   <b>DEFAULT:</b> 
-                    <code>-<a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a class="autorefs autorefs-external" title="numpy.inf" href="https://numpy.org/doc/stable/reference/constants.html#numpy.inf">inf</a>, <a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a class="autorefs autorefs-external" title="numpy.inf" href="https://numpy.org/doc/stable/reference/constants.html#numpy.inf">inf</a></code>
+                    <code>(-<a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a class="autorefs autorefs-external" title="numpy.inf" href="https://numpy.org/doc/stable/reference/constants.html#numpy.inf">inf</a>, <a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a class="autorefs autorefs-external" title="numpy.inf" href="https://numpy.org/doc/stable/reference/constants.html#numpy.inf">inf</a>)</code>
                 </span>
             </p>
           </td>
@@ -2273,7 +2274,7 @@ or floats (!).</p>
           </td>
           <td class="doc-raises-details">
             <div class="doc-md-description">
-              <p><code>r</code> is not integer-valued</p>
+              <p><code>r</code> is not integer-valued or negative</p>
             </div>
           </td>
         </tr>
@@ -2285,7 +2286,7 @@ or floats (!).</p>
           </td>
           <td class="doc-raises-details">
             <div class="doc-md-description">
-              <p><code>r</code> is empty or negative</p>
+              <p><code>r</code> is negative</p>
             </div>
           </td>
         </tr>
@@ -2339,7 +2340,7 @@ If <code>nan</code>, consult the related <code>IntegrationWarning</code> message
 </ul>
 </details>
 <details class="todo" open>
-  <summary>TODO</summary>
+  <summary>Todo</summary>
   <ul>
 <li>The equations used for the r=0, r=1, and r&gt;1 cases.</li>
 <li>Optional cdf args and kwargs with ParamSpec.</li>
@@ -2355,7 +2356,7 @@ If <code>nan</code>, consult the related <code>IntegrationWarning</code> message
 
 
 <h4 id="lmo.theoretical.l_moment_from_ppf" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">theoretical</span><span class="o">.</span><span class="n">l_moment_from_ppf</span><span class="p">(</span><span class="n">ppf</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">support</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">theoretical</span><span class="o">.</span><span class="n">l_moment_from_ppf</span><span class="p">(</span><span class="n">ppf</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">support</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span></code>
 
 </h4>
 
@@ -2395,7 +2396,7 @@ probability in <span class="arithmatex">\([0, 1]\)</span>, to the domain of the 
             <p>
                 <span class="doc-param-annotation">
                   <b>TYPE:</b>
-                    <code><span title="typing.Callable">Callable</span>[[float], float]</code>
+                    <code><span title="collections.abc.Callable">Callable</span>[[float], float]</code>
                 </span>
             </p>
           </td>
@@ -2428,7 +2429,7 @@ or floats (!).</p>
                 </span>
                 <span class="doc-param-default">
                   <b>DEFAULT:</b> 
-                    <code>0, 0</code>
+                    <code>(0, 0)</code>
                 </span>
             </p>
           </td>
@@ -2446,7 +2447,7 @@ or floats (!).</p>
                 </span>
                 <span class="doc-param-default">
                   <b>DEFAULT:</b> 
-                    <code>0, 1</code>
+                    <code>(0, 1)</code>
                 </span>
             </p>
           </td>
@@ -2538,7 +2539,7 @@ If <code>nan</code>, consult the related <code>IntegrationWarning</code> message
 </ul>
 </details>
 <details class="todo" open>
-  <summary>TODO</summary>
+  <summary>Todo</summary>
   <ul>
 <li>The equations used for the r=0, r&gt;0 cases.</li>
 <li>Optional ppf args and kwargs with ParamSpec.</li>
@@ -2562,6 +2563,8 @@ If <code>nan</code>, consult the related <code>IntegrationWarning</code> message
 
 
   <div class="doc doc-contents first">
+  
+      <p>Statistical test and tools.</p>
 
   
 
@@ -2741,7 +2744,7 @@ using L-moments</a></p>
 
 
 <h3 id="lmo.l_weights" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_weights</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_weights</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
 
 </h3>
 
@@ -2839,6 +2842,8 @@ observation vector(s) of size <span class="arithmatex">\(n\)</span>), into (an u
 
 
   <div class="doc doc-contents first">
+  
+      <p>Linear algebra and linearized orthogonal polynomials.</p>
 
   
 
@@ -2980,8 +2985,9 @@ specified <code>X</code> axis.</p>
   <div class="doc doc-contents ">
   
       <p>Shifted Legendre polynomial coefficient matrix <span class="arithmatex">\(\widetilde{P}\)</span> of
-shape <code>(k, k)</code>, where the <span class="arithmatex">\(j\)</span>-th coefficient of the shifted Legendre
-polynomial of degree <span class="arithmatex">\(k\)</span> is at <span class="arithmatex">\((k, j)\)</span>:</p>
+shape <code>(k, k)</code>.</p>
+<p>The <span class="arithmatex">\(j\)</span>-th coefficient of the shifted Legendre polynomial of degree <span class="arithmatex">\(k\)</span> is
+at <span class="arithmatex">\((k, j)\)</span>:</p>
 <div class="arithmatex">\[
 \widetilde{p}_{k, j} = (-1)^{k - j} \binom{k}{j} \binom{k + j}{j}
 \]</div>
@@ -3100,18 +3106,15 @@ polynomial.</p>
   <div class="doc doc-contents ">
   
       <p>Shifted Jacobi polynomial coefficient matrix <span class="arithmatex">\(\widetilde{P}^{(a,b)}\)</span> of
-shape <code>(k, k)</code>, where the <span class="arithmatex">\(j\)</span>-th coefficient of the shifted Jacobi
-polynomial of degree <span class="arithmatex">\(k\)</span> is at <span class="arithmatex">\((k, j)\)</span>:</p>
+shape <code>(k, k)</code>.</p>
+<p>The <span class="arithmatex">\(j\)</span>-th coefficient of the shifted Jacobi polynomial of degree <span class="arithmatex">\(k\)</span> is
+at <span class="arithmatex">\((k, j)\)</span>:</p>
 <p>The "shift" refers to the change of variables <span class="arithmatex">\(x \mapsto 2x - 1\)</span> in the
 (unshifted) Jacobi (or hypergeometric) polynomials.</p>
 <p>The (shifted) Jacobi polynomials <span class="arithmatex">\(\widetilde{P}^{(a,b)}\)</span> generalize  the
 (shifted) Legendre polynomials <span class="arithmatex">\(\widetilde{P}\)</span>:
 <span class="arithmatex">\(\widetilde{P}^{(0, 0)} = \widetilde{P}\)</span></p>
 
-<details class="notes" open>
-  <summary>Notes</summary>
-  <p>Analogous to the shifted Legendre polynomials, this implementation</p>
-</details>
 
 
   <table>
