@@ -40,8 +40,6 @@ def _l0_weights(
     n: int,
     /,
     dtype: np.dtype[T] | type[T] = np.float_,
-    *,
-    enforce_symmetry: bool = True,
 ) -> npt.NDArray[T]:
     r"""
     Efficiently calculates the projection matrix $P = [p_{k, i}]_{r \times n}$
@@ -54,10 +52,6 @@ def _l0_weights(
         n: Sample count.
         dtype: Desired output floating data type.
 
-    Other parameters:
-        enforce_symmetry:
-            If set to False, disables symmetry-based numerical noise correction.
-
     Returns:
         P_r: 2-D array of shape `(r, n)`.
 
@@ -67,57 +61,8 @@ def _l0_weights(
     """
     p_r = np.empty((r, n), dtype)
 
-    if r == 0:
-        return p_r
-
-    np.matmul(sh_legendre(r), b_weights(r, n, dtype), out=p_r)
-
-    if enforce_symmetry:
-        # enforce rotational symmetry of even orders `r = 2, 4, ...`, naturally
-        # centering them around 0
-        for k in range(2, r + 1, 2):
-            p_k: npt.NDArray[T] = p_r[k - 1]
-
-            med = 0.0
-            pk_neg, pk_pos = p_k < med, p_k > med
-            # n_neg, n_pos = pk_neg.sum(), pk_pos.sum()
-            n_neg, n_pos = np.count_nonzero(pk_neg), np.count_nonzero(pk_pos)
-
-            # attempt to correct 1-off asymmetry
-            if abs(n_neg - n_pos) == 1:
-                if n % 2:
-                    # balance the #negative and #positive for odd `n` by
-                    # ignoring the center
-                    mid = (n - 1) // 2
-                    pk_neg[mid] = pk_pos[mid] = False
-                    # n_neg, n_pos = pk_neg.sum(), pk_pos.sum()
-                    n_neg = np.count_nonzero(pk_neg)
-                    n_pos = np.count_nonzero(pk_pos)
-                else:
-                    # if one side is half of n, set the other to it's negation
-                    mid = n // 2
-                    if n_neg == mid:
-                        pk_pos = ~pk_neg
-                        n_pos = n_neg
-                    elif n_pos == mid:
-                        pk_neg = ~pk_pos
-                        n_neg = n_pos
-
-            # attempt to correct any large asymmetry offsets
-            # and don't worry; median is O(n)
-            if abs(n_neg - n_pos) > 1 and (med := np.median(p_k)):
-                pk_neg, pk_pos = p_k < med, p_k > med
-                n_neg = np.count_nonzero(pk_neg)
-                n_pos = np.count_nonzero(pk_pos)
-
-            if n_neg == n_pos:
-                # it's pretty rare that this isn't the case
-                p_k[pk_neg] = -p_k[pk_pos][::-1]
-
-        # enforce horizontal (axis 1) symmetry for the odd orders (except k=1)
-        # and shift to zero mean
-        p_r[2::2, :n // 2] = p_r[2::2, :(n - 1) // 2: -1]
-        p_r[2::2] -= p_r[2::2].mean(1, keepdims=True)
+    if r > 0:
+        np.matmul(sh_legendre(r), b_weights(r, n, dtype), out=p_r)
 
     return p_r
 

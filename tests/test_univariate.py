@@ -46,7 +46,7 @@ def test_l_moment_aweights_const(a, r, trim, w_const):
     w = np.full_like(a, w_const)
     l_r_w = lmo.l_moment(a, r, trim, aweights=w)
 
-    assert l_r_w == approx(l_r, rel=1e-5)
+    assert l_r_w == approx(l_r, rel=1e-5, abs=1e-8)
 
 
 
@@ -63,7 +63,7 @@ def test_l_loc_mean(a):
     l_loc = lmo.l_loc(a)
 
     assert l_loc.shape == loc.shape
-    assert l_loc == approx(loc, rel=1e-3)
+    assert l_loc == approx(loc, rel=1e-5, abs=1e-8)
 
 
 @given(a=st_a2)
@@ -73,7 +73,7 @@ def test_l_loc_mean_2d(a):
 
     assert len(l_locs) == a.shape[1]
     assert l_locs.shape == locs.shape
-    assert np.allclose(l_locs, locs, rtol=1e-4)
+    assert np.allclose(l_locs, locs)
 
     l_locs_t = lmo.l_loc(a.T, axis=1)
 
@@ -86,7 +86,7 @@ def test_l_loc_const(x0, n, dtype, trim):
     x = np.full(n, x0, dtype=dtype)
     l_1 = lmo.l_loc(x, trim)
 
-    assert l_1 == approx(x0)
+    assert l_1 == approx(x0, rel=1e-5, abs=1e-8)
 
 
 @given(
@@ -101,10 +101,10 @@ def test_l_loc_linearity(x, trim, dloc, dscale):
     assert np.isscalar(l1)
 
     l1_add = lmo.l_loc(x + dloc, trim)
-    assert l1_add == approx(l1 + dloc, abs=1e-3)
+    assert l1_add == approx(l1 + dloc, rel=1e-5, abs=1e-8)
 
     l1_mul = lmo.l_loc(x * dscale, trim)
-    assert l1_mul == approx(l1 * dscale, abs=1e-3)
+    assert l1_mul == approx(l1 * dscale, rel=1e-5, abs=1e-8)
 
 
 @given(a=st_a1)
@@ -116,15 +116,14 @@ def test_l_scale_equiv_md(a):
     l2 = lmo.l_scale(a)
 
     assert l2.shape == scale.shape
-    assert l2 == approx(scale)
+    assert l2 == approx(scale, rel=1e-5, abs=1e-8)
 
 
 @given(x0=st.floats(-1e6, 1e6), n=st_n, dtype=st_dtype, trim=st_trim)
-def test_t_scale_const(x0, n, dtype, trim):
+def test_l_scale_const(x0, n, dtype, trim):
     x = np.full(n, x0, dtype=dtype)
     l2 = lmo.l_scale(x, trim)
-
-    assert l2 == approx(0, abs=1e-8)
+    assert l2 == approx(0, rel=1e-5, abs=1e-8)
 
 
 @given(x=st_a1 | st_a2, trim=st_trim, dloc=st.floats(-1e3, 1e3))
@@ -135,7 +134,7 @@ def test_l_scale_invariant_loc(x, trim, dloc):
     assert round(l2, 8) >= 0
 
     l2_add = lmo.l_scale(x + dloc, trim)
-    assert l2_add == approx(l2, abs=1e-8, rel=1e-5)
+    assert l2_add == approx(l2, rel=1e-5, abs=1e-8)
 
 
 @given(
@@ -153,4 +152,4 @@ def test_l_scale_linear_scale(x, trim, dscale):
     itrim = trim[::-1] if dscale < 0 and isinstance(trim, tuple) else trim
 
     l2_mul = lmo.l_scale(x * dscale, itrim)
-    assert l2_mul == approx(abs(l2 * dscale), abs=1e-5, rel=1e-3)
+    assert l2_mul == approx(abs(l2 * dscale), rel=1e-5, abs=1e-8)
