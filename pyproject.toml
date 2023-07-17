@@ -92,10 +92,15 @@ exclude = [
 ]
 venv = ".venv"
 pythonVersion = "3.10"
-pythonPlatform = "Linux"
+pythonPlatform = "All"
 typeCheckingMode = "strict"
 reportMissingImports = true
-reportMissingTypeStubs = false
+reportMissingTypeStubs = true
+reportUnusedImport = true
+reportUnusedClass = true
+reportUnusedFunction = true
+reportUnusedVariable = true
+reportDuplicateImport = true
 useLibraryCodeForTypes = false
 
 [tool.ruff]
