@@ -5,7 +5,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "lmo"
-version = "0.6.1"
+version = "0.7.0"
 description = "L-Moments for robust statistics."
 authors = ["Joren Hammudoglu <jhammudoglu@gmail.com>"]
 readme = "README.md"
@@ -24,7 +24,7 @@ classifiers = [
     "Typing :: Typed",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
+    # "Programming Language :: Python :: 3.12",
 ]
 
 [tool.poetry.urls]
