@@ -12,6 +12,14 @@
       - "!^l_co"
       heading_level: 4
 
+
+### Population L-moments
+
+::: lmo.theoretical
+    options:
+      heading_level: 4
+
+
 ### Sample L-comoments
 
 ::: lmo
@@ -19,9 +27,10 @@
       filters: ["^l_co"]
       heading_level: 4
 
-### Population L-moments
 
-::: lmo.theoretical
+### Order statistics
+
+::: lmo.ostats
     options:
       heading_level: 4
 
@@ -33,15 +42,14 @@
       heading_level: 4
 
 
-
 ## Low-level API
-
 
 ::: lmo
     options:
       members:
       - l_weights
       heading_level: 3
+
 
 ### `linalg`
 

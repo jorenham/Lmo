@@ -10,7 +10,7 @@ strict: true
 
 nav:
   - Overview: index.md
-  - Code Reference: reference.md
+  - API Docs: api.md
   - Contributing: contributing.md
 
 theme:
