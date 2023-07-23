@@ -8,6 +8,7 @@ __all__ = (
     'l_cokurtosis',
 )
 
+import sys
 from typing import Any, TypeVar, cast
 
 import numpy as np
@@ -15,7 +16,12 @@ from numpy import typing as npt
 
 from ._lm import l_weights
 from ._utils import clean_order, ordered
-from .typing import AnyInt, IntVector, SortKind
+from .typing import AnyInt, IntVector, LComomentOptions, SortKind
+
+if sys.version_info < (3, 11):
+    from typing_extensions import Unpack
+else:
+    from typing import Unpack
 
 T = TypeVar('T', bound=np.floating[Any])
 
@@ -25,9 +31,9 @@ def l_comoment(
     r: AnyInt | IntVector,
     /,
     trim: tuple[float, float] = (0, 0),
-    rowvar: bool = True,
-    dtype: np.dtype[T] | type[T] = np.float_,
     *,
+    dtype: np.dtype[T] | type[T] = np.float_,
+    rowvar: bool = True,
     sort: SortKind | None = 'stable',
     cache: bool = False,
 ) -> npt.NDArray[T]:
@@ -172,9 +178,9 @@ def l_coratio(
     s: AnyInt | IntVector,
     /,
     trim: tuple[float, float] = (0, 0),
-    rowvar: bool = True,
+    *,
     dtype: np.dtype[T] | type[T] = np.float_,
-    **kwargs: Any,
+    **kwargs: Unpack[LComomentOptions],
 ) -> npt.NDArray[T]:
     r"""
     Estimate the generalized matrix of L-comoment ratio's.
@@ -192,7 +198,7 @@ def l_coratio(
         - [`lmo.l_ratio`][lmo.l_ratio]
     """
     rs = np.stack(np.broadcast_arrays(np.asarray(r), np.asarray(s)))
-    l_r, l_s = l_comoment(a, rs, trim, rowvar=rowvar, dtype=dtype, **kwargs)
+    l_r, l_s = l_comoment(a, rs, trim, dtype=dtype, **kwargs)
 
     l_s = np.diagonal(l_s, axis1=-2, axis2=-1)
 
@@ -203,9 +209,9 @@ def l_coloc(
     a: npt.ArrayLike,
     /,
     trim: tuple[float, float] = (0, 0),
-    rowvar: bool = True,
+    *,
     dtype: np.dtype[T] | type[T] = np.float_,
-    **kwargs: Any,
+    **kwargs: Unpack[LComomentOptions],
 ) -> npt.NDArray[T]:
     r"""
     L-colocation matrix of 1st L-comoment estimates, $\Lambda^{(t_1, t_2)}_1$.
@@ -245,16 +251,16 @@ def l_coloc(
         - [`lmo.l_loc`][lmo.l_loc]
         - [`numpy.mean`][numpy.mean]
     """
-    return l_comoment(a, 1, trim, rowvar=rowvar, dtype=dtype, **kwargs)
+    return l_comoment(a, 1, trim, dtype=dtype, **kwargs)
 
 
 def l_coscale(
     a: npt.ArrayLike,
     /,
     trim: tuple[float, float] = (0, 0),
-    rowvar: bool = True,
+    *,
     dtype: np.dtype[T] | type[T] = np.float_,
-    **kwargs: Any,
+    **kwargs: Unpack[LComomentOptions],
 ) -> npt.NDArray[T]:
     r"""
     L-coscale matrix of 2nd L-comoment estimates, $\Lambda^{(t_1, t_2)}_2$.
@@ -281,16 +287,16 @@ def l_coscale(
         - [`lmo.l_scale`][lmo.l_scale]
         - [`numpy.cov`][numpy.cov]
     """
-    return l_comoment(a, 2, trim, rowvar=rowvar, dtype=dtype, **kwargs)
+    return l_comoment(a, 2, trim, dtype=dtype, **kwargs)
 
 
 def l_corr(
     a: npt.ArrayLike,
     /,
     trim: tuple[float, float] = (0, 0),
-    rowvar: bool = True,
+    *,
     dtype: np.dtype[T] | type[T] = np.float_,
-    **kwargs: Any,
+    **kwargs: Unpack[LComomentOptions],
 ) -> npt.NDArray[T]:
     r"""
     Sample L-correlation coefficient matrix $\tilde\Lambda^{(t_1, t_2)}_2$;
@@ -327,16 +333,16 @@ def l_corr(
         - [`lmo.l_coratio`][lmo.l_coratio]
         - [`numpy.corrcoef`][numpy.corrcoef]
     """
-    return l_coratio(a, 2, 2, trim, rowvar=rowvar, dtype=dtype, **kwargs)
+    return l_coratio(a, 2, 2, trim, dtype=dtype, **kwargs)
 
 
 def l_coskew(
     a: npt.ArrayLike,
     /,
     trim: tuple[float, float] = (0, 0),
-    rowvar: bool = True,
+    *,
     dtype: np.dtype[T] | type[T] = np.float_,
-    **kwargs: Any,
+    **kwargs: Unpack[LComomentOptions],
 ) -> npt.NDArray[T]:
     r"""
     Sample L-coskewness coefficient matrix $\tilde\Lambda^{(t_1, t_2)}_3$.
@@ -347,16 +353,16 @@ def l_coskew(
         - [`lmo.l_coratio`][lmo.l_coratio]
         - [`lmo.l_skew`][lmo.l_skew]
     """
-    return l_coratio(a, 3, 2, trim, rowvar=rowvar, dtype=dtype, **kwargs)
+    return l_coratio(a, 3, 2, trim, dtype=dtype, **kwargs)
 
 
 def l_cokurtosis(
     a: npt.ArrayLike,
     /,
     trim: tuple[float, float] = (0, 0),
-    rowvar: bool = True,
+    *,
     dtype: np.dtype[T] | type[T] = np.float_,
-    **kwargs: Any,
+    **kwargs: Unpack[LComomentOptions],
 ) -> npt.NDArray[T]:
     r"""
     Sample L-cokurtosis coefficient matrix $\tilde\Lambda^{(t_1, t_2)}_4$.
@@ -367,4 +373,4 @@ def l_cokurtosis(
         - [`lmo.l_coratio`][lmo.l_coratio]
         - [`lmo.l_kurtosis`][lmo.l_kurtosis]
     """
-    return l_coratio(a, 4, 2, trim, rowvar=rowvar, dtype=dtype, **kwargs)
+    return l_coratio(a, 4, 2, trim, dtype=dtype, **kwargs)

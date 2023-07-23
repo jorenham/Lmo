@@ -13,6 +13,7 @@ __all__ = (
     'l_kurtosis',
 )
 
+import sys
 from math import comb
 from typing import Any, Final, TypeVar, cast, overload
 
@@ -23,7 +24,12 @@ from . import ostats
 from ._utils import clean_order, ensure_axis_at, ordered
 from .linalg import sandwich, sh_legendre, trim_matrix
 from .pwm_beta import cov, weights
-from .typing import AnyInt, IntVector, SortKind
+from .typing import AnyInt, IntVector, LMomentOptions, SortKind
+
+if sys.version_info < (3, 11):
+    from typing_extensions import Unpack
+else:
+    from typing import Unpack
 
 T = TypeVar('T', bound=np.floating[Any])
 
@@ -485,7 +491,7 @@ def l_moment_cov(
     *,
     axis: int | None = None,
     dtype: np.dtype[T] | type[T] = np.float_,
-    **kwargs: Any,
+    **kwargs: Unpack[LMomentOptions],
 ) -> npt.NDArray[T]:
     """
     Non-parmateric auto-covariance matrix of the generalized trimmed
@@ -556,7 +562,7 @@ def l_ratio(
     *,
     axis: None = ...,
     dtype: type[np.float_] = ...,
-    **kwargs: Any,
+    **kwargs: Unpack[LMomentOptions],
 ) -> np.float_:
     ...
 
@@ -571,7 +577,7 @@ def l_ratio(
     *,
     axis: None = ...,
     dtype: np.dtype[T] | type[T],
-    **kwargs: Any,
+    **kwargs: Unpack[LMomentOptions],
 ) -> T:
     ...
 
@@ -585,7 +591,7 @@ def l_ratio(
     *,
     axis: int,
     dtype: type[np.float_] = ...,
-    **kwargs: Any,
+    **kwargs: Unpack[LMomentOptions],
 ) -> np.float_ | npt.NDArray[np.float_]:
     ...
 
@@ -600,7 +606,7 @@ def l_ratio(
     *,
     axis: int,
     dtype: np.dtype[T] | type[T],
-    **kwargs: Any,
+    **kwargs: Unpack[LMomentOptions],
 ) -> T | npt.NDArray[T]:
     ...
 
@@ -614,7 +620,7 @@ def l_ratio(
     *,
     axis: int | None = ...,
     dtype: type[np.float_] = ...,
-    **kwargs: Any,
+    **kwargs: Unpack[LMomentOptions],
 ) -> npt.NDArray[np.float_]:
     ...
 
@@ -628,7 +634,7 @@ def l_ratio(
     *,
     axis: int | None = ...,
     dtype: np.dtype[T] | type[T],
-    **kwargs: Any,
+    **kwargs: Unpack[LMomentOptions],
 ) -> npt.NDArray[T]:
     ...
 
@@ -643,7 +649,7 @@ def l_ratio(
     *,
     axis: int | None = ...,
     dtype: type[np.float_] = ...,
-    **kwargs: Any,
+    **kwargs: Unpack[LMomentOptions],
 ) -> npt.NDArray[np.float_]:
     ...
 
@@ -658,7 +664,7 @@ def l_ratio(
     *,
     axis: int | None = ...,
     dtype: np.dtype[T] | type[T],
-    **kwargs: Any,
+    **kwargs: Unpack[LMomentOptions],
 ) -> npt.NDArray[T]:
     ...
 
@@ -672,7 +678,7 @@ def l_ratio(
     *,
     axis: int | None = None,
     dtype: np.dtype[T] | type[T] = np.float_,
-    **kwargs: Any,
+    **kwargs: Unpack[LMomentOptions],
 ) -> T | npt.NDArray[T]:
     r"""
     Estimates the generalized L-moment ratio:
@@ -734,7 +740,7 @@ def l_ratio_se(
     *,
     axis: int | None = None,
     dtype: np.dtype[T] | type[T] = np.float_,
-    **kwargs: Any,
+    **kwargs: Unpack[LMomentOptions],
 ) -> npt.NDArray[T]:
     """
     Non-parametric estimates of the Standard Error (SE) in the L-ratio
@@ -805,7 +811,7 @@ def l_loc(
     *,
     axis: int | None = None,
     dtype: np.dtype[T] | type[T] = np.float_,
-    **kwargs: Any,
+    **kwargs: Unpack[LMomentOptions],
 ) -> T | npt.NDArray[T]:
     r"""
     *L-location* (or *L-loc*): unbiased estimator of the first L-moment,
@@ -841,7 +847,7 @@ def l_scale(
     *,
     axis: int | None = None,
     dtype: np.dtype[T] | type[T] = np.float_,
-    **kwargs: Any,
+    **kwargs: Unpack[LMomentOptions],
 ) -> T | npt.NDArray[T]:
     r"""
     *L-scale*: unbiased estimator of the second L-moment,
@@ -878,7 +884,7 @@ def l_variation(
     *,
     axis: int | None = None,
     dtype: np.dtype[T] | type[T] = np.float_,
-    **kwargs: Any,
+    **kwargs: Unpack[LMomentOptions],
 ) -> T | npt.NDArray[T]:
     r"""
     The *coefficient of L-variation* (or *L-CV*) unbiased sample estimator:
@@ -924,7 +930,7 @@ def l_skew(
     *,
     axis: int | None = None,
     dtype: np.dtype[T] | type[T] = np.float_,
-    **kwargs: Any,
+    **kwargs: Unpack[LMomentOptions],
 ) -> T | npt.NDArray[T]:
     r"""
     Unbiased sample estimator of the *coefficient of L-skewness*, or *L-skew*
@@ -963,7 +969,7 @@ def l_kurtosis(
     *,
     axis: int | None = None,
     dtype: np.dtype[T] | type[T] = np.float_,
-    **kwargs: Any,
+    **kwargs: Unpack[LMomentOptions],
 ) -> T | npt.NDArray[T]:
     r"""
     L-kurtosis coefficient; the 4th sample L-moment ratio.
