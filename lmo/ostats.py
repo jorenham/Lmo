@@ -1,5 +1,7 @@
-"""
-Order statistics $X_{i:n}$.
+r"""
+Order statistics $X_{i:n}$, with $i \in [0, n)$.
+
+Primarily used as an intermediate step for L-moment estimation.
 
 References:
     [H.A. David & H.N. Nagaraja (2004) &ndash; Order statistics

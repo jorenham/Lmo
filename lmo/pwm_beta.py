@@ -1,9 +1,9 @@
-"""
-Power-Weighted Moment (PWM) estimators.
+r"""
+Power-Weighted Moment (PWM) $\beta_k = M_{1,k,0}$.
 
 Primarily used as an intermediate step for L-moment estimation.
 """
-__all__ = 'b_weights', 'b_moment_cov'
+__all__ = 'weights', 'cov'
 
 from typing import Any, TypeVar, cast
 
@@ -15,7 +15,7 @@ from ._utils import ordered
 T = TypeVar('T', bound=np.floating[Any])
 
 
-def b_weights(
+def weights(
     r: int,
     n: int,
     /,
@@ -63,7 +63,7 @@ def b_weights(
     return cast(npt.NDArray[T], w_r / n + 0.)
 
 
-def b_moment_cov(
+def cov(
     a: npt.ArrayLike,
     r: int,
     /,
@@ -100,7 +100,7 @@ def b_moment_cov(
         x = np.moveaxis(x, axis, 0)
 
     n = len(x)
-    p_k = b_weights(r, n, dtype=dtype)
+    p_k = weights(r, n, dtype=dtype)
 
     # beta pwm estimates
     b = p_k @ x if x.ndim == 1 else np.inner(p_k, x.T)

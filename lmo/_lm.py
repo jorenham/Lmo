@@ -20,9 +20,9 @@ import numpy as np
 import numpy.typing as npt
 
 from . import ostats
-from ._pwm import b_moment_cov, b_weights
 from ._utils import clean_order, ensure_axis_at, ordered
 from .linalg import sandwich, sh_legendre, trim_matrix
+from .pwm_beta import cov, weights
 from .typing import AnyInt, IntVector, SortKind
 
 T = TypeVar('T', bound=np.floating[Any])
@@ -65,7 +65,7 @@ def _l0_weights_pwm(
     p_r = np.empty((r, n), dtype)
 
     if r > 0:
-        np.matmul(sh_legendre(r), b_weights(r, n, dtype), out=p_r)
+        np.matmul(sh_legendre(r), weights(r, n, dtype), out=p_r)
 
     return p_r
 
@@ -437,7 +437,7 @@ def l_moment_cov(
     p_l = np.round(p_l, 12) + 0.
 
     # PWM covariance matrix
-    s_b = b_moment_cov(a, ks, axis=axis, dtype=dtype, **kwargs)
+    s_b = cov(a, ks, axis=axis, dtype=dtype, **kwargs)
 
     # tasty, eh?
     return sandwich(p_l, s_b, dtype=dtype)

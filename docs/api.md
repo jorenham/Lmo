@@ -28,13 +28,6 @@
       heading_level: 4
 
 
-### Order statistics
-
-::: lmo.ostats
-    options:
-      heading_level: 4
-
-
 ### Statistical test and tools 
 
 ::: lmo.diagnostic
@@ -57,3 +50,15 @@
     options:
       heading_level: 4
       show_root_full_path: true
+
+### Order statistics
+
+::: lmo.ostats
+    options:
+      heading_level: 4
+
+### β PWMs
+
+::: lmo.pwm_beta
+    options:
+      heading_level: 4
