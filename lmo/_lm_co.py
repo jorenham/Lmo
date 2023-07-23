@@ -1,6 +1,7 @@
 __all__ = (
     'l_comoment',
     'l_coratio',
+    'l_costats',
     'l_coloc',
     'l_coscale',
     'l_corr',
@@ -203,6 +204,28 @@ def l_coratio(
     l_s = np.diagonal(l_s, axis1=-2, axis2=-1)
 
     return l_r / np.expand_dims(l_s, -1)
+
+
+def l_costats(
+    a: npt.ArrayLike,
+    /,
+    trim: tuple[float, float] = (0, 0),
+    *,
+    dtype: np.dtype[T] | type[T] = np.float_,
+    **kwargs: Unpack[LComomentOptions],
+) -> npt.NDArray[T]:
+    """
+    Calculates the L-*co*scale, L-corr(elation), L-*co*skew(ness) and 
+    L-*co*kurtosis.
+
+    Equivalent to `lmo.l_coratio(a, [2, 2, 3, 4], [0, 2, 2, 2], *, **)`.
+
+    See Also:
+        - [`lmo.l_stats`][lmo.l_stats]
+        - [`lmo.l_coratio`][lmo.l_coratio]
+    """
+    r, s = [2, 2, 3, 4], [0, 2, 2, 2]
+    return l_coratio(a, r, s, trim=trim, dtype=dtype, **kwargs)
 
 
 def l_coloc(

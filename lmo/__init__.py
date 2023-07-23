@@ -7,6 +7,8 @@ __all__ = (
     'l_moment_cov',
     'l_ratio',
     'l_ratio_se',
+    'l_stats',
+    'l_stats_se',
     'l_loc',
     'l_scale',
     'l_variation',
@@ -15,6 +17,7 @@ __all__ = (
 
     'l_comoment',
     'l_coratio',
+    'l_costats',
     'l_coloc',
     'l_coscale',
     'l_corr',
@@ -33,6 +36,8 @@ from ._lm import (
     l_ratio_se,
     l_scale,
     l_skew,
+    l_stats,
+    l_stats_se,
     l_variation,
     l_weights,
 )
@@ -44,6 +49,7 @@ from ._lm_co import (
     l_corr,
     l_coscale,
     l_coskew,
+    l_costats,
 )
 from ._meta import get_version as _get_version
 

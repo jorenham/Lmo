@@ -6,6 +6,8 @@ __all__ = (
     'l_moment_cov',
     'l_ratio',
     'l_ratio_se',
+    'l_stats',
+    'l_stats_se',
     'l_loc',
     'l_scale',
     'l_variation',
@@ -531,6 +533,10 @@ def l_moment_cov(
             L-moments](https://doi.org/10.1016/S0378-3758(03)00213-1)
 
     """
+    if any(int(t) != t for t in trim):
+        msg = 'l_moment_cov does not support fractional trimming (yet)'
+        raise TypeError(msg)
+
     ks = int(r_max + sum(trim))
     if ks < r_max:
         msg = 'trimmings must be positive'
@@ -720,7 +726,7 @@ def l_ratio(
             r_eq_s.shape + (1,) * (l_rs.ndim - r_eq_s.ndim - 1),
         )
 
-    with np.errstate(divide='ignore'):
+    with np.errstate(divide='ignore', invalid='ignore'):
         return np.where(
             r_eq_s,
             np.ones_like(l_rs[0]),
@@ -799,6 +805,72 @@ def l_ratio_se(
         s_tt = np.where(_r == _s, 0, _s_tt)
 
     return np.sqrt(s_tt)
+
+
+def l_stats(
+    a: npt.ArrayLike,
+    /,
+    trim: tuple[float, float] = (0, 0),
+    *,
+    axis: int | None = None,
+    dtype: np.dtype[T] | type[T] = np.float_,
+    **kwargs: Unpack[LMomentOptions],
+) -> npt.NDArray[T]:
+    """
+    Calculates the L-loc(ation), L-scale, L-skew(ness) and L-kurtosis.
+
+    Equivalent to `lmo.l_ratio(a, [1, 2, 3, 4], [0, 0, 2, 2], *, **)`.
+
+    Examples:
+        >>> import lmo, scipy.stats
+        >>> x = scipy.stats.gumbel_r.rvs(size=99, random_state=12345)
+        >>> lmo.l_stats(x)
+        array([0.79014773, 0.68346357, 0.12207413, 0.12829047])
+
+        The theoretical L-stats of the standard Gumbel distribution are
+        `[0.577, 0.693, 0.170, 0.150]`.
+
+    See Also:
+        - [`lmo.l_stats_se`][lmo.l_stats_se]
+        - [`lmo.l_ratio`][lmo.l_ratio]
+        - [`lmo.l_costats`][lmo.l_costats]
+    """
+    r, s = [1, 2, 3, 4], [0, 0, 2, 2]
+    return l_ratio(a, r, s, trim=trim, axis=axis, dtype=dtype, **kwargs)
+
+
+def l_stats_se(
+    a: npt.ArrayLike,
+    /,
+    trim: tuple[int, int] = (0, 0),
+    *,
+    axis: int | None = None,
+    dtype: np.dtype[T] | type[T] = np.float_,
+    **kwargs: Unpack[LMomentOptions],
+) -> npt.NDArray[T]:
+    """
+    Calculates the standard errors (SE's) of the [`L-stats`][lmo.l_stats].
+
+    Equivalent to `lmo.l_ratio_se(a, [1, 2, 3, 4], [0, 0, 2, 2], *, **)`.
+
+    Examples:
+        >>> import lmo, scipy.stats
+        >>> x = scipy.stats.gumbel_r.rvs(size=99, random_state=12345)
+        >>> lmo.l_stats(x)
+        array([0.79014773, 0.68346357, 0.12207413, 0.12829047])
+        >>> lmo.l_stats_se(x)
+        array([0.12305147, 0.05348839, 0.04472984, 0.03408495])
+
+        The theoretical L-stats of the standard Gumbel distribution are
+        `[0.577, 0.693, 0.170, 0.150]`. The corresponding relative z-scores
+        are `[-1.730, 0.181, 1.070, 0.648]`.
+
+    See Also:
+        - [`lmo.l_stats`][lmo.l_stats]
+        - [`lmo.l_ratio_se`][lmo.l_ratio_se]
+    """
+    r, s = [1, 2, 3, 4], [0, 0, 2, 2]
+    return l_ratio_se(a, r, s, trim=trim, axis=axis, dtype=dtype, **kwargs)
 
 
 def l_loc(
