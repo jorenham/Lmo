@@ -37,7 +37,7 @@ def _weights(
     ]
 
 
-_weights_cached = functools.partial(_weights)
+_weights_cached = functools.lru_cache(1 << 10)(_weights)
 
 
 def weights(
@@ -89,6 +89,10 @@ def weights(
 
     Returns:
         1d array of size $N$ with (ordered) sample weights.
+
+    Todo:
+        Recurse at i = i + 1 using
+        `np.roll(w[i], 1) * j * (n - i - 1) / ((i + 1) * (N - j))`.
     """
     if i < 0:
         # negative indexing
@@ -97,7 +101,7 @@ def weights(
     if (i, n) == (0, 1):
         # identity case
         return np.full(N, 1 / N)
-    if not (0 <= n < n):
+    if i >= n:
         # impossible case
         return np.full(N, np.nan)
 

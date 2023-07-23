@@ -13,11 +13,13 @@ __all__ = (
     'l_kurtosis',
 )
 
+from math import comb
 from typing import Any, Final, TypeVar, cast
 
 import numpy as np
 import numpy.typing as npt
 
+from . import ostats
 from ._pwm import b_moment_cov, b_weights
 from ._utils import clean_order, ensure_axis_at, ordered
 from .linalg import sandwich, sh_legendre, trim_matrix
@@ -30,12 +32,13 @@ T = TypeVar('T', bound=np.floating[Any])
 
 _L_WEIGHTS_CACHE: Final[
     dict[
-        tuple[int, int, int],  # (n, t_1, t_2)
+        tuple[int, int | float, int | float],  # (n, t_1, t_2)
         npt.NDArray[np.floating[Any]],
     ]
 ] = {}
 
-def _l0_weights(
+
+def _l0_weights_pwm(
     r: int,
     n: int,
     /,
@@ -67,24 +70,82 @@ def _l0_weights(
     return p_r
 
 
+def _l_weights_pwm(
+    r: int,
+    n: int,
+    /,
+    trim: tuple[int, int],
+    dtype: np.dtype[T] | type[T] = np.float_,
+) -> npt.NDArray[T]:
+    if sum(trim) == 0:
+        return _l0_weights_pwm(r, n, dtype)
+
+    p_r = np.empty((r, n), dtype)
+
+    if r == 0:
+        return p_r
+
+    # the k-th TL-(t_1, t_2) weights are a linear combination of L-weights
+    # with orders k, ..., k + t_1 + t_2
+
+    np.matmul(
+        trim_matrix(r, trim),
+        _l0_weights_pwm(r + sum(trim), n),
+        out=p_r,
+    )
+
+    # remove numerical noise from the trimmings, and correct for potential
+    # shifts in means
+    t1, t2 = trim
+    p_r[:, :t1] = p_r[:, n - t2:] = 0
+    p_r[1:, t1:n - t2] -= p_r[1:, t1:n - t2].mean(1, keepdims=True)
+
+    return p_r
+
+
+def _l_weights_ostat(
+    r: int,
+    N: int,  # noqa: N803
+    /,
+    trim: tuple[float, float],
+    dtype: np.dtype[T] | type[T] = np.float_,
+) -> npt.NDArray[T]:
+    s, t = trim
+
+    assert 0 < r + s + t <= N, (r, N, trim)
+    assert r >= 1, r
+    assert s >= 0 and t >= 0, trim
+
+    out = np.empty((r, N), dtype=dtype)
+    for _r0 in range(r):
+        # it's literally a linear combination of order statistics :)
+        out[_r0] = np.array([
+            (-1)**k
+            * comb(_r0, k)
+            * ostats.weights(_r0 + s - k, _r0 + s + t + 1, N)
+            for k in range(_r0 + 1)
+        ]).mean(axis=0)
+    return out
+
+
 def l_weights(
     r: int,
     n: int,
     /,
-    trim: tuple[int, int] = (0, 0),
-    dtype: np.dtype[T] | type[T] = np.float_,
+    trim: tuple[float, float] = (0, 0),
     *,
     cache: bool = False,
-) -> npt.NDArray[T]:
+) -> npt.NDArray[np.float_]:
     r"""
     Projection matrix of the first $r$ (T)L-moments for $n$ samples.
 
-    The matrix is a linear combination of the Power Weighted Moment
-    (PWM) weight matrix (the sample estimator of $beta_{r_1}$), and the
-    shifted Legendre polynomials.
+    For integer trim is the matrix is a linear combination of the Power
+    Weighted Moment (PWM) weights (the sample estimator of $beta_{r_1}$), and
+    the shifted Legendre polynomials.
 
-    If `trim != (0, 1)`, a linearized (and corrected) adaptation of the
-    recurrence relations from *Hosking (2007)* are applied, as well.
+    If the trimmings are nonzero and integers, a linearized (and corrected)
+    adaptation of the recurrence relations from *Hosking (2007)* are applied,
+    as well.
 
     $$
     (2k + t_1 + t_2 - 1) \lambda^{(t_1, t_2)}_k
@@ -101,6 +162,11 @@ def l_weights(
     $$
 
     for $t_2 > 0$.
+
+    If the trim values are floats instead, the weights are calculated directly
+    from the (generalized) order statistics. At the time of writing (07-2023),
+    these "generalized trimmed L-moments" have not been discussed in the
+    literature or the R-packages. It's probably a good idea to publish this...
 
     TLDR:
         This matrix (linearly) transforms $x_{i:n}$ (i.e. the sorted
@@ -123,51 +189,49 @@ def l_weights(
         - [J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
             L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
     """
+    if r == 0:
+        return np.empty((r, n))
+
+    match trim:
+        case s, t if s < 0 or t < 0:
+            msg = f'trim orders must be >=0, got {trim}'
+            raise ValueError(msg)
+        case s, t:
+            pass
+        case _:  # type: ignore [reportUneccessaryComparison]
+            msg = (
+                f'trim must be a tuple with two non-negative ints or floats, '
+                f'got {trim!r}'
+            )
+            raise TypeError(msg)
+
+    # manual cache lookup, only if cache=False (for testability)
+    # e.g. `functools.cache` would be inefficient for e.g. r=3 with cached r=4
     cache_key = n, *trim
     if (
-        cache_key in _L_WEIGHTS_CACHE
-        and (p_r := _L_WEIGHTS_CACHE[cache_key]).shape[0] <= r
+        cache
+        and cache_key in _L_WEIGHTS_CACHE
+        and (w := _L_WEIGHTS_CACHE[cache_key]).shape[0] <= r
     ):
-        if p_r.dtype is not np.dtype(dtype):
-            p_r = p_r.view(dtype)
-        if p_r.shape[0] < r:
-            p_r = p_r[:r]
+        if w.shape[0] < r:
+            w = w[:r]
 
         # ignore if r is larger that what's cached
-        if p_r.shape[0] == r:
-            assert p_r.shape == (r, n)
-            return cast(npt.NDArray[T], p_r)
+        if w.shape[0] == r:
+            assert w.shape == (r, n)
+            return w
 
-
-    if sum(trim) == 0:
-        return _l0_weights(r, n, dtype)
-
-    p_r = np.empty((r, n), dtype)
-
-    if r == 0:
-        return p_r
-
-    # the k-th TL-(t_1, t_2) weights are a linear combination of L-weights
-    # with orders k, ..., k + t_1 + t_2
-
-    np.matmul(
-        trim_matrix(r, trim),
-        _l0_weights(r + sum(trim), n),
-        out=p_r,
-    )
-
-    # remove numerical noise from the trimmings, and correct for potential
-    # shifts in means
-    t1, t2 = trim
-    p_r[:, :t1] = p_r[:, n - t2:] = 0
-    p_r[1:, t1:n - t2] -= p_r[1:, t1:n - t2].mean(1, keepdims=True)
+    if isinstance(s, int | np.integer) and isinstance(t, int | np.integer):
+        w = _l_weights_pwm(r, n, trim=(int(s), int(t)))
+    else:
+        w = _l_weights_ostat(r, n, trim=(float(s), float(t)))
 
     if cache:
-        # memoize, and mark as readonly to avoid corruping the cache
-        p_r.setflags(write=False)
-        _L_WEIGHTS_CACHE[cache_key] = p_r
+        # memoize
+        _L_WEIGHTS_CACHE[cache_key] = w
 
-    return p_r
+    return w
+
 
 
 # Summary statistics
@@ -176,7 +240,7 @@ def l_moment(
     a: npt.ArrayLike,
     r: AnyInt | IntVector,
     /,
-    trim: tuple[int, int] = (0, 0),
+    trim: tuple[float, float] = (0, 0),
     axis: int | None = None,
     dtype: np.dtype[T] | type[T] = np.float_,
     *,
@@ -261,12 +325,20 @@ def l_moment(
             `(*np.shape(r), *(d for d in np.shape(a) if d != axis))`.
 
     Examples:
+        Calculate the L-location and L-scale from student-T(2) samples, for
+        different (symmetric) trim-lengths.
+
         >>> import lmo, numpy as np
-        >>> x = np.random.default_rng(12345).standard_normal(20)
-        >>> lmo.l_moment(x, [1, 2, 3, 4])
-        array([0.00106117, 0.65354263, 0.01436636, 0.04280225])
-        >>> lmo.l_moment(x, [1, 2, 3, 4], trim=(1, 1))
-        array([-0.0133052 ,  0.36644423, -0.00823471, -0.01034343])
+        >>> x = np.random.default_rng(12345).standard_t(2, 99)
+        >>> lmo.l_moment(x, [1, 2], trim=(0, 0))
+        array([-0.01412282,  0.94063132])
+        >>> lmo.l_moment(x, [1, 2], trim=(1/2, 1/2))
+        array([-0.02158858,  0.57977201])
+        >>> lmo.l_moment(x, [1, 2], trim=(1, 1))
+        array([-0.0124483 ,  0.40120115])
+
+        The theoretical L-locations are all 0, and the the L-scale are
+        `1.1107`, `0.6002` and `0.4165`, respectively.
 
     See Also:
         - [L-moment - Wikipedia](https://wikipedia.org/wiki/L-moment)
@@ -290,19 +362,17 @@ def l_moment(
     x_k = ensure_axis_at(x_k, axis, -1)
     n = x_k.shape[-1]
 
-    r_max = clean_order(np.max(np.asarray(r)))
+    _r = np.asarray(r)
+    r_max = clean_order(np.max(_r))
 
-    l_r = np.inner(l_weights(r_max, n, trim, dtype=dtype, cache=cache), x_k)
+    l_r = np.inner(l_weights(r_max, n, trim, cache=cache), x_k)
 
     # we like 0-based indexing; so if P_r starts at r=1, prepend all 1's
     # for r=0 (any zeroth moment is defined to be 1)
     l_r = np.r_[np.ones((1, *l_r.shape[1:]), dtype=l_r.dtype), l_r]
 
-    assert np.all(l_r[0] == 1)
-    assert len(l_r) == r_max + 1, (l_r.shape, r_max)
-
     # l[r] fails when r is e.g. a tuple (valid sequence).
-    return l_r.take(r, 0)
+    return cast(T | npt.NDArray[T], l_r.take(_r, 0))
 
 
 def l_moment_cov(
@@ -378,7 +448,7 @@ def l_ratio(
     r: AnyInt | IntVector,
     s: AnyInt | IntVector,
     /,
-    trim: tuple[int, int] = (0, 0),
+    trim: tuple[float, float] = (0, 0),
     axis: int | None = None,
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
@@ -512,7 +582,7 @@ def l_ratio_se(
 def l_loc(
     a: npt.ArrayLike,
     /,
-    trim: tuple[int, int] = (0, 0),
+    trim: tuple[float, float] = (0, 0),
     axis: int | None = None,
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
@@ -547,7 +617,7 @@ def l_loc(
 def l_scale(
     a: npt.ArrayLike,
     /,
-    trim: tuple[int, int] = (0, 0),
+    trim: tuple[float, float] = (0, 0),
     axis: int | None = None,
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
@@ -583,7 +653,7 @@ def l_scale(
 def l_variation(
     a: npt.ArrayLike,
     /,
-    trim: tuple[int, int] = (0, 0),
+    trim: tuple[float, float] = (0, 0),
     axis: int | None = None,
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
@@ -628,7 +698,7 @@ def l_variation(
 def l_skew(
     a: npt.ArrayLike,
     /,
-    trim: tuple[int, int] = (0, 0),
+    trim: tuple[float, float] = (0, 0),
     axis: int | None = None,
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
@@ -666,7 +736,7 @@ def l_skew(
 def l_kurtosis(
     a: npt.ArrayLike,
     /,
-    trim: tuple[int, int] = (0, 0),
+    trim: tuple[float, float] = (0, 0),
     axis: int | None = None,
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,

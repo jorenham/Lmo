@@ -24,7 +24,7 @@ def l_comoment(
     a: npt.ArrayLike,
     r: AnyInt | IntVector,
     /,
-    trim: tuple[int, int] = (0, 0),
+    trim: tuple[float, float] = (0, 0),
     rowvar: bool = True,
     dtype: np.dtype[T] | type[T] = np.float_,
     *,
@@ -148,7 +148,7 @@ def l_comoment(
         return np.empty((*np.shape(_r), 0, 0), dtype=dtype)
 
     # projection matrix of shape (r, n)
-    p_r = l_weights(r_max, n, trim, dtype=dtype, cache=cache)
+    p_r = l_weights(r_max, n, trim, cache=cache)
 
     # L-comoment matrices for r = 0, ..., r_max
     l_ij = np.empty((r_max + 1, m, m), dtype=dtype)
@@ -171,7 +171,7 @@ def l_coratio(
     r: AnyInt | IntVector,
     s: AnyInt | IntVector,
     /,
-    trim: tuple[int, int] = (0, 0),
+    trim: tuple[float, float] = (0, 0),
     rowvar: bool = True,
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
@@ -202,7 +202,7 @@ def l_coratio(
 def l_coloc(
     a: npt.ArrayLike,
     /,
-    trim: tuple[int, int] = (0, 0),
+    trim: tuple[float, float] = (0, 0),
     rowvar: bool = True,
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
@@ -251,7 +251,7 @@ def l_coloc(
 def l_coscale(
     a: npt.ArrayLike,
     /,
-    trim: tuple[int, int] = (0, 0),
+    trim: tuple[float, float] = (0, 0),
     rowvar: bool = True,
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
@@ -287,7 +287,7 @@ def l_coscale(
 def l_corr(
     a: npt.ArrayLike,
     /,
-    trim: tuple[int, int] = (0, 0),
+    trim: tuple[float, float] = (0, 0),
     rowvar: bool = True,
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
@@ -333,7 +333,7 @@ def l_corr(
 def l_coskew(
     a: npt.ArrayLike,
     /,
-    trim: tuple[int, int] = (0, 0),
+    trim: tuple[float, float] = (0, 0),
     rowvar: bool = True,
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
@@ -353,7 +353,7 @@ def l_coskew(
 def l_cokurtosis(
     a: npt.ArrayLike,
     /,
-    trim: tuple[int, int] = (0, 0),
+    trim: tuple[float, float] = (0, 0),
     rowvar: bool = True,
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
