@@ -75,8 +75,8 @@ def l_comoment(
             The L-moment order(s), non-negative integer or array.
 
         trim:
-            Left- and right-trim orders $(t_1, t_2)$, non-negative integers
-            that are bound by $t_1 + t_2 < n - r$.
+            Left- and right-trim orders $(t_1, t_2)$, non-negative ints or
+            floats that are bound by $t_1 + t_2 < n - r$.
 
             Some special cases include:
 

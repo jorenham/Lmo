@@ -371,26 +371,24 @@ def l_moment(
             The L-moment order(s), non-negative integer or array.
 
         trim:
-            Left- and right-trim orders $(t_1, t_2)$, non-negative integers
-            that are bound by $t_1 + t_2 < n - r$.
+            Left- and right-trim orders $(t_1, t_2)$, non-negative ints or
+            floats that are bound by $t_1 + t_2 < n - r$.
 
             Some special cases include:
 
-            - $(0, 0)$: The original **L**-moment, introduced by Hosking (1990).
-                Useful for fitting the e.g. log-normal and generalized extreme
-                value (GEV) distributions.
+            - $(0, 0)$: The original **L**-moment, introduced by Hosking
+                in 1990.
             - $(0, m)$: **LL**-moment (**L**inear combination of **L**owest
-                order statistics), instroduced by Bayazit & Onoz (2002).
+                order statistics), instroduced by Bayazit & Onoz in 2002.
                 Assigns more weight to smaller observations.
             - $(s, 0)$: **LH**-moment (**L**inear combination of **H**igher
-                order statistics), by Wang (1997).
+                order statistics), as described by Wang in 1997.
                 Assigns more weight to larger observations.
             - $(t, t)$: **TL**-moment (**T**rimmed L-moment) $\\lambda_r^t$,
-                with symmetric trimming. First introduced by
-                Elamir & Seheult (2003).
-                Generally more robust than L-moments.
-                Useful for fitting heavy-tailed distributions, such as the
-                Cauchy distribution.
+                with symmetric trimming. First introduced by Elamir & Seheult
+                in 2003, and refined by Hosking in 2007. Generally more robust
+                than L-moments. Useful for fitting pathological distributions,
+                such as the Cauchy distribution.
 
         axis:
             Axis along wich to calculate the moments. If `None` (default),
@@ -730,7 +728,6 @@ def l_ratio(
         )[()]
 
 
-
 def l_ratio_se(
     a: npt.ArrayLike,
     r: AnyInt | IntVector,
@@ -824,10 +821,13 @@ def l_loc(
         >>> x = np.random.default_rng(12345).standard_cauchy(99)
         >>> x.mean()
         -7.56485034...
-        >>> lmo.l_loc(x)
+        >>> lmo.l_loc(x)  # no trim; equivalent to the (arithmetic) mean
         -7.56485034...
-        >>> lmo.l_loc(x, trim=(1, 1))
+        >>> lmo.l_loc(x, trim=(1, 1))  # TL-location
         -0.15924180...
+        >>> lmo.l_loc(x, trim=(3/2, 3/2))  # Fractional trimming (only in Lmo)
+        -0.08845121...
+
 
     Notes:
         If `trim = (0, 0)` (default), the L-location is equivalent to the
