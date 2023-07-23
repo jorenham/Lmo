@@ -14,7 +14,7 @@ __all__ = (
 )
 
 from math import comb
-from typing import Any, Final, TypeVar, cast
+from typing import Any, Final, TypeVar, cast, overload
 
 import numpy as np
 import numpy.typing as npt
@@ -236,14 +236,116 @@ def l_weights(
 
 # Summary statistics
 
+
+@overload
+def l_moment(
+    a: npt.ArrayLike,
+    r: AnyInt,
+    /,
+    trim: tuple[float, float] = ...,
+    *,
+    axis: None = ...,
+    dtype: type[np.float_] = ...,
+    fweights: IntVector | None = ...,
+    aweights: npt.ArrayLike | None = ...,
+    sort: SortKind | None = ...,
+    cache: bool = ...,
+) -> np.float_:
+    ...
+
+
+@overload
+def l_moment(
+    a: npt.ArrayLike,
+    r: AnyInt,
+    /,
+    trim: tuple[float, float] = ...,
+    *,
+    axis: None = ...,
+    dtype: np.dtype[T] | type[T],
+    fweights: IntVector | None = ...,
+    aweights: npt.ArrayLike | None = ...,
+    sort: SortKind | None = ...,
+    cache: bool = ...,
+) -> T:
+    ...
+
+@overload
+def l_moment(
+    a: npt.ArrayLike,
+    r: AnyInt,
+    /,
+    trim: tuple[float, float] = ...,
+    *,
+    axis: int,
+    dtype: type[np.float_] = ...,
+    fweights: IntVector | None = ...,
+    aweights: npt.ArrayLike | None = ...,
+    sort: SortKind | None = ...,
+    cache: bool = ...,
+) -> np.float_ | npt.NDArray[np.float_]:
+    ...
+
+
+@overload
+def l_moment(
+    a: npt.ArrayLike,
+    r: AnyInt,
+    /,
+    trim: tuple[float, float] = ...,
+    *,
+    axis: int,
+    dtype: np.dtype[T] | type[T],
+    fweights: IntVector | None = ...,
+    aweights: npt.ArrayLike | None = ...,
+    sort: SortKind | None = ...,
+    cache: bool = ...,
+) -> T | npt.NDArray[T]:
+    ...
+
+@overload
+def l_moment(
+    a: npt.ArrayLike,
+    r: IntVector,
+    /,
+    trim: tuple[float, float] = ...,
+    *,
+    axis: int | None = ...,
+    dtype: type[np.float_],
+    fweights: IntVector | None = ...,
+    aweights: npt.ArrayLike | None = ...,
+    sort: SortKind | None = ...,
+    cache: bool = ...,
+) -> npt.NDArray[np.float_]:
+    ...
+
+
+@overload
+def l_moment(
+    a: npt.ArrayLike,
+    r: IntVector,
+    /,
+    trim: tuple[float, float] = ...,
+    *,
+    axis: int | None = ...,
+    dtype: np.dtype[T] | type[T],
+    fweights: IntVector | None = ...,
+    aweights: npt.ArrayLike | None = ...,
+    sort: SortKind | None = ...,
+    cache: bool = ...,
+) -> npt.NDArray[T]:
+    ...
+
+
 def l_moment(
     a: npt.ArrayLike,
     r: AnyInt | IntVector,
     /,
     trim: tuple[float, float] = (0, 0),
+    *,
     axis: int | None = None,
     dtype: np.dtype[T] | type[T] = np.float_,
-    *,
+
     fweights: IntVector | None = None,
     aweights: npt.ArrayLike | None = None,
     sort: SortKind | None = 'stable',
@@ -380,6 +482,7 @@ def l_moment_cov(
     r_max: AnyInt,
     /,
     trim: tuple[int, int] = (0, 0),
+    *,
     axis: int | None = None,
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
@@ -443,12 +546,130 @@ def l_moment_cov(
     return sandwich(p_l, s_b, dtype=dtype)
 
 
+@overload
+def l_ratio(
+    a: npt.ArrayLike,
+    r: AnyInt,
+    s: AnyInt,
+    /,
+    trim: tuple[float, float] = ...,
+    *,
+    axis: None = ...,
+    dtype: type[np.float_] = ...,
+    **kwargs: Any,
+) -> np.float_:
+    ...
+
+
+@overload
+def l_ratio(
+    a: npt.ArrayLike,
+    r: AnyInt,
+    s: AnyInt,
+    /,
+    trim: tuple[float, float] = ...,
+    *,
+    axis: None = ...,
+    dtype: np.dtype[T] | type[T],
+    **kwargs: Any,
+) -> T:
+    ...
+
+@overload
+def l_ratio(
+    a: npt.ArrayLike,
+    r: AnyInt,
+    s: AnyInt,
+    /,
+    trim: tuple[float, float] = ...,
+    *,
+    axis: int,
+    dtype: type[np.float_] = ...,
+    **kwargs: Any,
+) -> np.float_ | npt.NDArray[np.float_]:
+    ...
+
+
+@overload
+def l_ratio(
+    a: npt.ArrayLike,
+    r: AnyInt,
+    s: AnyInt,
+    /,
+    trim: tuple[float, float] = ...,
+    *,
+    axis: int,
+    dtype: np.dtype[T] | type[T],
+    **kwargs: Any,
+) -> T | npt.NDArray[T]:
+    ...
+
+@overload
+def l_ratio(
+    a: npt.ArrayLike,
+    r: IntVector,
+    s: AnyInt | IntVector,
+    /,
+    trim: tuple[float, float] = ...,
+    *,
+    axis: int | None = ...,
+    dtype: type[np.float_] = ...,
+    **kwargs: Any,
+) -> npt.NDArray[np.float_]:
+    ...
+
+@overload
+def l_ratio(
+    a: npt.ArrayLike,
+    r: IntVector,
+    s: AnyInt | IntVector,
+    /,
+    trim: tuple[float, float] = ...,
+    *,
+    axis: int | None = ...,
+    dtype: np.dtype[T] | type[T],
+    **kwargs: Any,
+) -> npt.NDArray[T]:
+    ...
+
+
+@overload
+def l_ratio(
+    a: npt.ArrayLike,
+    r: AnyInt | IntVector,
+    s: IntVector,
+    /,
+    trim: tuple[float, float] = ...,
+    *,
+    axis: int | None = ...,
+    dtype: type[np.float_] = ...,
+    **kwargs: Any,
+) -> npt.NDArray[np.float_]:
+    ...
+
+
+@overload
+def l_ratio(
+    a: npt.ArrayLike,
+    r: AnyInt | IntVector,
+    s: IntVector,
+    /,
+    trim: tuple[float, float] = ...,
+    *,
+    axis: int | None = ...,
+    dtype: np.dtype[T] | type[T],
+    **kwargs: Any,
+) -> npt.NDArray[T]:
+    ...
+
+
 def l_ratio(
     a: npt.ArrayLike,
     r: AnyInt | IntVector,
     s: AnyInt | IntVector,
     /,
     trim: tuple[float, float] = (0, 0),
+    *,
     axis: int | None = None,
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
@@ -487,10 +708,7 @@ def l_ratio(
     _r, _s = np.asarray(r), np.asarray(s)
     rs = np.stack(np.broadcast_arrays(_r, _s))
 
-    l_rs = cast(
-        npt.NDArray[T],
-        l_moment(a, rs, trim, axis=axis, dtype=dtype, **kwargs),
-    )
+    l_rs =l_moment(a, rs, trim, axis=axis, dtype=dtype, **kwargs)
 
     r_eq_s = _r == _s
     if r_eq_s.ndim < l_rs.ndim - 1:
@@ -513,6 +731,7 @@ def l_ratio_se(
     s: AnyInt | IntVector,
     /,
     trim: tuple[int, int] = (0, 0),
+    *,
     axis: int | None = None,
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
@@ -552,11 +771,11 @@ def l_ratio_se(
     r_max: AnyInt = np.amax(np.r_[_r, _s].ravel())
 
     # L-moments
-    l_rs = cast(npt.NDArray[T], l_moment(a, _rs, trim, axis, dtype, **kwargs))
+    l_rs = l_moment(a, _rs, trim, axis=axis, dtype=dtype, **kwargs)
     l_r, l_s = l_rs[0], l_rs[1]
 
     # L-moment auto-covariance matrix
-    k_l = l_moment_cov(a, r_max, trim, axis, dtype, **kwargs)
+    k_l = l_moment_cov(a, r_max, trim, axis=axis, dtype=dtype, **kwargs)
     # prepend the "zeroth" moment, with has 0 (co)variance
     k_l = np.pad(k_l, (1, 0), constant_values=0)
 
@@ -583,6 +802,7 @@ def l_loc(
     a: npt.ArrayLike,
     /,
     trim: tuple[float, float] = (0, 0),
+    *,
     axis: int | None = None,
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
@@ -611,13 +831,14 @@ def l_loc(
         - [`lmo.l_moment`][lmo.l_moment]
         - [`numpy.average`][numpy.average]
     """
-    return l_moment(a, 1, trim, axis, dtype, **kwargs)
+    return l_moment(a, 1, trim, axis=axis, dtype=dtype, **kwargs)
 
 
 def l_scale(
     a: npt.ArrayLike,
     /,
     trim: tuple[float, float] = (0, 0),
+    *,
     axis: int | None = None,
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
@@ -647,13 +868,14 @@ def l_scale(
         - [`lmo.l_moment`][lmo.l_moment]
         - [`numpy.std`][numpy.std]
     """
-    return l_moment(a, 2, trim, axis, dtype, **kwargs)
+    return l_moment(a, 2, trim, axis=axis, dtype=dtype, **kwargs)
 
 
 def l_variation(
     a: npt.ArrayLike,
     /,
     trim: tuple[float, float] = (0, 0),
+    *,
     axis: int | None = None,
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
@@ -692,13 +914,14 @@ def l_variation(
         - [`lmo.l_ratio`][lmo.l_ratio]
         - [`scipy.stats.variation.l_ratio`][scipy.stats.variation]
     """  # noqa: D415
-    return l_ratio(a, 2, 1, trim, axis, dtype, **kwargs)
+    return l_ratio(a, 2, 1, trim, axis=axis, dtype=dtype, **kwargs)
 
 
 def l_skew(
     a: npt.ArrayLike,
     /,
     trim: tuple[float, float] = (0, 0),
+    *,
     axis: int | None = None,
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
@@ -730,13 +953,14 @@ def l_skew(
         - [`lmo.l_ratio`][lmo.l_ratio]
         - [`scipy.stats.skew`][scipy.stats.skew]
     """  # noqa: D415
-    return l_ratio(a, 3, 2, trim, axis, dtype, **kwargs)
+    return l_ratio(a, 3, 2, trim, axis=axis, dtype=dtype, **kwargs)
 
 
 def l_kurtosis(
     a: npt.ArrayLike,
     /,
     trim: tuple[float, float] = (0, 0),
+    *,
     axis: int | None = None,
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Any,
@@ -772,4 +996,4 @@ def l_kurtosis(
         - [`lmo.l_ratio`][lmo.l_ratio]
         - [`scipy.stats.kurtosis`][scipy.stats.kurtosis]
     """
-    return l_ratio(a, 4, 2, trim, axis, dtype, **kwargs)
+    return l_ratio(a, 4, 2, trim, axis=axis, dtype=dtype, **kwargs)

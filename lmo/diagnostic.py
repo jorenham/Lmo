@@ -2,7 +2,7 @@
 
 __all__ = ('normaltest',)
 
-from typing import NamedTuple, cast
+from typing import NamedTuple
 
 import numpy as np
 import numpy.typing as npt
@@ -18,6 +18,7 @@ class NormaltestResult(NamedTuple):
 def normaltest(
     a: npt.ArrayLike,
     /,
+    *,
     axis: int | None = None,
 ) -> NormaltestResult:
     r"""
@@ -58,7 +59,7 @@ def normaltest(
     n = x.size if axis is None else x.shape[axis]
 
     # L-skew and L-kurtosis
-    t3, t4 = cast(npt.NDArray[np.float_], l_ratio(a, [3, 4], [2, 2], axis=axis))
+    t3, t4 = l_ratio(a, [3, 4], [2, 2], axis=axis)
 
     # theoretical L-skew and L-kurtosis of the normal distribution (for all
     # loc/mu and scale/sigma)
