@@ -78,8 +78,8 @@ def l_moment_from_cdf(
     trim: tuple[AnyFloat, AnyFloat] = (0, 0),
     *,
     support: tuple[AnyFloat, AnyFloat] = (-np.inf, np.inf),
-    rtol: float = 1e-5,
-    atol: float = 1e-8,
+    rtol: float = 1.49e-8,
+    atol: float = 1.49e-8,
     limit: float = 100,
 ) -> np.float_ | npt.NDArray[np.float_]:
     r"""
@@ -206,7 +206,7 @@ def l_moment_from_cdf(
 
         l_r[i] = _l_moment_const(r_val, s, t, 1) * quad_val
 
-    return np.round(l_r, 12)[r_idxs if _r.ndim > 0 else 0] + .0
+    return (np.round(l_r, 12) + .0)[r_idxs].reshape(_r.shape)[()]
 
 
 @overload
@@ -246,8 +246,8 @@ def l_moment_from_ppf(
     trim: tuple[AnyFloat, AnyFloat] = (0, 0),
     *,
     support: tuple[AnyFloat, AnyFloat] = (0, 1),
-    rtol: float = 1e-5,
-    atol: float = 1e-8,
+    rtol: float = 1.49e-8,
+    atol: float = 1.49e-8,
     limit: float = 100,
 ) -> np.float_ | npt.NDArray[np.float_]:
     """
@@ -365,7 +365,7 @@ def l_moment_from_ppf(
 
         l_r[i] = _l_moment_const(r_val, s, t, 0) * quad_val
 
-    return np.round(l_r, 12)[r_idxs if _r.ndim > 0 else 0] + .0
+    return (np.round(l_r, 12) + .0)[r_idxs].reshape(_r.shape)[()]
 
 
 @overload
@@ -486,6 +486,7 @@ def l_stats_from_cdf(
     cdf: Callable[[float], float],
     /,
     trim: tuple[AnyFloat, AnyFloat] = (0, 0),
+    num: int = 4,
     **kwargs: Any,
 ) -> npt.NDArray[np.float_]:
     """
@@ -499,7 +500,7 @@ def l_stats_from_cdf(
         - [`l_moment_from_cdf`][lmo.theoretical.l_moment_from_cdf]
         - [`l_stats_from_ppf`][lmo.theoretical.l_ratio_from_ppf]
     """
-    r, s = [1, 2, 3, 4], [0, 0, 2, 2]
+    r, s = np.arange(1, num + 1), [0] * min(2, num) + [2] * (num - 2)
     return l_ratio_from_cdf(cdf, r, s, trim=trim, **kwargs)
 
 
@@ -507,6 +508,7 @@ def l_stats_from_ppf(
     ppf: Callable[[float], float],
     /,
     trim: tuple[AnyFloat, AnyFloat] = (0, 0),
+    num: int = 4,
     **kwargs: Any,
 ) -> npt.NDArray[np.float_]:
     """
@@ -520,5 +522,5 @@ def l_stats_from_ppf(
         - [`l_moment_from_ppf`][lmo.theoretical.l_moment_from_ppf]
         - [`l_stats_from_cdf`][lmo.theoretical.l_ratio_from_cdf]
     """
-    r, s = [1, 2, 3, 4], [0, 0, 2, 2]
+    r, s = np.arange(1, num + 1), [0] * min(2, num) + [2] * (num - 2)
     return l_ratio_from_ppf(ppf, r, s, trim=trim, **kwargs)
