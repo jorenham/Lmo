@@ -37,7 +37,8 @@ def weights(
         P_b: Upper-triangular projection matrix of shape `(r, n)`.
 
     Examples:
-        >>> b_weights(4, 5)
+        >>> from lmo import pwm_beta
+        >>> pwm_beta.weights(4, 5)
         array([[0.2       , 0.2       , 0.2       , 0.2       , 0.2       ],
                [0.        , 0.05      , 0.1       , 0.15      , 0.2       ],
                [0.        , 0.        , 0.03333333, 0.1       , 0.2       ],
