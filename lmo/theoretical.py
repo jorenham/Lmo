@@ -6,6 +6,10 @@ distributions.
 __all__ = (
     'l_moment_from_cdf',
     'l_moment_from_ppf',
+    'l_ratio_from_cdf',
+    'l_ratio_from_ppf',
+    'l_stats_from_cdf',
+    'l_stats_from_ppf',
 )
 
 import functools
@@ -17,6 +21,7 @@ from typing import Any, TypeAlias, cast, overload
 import numpy as np
 import numpy.typing as npt
 
+from ._utils import moments_to_ratio
 from .linalg import sh_jacobi
 from .typing import AnyFloat, AnyInt, IntVector
 
@@ -42,8 +47,12 @@ def l_moment_from_cdf(
     r: AnyInt,
     /,
     trim: tuple[AnyFloat, AnyFloat] = ...,
+    *,
     support: tuple[AnyFloat, AnyFloat] = ...,
-) -> float:
+    rtol: float = ...,
+    atol: float = ...,
+    limit: float = ...,
+) -> np.float_:
     ...
 
 
@@ -53,7 +62,11 @@ def l_moment_from_cdf(
     r: IntVector,
     /,
     trim: tuple[AnyFloat, AnyFloat] = ...,
+    *,
     support: tuple[AnyFloat, AnyFloat] = ...,
+    rtol: float = ...,
+    atol: float = ...,
+    limit: float = ...,
 ) -> npt.NDArray[np.float_]:
     ...
 
@@ -63,8 +76,12 @@ def l_moment_from_cdf(
     r: AnyInt | IntVector,
     /,
     trim: tuple[AnyFloat, AnyFloat] = (0, 0),
+    *,
     support: tuple[AnyFloat, AnyFloat] = (-np.inf, np.inf),
-) -> float | npt.NDArray[np.float_]:
+    rtol: float = 1e-5,
+    atol: float = 1e-8,
+    limit: float = 100,
+) -> np.float_ | npt.NDArray[np.float_]:
     r"""
     Evaluate the population L-moment of a continuous probability distribution,
     using its Cumulative Distribution Function (CDF) $F_X(x) = P(X \le x)$.
@@ -86,8 +103,12 @@ def l_moment_from_cdf(
         trim:
             Left- and right- trim. Must be a tuple of two non-negative ints
             or floats (!).
-        support:
-            The subinterval of the nonzero domain of `cdf`.
+
+    Other parameters:
+        support: The subinterval of the nonzero domain of `cdf`.
+        rtol: See `epsrel` [`scipy.integrate.quad`][scipy.integrate.quad].
+        atol: See `epsabs` [`scipy.integrate.quad`][scipy.integrate.quad].
+        limit: See `limit` in [`scipy.integrate.quad`][scipy.integrate.quad].
 
     Raises:
         TypeError: `r` is not integer-valued or negative
@@ -137,6 +158,8 @@ def l_moment_from_cdf(
     # lazy import (don't worry; python imports are cached)
     from scipy.integrate import IntegrationWarning, quad  # type: ignore
 
+    quad_kwargs = {'epsabs': atol, 'epsrel': rtol, 'limit': limit}
+
     l_r = np.empty(r_vals.shape)
     for i, r_val in np.ndenumerate(r_vals):
         if r_val == 0:
@@ -169,7 +192,7 @@ def l_moment_from_cdf(
         # numerical integration
         quad_val, _, _, *quad_tail = cast(
             _QuadFullOutput,
-            quad(integrand, *support, full_output=True),
+            quad(integrand, *support, full_output=True, **quad_kwargs),
         )
 
         if quad_tail:
@@ -192,8 +215,12 @@ def l_moment_from_ppf(
     r: AnyInt,
     /,
     trim: tuple[AnyFloat, AnyFloat] = ...,
+    *,
     support: tuple[AnyFloat, AnyFloat] = ...,
-) -> float:
+    rtol: float = ...,
+    atol: float = ...,
+    limit: float = ...,
+) -> np.float_:
     ...
 
 
@@ -203,7 +230,11 @@ def l_moment_from_ppf(
     r: IntVector,
     /,
     trim: tuple[AnyFloat, AnyFloat] = ...,
+    *,
     support: tuple[AnyFloat, AnyFloat] = ...,
+    rtol: float = ...,
+    atol: float = ...,
+    limit: float = ...,
 ) -> npt.NDArray[np.float_]:
     ...
 
@@ -213,8 +244,12 @@ def l_moment_from_ppf(
     r: AnyInt | IntVector,
     /,
     trim: tuple[AnyFloat, AnyFloat] = (0, 0),
+    *,
     support: tuple[AnyFloat, AnyFloat] = (0, 1),
-) -> float | npt.NDArray[np.float_]:
+    rtol: float = 1e-5,
+    atol: float = 1e-8,
+    limit: float = 100,
+) -> np.float_ | npt.NDArray[np.float_]:
     """
     Evaluate the population L-moment of a continuous probability distribution,
     using its Percentile Function (PPF) $Q_X(p) = F^{-1}_X(p)$,
@@ -237,8 +272,12 @@ def l_moment_from_ppf(
         trim:
             Left- and right- trim. Must be a tuple of two non-negative ints
             or floats (!).
-        support:
-            The subinterval of the nonzero domain of `cdf`.
+
+    Other parameters:
+        support: The subinterval of the nonzero domain of `ppf`.
+        rtol: See `epsrel` [`scipy.integrate.quad`][scipy.integrate.quad].
+        atol: See `epsabs` [`scipy.integrate.quad`][scipy.integrate.quad].
+        limit: See `limit` in [`scipy.integrate.quad`][scipy.integrate.quad].
 
     Raises:
         TypeError: `r` is not integer-valued
@@ -290,6 +329,8 @@ def l_moment_from_ppf(
     # lazy import (don't worry; python imports are cached)
     from scipy.integrate import IntegrationWarning, quad  # type: ignore
 
+    quad_kwargs = {'epsabs': atol, 'epsrel': rtol, 'limit': limit}
+
     l_r = np.empty(r_vals.shape)
     for i, r_val in np.ndenumerate(r_vals):
         if r_val == 0:
@@ -310,7 +351,7 @@ def l_moment_from_ppf(
         # numerical integration
         quad_val, _, _, *quad_tail = cast(
             _QuadFullOutput,
-            quad(integrand, *support, full_output=True),
+            quad(integrand, *support, full_output=True, **quad_kwargs),
         )
         if quad_tail:
             quad_msg = quad_tail[0]
@@ -325,3 +366,159 @@ def l_moment_from_ppf(
         l_r[i] = _l_moment_const(r_val, s, t, 0) * quad_val
 
     return np.round(l_r, 12)[r_idxs if _r.ndim > 0 else 0] + .0
+
+
+@overload
+def l_ratio_from_cdf(
+    cdf: Callable[[float], float],
+    r: AnyInt,
+    s: AnyInt,
+    /,
+    trim: tuple[AnyFloat, AnyFloat] = ...,
+    **kwargs: Any,
+) -> np.float_:
+    ...
+
+
+@overload
+def l_ratio_from_cdf(
+    cdf: Callable[[float], float],
+    r: IntVector,
+    s: AnyInt | IntVector,
+    /,
+    trim: tuple[AnyFloat, AnyFloat] = ...,
+    **kwargs: Any,
+) -> npt.NDArray[np.float_]:
+    ...
+
+
+@overload
+def l_ratio_from_cdf(
+    cdf: Callable[[float], float],
+    r: AnyInt | IntVector,
+    s: IntVector,
+    /,
+    trim: tuple[AnyFloat, AnyFloat] = ...,
+    **kwargs: Any,
+) -> npt.NDArray[np.float_]:
+    ...
+
+
+def l_ratio_from_cdf(
+    cdf: Callable[[float], float],
+    r: AnyInt | IntVector,
+    s: AnyInt | IntVector,
+    /,
+    trim: tuple[AnyFloat, AnyFloat] = (0, 0),
+    **kwargs: Any,
+) -> np.float_ | npt.NDArray[np.float_]:
+    """
+    Population L-ratio's from a CDF.
+
+    See Also:
+        - [`l_ratio_from_ppf`][lmo.theoretical.l_ratio_from_ppf]
+        - [`lmo.l_ratio`][lmo.l_ratio]
+    """
+    rs = np.stack(np.broadcast_arrays(np.asarray(r), np.asarray(s)))
+    l_rs = l_moment_from_cdf(cdf, rs, trim, **kwargs)
+
+    return moments_to_ratio(rs, l_rs)
+
+
+@overload
+def l_ratio_from_ppf(
+    ppf: Callable[[float], float],
+    r: AnyInt,
+    s: AnyInt,
+    /,
+    trim: tuple[AnyFloat, AnyFloat] = ...,
+    **kwargs: Any,
+) -> np.float_:
+    ...
+
+
+@overload
+def l_ratio_from_ppf(
+    ppf: Callable[[float], float],
+    r: IntVector,
+    s: AnyInt | IntVector,
+    /,
+    trim: tuple[AnyFloat, AnyFloat] = ...,
+    **kwargs: Any,
+) -> npt.NDArray[np.float_]:
+    ...
+
+
+@overload
+def l_ratio_from_ppf(
+    ppf: Callable[[float], float],
+    r: AnyInt | IntVector,
+    s: IntVector,
+    /,
+    trim: tuple[AnyFloat, AnyFloat] = ...,
+    **kwargs: Any,
+) -> npt.NDArray[np.float_]:
+    ...
+
+
+def l_ratio_from_ppf(
+    ppf: Callable[[float], float],
+    r: AnyInt | IntVector,
+    s: AnyInt | IntVector,
+    /,
+    trim: tuple[AnyFloat, AnyFloat] = (0, 0),
+    **kwargs: Any,
+) -> np.float_ | npt.NDArray[np.float_]:
+    """
+    Population L-ratio's from a PPF.
+
+    See Also:
+        - [`l_ratio_from_cdf`][lmo.theoretical.l_ratio_from_cdf]
+        - [`lmo.l_ratio`][lmo.l_ratio]
+    """
+    rs = np.stack(np.broadcast_arrays(np.asarray(r), np.asarray(s)))
+    l_rs = l_moment_from_ppf(ppf, rs, trim, **kwargs)
+
+    return moments_to_ratio(rs, l_rs)
+
+
+def l_stats_from_cdf(
+    cdf: Callable[[float], float],
+    /,
+    trim: tuple[AnyFloat, AnyFloat] = (0, 0),
+    **kwargs: Any,
+) -> npt.NDArray[np.float_]:
+    """
+    Calculates the population L-loc(ation), L-scale, L-skew(ness) and
+    L-kurtosis from a CDF.
+
+    Alias for `l_ratio_from_cdf(cdf, [1, 2, 3, 4], [0, 0, 2, 2], *, **)`.
+
+    See Also:
+        - [`l_ratio_from_cdf`][lmo.theoretical.l_ratio_from_cdf]
+        - [`l_moment_from_cdf`][lmo.theoretical.l_moment_from_cdf]
+        - [`l_stats_from_ppf`][lmo.theoretical.l_ratio_from_ppf]
+    """
+    r, s = [1, 2, 3, 4], [0, 0, 2, 2]
+    return l_ratio_from_cdf(cdf, r, s, trim=trim, **kwargs)
+
+
+def l_stats_from_ppf(
+    ppf: Callable[[float], float],
+    /,
+    trim: tuple[AnyFloat, AnyFloat] = (0, 0),
+    **kwargs: Any,
+) -> npt.NDArray[np.float_]:
+    """
+    Calculates the population L-loc(ation), L-scale, L-skew(ness) and
+    L-kurtosis from a PPF.
+
+    Alias for `l_ratio_from_ppf(cdf, [1, 2, 3, 4], [0, 0, 2, 2], *, **)`.
+
+    See Also:
+        - [`l_ratio_from_ppf`][lmo.theoretical.l_ratio_from_ppf]
+        - [`l_moment_from_ppf`][lmo.theoretical.l_moment_from_ppf]
+        - [`l_stats_from_cdf`][lmo.theoretical.l_ratio_from_cdf]
+    """
+    r, s = [1, 2, 3, 4], [0, 0, 2, 2]
+    return l_ratio_from_ppf(ppf, r, s, trim=trim, **kwargs)

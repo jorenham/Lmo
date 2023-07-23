@@ -23,7 +23,7 @@ import numpy as np
 import numpy.typing as npt
 
 from . import ostats
-from ._utils import clean_order, ensure_axis_at, ordered
+from ._utils import clean_order, ensure_axis_at, moments_to_ratio, ordered
 from .linalg import sandwich, sh_legendre, trim_matrix
 from .pwm_beta import cov, weights
 from .typing import AnyInt, IntVector, LMomentOptions, SortKind
@@ -715,23 +715,10 @@ def l_ratio(
     See Also:
         - [`lmo.l_moment`][lmo.l_moment]
     """  # noqa: D415
-    _r, _s = np.asarray(r), np.asarray(s)
-    rs = np.stack(np.broadcast_arrays(_r, _s))
+    rs = np.stack(np.broadcast_arrays(np.asarray(r), np.asarray(s)))
+    l_rs = l_moment(a, rs, trim, axis=axis, dtype=dtype, **kwargs)
 
-    l_rs =l_moment(a, rs, trim, axis=axis, dtype=dtype, **kwargs)
-
-    r_eq_s = _r == _s
-    if r_eq_s.ndim < l_rs.ndim - 1:
-        r_eq_s = r_eq_s.reshape(
-            r_eq_s.shape + (1,) * (l_rs.ndim - r_eq_s.ndim - 1),
-        )
-
-    with np.errstate(divide='ignore', invalid='ignore'):
-        return np.where(
-            r_eq_s,
-            np.ones_like(l_rs[0]),
-            np.divide(l_rs[0], l_rs[1], where=~r_eq_s),
-        )[()]
+    return moments_to_ratio(rs, l_rs)
 
 
 def l_ratio_se(

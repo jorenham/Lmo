@@ -1,4 +1,10 @@
-__all__ = 'clean_order', 'ensure_axis_at', 'as_float_array', 'ordered'
+__all__ = (
+    'clean_order',
+    'ensure_axis_at',
+    'as_float_array',
+    'ordered',
+    'moments_to_ratio',
+)
 
 from typing import Any, SupportsIndex, TypeVar
 
@@ -8,6 +14,7 @@ import numpy.typing as npt
 from .typing import IndexOrder, IntVector, SortKind
 
 T = TypeVar('T', bound=np.generic)
+FT = TypeVar('FT', bound=np.floating[Any])
 
 
 def clean_order(
@@ -157,3 +164,25 @@ def ordered(
 
     w_k = _sort_like(_clean_array(aweights))
     return _apply_aweights(x_k, w_k, axis=axis or 0)
+
+
+def moments_to_ratio(
+    rs: npt.NDArray[np.integer[Any]],
+    l_rs: npt.NDArray[FT],
+    /,
+) -> FT | npt.NDArray[FT]:
+    assert rs.shape == l_rs.shape
+    assert len(rs) == 2
+
+    r_eq_s = rs[0] == rs[1]
+    if r_eq_s.ndim < l_rs.ndim - 1:
+        r_eq_s = r_eq_s.reshape(
+            r_eq_s.shape + (1,) * (l_rs.ndim - r_eq_s.ndim - 1),
+        )
+
+    with np.errstate(divide='ignore', invalid='ignore'):
+        return np.where(
+            r_eq_s,
+            np.ones_like(l_rs[0]),
+            np.divide(l_rs[0], l_rs[1], where=~r_eq_s),
+        )[()]
