@@ -3,6 +3,8 @@
 
 __all__ = (
     'sandwich',
+    'pascal',
+    'ir_pascal',
     'sh_legendre',
     'sh_jacobi',
     'succession_matrix',
@@ -23,7 +25,7 @@ import numpy.typing as npt
 
 from .typing import AnyInt
 
-T = TypeVar('T', bound=np.number[Any])
+T = TypeVar('T', bound=np.integer[Any] | np.floating[Any])
 
 
 def sandwich(
@@ -52,7 +54,101 @@ def sandwich(
     return np.einsum(spec, A, X, A, dtype=dtype)  # pyright: ignore
 
 
-def sh_legendre(k : int, /, dtype: type[T] = np.int_) -> npt.NDArray[T]:
+def pascal(
+    k: int,
+    /,
+    dtype: np.dtype[T] | type[T] = np.int_,
+    *,
+    inv: bool = False,
+) -> npt.NDArray[T]:
+    r"""
+    Construct the lower-diagonal Pascal matrix $L_{k \times k$}$, or its matrix
+    inverse $L^{-1}$.
+
+    $$
+    \begin{align}
+    L_{ij} &= \binom{i}{j} \\
+    L^{-1}_{ij} &= (-1)^{i - j} L_{ij}
+    \end{align}
+    $$
+
+    Implemented using recursion, unlike the slow naive implementation from the
+    equivalent [`scipy.linalg.pascal`][scipy.linalg.pascal] and
+    [`scipy.linalg.invpascal`][scipy.linalg.invpascal] functions using
+    `kind='lower'`.
+    By using the binomial recurrence relation, assuming $0 < j < i$,
+    $\binom{i}{j} = \frac{i}{j} \binom{i-1}{j-1}$, the following recursive
+    definition is obtained:
+
+    $$
+    L_{ij} =
+    \begin{cases}
+        0 & \text{if } i < j \text{,} \\
+        1 & \text{if } i = j \vee j = 0 \text{, and} \\
+        (i \, L_{i-1,\, j-1}) / j & \text{otherwise.}
+    \end{cases}
+    $$
+
+    Examples:
+        >>> import numpy as np
+        >>> from lmo.linalg import pascal
+        >>> pascal(4)
+        array([[1, 0, 0, 0],
+               [1, 1, 0, 0],
+               [1, 2, 1, 0],
+               [1, 3, 3, 1]])
+        >>> pascal(4, inv=True)
+        array([[ 1,  0,  0,  0],
+               [-1,  1,  0,  0],
+               [ 1, -2,  1,  0],
+               [-1,  3, -3,  1]])
+        >>> np.linalg.inv(pascal(4))
+        array([[ 1.,  0.,  0.,  0.],
+               [-1.,  1.,  0.,  0.],
+               [ 1., -2.,  1., -0.],
+               [-1.,  3., -3.,  1.]])
+
+        Now, let's compare with scipy:
+
+        >>> from scipy.linalg import invpascal
+        >>> invpascal(4, kind='lower')
+        array([[ 1,  0,  0,  0],
+               [-1,  1,  0,  0],
+               [ 1, -2,  1,  0],
+               [-1,  3, -3,  1]])
+    """
+    assert k >= 0
+    out = np.zeros((k, k), dtype=dtype)
+    if k == 0:
+        return out
+
+    out[:, 0] = 1
+    if inv:
+        # 1337 matrix inversion
+        out[1::2, 0] = -1
+
+    jj = np.arange(1, k, dtype=np.int_)
+    for i in range(1, k):
+        out[i, 1:i+1] = i * out[i - 1, :i] // jj[:i]
+
+    return out
+
+
+def ir_pascal(k: int, /) -> npt.NDArray[np.float_]:
+    r"""
+    Inverse regulatized lower-diagonal Pascal matrix,
+    $\bar{L}_{ij} = L^{-1}_ij / i$.
+
+    Used to linearly combine order statistics order statistics into L-moments.
+    """
+    return pascal(k, np.float_, inv=True) / np.arange(1, k + 1)[:, None]
+
+
+def sh_legendre(
+    k : int,
+    /,
+    dtype: np.dtype[T] | type[T] = np.int_,
+) -> npt.NDArray[T]:
     r"""
     Shifted Legendre polynomial coefficient matrix $\widetilde{P}$ of
     shape `(k, k)`.
@@ -93,7 +189,13 @@ def sh_legendre(k : int, /, dtype: type[T] = np.int_) -> npt.NDArray[T]:
     return sh_jacobi(k, 0, 0).astype(dtype)
 
 
-def _sh_jacobi_i(k: int, a: int, b: int, dtype: type[T]) -> npt.NDArray[T]:
+def _sh_jacobi_i(
+    k: int,
+    a: int,
+    b: int,
+    /,
+    dtype: np.dtype[T] | type[T],
+) -> npt.NDArray[T]:
     out = np.zeros((k, k), dtype=dtype)
     for r in range(k):
         for j in range(r + 1):
@@ -105,7 +207,13 @@ def _sh_jacobi_i(k: int, a: int, b: int, dtype: type[T]) -> npt.NDArray[T]:
     return out
 
 
-def _sh_jacobi_f(k: int, a: float, b: float, dtype: type[T]) -> npt.NDArray[T]:
+def _sh_jacobi_f(
+    k: int,
+    a: float,
+    b: float,
+    /,
+    dtype: np.dtype[T] | type[T],
+) -> npt.NDArray[T]:
     out = np.zeros((k, k), dtype=dtype)
 
     # semi dynamic programming
@@ -133,7 +241,7 @@ def sh_jacobi(
     a: T | int,
     b: T | int,
     /,
-    dtype: type[T] | None = None,
+    dtype: np.dtype[T] | type[T] | None = None,
 ) -> npt.NDArray[T | np.int_]:
     r"""
     Shifted Jacobi polynomial coefficient matrix $\widetilde{P}^{(a,b)}$ of

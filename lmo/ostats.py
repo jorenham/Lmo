@@ -92,9 +92,6 @@ def weights(
     Returns:
         1d array of size $N$ with (ordered) sample weights.
 
-    Todo:
-        Recurse at i = i + 1 using
-        `np.roll(w[i], 1) * j * (n - i - 1) / ((i + 1) * (N - j))`.
     """
     if i < 0:
         # negative indexing

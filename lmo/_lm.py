@@ -16,7 +16,6 @@ __all__ = (
 )
 
 import sys
-from math import comb
 from typing import Any, Final, TypeVar, cast, overload
 
 import numpy as np
@@ -24,7 +23,7 @@ import numpy.typing as npt
 
 from . import ostats
 from ._utils import clean_order, ensure_axis_at, moments_to_ratio, ordered
-from .linalg import sandwich, sh_legendre, trim_matrix
+from .linalg import ir_pascal, sandwich, sh_legendre, trim_matrix
 from .pwm_beta import cov, weights
 from .typing import AnyInt, IntVector, LMomentOptions, SortKind
 
@@ -124,15 +123,18 @@ def _l_weights_ostat(
     assert r >= 1, r
     assert s >= 0 and t >= 0, trim
 
-    out = np.empty((r, N), dtype=dtype)
-    for _r0 in range(r):
-        # it's literally a linear combination of order statistics :)
-        out[_r0] = np.array([
-            (-1)**k
-            * comb(_r0, k)
-            * ostats.weights(_r0 + s - k, _r0 + s + t + 1, N)
-            for k in range(_r0 + 1)
-        ]).mean(axis=0)
+    c = ir_pascal(r)
+    jnj = np.arange(N, dtype=dtype)
+    jnj /= (N - jnj)
+
+    out = np.zeros((r, N), dtype=dtype)
+    for n in range(r):
+        w0 = ostats.weights(s, s + t + n + 1, N)
+        out[n] = c[n, 0] * w0
+        for k in range(1, n + 1):
+            # order statistic recurrence relation
+            w0 = np.roll(w0, 1) * jnj * ((t + n - k + 1) / (s + k))
+            out[n] += c[n, k] * w0
     return out
 
 
