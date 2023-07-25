@@ -15,19 +15,18 @@ __all__ = (
     'l_kurtosis',
 
     'estimate_ppf',
-    'optimal_trim',
 )
 
 import sys
-from typing import Any, Callable, Final, TypeVar, cast, overload
+from collections.abc import Callable
+from typing import Any, Final, TypeVar, cast, overload
 
 import numpy as np
 import numpy.typing as npt
 
-from . import ostats
+from . import ostats, pwm_beta
 from ._utils import clean_order, ensure_axis_at, moments_to_ratio, ordered
 from .linalg import ir_pascal, sandwich, sh_jacobi, sh_legendre, trim_matrix
-from .pwm_beta import cov, weights
 from .typing import AnyInt, IntVector, LMomentOptions, SortKind
 
 if sys.version_info < (3, 11):
@@ -48,38 +47,6 @@ _L_WEIGHTS_CACHE: Final[
 ] = {}
 
 
-def _l0_weights_pwm(
-    r: int,
-    n: int,
-    /,
-    dtype: np.dtype[T] | type[T] = np.float_,
-) -> npt.NDArray[T]:
-    r"""
-    Efficiently calculates the projection matrix $P = [p_{k, i}]_{r \times n}$
-    for the order statistics $x_{i:n}$.
-    This way, the $1, 2, ..., r$-th order sample L-moments of some sample
-    vector $x$, can be estimated with `np.sort(x) @ l_weights(len(x), r)`.
-
-    Parameters:
-        r: The amount of orders to evaluate, i.e. $k = 1, \dots, r$.
-        n: Sample count.
-        dtype: Desired output floating data type.
-
-    Returns:
-        P_r: 2-D array of shape `(r, n)`.
-
-    References:
-        - [J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
-            L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
-    """
-    p_r = np.empty((r, n), dtype)
-
-    if r > 0:
-        np.matmul(sh_legendre(r), weights(r, n, dtype), out=p_r)
-
-    return p_r
-
-
 def _l_weights_pwm(
     r: int,
     n: int,
@@ -87,30 +54,19 @@ def _l_weights_pwm(
     trim: tuple[int, int],
     dtype: np.dtype[T] | type[T] = np.float_,
 ) -> npt.NDArray[T]:
-    if sum(trim) == 0:
-        return _l0_weights_pwm(r, n, dtype)
+    t1, t2 = trim
+    r0 = r + t1 + t2
 
-    p_r = np.empty((r, n), dtype)
-
-    if r == 0:
-        return p_r
-
-    # the k-th TL-(t_1, t_2) weights are a linear combination of L-weights
-    # with orders k, ..., k + t_1 + t_2
-
-    np.matmul(
-        trim_matrix(r, trim),
-        _l0_weights_pwm(r + sum(trim), n),
-        out=p_r,
-    )
+    p0 = sh_legendre(r0, dtype=np.int_ if r0 < 29 else np.object_)
+    w0 = p0 @ pwm_beta.weights(r0, n, dtype=dtype)
+    return cast(npt.NDArray[T], trim_matrix(r, trim, dtype=dtype) @ w0)
 
     # remove numerical noise from the trimmings, and correct for potential
     # shifts in means
-    t1, t2 = trim
-    p_r[:, :t1] = p_r[:, n - t2:] = 0
-    p_r[1:, t1:n - t2] -= p_r[1:, t1:n - t2].mean(1, keepdims=True)
+    # p_r[:, :t1] = p_r[:, n - t2:] = 0
+    # p_r[1:, t1:n - t2] -= p_r[1:, t1:n - t2].mean(1, keepdims=True)
 
-    return p_r
+    # return p_r
 
 
 def _l_weights_ostat(
@@ -552,10 +508,10 @@ def l_moment_cov(
     p_l: npt.NDArray[np.floating[Any]]
     p_l = trim_matrix(int(r_max), trim=trim, dtype=dtype) @ sh_legendre(ks)
     # clean some numerical noise
-    p_l = np.round(p_l, 12) + 0.
+    # p_l = np.round(p_l, 12) + 0.
 
     # PWM covariance matrix
-    s_b = cov(a, ks, axis=axis, dtype=dtype, **kwargs)
+    s_b = pwm_beta.cov(a, ks, axis=axis, dtype=dtype, **kwargs)
 
     # tasty, eh?
     return sandwich(p_l, s_b, dtype=dtype)
@@ -1074,7 +1030,7 @@ def l_kurtosis(
 
 def estimate_ppf(
     x: npt.ArrayLike,
-    k: int = 10,
+    k: int = 12,
     /,
     trim: tuple[float, float] = (0, 0),
     **kwargs: Unpack[LMomentOptions],
@@ -1087,10 +1043,10 @@ def estimate_ppf(
     s, t = np.asanyarray(trim)
 
     r0 = np.arange(_k, dtype=np.int_)
-    r = r0 + 1
+    r = np.arange(1, _k + 1, dtype=np.int_)
 
-    l = l_moment(x, r, trim, **kwargs)
-    w = r * (1 + r0 / (r + s + t)) * l @ sh_jacobi(_k, s, t)
+    l = l_moment(x, r, (s, t), **kwargs)
+    w = r * (1 + r0 / (r + s + t)) * l @ sh_jacobi(_k, t, s, dtype=np.float_)
 
     def ppf(q: npt.ArrayLike, /) -> np.float_ | npt.NDArray[np.float_]:
         r"""
