@@ -13,17 +13,20 @@ __all__ = (
     'l_variation',
     'l_skew',
     'l_kurtosis',
+
+    'estimate_ppf',
+    'optimal_trim',
 )
 
 import sys
-from typing import Any, Final, TypeVar, cast, overload
+from typing import Any, Callable, Final, TypeVar, cast, overload
 
 import numpy as np
 import numpy.typing as npt
 
 from . import ostats
 from ._utils import clean_order, ensure_axis_at, moments_to_ratio, ordered
-from .linalg import ir_pascal, sandwich, sh_legendre, trim_matrix
+from .linalg import ir_pascal, sandwich, sh_jacobi, sh_legendre, trim_matrix
 from .pwm_beta import cov, weights
 from .typing import AnyInt, IntVector, LMomentOptions, SortKind
 
@@ -1064,3 +1067,39 @@ def l_kurtosis(
         - [`scipy.stats.kurtosis`][scipy.stats.kurtosis]
     """
     return l_ratio(a, 4, 2, trim, axis=axis, dtype=dtype, **kwargs)
+
+
+# Non-parametric statistics
+
+
+def estimate_ppf(
+    x: npt.ArrayLike,
+    k: int = 10,
+    /,
+    trim: tuple[float, float] = (0, 0),
+    **kwargs: Unpack[LMomentOptions],
+) -> Callable[[npt.ArrayLike], np.float_ | npt.NDArray[np.float_]]:
+    """
+    Approximate the quantile function (PPF), using a linear combination of
+    (trimmed) L-moments, as described by Hosking in 2007.
+    """
+    _k = clean_order(k)
+    s, t = np.asanyarray(trim)
+
+    r0 = np.arange(_k, dtype=np.int_)
+    r = r0 + 1
+
+    l = l_moment(x, r, trim, **kwargs)
+    w = r * (1 + r0 / (r + s + t)) * l @ sh_jacobi(_k, s, t)
+
+    def ppf(q: npt.ArrayLike, /) -> np.float_ | npt.NDArray[np.float_]:
+        r"""
+        Quantile function estimate $\bar{Q}(p)$, from a linear
+        combination of L-moments.
+
+        It is assumed that $0 \le q \le 1$, but this is not explicitly
+        enforced for performance reasons.
+        """
+        return np.power.outer(q, r0) @ w
+
+    return ppf

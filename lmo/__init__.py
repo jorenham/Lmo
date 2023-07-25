@@ -23,11 +23,14 @@ __all__ = (
     'l_corr',
     'l_coskew',
     'l_cokurtosis',
+
+    'estimate_ppf',
 )
 
 from typing import Final as _Final
 
 from ._lm import (
+    estimate_ppf,
     l_kurtosis,
     l_loc,
     l_moment,
