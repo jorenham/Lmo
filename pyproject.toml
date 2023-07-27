@@ -54,6 +54,8 @@ mkdocstrings = {extras = ["python"], version = ">=0.22,<1.0"}
 
 [tool.poetry.group.debug.dependencies]
 ipython = "^8.14"
+matplotlib = "^3.7.2"
+line-profiler = "^4.0.3"
 
 
 [tool.pytest.ini_options]
@@ -101,7 +103,6 @@ reportUnusedClass = true
 reportUnusedFunction = true
 reportUnusedVariable = true
 reportDuplicateImport = true
-useLibraryCodeForTypes = false
 
 
 [tool.ruff]
