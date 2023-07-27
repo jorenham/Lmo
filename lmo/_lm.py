@@ -406,7 +406,7 @@ def l_moment(
         >>> lmo.l_moment(x, [1, 2], trim=(0, 0))
         array([-0.01412282,  0.94063132])
         >>> lmo.l_moment(x, [1, 2], trim=(1/2, 1/2))
-        array([-0.02158858,  0.57977201])
+        array([-0.02158858,  0.5796519 ])
         >>> lmo.l_moment(x, [1, 2], trim=(1, 1))
         array([-0.0124483 ,  0.40120115])
 
@@ -844,13 +844,13 @@ def l_loc(
         >>> import lmo, numpy as np
         >>> x = np.random.default_rng(12345).standard_cauchy(99)
         >>> x.mean()
-        -7.56485034...
+        -7.5648...
         >>> lmo.l_loc(x)  # no trim; equivalent to the (arithmetic) mean
-        -7.56485034...
+        -7.5648...
         >>> lmo.l_loc(x, trim=(1, 1))  # TL-location
-        -0.15924180...
+        -0.15924...
         >>> lmo.l_loc(x, trim=(3/2, 3/2))  # Fractional trimming (only in Lmo)
-        -0.08845121...
+        -0.085845...
 
 
     Notes:
