@@ -51,7 +51,7 @@ def l_moment_from_cdf(
     support: tuple[AnyFloat, AnyFloat] = ...,
     rtol: float = ...,
     atol: float = ...,
-    limit: float = ...,
+    limit: int = ...,
 ) -> np.float_:
     ...
 
@@ -66,7 +66,7 @@ def l_moment_from_cdf(
     support: tuple[AnyFloat, AnyFloat] = ...,
     rtol: float = ...,
     atol: float = ...,
-    limit: float = ...,
+    limit: int = ...,
 ) -> npt.NDArray[np.float_]:
     ...
 
@@ -80,7 +80,7 @@ def l_moment_from_cdf(
     support: tuple[AnyFloat, AnyFloat] = (-np.inf, np.inf),
     rtol: float = 1.49e-8,
     atol: float = 1.49e-8,
-    limit: float = 100,
+    limit: int = 100,
 ) -> np.float_ | npt.NDArray[np.float_]:
     r"""
     Evaluate the population L-moment of a continuous probability distribution,
@@ -150,15 +150,14 @@ def l_moment_from_cdf(
     s, t = np.asanyarray(trim)
     trimmed = s != 0 or t != 0
 
-    j = sh_jacobi(r_vals[-1] - 1, t + 1, s + 1)
+    j = sh_jacobi(min(12, r_vals[-1]) - 1, t + 1, s + 1)
 
     # caching F(x) function only makes sense for multiple quad calls
     _cdf = functools.cache(cdf) if np.count_nonzero(r_vals) > 1 else cdf
 
     # lazy import (don't worry; python imports are cached)
     from scipy.integrate import IntegrationWarning, quad  # type: ignore
-
-    quad_kwargs = {'epsabs': atol, 'epsrel': rtol, 'limit': limit}
+    from scipy.special import betainc, jacobi  # type: ignore
 
     l_r = np.empty(r_vals.shape)
     for i, r_val in np.ndenumerate(r_vals):
@@ -168,8 +167,6 @@ def l_moment_from_cdf(
             continue
 
         if r_val == 1:
-            from scipy.special import betainc  # type: ignore
-
             def integrand(x: float, *args: Any) -> float:
                 # equivalent to E[X_{s+1 : s+t+1}]
                 # see Wiley (2003) eq. 2.1.5
@@ -178,21 +175,43 @@ def l_moment_from_cdf(
                 return (x >= 0) - i_p
 
         else:
-            # prepare the powers to use for evaluating the polynomial
-            k = cast(npt.NDArray[np.int_], np.arange(r_val - 1))
-            # grab the non-zero jacobi polynomial coefficients for k=r-1
-            j_k = j[r_val - 2, :r_val - 1]
+            if r_val <= 12:
+                j_k = np.polynomial.Polynomial(
+                    j[r_val - 2, :r_val - 1],
+                    domain=[0, 1],
+                    window=[0, 1],
+                )
+            else:
+                j_k = np.polynomial.Polynomial(
+                    jacobi(r_val - 2, t + 1, s + 1).coef[::-1],  # type: ignore
+                    domain=[0, 1],
+                    window=[-1, 1],
+                )
+
+            # avoid overflows: split in sign and log, and recombine later
+            # j_k_sgn = np.sign(j_k)
+            # j_k_ln = np.log(np.abs(j_k))
 
             def integrand(x: float, *args: Any) -> float:
-                # evaluate the jacobi polynomial for p at r-1 with (t, s)
-                # and multiply by the weight function
+                """
+                Evaluate the jacobi polynomial for p at r-1 with (t, s)
+                and multiply by the weight function.
+                """
                 p = _cdf(x, *args)
-                return p ** (s + 1) * (1 - p) ** (t + 1) * (j_k @ p**k)
+                return p**(s + 1) * (1 - p)**(t + 1) * j_k(p)  # type: ignore
+
 
         # numerical integration
         quad_val, _, _, *quad_tail = cast(
             _QuadFullOutput,
-            quad(integrand, *support, full_output=True, **quad_kwargs),
+            quad(
+                integrand,
+                *support,
+                full_output=True,
+                limit=limit,
+                epsabs=atol,
+                epsrel=rtol,
+            ),
         )
 
         if quad_tail:
@@ -219,7 +238,7 @@ def l_moment_from_ppf(
     support: tuple[AnyFloat, AnyFloat] = ...,
     rtol: float = ...,
     atol: float = ...,
-    limit: float = ...,
+    limit: int = ...,
 ) -> np.float_:
     ...
 
@@ -234,7 +253,7 @@ def l_moment_from_ppf(
     support: tuple[AnyFloat, AnyFloat] = ...,
     rtol: float = ...,
     atol: float = ...,
-    limit: float = ...,
+    limit: int = ...,
 ) -> npt.NDArray[np.float_]:
     ...
 
@@ -248,7 +267,7 @@ def l_moment_from_ppf(
     support: tuple[AnyFloat, AnyFloat] = (0, 1),
     rtol: float = 1.49e-8,
     atol: float = 1.49e-8,
-    limit: float = 100,
+    limit: int = 100,
 ) -> np.float_ | npt.NDArray[np.float_]:
     """
     Evaluate the population L-moment of a continuous probability distribution,
@@ -318,7 +337,7 @@ def l_moment_from_ppf(
     r_vals, r_idxs = np.unique(_r, return_inverse=True)
     s, t = np.asanyarray(trim)
 
-    j = sh_jacobi(r_vals[-1], t, s)
+    j = sh_jacobi(min(r_vals[-1], 12), t, s)
 
     def w(p: float, *args: Any) -> float:
         return p**s * (1 - p)**t * ppf(p, *args)
@@ -328,8 +347,7 @@ def l_moment_from_ppf(
 
     # lazy import (don't worry; python imports are cached)
     from scipy.integrate import IntegrationWarning, quad  # type: ignore
-
-    quad_kwargs = {'epsabs': atol, 'epsrel': rtol, 'limit': limit}
+    from scipy.special import jacobi  # type: ignore
 
     l_r = np.empty(r_vals.shape)
     for i, r_val in np.ndenumerate(r_vals):
@@ -338,26 +356,39 @@ def l_moment_from_ppf(
             l_r[i] = 1
             continue
 
-        # prepare the powers to use for evaluating the polynomial
-        k = cast(npt.NDArray[np.int_], np.arange(r_val))
-        # grab the non-zero jacobi polynomial coefficients for k=r-1
-        j_k = j[r_val - 1, :r_val]
+        if r_val <= 12:
+            j_k = np.polynomial.Polynomial(
+                j[r_val - 1, :r_val],
+                domain=[0, 1],
+                window=[0, 1],
+            )
+        else:
+            j_k = np.polynomial.Polynomial(
+                jacobi(r_val - 1, t, s).coef[::-1],  # type: ignore
+                domain=[0, 1],
+                window=[-1, 1],
+            )
 
         def integrand(p: float) -> float:
-            # evaluate the jacobi polynomial for p at r-1 with (t, s)
-            # and multiply by the weight function
-            return _w(p) * (j_k @ p**k)  # type: ignore
+            return _w(p) * j_k(p)  # type: ignore
 
         # numerical integration
         quad_val, _, _, *quad_tail = cast(
             _QuadFullOutput,
-            quad(integrand, *support, full_output=True, **quad_kwargs),
+            quad(
+                integrand,
+                *support,
+                full_output=True,
+                limit=limit,
+                epsabs=atol,
+                epsrel=rtol,
+            ),
         )
         if quad_tail:
             quad_msg = quad_tail[0]
             warnings.warn(
                 f"'scipy.integrate.quad' failed: \n{quad_msg}",
-                cast(type[UserWarning], IntegrationWarning),
+                IntegrationWarning,
                 stacklevel=2,
             )
             l_r[i] = np.nan
