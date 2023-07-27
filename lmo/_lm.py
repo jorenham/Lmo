@@ -19,6 +19,7 @@ __all__ = (
 
 import sys
 from collections.abc import Callable
+from math import lgamma
 from typing import Any, Final, TypeVar, cast, overload
 
 import numpy as np
@@ -26,8 +27,8 @@ import numpy.typing as npt
 
 from . import ostats, pwm_beta
 from ._utils import clean_order, ensure_axis_at, moments_to_ratio, ordered
-from .linalg import ir_pascal, sandwich, sh_jacobi, sh_legendre, trim_matrix
-from .typing import AnyInt, IntVector, LMomentOptions, SortKind
+from .linalg import ir_pascal, sandwich, sh_legendre, trim_matrix
+from .typing import AnyFloat, AnyInt, IntVector, LMomentOptions, SortKind
 
 if sys.version_info < (3, 11):
     from typing_extensions import Unpack
@@ -57,9 +58,10 @@ def _l_weights_pwm(
     t1, t2 = trim
     r0 = r + t1 + t2
 
-    p0 = sh_legendre(r0, dtype=np.int_ if r0 < 29 else np.object_)
-    w0 = p0 @ pwm_beta.weights(r0, n, dtype=dtype)
-    return cast(npt.NDArray[T], trim_matrix(r, trim, dtype=dtype) @ w0)
+    p0 = sh_legendre(r0, dtype=np.int_ if r0 < 29 else dtype)
+    w0 = p0 @ pwm_beta.weights(r0, n, dtype=dtype)  # type: ignore
+    out = trim_matrix(r, trim, dtype=dtype) @ w0 if t1 or t2 else w0
+    return cast(npt.NDArray[T], out)
 
     # remove numerical noise from the trimmings, and correct for potential
     # shifts in means
@@ -82,7 +84,7 @@ def _l_weights_ostat(
     assert r >= 1, r
     assert s >= 0 and t >= 0, trim
 
-    c = ir_pascal(r)
+    c = ir_pascal(r, dtype=dtype)
     jnj = np.arange(N, dtype=dtype)
     jnj /= (N - jnj)
 
@@ -102,9 +104,10 @@ def l_weights(
     n: int,
     /,
     trim: tuple[float, float] = (0, 0),
+    dtype: np.dtype[T] | type[T] = np.float_,
     *,
     cache: bool = False,
-) -> npt.NDArray[np.float_]:
+) -> npt.NDArray[T]:
     r"""
     Projection matrix of the first $r$ (T)L-moments for $n$ samples.
 
@@ -159,7 +162,7 @@ def l_weights(
             L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
     """
     if r == 0:
-        return np.empty((r, n))
+        return np.empty((r, n), dtype=dtype)
 
     match trim:
         case s, t if s < 0 or t < 0:
@@ -188,12 +191,12 @@ def l_weights(
         # ignore if r is larger that what's cached
         if w.shape[0] == r:
             assert w.shape == (r, n)
-            return w
+            return w.astype(dtype)
 
     if isinstance(s, int | np.integer) and isinstance(t, int | np.integer):
-        w = _l_weights_pwm(r, n, trim=(int(s), int(t)))
+        w = _l_weights_pwm(r, n, trim=(int(s), int(t)), dtype=dtype)
     else:
-        w = _l_weights_ostat(r, n, trim=(float(s), float(t)))
+        w = _l_weights_ostat(r, n, trim=(float(s), float(t)), dtype=dtype)
 
     if cache:
         # memoize
@@ -204,7 +207,6 @@ def l_weights(
 
 
 # Summary statistics
-
 
 @overload
 def l_moment(
@@ -239,6 +241,7 @@ def l_moment(
 ) -> T:
     ...
 
+
 @overload
 def l_moment(
     a: npt.ArrayLike,
@@ -272,6 +275,7 @@ def l_moment(
 ) -> T | npt.NDArray[T]:
     ...
 
+
 @overload
 def l_moment(
     a: npt.ArrayLike,
@@ -280,7 +284,7 @@ def l_moment(
     trim: tuple[float, float] = ...,
     *,
     axis: int | None = ...,
-    dtype: type[np.float_],
+    dtype: type[np.float_] = ...,
     fweights: IntVector | None = ...,
     aweights: npt.ArrayLike | None = ...,
     sort: SortKind | None = ...,
@@ -308,7 +312,7 @@ def l_moment(
 
 def l_moment(
     a: npt.ArrayLike,
-    r: AnyInt | IntVector,
+    r: IntVector | AnyInt,
     /,
     trim: tuple[float, float] = (0, 0),
     *,
@@ -434,7 +438,7 @@ def l_moment(
     _r = np.asarray(r)
     r_max = clean_order(np.max(_r))
 
-    l_r = np.inner(l_weights(r_max, n, trim, cache=cache), x_k)
+    l_r = np.inner(l_weights(r_max, n, trim, cache=cache, dtype=dtype), x_k)
 
     # we like 0-based indexing; so if P_r starts at r=1, prepend all 1's
     # for r=0 (any zeroth moment is defined to be 1)
@@ -1030,9 +1034,11 @@ def l_kurtosis(
 
 def estimate_ppf(
     x: npt.ArrayLike,
-    k: int = 12,
+    k: int = 20,
     /,
-    trim: tuple[float, float] = (0, 0),
+    trim: tuple[AnyFloat, AnyFloat] = (0, 0),
+    *,
+    dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Unpack[LMomentOptions],
 ) -> Callable[[npt.ArrayLike], np.float_ | npt.NDArray[np.float_]]:
     """
@@ -1040,13 +1046,47 @@ def estimate_ppf(
     (trimmed) L-moments, as described by Hosking in 2007.
     """
     _k = clean_order(k)
-    s, t = np.asanyarray(trim)
+    s, t = float(trim[0]), float(trim[1])
+    if s < 0 or t < 0:
+        msg = 'trim must be positive'
+        raise ValueError(msg)
 
-    r0 = np.arange(_k, dtype=np.int_)
     r = np.arange(1, _k + 1, dtype=np.int_)
+    r0 = np.arange(_k, dtype=dtype)
 
-    l = l_moment(x, r, (s, t), **kwargs)
-    w = r * (1 + r0 / (r + s + t)) * l @ sh_jacobi(_k, t, s, dtype=np.float_)
+    l_k = l_moment(x, r, (s, t), dtype=dtype, **kwargs)
+
+    from scipy.special import eval_jacobi, gammaln  # type: ignore
+
+    # check validity (see Hosking 2007, 2.5 (14)).
+    m = min(s, t)
+    r2 = r[2:]
+    r_invalid = np.argwhere(
+        np.log(np.abs(l_k[2:]) * r2 / (2 * l_k[1])) > (
+            gammaln(m + 2)
+            - gammaln(s + t + 3)
+            + gammaln(r2 + s + t + 1)
+            - gammaln(r2 + m)
+        ),
+    ) + 3
+    if len(r_invalid):
+        msg = (
+            f'L-moment bound violated by the L-moment ratios with '
+            f'r={list(r_invalid)}. '
+            f'This can be caused by numerical underflow / overflow: '
+            f'Consider lowering `k` or `trim`, or use a wider dtype.'
+        )
+        raise ArithmeticError(msg)
+
+    # See Hosking (2007)
+    c = l_k * r * (1 + r0 / (r + s + t))
+
+    # Extrapolation weights, normalized to `sum(w) == 1``, using the fact that:
+    # `sum(ln(i) for i in range(N)) == ln(prod(range(N))) == ln(N!)`
+    w = np.log(r) / lgamma(_k + 1)
+
+    # embed the "cumsum" so that `cw @ a` is equivalent `w @ cumsum(c * a)`
+    cw = w @ np.tril(c)
 
     def ppf(q: npt.ArrayLike, /) -> np.float_ | npt.NDArray[np.float_]:
         r"""
@@ -1056,6 +1096,13 @@ def estimate_ppf(
         It is assumed that $0 \le q \le 1$, but this is not explicitly
         enforced for performance reasons.
         """
-        return np.power.outer(q, r0) @ w
+        u = 2 * np.asarray(q)[()] - 1
+        a = np.array([eval_jacobi(_r, t, s, u) for _r in range(_k)])
+
+        # 'a' is a convergent series with weight q**s * (1-q)**t, that appears
+        # to converge logarithmically (=slow), but harmonically with a period
+        # that depends on q.
+        # -> extrapolate with log-weighted average of the partial sums
+        return cw @ a
 
     return ppf
