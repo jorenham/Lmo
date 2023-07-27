@@ -20,6 +20,8 @@ from typing import Any, TypeAlias, cast, overload
 
 import numpy as np
 import numpy.typing as npt
+import scipy.integrate as sci  # type: ignore
+import scipy.special as scs  # type: ignore
 
 from ._utils import moments_to_ratio
 from .linalg import sh_jacobi
@@ -39,6 +41,29 @@ def _l_moment_const(r: int, s: float, t: float, k: int) -> float:
         * gamma(r - k)
         / r
     )
+
+
+def _quad(
+    integrand: Callable[[float], float],
+    support: tuple[AnyFloat, AnyFloat],
+    limit: int,
+    atol: float,
+    rtol: float,
+) -> float:
+    quad_val, _, _, *quad_tail = sci.quad(  # type: ignore
+        integrand,
+        *support,
+        full_output=True,
+        limit=limit,
+        epsabs=atol,
+        epsrel=rtol,
+    )
+    if quad_tail:
+        msg = f"'scipy.integrate.quad' failed: \n{quad_tail[0]}"
+        warnings.warn(msg, sci.IntegrationWarning, stacklevel=2)
+        return np.nan
+
+    return cast(float, quad_val)
 
 
 @overload
@@ -71,7 +96,7 @@ def l_moment_from_cdf(
     ...
 
 
-def l_moment_from_cdf(
+def l_moment_from_cdf(  # noqa: C901
     cdf: Callable[[float], float],
     r: AnyInt | IntVector,
     /,
@@ -155,10 +180,6 @@ def l_moment_from_cdf(
     # caching F(x) function only makes sense for multiple quad calls
     _cdf = functools.cache(cdf) if np.count_nonzero(r_vals) > 1 else cdf
 
-    # lazy import (don't worry; python imports are cached)
-    from scipy.integrate import IntegrationWarning, quad  # type: ignore
-    from scipy.special import betainc, jacobi  # type: ignore
-
     l_r = np.empty(r_vals.shape)
     for i, r_val in np.ndenumerate(r_vals):
         if r_val == 0:
@@ -170,23 +191,22 @@ def l_moment_from_cdf(
             def integrand(x: float, *args: Any) -> float:
                 # equivalent to E[X_{s+1 : s+t+1}]
                 # see Wiley (2003) eq. 2.1.5
-                p = _cdf(x, *args)
-                i_p = cast(float, betainc(s + 1, t + 1, p)) if trimmed else p
+                i_p = p = _cdf(x, *args)
+                if trimmed:
+                    i_p = scs.betainc(s + 1, t + 1, p)  # type: ignore
+
                 return (x >= 0) - i_p
 
         else:
+            k_val = r_val - 2
+
             if r_val <= 12:
-                j_k = np.polynomial.Polynomial(
-                    j[r_val - 2, :r_val - 1],
-                    domain=[0, 1],
-                    window=[0, 1],
-                )
+                c_k, lb = j[k_val, :k_val + 1], 0
             else:
-                j_k = np.polynomial.Polynomial(
-                    jacobi(r_val - 2, t + 1, s + 1).coef[::-1],  # type: ignore
-                    domain=[0, 1],
-                    window=[-1, 1],
-                )
+                _j_k = scs.jacobi(k_val, t + 1, s + 1)  # type: ignore
+                c_k, lb = _j_k.coef[::-1], -1
+
+            j_k = np.polynomial.Polynomial(c_k, domain=[0, 1], window=[lb, 1])
 
             # avoid overflows: split in sign and log, and recombine later
             # j_k_sgn = np.sign(j_k)
@@ -200,29 +220,7 @@ def l_moment_from_cdf(
                 p = _cdf(x, *args)
                 return p**(s + 1) * (1 - p)**(t + 1) * j_k(p)  # type: ignore
 
-
-        # numerical integration
-        quad_val, _, _, *quad_tail = cast(
-            _QuadFullOutput,
-            quad(
-                integrand,
-                *support,
-                full_output=True,
-                limit=limit,
-                epsabs=atol,
-                epsrel=rtol,
-            ),
-        )
-
-        if quad_tail:
-            quad_msg = quad_tail[0]
-            warnings.warn(
-                f"'scipy.integrate.quad' failed: \n{quad_msg}",
-                cast(type[UserWarning], IntegrationWarning),
-                stacklevel=2,
-            )
-            quad_val = np.nan
-
+        quad_val = _quad(integrand, support, limit, atol, rtol)
         l_r[i] = _l_moment_const(r_val, s, t, 1) * quad_val
 
     return (np.round(l_r, 12) + .0)[r_idxs].reshape(_r.shape)[()]
@@ -346,7 +344,6 @@ def l_moment_from_ppf(
     _w = functools.cache(w) if len(r_vals) > 1 else w
 
     # lazy import (don't worry; python imports are cached)
-    from scipy.integrate import IntegrationWarning, quad  # type: ignore
     from scipy.special import jacobi  # type: ignore
 
     l_r = np.empty(r_vals.shape)
@@ -372,28 +369,7 @@ def l_moment_from_ppf(
         def integrand(p: float) -> float:
             return _w(p) * j_k(p)  # type: ignore
 
-        # numerical integration
-        quad_val, _, _, *quad_tail = cast(
-            _QuadFullOutput,
-            quad(
-                integrand,
-                *support,
-                full_output=True,
-                limit=limit,
-                epsabs=atol,
-                epsrel=rtol,
-            ),
-        )
-        if quad_tail:
-            quad_msg = quad_tail[0]
-            warnings.warn(
-                f"'scipy.integrate.quad' failed: \n{quad_msg}",
-                IntegrationWarning,
-                stacklevel=2,
-            )
-            l_r[i] = np.nan
-            continue
-
+        quad_val = _quad(integrand, support, limit, atol, rtol)
         l_r[i] = _l_moment_const(r_val, s, t, 0) * quad_val
 
     return (np.round(l_r, 12) + .0)[r_idxs].reshape(_r.shape)[()]
