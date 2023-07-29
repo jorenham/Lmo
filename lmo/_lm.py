@@ -1044,6 +1044,10 @@ def estimate_ppf(
     """
     Approximate the quantile function (PPF), using a linear combination of
     (trimmed) L-moments, as described by Hosking in 2007.
+
+    References:
+        - [J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
+        L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
     """
     _k = clean_order(k)
     s, t = float(trim[0]), float(trim[1])
