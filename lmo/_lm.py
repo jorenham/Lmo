@@ -1034,7 +1034,7 @@ def l_kurtosis(
 
 def estimate_ppf(
     x: npt.ArrayLike,
-    k: int = 20,
+    k: int = 16,
     /,
     trim: tuple[AnyFloat, AnyFloat] = (0, 0),
     *,
@@ -1044,6 +1044,20 @@ def estimate_ppf(
     """
     Approximate the quantile function (PPF), using a linear combination of
     (trimmed) L-moments, as described by Hosking in 2007.
+
+    Args:
+        x: 1-d array-like with sanples.
+        k: Amount of L-moment orders to include. High orders (e.g. >40) can
+            lead to inaccuracies due to numerical issues.
+        trim: The left- and right- trim length 2-tuple.
+        dtype: The (floating) datatype to use for the moment calculations.
+        **kwargs: Additional keyword arguments to pass to
+            [`l_moment`](lmo.l_moment).
+
+    Returns:
+        ppf: The quantile function, with signature like `float -> float` or
+            `1d_array_like -> ndarray`, that maps a cumulative probability
+            in `[0, 1]`, to a sample of the underlying random variable.
 
     References:
         - [J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
