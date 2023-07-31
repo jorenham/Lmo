@@ -18,14 +18,14 @@ __all__ = (
 )
 
 import sys
-from collections.abc import Callable
 from math import lgamma
 from typing import Any, Final, TypeVar, cast, overload
 
 import numpy as np
+import numpy.polynomial as npp
 import numpy.typing as npt
 
-from . import ostats, pwm_beta
+from . import _poly, ostats, pwm_beta
 from ._utils import clean_order, ensure_axis_at, moments_to_ratio, ordered
 from .linalg import ir_pascal, sandwich, sh_legendre, trim_matrix
 from .typing import AnyFloat, AnyInt, IntVector, LMomentOptions, SortKind
@@ -497,6 +497,8 @@ def l_moment_cov(
         - [E. Elamir & A. Seheult (2004) - Exact variance structure of sample
             L-moments](https://doi.org/10.1016/S0378-3758(03)00213-1)
 
+    Todo:
+        - Use the direct (Jacobi) method from Hosking (2015).
     """
     if any(int(t) != t for t in trim):
         msg = 'l_moment_cov does not support fractional trimming (yet)'
@@ -1040,7 +1042,7 @@ def estimate_ppf(
     *,
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Unpack[LMomentOptions],
-) -> Callable[[npt.ArrayLike], np.float_ | npt.NDArray[np.float_]]:
+) -> npp.Polynomial:
     """
     Approximate the quantile function (PPF), using a linear combination of
     (trimmed) L-moments, as described by Hosking in 2007.
@@ -1062,6 +1064,7 @@ def estimate_ppf(
     References:
         - [J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
         L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
+
     """
     _k = clean_order(k)
     s, t = float(trim[0]), float(trim[1])
@@ -1074,7 +1077,7 @@ def estimate_ppf(
 
     l_k = l_moment(x, r, (s, t), dtype=dtype, **kwargs)
 
-    from scipy.special import eval_jacobi, gammaln  # type: ignore
+    from scipy.special import gammaln  # type: ignore
 
     # check validity (see Hosking 2007, 2.5 (14)).
     m = min(s, t)
@@ -1106,21 +1109,7 @@ def estimate_ppf(
     # embed the "cumsum" so that `cw @ a` is equivalent `w @ cumsum(c * a)`
     cw = w @ np.tril(c)
 
-    def ppf(q: npt.ArrayLike, /) -> np.float_ | npt.NDArray[np.float_]:
-        r"""
-        Quantile function estimate $\bar{Q}(p)$, from a linear
-        combination of L-moments.
-
-        It is assumed that $0 \le q \le 1$, but this is not explicitly
-        enforced for performance reasons.
-        """
-        u = 2 * np.asarray(q)[()] - 1
-        a = np.array([eval_jacobi(_r, t, s, u) for _r in range(_k)])
-
-        # 'a' is a convergent series with weight q**s * (1-q)**t, that appears
-        # to converge logarithmically (=slow), but harmonically with a period
-        # that depends on q.
-        # -> extrapolate with log-weighted average of the partial sums
-        return cw @ a
-
-    return ppf
+    # 2x-1 for "shifting" the polynomial
+    # sh = npp.Polynomial([-1, 2], domain=[0, 1], window=[0, 1], symbol='q')
+    # return ppf
+    return _poly.jacobi_series(cw, t, s, domain=[0, 1], symbol='q')
