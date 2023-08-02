@@ -59,8 +59,7 @@ def jacobi_series(
         raise ValueError(msg)
 
     n = len(w)
-
     return sum(
         w[r] * jacobi(r, a, b, domain=domain, window=window, symbol=symbol)
-        for r in range(n)
+        for r in range(n) if abs(w[r]) > 1e-13
     ) # type: ignore
