@@ -1,6 +1,6 @@
 """Statistical test and tools."""
 
-__all__ = ('normaltest',)
+__all__ = ('normaltest', 'l_stats_absmax')
 
 from typing import NamedTuple
 
@@ -81,3 +81,24 @@ def normaltest(
     p_value = np.exp(-k2 / 2)
 
     return NormaltestResult(k2, p_value)
+
+
+def l_stats_absmax(
+    n: int = 4,
+    trim: tuple[float, float] = (0, 0),
+) -> npt.NDArray[np.float_]:
+    """
+    Absolute bounds on the l_ratio's, from Hosking (2007), and modified
+    to allow for numerically stable recursion, removing the need for the
+    evaluation of gamma functions (or pochhammer symbols).
+    """
+    out = np.empty(n)
+    out[[0, 1]] = np.inf  # L-loc and L-scale are unbounded
+
+    p, q = sum(trim), min(trim)
+
+    b0 = 1
+    for r in range(3, n + 1):
+        out[r-1] = b0 = b0 * (1 + p / r) / (1 + q / (r - 1))
+
+    return out
