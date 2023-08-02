@@ -1,13 +1,17 @@
 """Statistical test and tools."""
 
-__all__ = ('normaltest', 'l_stats_absmax')
+__all__ = ('normaltest', 'l_ratio_bounds')
 
-from typing import NamedTuple
+from typing import Any, NamedTuple, Sequence, TypeVar, overload
 
 import numpy as np
 import numpy.typing as npt
 
+from .typing import AnyInt
+
 from ._lm import l_ratio
+
+T = TypeVar('T', bound=np.floating[Any])
 
 
 class NormaltestResult(NamedTuple):
@@ -83,22 +87,139 @@ def normaltest(
     return NormaltestResult(k2, p_value)
 
 
-def l_stats_absmax(
-    n: int = 4,
-    trim: tuple[float, float] = (0, 0),
+@overload
+def l_ratio_bounds(
+    r: AnyInt,
+    /,
+    trim: tuple[float, float] = ...,
+    *,
+    dtype: np.dtype[np.float_] = ...,
+) -> np.float_:
+    ...
+
+@overload
+def l_ratio_bounds(
+    r: AnyInt,
+    /,
+    trim: tuple[float, float] = ...,
+    *,
+    dtype: np.dtype[T] | type[T],
+) -> T:
+    ...
+
+
+@overload
+def l_ratio_bounds(
+    r: npt.NDArray[Any] | Sequence[Any],
+    /,
+    trim: tuple[float, float] = ...,
+    *,
+    dtype: np.dtype[np.float_] = ...,
 ) -> npt.NDArray[np.float_]:
+    ...
+
+@overload
+def l_ratio_bounds(
+    r: npt.NDArray[Any] | Sequence[Any],
+    /,
+    trim: tuple[float, float] = ...,
+    *,
+    dtype: np.dtype[T] | type[T],
+) -> npt.NDArray[T]:
+    ...
+
+
+@overload
+def l_ratio_bounds(
+    r: npt.ArrayLike,
+    /,
+    trim: tuple[float, float] = ...,
+    *,
+    dtype: np.dtype[np.float_] = ...,
+) -> np.float_ | npt.NDArray[np.float_]:
+    ...
+
+@overload
+def l_ratio_bounds(
+    r: npt.ArrayLike,
+    /,
+    trim: tuple[float, float] = ...,
+    *,
+    dtype: np.dtype[T] | type[T],
+) -> T | npt.NDArray[T]:
+    ...
+
+
+def l_ratio_bounds(
+    r: npt.ArrayLike,
+    /,
+    trim: tuple[float, float] = (0, 0),
+    *,
+    dtype: np.dtype[T] | type[T] = np.float_,
+) -> T | npt.NDArray[T]:
+    r"""
+    Upper bounds on the absolute L-moment ratio's. It is based on the
+    bounds introduced by Hosking in 2007, but generalized to allow for
+    fractional trimming (i.e. $(s, t) \in \mathbb{R}^2_+$), and reformulated
+    as a recursive definition.
+
+    $$
+    |\tau_r^{(s, t)}| \le
+        \frac{2}{r} \frac
+        {\Gamma (s \wedge t + 2) \Gamma (s + t + r + 1)}
+        {\Gamma (s \wedge t + r) \Gamma (s + t + 3)}
+    $$
+
+    Here, $s \wedge t$ denotes the smallest trim-length, i.e. `min(s, t)`.
+
+    Notes:
+        Without trim (default), the upper bound is $1$ for all $r \neq 1$.
+
+    Args:
+        r: Order of the L-moment ratio(s), as positive integer scalar or
+            array-like.
+        trim: Tuple of left- and right- trim-lengths, matching those of the
+            relevant L-moment ratio's.
+        dtype: Floating type to use.
+
+    Returns:
+        Array or scalar with shape like $r$.
+
+    See Also:
+        - [`l_ratio`][lmo.l_ratio]
+        - [`l_ratio_se`][lmo.l_ratio_se]
+
+    References:
+        - [J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
+        L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
+
     """
-    Absolute bounds on the l_ratio's, from Hosking (2007), and modified
-    to allow for numerically stable recursion, removing the need for the
-    evaluation of gamma functions (or pochhammer symbols).
-    """
-    out = np.empty(n)
-    out[[0, 1]] = np.inf  # L-loc and L-scale are unbounded
+    _rs = np.asarray_chkfinite(r, dtype=int)[()]
+    if np.any(_rs < 0):
+        msg = 'expected r >= 0'
+        raise ValueError(msg)
 
-    p, q = sum(trim), min(trim)
+    _n = np.max(_rs) + 1
+    if _n > 9000:
+        msg = f"max(r) = {_n - 1}; it's over 9000!"
+        raise ValueError(msg)
 
-    b0 = 1
-    for r in range(3, n + 1):
-        out[r-1] = b0 = b0 * (1 + p / r) / (1 + q / (r - 1))
+    # the zeroth L-ratio is 1/1, the 2nd L-ratio is L-scale / L-scale
+    out = np.ones(_n, dtype=dtype)
 
-    return out
+    if _n > 1:
+        # `L-loc / L-scale (= 1 / CV)` is unbounded
+        out[1] = np.inf
+
+    s, t = np.asarray_chkfinite(trim)
+    if s < 0 or t < 0:
+        msg = f'trim lengths must be positive, got {trim}'
+        raise ValueError(msg)
+
+    if _n > 3 and s and t:
+        # if not trimmed, then the bounds are simply 1
+        p, q = s + t, min(s, t)
+        for _r in range(3, _n):
+            out[_r] = out[_r - 1] * (1 + p / _r) / (1 + q / (_r - 1))
+
+    return out[_rs]
