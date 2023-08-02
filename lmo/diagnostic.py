@@ -2,14 +2,14 @@
 
 __all__ = ('normaltest', 'l_ratio_bounds')
 
-from typing import Any, NamedTuple, Sequence, TypeVar, overload
+from collections.abc import Sequence
+from typing import Any, NamedTuple, TypeVar, overload
 
 import numpy as np
 import numpy.typing as npt
 
-from .typing import AnyInt
-
 from ._lm import l_ratio
+from .typing import AnyInt
 
 T = TypeVar('T', bound=np.floating[Any])
 
