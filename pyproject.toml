@@ -54,6 +54,7 @@ mkdocstrings = {extras = ["python"], version = ">=0.22,<1.0"}
 
 [tool.poetry.group.debug.dependencies]
 ipython = "^8.14"
+ipykernel = "^6.25.0"
 matplotlib = "^3.7.2"
 line-profiler = "^4.0.3"
 
@@ -84,7 +85,6 @@ exclude = [
     "**/.pytest_cache",
     "**/.ruff_cache",
     "**/.vscode",
-    "**/.idea",
     ".git",
     ".github",
     "dist",
