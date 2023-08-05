@@ -3,6 +3,8 @@
 """Numpy-related type aliasses for internal use."""
 
 __all__ = (
+    'SupportsArray',
+
     'AnyScalar',
     'AnyNDArray',
 
@@ -25,6 +27,8 @@ __all__ = (
 
     'LMomentOptions',
     'LComomentOptions',
+
+    'AnyTrim',
 )
 
 from collections.abc import Iterator, Sequence
@@ -48,8 +52,15 @@ import numpy.typing as npt
 T = TypeVar('T', bound=np.generic)
 T_co = TypeVar('T_co', covariant=True, bound=np.generic)
 
+
 @runtime_checkable
-class _SupportsArray(Protocol[T_co]):
+class SupportsArray(Protocol[T_co]):
+    """
+    Custom numpy array containers.
+
+    See Also:
+        - https://numpy.org/doc/stable/user/basics.dispatch.html
+    """
     def __array__(self) -> npt.NDArray[T_co]: ...
 
 
@@ -72,7 +83,7 @@ AnyScalar: TypeAlias = int | float | complex | str | bytes | _NpScalar
 # - `{}Vector`: ndim == 1
 # - `{}Matrix`: ndim == 2
 # - `{}Tensor`: ndim >= 3
-AnyNDArray: TypeAlias = npt.NDArray[T] | _SupportsArray[T]
+AnyNDArray: TypeAlias = npt.NDArray[T] | SupportsArray[T]
 
 _ArrayZ: TypeAlias = AnyNDArray[_NpInt] | AnyNDArray[_NpBool]
 IntVector: TypeAlias = _ArrayZ | Sequence[AnyInt]
@@ -97,17 +108,17 @@ IndexOrder: TypeAlias = Literal['C', 'F', 'A', 'K']
 
 @runtime_checkable
 class _SupportsCoef(Protocol):
-    coef: npt.NDArray[Any] | _SupportsArray[Any]
+    coef: npt.NDArray[Any] | SupportsArray[Any]
 
 
 @runtime_checkable
 class _SupportsDomain(Protocol):
-    domain: npt.NDArray[Any] | _SupportsArray[Any]
+    domain: npt.NDArray[Any] | SupportsArray[Any]
 
 
 @runtime_checkable
 class _SupportsWindow(Protocol):
-    window: npt.NDArray[Any] | _SupportsArray[Any]
+    window: npt.NDArray[Any] | SupportsArray[Any]
 
 @runtime_checkable
 class _SupportsLessThanInt(Protocol):
@@ -179,6 +190,7 @@ class PolySeries(Protocol):
         self: _P,
         __other: npt.ArrayLike | _P,
     ) -> tuple[_P, _P]: ...
+    def __pow__(self: _P, __other: AnyInt) -> _P: ...
     def __eq__(self, __other: Any) -> bool: ...
     def __ne__(self, __other: Any) -> bool: ...
     def copy(self: _P) -> _P: ...
@@ -318,6 +330,10 @@ class LComomentOptions(_LOptions, total=False):
     rowvar: bool
 
 
+# Lmo specific aliasses
 
-
-
+AnyTrim: TypeAlias = (
+    tuple[AnyFloat, AnyFloat]
+    | Sequence[AnyFloat]
+    | SupportsArray[_NpInt | _NpFloat]
+)
