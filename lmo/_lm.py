@@ -13,22 +13,18 @@ __all__ = (
     'l_variation',
     'l_skew',
     'l_kurtosis',
-
-    'estimate_ppf',
 )
 
 import sys
-from math import lgamma
 from typing import Any, Final, TypeVar, cast, overload
 
 import numpy as np
-import numpy.polynomial as npp
 import numpy.typing as npt
 
-from . import _poly, ostats, pwm_beta
+from . import ostats, pwm_beta
 from ._utils import clean_order, ensure_axis_at, moments_to_ratio, ordered
 from .linalg import ir_pascal, sandwich, sh_legendre, trim_matrix
-from .typing import AnyFloat, AnyInt, IntVector, LMomentOptions, SortKind
+from .typing import AnyInt, IntVector, LMomentOptions, SortKind
 
 if sys.version_info < (3, 11):
     from typing_extensions import Unpack
@@ -272,7 +268,7 @@ def l_moment(
     aweights: npt.ArrayLike | None = ...,
     sort: SortKind | None = ...,
     cache: bool = ...,
-) -> T | npt.NDArray[T]:
+) -> npt.NDArray[T] | T:
     ...
 
 
@@ -323,7 +319,7 @@ def l_moment(
     aweights: npt.ArrayLike | None = None,
     sort: SortKind | None = 'stable',
     cache: bool = False,
-) -> T | npt.NDArray[T]:
+) -> npt.NDArray[T] | T:
     r"""
     Estimates the generalized trimmed L-moment $\lambda^{(t_1, t_2)}_r$ from
     the samples along the specified axis. By default, this will be the regular
@@ -445,7 +441,7 @@ def l_moment(
     l_r = np.r_[np.ones((1, *l_r.shape[1:]), dtype=l_r.dtype), l_r]
 
     # l[r] fails when r is e.g. a tuple (valid sequence).
-    return cast(T | npt.NDArray[T], l_r.take(_r, 0))
+    return cast(npt.NDArray[T] | T, l_r.take(_r, 0))
 
 
 def l_moment_cov(
@@ -578,7 +574,7 @@ def l_ratio(
     axis: int,
     dtype: np.dtype[T] | type[T],
     **kwargs: Unpack[LMomentOptions],
-) -> T | npt.NDArray[T]:
+) -> npt.NDArray[T] | T:
     ...
 
 @overload
@@ -650,7 +646,7 @@ def l_ratio(
     axis: int | None = None,
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Unpack[LMomentOptions],
-) -> T | npt.NDArray[T]:
+) -> npt.NDArray[T] | T:
     r"""
     Estimates the generalized L-moment ratio:
 
@@ -835,7 +831,7 @@ def l_loc(
     axis: int | None = None,
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Unpack[LMomentOptions],
-) -> T | npt.NDArray[T]:
+) -> npt.NDArray[T] | T:
     r"""
     *L-location* (or *L-loc*): unbiased estimator of the first L-moment,
     $\lambda^{(t_1, t_2)}_1$.
@@ -874,7 +870,7 @@ def l_scale(
     axis: int | None = None,
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Unpack[LMomentOptions],
-) -> T | npt.NDArray[T]:
+) -> npt.NDArray[T] | T:
     r"""
     *L-scale*: unbiased estimator of the second L-moment,
     $\lambda^{(t_1, t_2)}_2$.
@@ -911,7 +907,7 @@ def l_variation(
     axis: int | None = None,
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Unpack[LMomentOptions],
-) -> T | npt.NDArray[T]:
+) -> npt.NDArray[T] | T:
     r"""
     The *coefficient of L-variation* (or *L-CV*) unbiased sample estimator:
 
@@ -957,7 +953,7 @@ def l_skew(
     axis: int | None = None,
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Unpack[LMomentOptions],
-) -> T | npt.NDArray[T]:
+) -> npt.NDArray[T] | T:
     r"""
     Unbiased sample estimator of the *coefficient of L-skewness*, or *L-skew*
     for short:
@@ -996,7 +992,7 @@ def l_kurtosis(
     axis: int | None = None,
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Unpack[LMomentOptions],
-) -> T | npt.NDArray[T]:
+) -> npt.NDArray[T] | T:
     r"""
     L-kurtosis coefficient; the 4th sample L-moment ratio.
 
@@ -1029,87 +1025,3 @@ def l_kurtosis(
         - [`scipy.stats.kurtosis`][scipy.stats.kurtosis]
     """
     return l_ratio(a, 4, 2, trim, axis=axis, dtype=dtype, **kwargs)
-
-
-# Non-parametric statistics
-
-
-def estimate_ppf(
-    x: npt.ArrayLike,
-    k: int = 16,
-    /,
-    trim: tuple[AnyFloat, AnyFloat] = (0, 0),
-    *,
-    dtype: np.dtype[T] | type[T] = np.float_,
-    **kwargs: Unpack[LMomentOptions],
-) -> npp.Polynomial:
-    """
-    Approximate the quantile function (PPF), using a linear combination of
-    (trimmed) L-moments, as described by Hosking in 2007.
-
-    Args:
-        x: 1-d array-like with sanples.
-        k: Amount of L-moment orders to include. High orders (e.g. >40) can
-            lead to inaccuracies due to numerical issues.
-        trim: The left- and right- trim length 2-tuple.
-        dtype: The (floating) datatype to use for the moment calculations.
-        **kwargs: Additional keyword arguments to pass to
-            [`l_moment`](lmo.l_moment).
-
-    Returns:
-        ppf: The quantile function, with signature like `float -> float` or
-            `1d_array_like -> ndarray`, that maps a cumulative probability
-            in `[0, 1]`, to a sample of the underlying random variable.
-
-    References:
-        - [J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
-        L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
-
-    """
-    _k = clean_order(k)
-    s, t = float(trim[0]), float(trim[1])
-    if s < 0 or t < 0:
-        msg = 'trim must be positive'
-        raise ValueError(msg)
-
-    r = np.arange(1, _k + 1, dtype=np.int_)
-    r0 = np.arange(_k, dtype=dtype)
-
-    l_k = l_moment(x, r, (s, t), dtype=dtype, **kwargs)
-
-    from scipy.special import gammaln  # type: ignore
-
-    # check validity (see Hosking 2007, 2.5 (14)).
-    m = min(s, t)
-    r2 = r[2:]
-    r_invalid = np.argwhere(
-        np.log(np.abs(l_k[2:]) * r2 / (2 * l_k[1])) > (
-            gammaln(m + 2)
-            - gammaln(s + t + 3)
-            + gammaln(r2 + s + t + 1)
-            - gammaln(r2 + m)
-        ),
-    ) + 3
-    if len(r_invalid):
-        msg = (
-            f'L-moment bound violated by the L-moment ratios with '
-            f'r={list(r_invalid)}. '
-            f'This can be caused by numerical underflow / overflow: '
-            f'Consider lowering `k` or `trim`, or use a wider dtype.'
-        )
-        raise ArithmeticError(msg)
-
-    # See Hosking (2007)
-    c = l_k * r * (1 + r0 / (r + s + t))
-
-    # Extrapolation weights, normalized to `sum(w) == 1``, using the fact that:
-    # `sum(ln(i) for i in range(N)) == ln(prod(range(N))) == ln(N!)`
-    w = np.log(r) / lgamma(_k + 1)
-
-    # embed the "cumsum" so that `cw @ a` is equivalent `w @ cumsum(c * a)`
-    cw = w @ np.tril(c)
-
-    # 2x-1 for "shifting" the polynomial
-    # sh = npp.Polynomial([-1, 2], domain=[0, 1], window=[0, 1], symbol='q')
-    # return ppf
-    return _poly.jacobi_series(cw, t, s, domain=[0, 1], symbol='q')

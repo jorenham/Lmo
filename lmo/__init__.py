@@ -24,13 +24,13 @@ __all__ = (
     'l_coskew',
     'l_cokurtosis',
 
-    'estimate_ppf',
+    'l_rv',
 )
 
 from typing import Final as _Final
 
+from ._distns import l_rv
 from ._lm import (
-    estimate_ppf,
     l_kurtosis,
     l_loc,
     l_moment,
