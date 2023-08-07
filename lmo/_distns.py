@@ -2,30 +2,22 @@
 
 __all__ = ('l_rv',)
 
+import functools
+import warnings
 from collections.abc import Mapping
 from typing import Any, Final, TypeVar, cast
 
 import numpy as np
+import numpy.polynomial as npp
 import numpy.typing as npt
 from scipy.stats.distributions import rv_continuous  # type: ignore
 
 from . import _poly as pu
 from ._utils import clean_trim
 from .diagnostic import l_ratio_bounds
-from .typing import AnyTrim, PolySeries
+from .typing import AnyTrim, FloatVector, PolySeries
 
 T = TypeVar('T', bound=np.floating[Any])
-
-
-def _ppf_poly_series(
-    l_r: npt.NDArray[np.floating[Any]],
-    s: float,
-    t: float,
-) -> PolySeries:
-    r0 = np.arange(len(l_r), dtype=np.int_)
-    c = l_r * r0 * (2 * r0 + s + t + 1) / (r0 + s + t)
-
-    return pu.jacobi_series(c, t, s, domain=[0, 1], symbol='q')
 
 
 def _check_lmoments(l_r: npt.NDArray[np.floating[Any]], s: float, t: float):
@@ -46,6 +38,27 @@ def _check_lmoments(l_r: npt.NDArray[np.floating[Any]], s: float, t: float):
         )
         raise ArithmeticError(msg)
 
+
+def _ppf_poly_series(
+    l_r: npt.NDArray[np.floating[Any]],
+    s: float,
+    t: float,
+) -> PolySeries:
+    r0 = np.arange(len(l_r), dtype=np.int_)
+
+    c = 2 * r0 + 1
+    if s or t:
+        c = (c + s + t) * r0 / (r0 + s + t)
+
+    return pu.jacobi_series(
+        c * l_r,
+        t,
+        s,
+        domain=[0, 1],
+        # convert to Legendre, even if trimmed; this avoids huge coeficient
+        kind=npp.Legendre,
+        symbol='q',
+    )
 
 
 class l_rv(rv_continuous):  # noqa: N801
@@ -78,112 +91,86 @@ class l_rv(rv_continuous):  # noqa: N801
     $$
     """
 
-    a: Final[float]
-    b: Final[float]
-
+    _lm: Final[npt.NDArray[np.floating[Any]]]
     _trim: Final[tuple[int, int] | tuple[float, float]]
+
+    _ppf_poly: Final[PolySeries]
+    _isf_poly: Final[PolySeries]
+
+    a: float
+    b: float
+    badvalue: float = np.nan
 
     def __init__(
         self,
-        l_moments: npt.ArrayLike,
+        l_moments: FloatVector,
         trim: AnyTrim = (0, 0),
-        *,
-        deg_cdf: int | None = None,
-        q_size: int = 200,
-        q_alpha: float = .3,
-        q_beta: float = .3,
-        **kwargs: Any,
+        a: float = -np.inf,
+        b: float = np.inf,
     ) -> None:
         r"""
-        Parameters:
-            l_moments: Array-like with the first L-moments, with order
-                $r = 1, 2, ..., R$.
-            trim: The left ($s$) and right ($t$) trim lengths of `l_moments`.
+        Args:
+            l_moments:
+                Vector containing the first $R$ consecutive L-moments
+                $\left[
+                \lambda^{(s, t)}_1 \;
+                \lambda^{(s, t)}_2 \;
+                \dots \;
+                \lambda^{(s, t)}_R
+                \right]$, where $R \ge 2$.
 
-        Other Parameters:
-            deg_cdf: The degree of the CDF polynomial. Defaults to $R-1$
-            q_size: The amount of quantiles per degree to fit the CDF with.
-                Defaults to 200.
-            q_alpha: Percentile-point parameter for fitting the CDF.
-                Defaults to 0.3
-            q_beta: Percentile-point parameter for fitting the CDF.
-                Defaults to 0.3
+                Sample L-moments can be estimated using e.g.
+                `lmo.l_moment(x, np.mgrid[:R] + 1, trim=(s, t))`.
+
+                The trim-lengths $(s, t)$ should be the same for all
+                L-moments.
+            trim:
+                The left and right trim-lengths $(s, t)$, that correspond
+                to the provided `l_moments`.
+            a:
+                Lower bound of the support of the distribution.
+                By default it is estimated from the L-moments.
+            b:
+                Upper bound of the support of the distribution.
+                By default it is estimated from the L-moments.
+
+        Raises:
+            ValueError: If `len(l_moments) < 2`, `l_moments.ndim != 1`, or
+                there are invalid L-moments / trim-lengths.
+
         """
-        self._init_params = {
-            'l_moments': l_moments,
-            'trim': trim,
-            'deg_cdf': deg_cdf,
-            'q_size': q_size,
-            'q_alpha': q_alpha,
-            'q_beta': q_beta,
-        }
-
-        self._lm0 = l_r = np.asarray_chkfinite(l_moments, np.float_)
+        l_r = np.asarray_chkfinite(l_moments)
         l_r.setflags(write=False)
-
-        if l_r.ndim != 1 and (l_r := l_r.squeeze()).ndim != 1:
-            msg = f'l_moments must be 1-D, but its shape is {l_r.shape}'
-            raise ValueError(msg)
-        if l_r[1] <= 0:
-            msg = f'the l-scale (at index 1) must be positive, got {l_r[1]}'
-            raise ValueError(msg)
 
         self._trim = (s, t) = clean_trim(trim)
 
-        self._lm = l_r = np.trim_zeros(l_r * (np.abs(l_r) > 1e-13), 'b')
-        n = len(l_r)
-
         _check_lmoments(l_r, s, t)
+        self._lm = l_r
 
-        self._ppf_poly = _ppf = _ppf_poly_series(l_r, s, t)
 
-        # empirical percentile points / plotting positions
-        q = (
-            (np.arange(q_size * n) + 1 - q_alpha)
-            / (q_size * n + 1 - q_alpha - q_beta)
-        )
-        # mean-square-convergence sample weights (cheat a bit by using the
-        # unstretched, to prevent streched values from getting 0 weight)
-        w = self._weights(q)
-        # generate samples
-        x = self._ppf_poly(q)
+        # quantile function (inverse of cdf)
+        ppf = _ppf_poly_series(l_r, s, t)
+        tol = np.finfo(ppf.coef.dtype).eps
+        self._ppf_poly = ppf = ppf.trim(tol)
 
-        # weighted least-squares fit, using the same basis as the ppf
-        deg = deg_cdf or _ppf.degree()
-        self._cdf_poly = _cdf = _ppf.fit(x, q, deg, None, w=w)
+        # inverse survival function
+        self._isf_poly = ppf(1 - ppf.identity(domain=[0, 1])).trim(tol)
 
-        # pdf(x) = cdf'(x)
-        self._pdf_poly = _pdf = _cdf.deriv(1)
-
-        # figure out the support; the roots at 0 and 1, that are closest to
-        # the left and right from the median, respectively
-        med = _ppf(.5)
-        a = np.r_[-np.inf, (_x0 := pu.roots(_cdf))[_x0 < med]][-1]
-        b = np.r_[(_x1 := pu.roots(_cdf) - 1)[_x1 > med], np.inf][0]
-        self.a, self.b = a, b
-
-        # find the max of the pdf (the mode/modal values)
-        _xs_max = (_m := pu.maxima(_pdf))[(_m > a) & (_m < b)]
-        _fs_max = _pdf(_xs_max)
-        self._mode = _xs_max[_fs_max == np.max(_fs_max)]
-        self._fmax = np.max(_fs_max)
-
-        # survival function: 1 - cdf(x)
-        self._sf_poly = 1 - _ppf
-        # inverse survival function: isf(q) = ppf(1 - q)
-        self._isf_poly = _ppf(1 - _ppf.identity(domain=[0, 1]))
+        # empirical support
+        q0, q1 = ppf(np.array([0, 1]))
+        assert q0 < q1, (q0, q1)
 
         super().__init__(  # type: ignore [reportUnknownMemberType]
             momtype=1,
-            a=a,
-            b=b,
-            **kwargs,
+            a=max(a, q0),
+            b=min(b, q1),
+            name='l_nonparametric',
         )
 
     @property
     def l_moments(self) -> npt.NDArray[np.float_]:
         r"""Initial L-moments, for orders $r = 1, 2, \dots, R$."""
-        return self._lm0
+        return self._lm
 
     @property
     def trim(self) -> tuple[int, int] | tuple[float, float]:
@@ -191,19 +178,37 @@ class l_rv(rv_continuous):  # noqa: N801
         return self._trim
 
     @property
-    def pdf_poly(self) -> PolySeries:
-        """Probability Density Function (PDF) polynomial."""
-        return self._pdf_poly
-
-    @property
-    def cdf_poly(self) -> PolySeries:
-        """Cumulative Density Function (CDF) polynomial."""
-        return self._cdf_poly
-
-    @property
     def ppf_poly(self) -> PolySeries:
-        """Percent point function (PPF) polynomial."""
+        r"""
+        Polynomial estimate of the percent point function (PPF), a.k.a.
+        the quantile function (QF), or the inverse cumulative distribution
+        function (ICDF).
+
+        Note:
+            Converges to the "true" PPF in the mean-squared sense, with
+            weight function $q^s (1 - q)^t$ of quantile $q \in \[0, 1\]$,
+            and trim-lengths $(t_1, t_2) \in \mathbb{R^+} \times \mathbb{R^+}$.
+
+        Returns:
+            A [`numpy.polynomial.Legendre`][numpy.polynomial.legendre.Legendre]
+                orthogonal polynomial series instance.
+        """
         return self._ppf_poly
+
+    @functools.cached_property
+    def pdf_poly(self) -> PolySeries:
+        """
+        Lazily fitted polynomial estimate of the PDF, using inverse sampling.
+
+        Returns:
+            A [`numpy.polynomial.Legendre`][numpy.polynomial.legendre.Legendre]
+                orthogonal polynomial series instance.
+        """
+        ppf = self._ppf_poly
+        x = np.linspace(self.a, self.b, ppf.degree() * 10)
+        q = self.cdf(x)  # type: ignore
+
+        return ppf.fit(x, q, ppf.degree()).deriv()
 
     def _weights(self, q: npt.ArrayLike) -> npt.NDArray[np.float_]:
         _q = np.asarray(q, np.float_)
@@ -211,29 +216,8 @@ class l_rv(rv_continuous):  # noqa: N801
         return np.where(
             (_q >= 0) & (_q <= 1),
             _q ** s * (1 - _q) ** t,
-            cast(float, self.badvalue),  # type: ignore
+            cast(float, getattr(self, 'badvalue', np.nan)),  # type: ignore
         )
-
-    def _pdf(self, x: npt.NDArray[Any]) -> npt.NDArray[np.float_]:
-        return np.where(
-            (x > self.a) & (x < self.b),
-            np.clip(self._pdf_poly(x), 0, self._fmax),
-            0,
-        )[()]
-
-    def _cdf(self, x: npt.NDArray[Any]) -> npt.NDArray[np.float_]:
-        return np.where(
-            (x > self.a) & (x < self.b),
-            np.clip(self._cdf_poly(x), 0, 1),
-            0,
-        )[()]
-
-    def _sf(self, x: npt.NDArray[Any]) -> npt.NDArray[np.float_]:
-        return np.where(
-            (x > self.a) & (x < self.b),
-            np.clip(self._sf_poly(x), 0, 1),
-            0,
-        )[()]
 
     def _ppf(self, q: npt.NDArray[np.float_]) -> npt.NDArray[np.float_]:
         return cast(npt.NDArray[np.float_], self._ppf_poly(q))
@@ -241,11 +225,39 @@ class l_rv(rv_continuous):  # noqa: N801
     def _isf(self, q: npt.NDArray[np.float_]) -> npt.NDArray[np.float_]:
         return cast(npt.NDArray[np.float_], self._isf_poly(q))
 
+    def _cdf_single(self, x: float) -> float:
+        # find all q where Q(q) == x
+        q0 = pu.roots(self._ppf_poly - x)
+
+        if (n := len(q0)) == 0:
+            return self.badvalue
+        if n > 1:
+            warnings.warn(
+                f'multiple fixed points at {x=}: {list(q0)}',
+                stacklevel=3,
+            )
+
+            if np.ptp(q0) <= 1/4:
+                # "close enough" if within the same quartile;
+                # probability-weighted interpolation
+                return np.average(q0, weights=q0 * (1 - q0))  # type: ignore
+
+            return self.badvalue
+
+        return q0[0]
+
+    def _pdf(self, x: npt.NDArray[np.float_]) -> npt.NDArray[np.float_]:
+        return cast(npt.NDArray[np.float_], self.pdf_poly(x))
+
     def _munp(self, n: int):
+        # non-central product-moment $E[X^n]$
         return (self._ppf_poly**n).integ(lbnd=0)(1)
 
     def _updated_ctor_param(self) -> Mapping[str, Any]:
         return cast(
             Mapping[str, Any],
-            super()._updated_ctor_param() | self._init_params,
+            super()._updated_ctor_param() | {
+                'l_moments': self._lm,
+                'trim': self._trim,
+            },
         )
