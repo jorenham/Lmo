@@ -16,16 +16,16 @@ __all__ = (
     'maxima',
 )
 
-from typing import Any, TypeVar
+from typing import Any, TypeVar, cast
 
 import numpy as np
 import numpy.polynomial as npp
 import numpy.typing as npt
 import scipy.special as scs  # type: ignore
 
-from .typing import PolySeries
+from .typing import FloatVector, PolySeries
 
-T = TypeVar('T', bound=np.floating[Any] | np.object_)
+P = TypeVar('P', bound=PolySeries)
 
 
 def _jacobi_coefs(n: int, a: float, b: float) -> npt.NDArray[np.float_]:
@@ -39,8 +39,8 @@ def jacobi(
     /,
     a: float,
     b: float,
-    domain: npt.ArrayLike = (-1, 1),
-    window: npt.ArrayLike = (-1, 1),
+    domain: FloatVector = (-1, 1),
+    window: FloatVector = (-1, 1),
     symbol: str = 'x',
 ) -> npp.Polynomial:
     return npp.Polynomial(_jacobi_coefs(n, a, b), domain, window, symbol)
@@ -52,10 +52,11 @@ def jacobi_series(
     a: float,
     b: float,
     *,
-    domain: npt.ArrayLike = (-1, 1),
-    window: npt.ArrayLike = (-1, 1),
+    domain: FloatVector = (-1, 1),
+    kind: type[P] | None = None,
+    window: FloatVector = (-1, 1),
     symbol: str = 'x',
-) -> npp.Polynomial | npp.Legendre:
+) -> P | npp.Polynomial | npp.Legendre:
     r"""
     Construct a polynomial from the weighted sum of shifted Jacobi
     polynomials.
@@ -71,14 +72,23 @@ def jacobi_series(
         msg = 'coefs must be 1-D'
         raise ValueError(msg)
 
+    kwargs = {'domain': domain, 'window': window}
     if a == b == 0:
-        return npp.Legendre(w, domain=domain, window=window, symbol=symbol)
+        p = npp.Legendre(w, symbol=symbol, **kwargs)
+    else:
+        n = len(w)
+        p = cast(
+            npp.Polynomial,
+            sum(
+                w[r] * jacobi(r, a, b, symbol=symbol, **kwargs)
+                for r in range(n) if abs(w[r]) > 1e-13
+            ),
+        )
 
-    n = len(w)
-    return sum(
-        w[r] * jacobi(r, a, b, domain=domain, window=window, symbol=symbol)
-        for r in range(n) if abs(w[r]) > 1e-13
-    ) # type: ignore
+    if kind and not isinstance(p, kind):
+        return cast(PolySeries, p).convert(kind=kind, **kwargs)
+
+    return p
 
 
 def roots(
