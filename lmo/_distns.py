@@ -150,11 +150,11 @@ class l_rv(rv_continuous):  # noqa: N801
 
         # quantile function (inverse of cdf)
         ppf = _ppf_poly_series(l_r, s, t)
-        tol = np.finfo(ppf.coef.dtype).eps
-        self._ppf_poly = ppf = ppf.trim(tol)
+        self._tol = np.finfo(ppf.coef.dtype).eps
+        self._ppf_poly = ppf = ppf.trim(self._tol)
 
         # inverse survival function
-        self._isf_poly = ppf(1 - ppf.identity(domain=[0, 1])).trim(tol)
+        self._isf_poly = ppf(1 - ppf.identity(domain=[0, 1])).trim(self._tol)
 
         # empirical support
         q0, q1 = ppf(np.array([0, 1]))
@@ -196,19 +196,61 @@ class l_rv(rv_continuous):  # noqa: N801
         return self._ppf_poly
 
     @functools.cached_property
-    def pdf_poly(self) -> PolySeries:
+    def cdf_poly(self) -> PolySeries:
         """
-        Lazily fitted polynomial estimate of the PDF, using inverse sampling.
+        Polynomial least-squares interpolation of the CDF.
 
         Returns:
             A [`numpy.polynomial.Legendre`][numpy.polynomial.legendre.Legendre]
                 orthogonal polynomial series instance.
         """
         ppf = self._ppf_poly
-        x = np.linspace(self.a, self.b, ppf.degree() * 10)
-        q = self.cdf(x)  # type: ignore
+        # number of variables of the PPF poly
+        k0 = ppf.degree() + 1
+        assert k0 > 1
 
-        return ppf.fit(x, q, ppf.degree()).deriv()
+        n = max(100, k0 * 10)
+        x = np.linspace(self.a, self.b, n)
+        q = cast(npt.NDArray[np.float_], self.cdf(x))  # type: ignore
+        y = ppf.deriv()(q)
+        w = np.sqrt(self._weights(q) + 0.01)
+
+        # choose the polynomial that minimizes the BIC
+        bic_min = np.inf
+        cdf_best = None
+        for k in range(max(k0 // 2, 2), k0 + max(k0 // 2, 8)):
+            # fit
+            cdf = ppf.fit(x, q, k - 1).trim(self._tol)
+            k = cdf.degree() + 1
+
+            # according to the inverse function theorem, this should be 0
+            eps = 1 / cdf.deriv()(x) - y
+
+            # Bayesian information criterion (BIC)
+            bic = (
+                (k - 1) * np.log(n)
+                + n * np.log(np.average(eps**2, weights=w))
+            )
+
+            # minimize the BIC
+            if bic < bic_min:
+                bic_min = bic
+                cdf_best = cdf
+
+        assert cdf_best is not None
+        return cdf_best
+
+    @functools.cached_property
+    def pdf_poly(self) -> PolySeries:
+        """
+        Derivative of the polynomial interpolation of the CDF, i.e. the
+        polynomial estimate of the PDF.
+
+        Returns:
+            A [`numpy.polynomial.Legendre`][numpy.polynomial.legendre.Legendre]
+                orthogonal polynomial series instance.
+        """
+        return self.cdf_poly.deriv()
 
     def _weights(self, q: npt.ArrayLike) -> npt.NDArray[np.float_]:
         _q = np.asarray(q, np.float_)
@@ -233,7 +275,8 @@ class l_rv(rv_continuous):  # noqa: N801
             return self.badvalue
         if n > 1:
             warnings.warn(
-                f'multiple fixed points at {x=}: {list(q0)}',
+                f'multiple fixed points at {x = :.6f}: '
+                f'{list(np.round(q0, 6))}',
                 stacklevel=3,
             )
 
@@ -247,7 +290,7 @@ class l_rv(rv_continuous):  # noqa: N801
         return q0[0]
 
     def _pdf(self, x: npt.NDArray[np.float_]) -> npt.NDArray[np.float_]:
-        return cast(npt.NDArray[np.float_], self.pdf_poly(x))
+        return np.clip(cast(npt.NDArray[np.float_], self.pdf_poly(x)), 0, 1)
 
     def _munp(self, n: int):
         # non-central product-moment $E[X^n]$
