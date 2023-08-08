@@ -171,16 +171,16 @@ def isrealclose(
 
 
 def clean_order(
-    order: SupportsIndex,
+    r: SupportsIndex,
     /,
     name: str = 'r',
-    strict: bool = False,
+    rmin: SupportsIndex = 0,
 ) -> int:
-    if (r := order.__index__()) < (r0 := int(strict)):
-        msg = f'expected {name} >= {r0}, got {r}'
+    if (_r := r.__index__()) < (_rmin := r.__index__()):
+        msg = f'expected {name} >= {_rmin}, got {_r}'
         raise TypeError(msg)
 
-    return r
+    return _r
 
 def clean_trim(trim: AnyTrim) -> tuple[int, int] | tuple[float, float]:
     _trim = np.asarray_chkfinite(trim)

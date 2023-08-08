@@ -56,7 +56,7 @@ def jacobi_series(
     kind: type[P] | None = None,
     window: FloatVector = (-1, 1),
     symbol: str = 'x',
-) -> P | npp.Polynomial | npp.Legendre:
+) -> P:
     r"""
     Construct a polynomial from the weighted sum of shifted Jacobi
     polynomials.
@@ -72,23 +72,19 @@ def jacobi_series(
         msg = 'coefs must be 1-D'
         raise ValueError(msg)
 
-    kwargs = {'domain': domain, 'window': window}
-    if a == b == 0:
-        p = npp.Legendre(w, symbol=symbol, **kwargs)
-    else:
-        n = len(w)
-        p = cast(
-            npp.Polynomial,
-            sum(
-                w[r] * jacobi(r, a, b, symbol=symbol, **kwargs)
-                for r in range(n) if abs(w[r]) > 1e-13
-            ),
-        )
+    # if a == b == 0:
+    #     p = npp.Legendre(w, symbol=symbol, **kwargs)
+    # else:
+    n = len(w)
+    p = cast(
+        PolySeries,
+        sum(
+            w[r] * jacobi(r, a, b, domain=domain, symbol=symbol, window=window)
+            for r in range(n)
+        ),
+    )
 
-    if kind and not isinstance(p, kind):
-        return cast(PolySeries, p).convert(kind=kind, **kwargs)
-
-    return p
+    return cast(P, p.convert(domain=domain, kind=kind, window=window))
 
 
 def roots(

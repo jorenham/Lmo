@@ -3,9 +3,10 @@
 __all__ = ('l_rv',)
 
 import functools
+import math
 import warnings
 from collections.abc import Mapping
-from typing import Any, Final, TypeVar, cast
+from typing import Any, Final, SupportsIndex, TypeVar, cast
 
 import numpy as np
 import numpy.polynomial as npp
@@ -13,17 +14,22 @@ import numpy.typing as npt
 from scipy.stats.distributions import rv_continuous  # type: ignore
 
 from . import _poly as pu
-from ._utils import clean_trim
+from ._lm import l_moment
+from ._utils import clean_order, clean_trim
 from .diagnostic import l_ratio_bounds
 from .typing import AnyTrim, FloatVector, PolySeries
 
-T = TypeVar('T', bound=np.floating[Any])
+X = TypeVar('X', bound='l_rv')
+F = TypeVar('F', bound=np.floating[Any])
+
 
 
 def _check_lmoments(l_r: npt.NDArray[np.floating[Any]], s: float, t: float):
     if (n := len(l_r)) < 2:
         msg = f'at least 2 L-moments required, got {n}'
         raise ValueError(msg)
+    if n == 2:
+        return
 
     r = np.arange(1, n + 1, dtype=np.int_)
     t_r = l_r[2:] / l_r[1]
@@ -44,11 +50,10 @@ def _ppf_poly_series(
     s: float,
     t: float,
 ) -> PolySeries:
-    r0 = np.arange(len(l_r), dtype=np.int_)
-
-    c = 2 * r0 + 1
-    if s or t:
-        c = (c + s + t) * r0 / (r0 + s + t)
+    # Corrected version of Theorem 3. from Hosking (2007).
+    #
+    r = np.arange(1, len(l_r) + 1)
+    c = (s + t - 1 + 2 * r) * r / (s + t + r)
 
     return pu.jacobi_series(
         c * l_r,
@@ -67,28 +72,31 @@ class l_rv(rv_continuous):  # noqa: N801
     See [`scipy.stats.rv_continuous`][scipy.stats.rv_continuous] for the
     available method.
 
-    The PPF (quantile function) is estimated using an exactly defined
-    (Jacobi) polynomial series. The CDF is also a polynomial, but is estimated
-    using inverse regression on the PPF.
+    The PPF (quantile function) is estimated using generalized Fourier series,
+    with the (shifted) Jacobi orthogonal polynomials as basis, and the (scaled)
+    L-moments as coefficients.
 
-    Hosking showed in 2007 that
+    The *corrected* version of theorem 3 from Hosking (2007) states that
 
     $$
     \hat{Q}(q) = \sum_{r=1}^{R}
-        \frac{(r - 1) (2r + s + t - 1)}{r + s + t - 1}
+        \frac{(r + 1) (2r + s + t - 1)}{r + s + t + 1}
         \lambda^{(s, t)}_r
-        P^{(t, s)}_{r - 1}(2u - 1)
+        P^{(t, s)}_{r - 1}(2u - 1) \; ,
     $$
 
-    converges to the quantile function $Q(q)$ in the weighted mean-squared
-    sense:
+    converges almost everywhere as $R \rightarrow \infty$, for any
+    sufficiently smooth (quantile) function $Q(u)$ with $0 < u < 1$.
 
-    $$
-    \lim_{R \rightarrow \infty}
-    \int_0^1 u^s (1-u)^t
-    \Big( \hat{Q}(q) - Q(u) \Big)^2 du
-    = 0
-    $$
+    References:
+        - [J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
+            L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
+        - [Wolfram Research - Jacobi polynomial Fourier Expansion](
+            http://functions.wolfram.com/05.06.25.0007.01)
+
+    See Also:
+        - [Generalized Fourier series - Wikipedia](
+            https://wikipedia.org/wiki/Generalized_Fourier_series)
     """
 
     _lm: Final[npt.NDArray[np.floating[Any]]]
@@ -107,6 +115,7 @@ class l_rv(rv_continuous):  # noqa: N801
         trim: AnyTrim = (0, 0),
         a: float = -np.inf,
         b: float = np.inf,
+        **kwargs: Any,
     ) -> None:
         r"""
         Args:
@@ -133,11 +142,12 @@ class l_rv(rv_continuous):  # noqa: N801
             b:
                 Upper bound of the support of the distribution.
                 By default it is estimated from the L-moments.
+            **kwargs:
+                Optional params for `scipy.stats.rv_continuous`.
 
         Raises:
             ValueError: If `len(l_moments) < 2`, `l_moments.ndim != 1`, or
                 there are invalid L-moments / trim-lengths.
-
         """
         l_r = np.asarray_chkfinite(l_moments)
         l_r.setflags(write=False)
@@ -146,7 +156,6 @@ class l_rv(rv_continuous):  # noqa: N801
 
         _check_lmoments(l_r, s, t)
         self._lm = l_r
-
 
         # quantile function (inverse of cdf)
         ppf = _ppf_poly_series(l_r, s, t)
@@ -160,11 +169,11 @@ class l_rv(rv_continuous):  # noqa: N801
         q0, q1 = ppf(np.array([0, 1]))
         assert q0 < q1, (q0, q1)
 
+        kwargs.setdefault('momtype', 1)
         super().__init__(  # type: ignore [reportUnknownMemberType]
-            momtype=1,
             a=max(a, q0),
             b=min(b, q1),
-            name='l_nonparametric',
+            **kwargs,
         )
 
     @property
@@ -304,3 +313,53 @@ class l_rv(rv_continuous):  # noqa: N801
                 'trim': self._trim,
             },
         )
+
+    @classmethod
+    def fit(
+        cls,
+        data: npt.ArrayLike,
+        /,
+        rmax: SupportsIndex | None = None,
+        trim: AnyTrim = (0, 0),
+    ) -> 'l_rv':
+        r"""
+        Estimate L-moment from the samples, and return a new `l_rv` instance.
+
+        Args:
+            data:
+                1d array-like with univariate sample observations.
+            rmax:
+                The (maximum) amount of L-moment orders to use.
+                Defaults to $\lceil 4 \log_{10} N \rceil$.
+                The quantile polynomial will be of degree `rmax - 1`.
+            trim:
+                The left and right trim-lengths $(s, t)$, that correspond
+                to the provided `l_moments`.
+
+        Returns:
+            A fitted [`l_rv`][lmo.l_rv] instance.
+
+        Todo:
+            - Optimal `trim` selection
+        """
+        # x needs to be sorted anyway
+        x: npt.NDArray[np.floating[Any]] = np.sort(data)
+
+        a, b = x[[0, 1]]
+
+        if rmax is None:
+            _rmax = math.ceil(np.log10(x.size) * 4)
+        else:
+            _rmax = clean_order(rmax, name='rmax', rmin=2)
+
+        _trim = clean_trim(trim)
+
+        # sort kind 'stable' if already sorted
+        l_r = l_moment(
+            x,
+            np.arange(1, _rmax + 1),
+            trim=_trim,
+            sort='stable',  # stable sort if fastest if already sorted
+        )
+
+        return cls(l_r, trim=_trim, a=a, b=b)
