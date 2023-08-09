@@ -19,7 +19,7 @@
         <link rel="next" href="api/">
       
       <link rel="icon" href="img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.19">
+      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.1.21">
     
     
       
@@ -261,6 +261,20 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#quick-example" class="md-nav__link">
+    Quick example
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#roadmap" class="md-nav__link">
+    Roadmap:
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#installation" class="md-nav__link">
     Installation
   </a>
@@ -353,6 +367,20 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#quick-example" class="md-nav__link">
+    Quick example
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#roadmap" class="md-nav__link">
+    Roadmap:
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#installation" class="md-nav__link">
     Installation
   </a>
@@ -410,12 +438,29 @@ Uniform or multi-dimensional, Lmo can summarize it all with one quick glance!
 </code></pre></div>
 <p>Unlike the legacy <a href="https://wikipedia.org/wiki/Moment_(mathematics)">moments</a>,
 <a href="https://wikipedia.org/wiki/L-moment">L-moments</a> <strong>uniquely describe</strong> a 
-probability distribution.
+probability distribution, and are more robust and efficient.
 The "L" stands for Linear; it is a linear combination of order statistics.
 So Lmo is as fast as sorting your samples (in terms of time-complexity).</p>
-<p>Even if your data is pathological like <a href="https://wikipedia.org/wiki/Cauchy_distribution">Cauchy</a>, 
-and the L-moments are not defined, the trimmed L-moments (TL-moments) can be 
-used instead:</p>
+<h2 id="key-features">Key Features:</h2>
+<ul>
+<li>Calculates trimmed L-moments and L-<em>co</em>moments, from data or a distribution
+  function.</li>
+<li>Complete support for trimmed L-moment (TL-moments): 
+  <code>lmo.l_moment(..., trim=(1 / 137, 3.1416))</code>.</li>
+<li>Fast estimation of L-<em>co</em>moment matrices from your multidimensional data.</li>
+<li>A fully non-parametric <code>scipy.stats</code>-like distribution, <code>lmo.l_rv</code>.
+  It's very efficient, robust, fast, and requires only some L-mo's!</li>
+<li>Exact (co)variance structure of the L-moment estimates.</li>
+<li>Complete <a href="https://jorenham.github.io/lmo/">docs</a>, including overly 
+  complex <span class="arithmatex">\(\TeX\)</span> spaghetti equations.</li>
+<li>Clean Pythonic syntax for ease of use.</li>
+<li>Vectorized functions for very fast fitting.</li>
+<li>Fully typed, tested, and tickled.</li>
+</ul>
+<h2 id="quick-example">Quick example</h2>
+<p>Even if your data is pathological like 
+<a href="https://wikipedia.org/wiki/Cauchy_distribution">Cauchy</a>, and the L-moments 
+are not defined, the trimmed L-moments (TL-moments) can be used instead:</p>
 <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">lmo</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">1980</span><span class="p">)</span>
@@ -429,19 +474,21 @@ used instead:</p>
 Cauchy distribution are <span class="arithmatex">\(\lambda^{(1, 1)}_{1} = 0\)</span> and 
 <span class="arithmatex">\(\lambda^{(1, 1)}_2 \approx 0.7\)</span> 
 (<a href="https://doi.org/10.1016/S0167-9473(02)00250-5">Elamir &amp; Seheult, 2003</a>).</p>
-<h2 id="key-features">Key Features:</h2>
-<ul>
-<li>Calculates trimmed L-moments and L-<em>co</em>moments, from data and distributions.</li>
-<li>Exact non-parametric variance structure of the sample estimates.</li>
-<li>Coming soon: ~Robust distribution fitting; the method of L-moments~.</li>
-<li>Complete <a href="https://jorenham.github.io/lmo/">docs</a>, including overly 
-  complex <span class="arithmatex">\(\TeX\)</span> spaghetti equations.</li>
-<li>Clean Pythonic syntax for ease of use.</li>
-<li>Vectorized functions for very fast fitting.</li>
-<li>Fully typed, tested, and tickled.</li>
-</ul>
 <hr />
-<p>See the <a href="https://jorenham.github.io/lmo/">documentation</a> for usage examples and code reference.</p>
+<p>See the <a href="https://jorenham.github.io/lmo/">documentation</a> for more examples and
+the API reference.</p>
+<h2 id="roadmap">Roadmap:</h2>
+<ul>
+<li>Add methods to all <code>scipy.stats</code> univariate distributions, for finding 
+  the theoretical/population L-mo's.</li>
+<li>Robust distribution fitting, using the (generalized) method of L-moments.</li>
+<li>Theoretical L-moment variance structure calculation.</li>
+<li>A generic goodness-of-fit test.</li>
+<li>Automatic trim-length selection.</li>
+<li>Plotting utilities (deps optional), e.g. for L-moment ratio diagrams.</li>
+<li>Extended multivariate support, e.g. theoretical L-comoments, and 
+  L-regression.</li>
+</ul>
 <h2 id="installation">Installation</h2>
 <p>Lmo is on <a href="https://pypi.org/project/lmo/">PyPI</a>, so you can do something like:</p>
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>lmo
@@ -467,9 +514,6 @@ Cauchy distribution are <span class="arithmatex">\(\lambda^{(1, 1)}_{1} = 0\)</s
   L-moments: L-comoment matrices</a></li>
 <li><a href="https://hdl.handle.net/2346/ETD-TTU-2011-05-1319"><em>W.H. Asquith</em> (2011) &ndash; Univariate Distributional Analysis with 
   L-moment Statistics</a></li>
-<li><a href="https://doi.org/10.1080/03610926.2015.1073313"><em>C. Dutang</em> (2017) &ndash; Theoretical L-moments and TL-moments Using
-  Combinatorial Identities and Finite Operators
-  </a></li>
 </ul>
 <!-- END INCLUDE -->
 

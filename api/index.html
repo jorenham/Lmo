@@ -21,7 +21,7 @@
         <link rel="next" href="../contributing/">
       
       <link rel="icon" href="../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.19">
+      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.1.21">
     
     
       
@@ -287,6 +287,61 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#lmo.l_rv" class="md-nav__link">
+    l_rv
+  </a>
+  
+    <nav class="md-nav" aria-label="l_rv">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lmo._distns.l_rv.l_moments" class="md-nav__link">
+    l_moments
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo._distns.l_rv.trim" class="md-nav__link">
+    trim
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo._distns.l_rv.ppf_poly" class="md-nav__link">
+    ppf_poly
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo._distns.l_rv.cdf_poly" class="md-nav__link">
+    cdf_poly
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo._distns.l_rv.pdf_poly" class="md-nav__link">
+    pdf_poly
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo._distns.l_rv.fit" class="md-nav__link">
+    fit()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#lmo.l_moment" class="md-nav__link">
     l_moment()
   </a>
@@ -503,6 +558,13 @@
           <li class="md-nav__item">
   <a href="#lmo.diagnostic.normaltest" class="md-nav__link">
     normaltest()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.diagnostic.l_ratio_bounds" class="md-nav__link">
+    l_ratio_bounds()
   </a>
   
 </li>
@@ -719,6 +781,61 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#lmo.l_rv" class="md-nav__link">
+    l_rv
+  </a>
+  
+    <nav class="md-nav" aria-label="l_rv">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lmo._distns.l_rv.l_moments" class="md-nav__link">
+    l_moments
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo._distns.l_rv.trim" class="md-nav__link">
+    trim
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo._distns.l_rv.ppf_poly" class="md-nav__link">
+    ppf_poly
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo._distns.l_rv.cdf_poly" class="md-nav__link">
+    cdf_poly
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo._distns.l_rv.pdf_poly" class="md-nav__link">
+    pdf_poly
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo._distns.l_rv.fit" class="md-nav__link">
+    fit()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#lmo.l_moment" class="md-nav__link">
     l_moment()
   </a>
@@ -939,6 +1056,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#lmo.diagnostic.l_ratio_bounds" class="md-nav__link">
+    l_ratio_bounds()
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1125,6 +1249,526 @@
 
 
 
+<div class="doc doc-object doc-class">
+
+
+
+<h4 id="lmo.l_rv" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_rv</span><span class="p">(</span><span class="n">l_moments</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">a</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+
+</h4>
+
+
+  <div class="doc doc-contents ">
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="scipy.stats.distributions.rv_continuous">rv_continuous</span></code></p>
+
+  
+      <p>Estimate a distribution using the given L-moments.
+See <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.rv_continuous.html#scipy.stats.rv_continuous"><code>scipy.stats.rv_continuous</code></a> for the
+available method.</p>
+<p>The PPF (quantile function) is estimated using generalized Fourier series,
+with the (shifted) Jacobi orthogonal polynomials as basis, and the (scaled)
+L-moments as coefficients.</p>
+<p>The <em>corrected</em> version of theorem 3 from Hosking (2007) states that</p>
+<div class="arithmatex">\[
+\hat{Q}(q) = \sum_{r=1}^{R}
+    \frac{(r + 1) (2r + s + t - 1)}{r + s + t + 1}
+    \lambda^{(s, t)}_r
+    P^{(t, s)}_{r - 1}(2u - 1) \; ,
+\]</div>
+<p>converges almost everywhere as <span class="arithmatex">\(R \rightarrow \infty\)</span>, for any
+sufficiently smooth (quantile) function <span class="arithmatex">\(Q(u)\)</span> with <span class="arithmatex">\(0 &lt; u &lt; 1\)</span>.</p>
+
+<details class="references" open>
+  <summary>References</summary>
+  <ul>
+<li><a href="https://doi.org/10.1016/j.jspi.2006.12.002">J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
+    L-moments</a></li>
+<li><a href="http://functions.wolfram.com/05.06.25.0007.01">Wolfram Research - Jacobi polynomial Fourier Expansion</a></li>
+</ul>
+</details>
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <ul>
+<li><a href="https://wikipedia.org/wiki/Generalized_Fourier_series">Generalized Fourier series - Wikipedia</a></li>
+</ul>
+</details>  
+
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>PARAMETER</b></th>
+        <th><b> DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>l_moments</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Vector containing the first <span class="arithmatex">\(R\)</span> consecutive L-moments
+<span class="arithmatex">\(\left[
+\lambda^{(s, t)}_1 \;
+\lambda^{(s, t)}_2 \;
+\dots \;
+\lambda^{(s, t)}_R
+\right]\)</span>, where <span class="arithmatex">\(R \ge 2\)</span>.</p>
+<p>Sample L-moments can be estimated using e.g.
+<code>lmo.l_moment(x, np.mgrid[:R] + 1, trim=(s, t))</code>.</p>
+<p>The trim-lengths <span class="arithmatex">\((s, t)\)</span> should be the same for all
+L-moments.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><span title="lmo.typing.FloatVector">FloatVector</span></code>
+                </span>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td><code>trim</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>The left and right trim-lengths <span class="arithmatex">\((s, t)\)</span>, that correspond
+to the provided <code>l_moments</code>.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><span title="lmo.typing.AnyTrim">AnyTrim</span></code>
+                </span>
+                <span class="doc-param-default">
+                  <b>DEFAULT:</b> 
+                    <code>(0, 0)</code>
+                </span>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td><code>a</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Lower bound of the support of the distribution.
+By default it is estimated from the L-moments.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code>float | None</code>
+                </span>
+                <span class="doc-param-default">
+                  <b>DEFAULT:</b> 
+                    <code>None</code>
+                </span>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td><code>b</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Upper bound of the support of the distribution.
+By default it is estimated from the L-moments.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code>float | None</code>
+                </span>
+                <span class="doc-param-default">
+                  <b>DEFAULT:</b> 
+                    <code>None</code>
+                </span>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td><code>**kwargs</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Optional params for <code>scipy.stats.rv_continuous</code>.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><span title="typing.Any">Any</span></code>
+                </span>
+                <span class="doc-param-default">
+                  <b>DEFAULT:</b> 
+                    <code>{}</code>
+                </span>
+            </p>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>RAISES</b></th>
+        <th><b>DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+            <span class="doc-raises-annotation">
+                <code>ValueError</code>
+            </span>
+          </td>
+          <td class="doc-raises-details">
+            <div class="doc-md-description">
+              <p>If <code>len(l_moments) &lt; 2</code>, <code>l_moments.ndim != 1</code>, or
+there are invalid L-moments / trim-lengths.</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h5 id="lmo._distns.l_rv.l_moments" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">l_moments</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">]</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Initial L-moments, for orders <span class="arithmatex">\(r = 1, 2, \dots, R\)</span>.</p>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h5 id="lmo._distns.l_rv.trim" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">trim</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>The provided trim-lengths <span class="arithmatex">\((s, t)\)</span>.</p>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h5 id="lmo._distns.l_rv.ppf_poly" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">ppf_poly</span><span class="p">:</span> <span class="n">PolySeries</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Polynomial estimate of the percent point function (PPF), a.k.a.
+the quantile function (QF), or the inverse cumulative distribution
+function (ICDF).</p>
+
+<details class="note" open>
+  <summary>Note</summary>
+  <p>Converges to the "true" PPF in the mean-squared sense, with
+weight function <span class="arithmatex">\(q^s (1 - q)^t\)</span> of quantile <span class="arithmatex">\(q \in \[0, 1\]\)</span>,
+and trim-lengths <span class="arithmatex">\((t_1, t_2) \in \mathbb{R^+} \times \mathbb{R^+}\)</span>.</p>
+</details>
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>RETURNS</b></th>
+        <th><b>DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+              <span class="doc-returns-annotation">
+                  <code><span title="lmo.typing.PolySeries">PolySeries</span></code>
+              </span>
+          </td>
+          <td class="doc-returns-details">
+            <div class="doc-md-description">
+              <p>A <a class="autorefs autorefs-external" href="https://numpy.org/doc/stable/reference/generated/numpy.polynomial.legendre.Legendre.html#numpy.polynomial.legendre.Legendre"><code>numpy.polynomial.Legendre</code></a>
+orthogonal polynomial series instance.</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h5 id="lmo._distns.l_rv.cdf_poly" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">cdf_poly</span><span class="p">:</span> <span class="n">PolySeries</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-cached"><code>cached</code></small>
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Polynomial least-squares interpolation of the CDF.</p>
+
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>RETURNS</b></th>
+        <th><b>DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+              <span class="doc-returns-annotation">
+                  <code><span title="lmo.typing.PolySeries">PolySeries</span></code>
+              </span>
+          </td>
+          <td class="doc-returns-details">
+            <div class="doc-md-description">
+              <p>A <a class="autorefs autorefs-external" href="https://numpy.org/doc/stable/reference/generated/numpy.polynomial.legendre.Legendre.html#numpy.polynomial.legendre.Legendre"><code>numpy.polynomial.Legendre</code></a>
+orthogonal polynomial series instance.</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h5 id="lmo._distns.l_rv.pdf_poly" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">pdf_poly</span><span class="p">:</span> <span class="n">PolySeries</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-cached"><code>cached</code></small>
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Derivative of the polynomial interpolation of the CDF, i.e. the
+polynomial estimate of the PDF.</p>
+
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>RETURNS</b></th>
+        <th><b>DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+              <span class="doc-returns-annotation">
+                  <code><span title="lmo.typing.PolySeries">PolySeries</span></code>
+              </span>
+          </td>
+          <td class="doc-returns-details">
+            <div class="doc-md-description">
+              <p>A <a class="autorefs autorefs-external" href="https://numpy.org/doc/stable/reference/generated/numpy.polynomial.legendre.Legendre.html#numpy.polynomial.legendre.Legendre"><code>numpy.polynomial.Legendre</code></a>
+orthogonal polynomial series instance.</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+  </div>
+
+</div>
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h5 id="lmo._distns.l_rv.fit" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">rmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+</h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Estimate L-moment from the samples, and return a new <code>l_rv</code> instance.</p>
+
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>PARAMETER</b></th>
+        <th><b> DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>data</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>1d array-like with univariate sample observations.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">npt</a>.<span title="numpy.ArrayLike">ArrayLike</span></code>
+                </span>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td><code>rmax</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>The (maximum) amount of L-moment orders to use.
+Defaults to <span class="arithmatex">\(\lceil 4 \log_{10} N \rceil\)</span>.
+The quantile polynomial will be of degree <code>rmax - 1</code>.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><span title="typing.SupportsIndex">SupportsIndex</span> | None</code>
+                </span>
+                <span class="doc-param-default">
+                  <b>DEFAULT:</b> 
+                    <code>None</code>
+                </span>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td><code>trim</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>The left and right trim-lengths <span class="arithmatex">\((s, t)\)</span>, that correspond
+to the provided <code>l_moments</code>.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><span title="lmo.typing.AnyTrim">AnyTrim</span></code>
+                </span>
+                <span class="doc-param-default">
+                  <b>DEFAULT:</b> 
+                    <code>(0, 0)</code>
+                </span>
+            </p>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>RETURNS</b></th>
+        <th><b>DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+              <span class="doc-returns-annotation">
+                  <code><a class="autorefs autorefs-internal" title="lmo._distns.l_rv" href="#lmo.l_rv">l_rv</a></code>
+              </span>
+          </td>
+          <td class="doc-returns-details">
+            <div class="doc-md-description">
+              <p>A fitted <a class="autorefs autorefs-internal" href="#lmo.l_rv"><code>l_rv</code></a> instance.</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+<details class="todo" open>
+  <summary>Todo</summary>
+  <ul>
+<li>Optimal <code>rmax</code> selection (the error appears to be periodic..?)</li>
+<li>Optimal <code>trim</code> selection</li>
+</ul>
+</details>
+  </div>
+
+</div>
+
+
+
+  </div>
+
+  </div>
+
+</div>
+
 
 
 <div class="doc doc-object doc-function">
@@ -1177,7 +1821,7 @@ If <code>a</code> is not an array, a conversion is attempted.</p>
             <p>
                 <span class="doc-param-annotation">
                   <b>TYPE:</b>
-                    <code><span title="lmo.typing.AnyInt">AnyInt</span> | <span title="lmo.typing.IntVector">IntVector</span></code>
+                    <code><span title="lmo.typing.IntVector">IntVector</span> | <span title="lmo.typing.AnyInt">AnyInt</span></code>
                 </span>
             </p>
           </td>
@@ -1365,7 +2009,7 @@ r is a scalar. Otherwise, this is an array with
               <p>
                 <span class="doc-returns-annotation">
                   <b>TYPE:</b>
-                    <code><span title="lmo._lm.T">T</span> | <a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">npt</a>.<span title="numpy.NDArray">NDArray</span>[<span title="lmo._lm.T">T</span>]</code>
+                    <code><a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">npt</a>.<span title="numpy.NDArray">NDArray</span>[<span title="lmo._lm.T">T</span>] | <span title="lmo._lm.T">T</span></code>
                 </span>
               </p>
           </td>
@@ -1383,7 +2027,7 @@ different (symmetric) trim-lengths.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lmo</span><span class="o">.</span><span class="n">l_moment</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
 <span class="go">array([-0.01412282,  0.94063132])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lmo</span><span class="o">.</span><span class="n">l_moment</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>
-<span class="go">array([-0.02158858,  0.57977201])</span>
+<span class="go">array([-0.02158858,  0.5796519 ])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lmo</span><span class="o">.</span><span class="n">l_moment</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
 <span class="go">array([-0.0124483 ,  0.40120115])</span>
 </code></pre></div>
@@ -1490,6 +2134,12 @@ covariance matrix):</p>
 <li><a href="https://doi.org/10.1016/S0167-9473(02)00250-5">E. Elamir &amp; A. Seheult (2003) - Trimmed L-moments</a></li>
 <li><a href="https://doi.org/10.1016/S0378-3758(03)00213-1">E. Elamir &amp; A. Seheult (2004) - Exact variance structure of sample
     L-moments</a></li>
+</ul>
+</details>
+<details class="todo" open>
+  <summary>Todo</summary>
+  <ul>
+<li>Use the direct (Jacobi) method from Hosking (2015).</li>
 </ul>
 </details>
   </div>
@@ -1701,13 +2351,13 @@ are <code>[-1.730, 0.181, 1.070, 0.648]</code>.</p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">lmo</span><span class="o">,</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">)</span><span class="o">.</span><span class="n">standard_cauchy</span><span class="p">(</span><span class="mi">99</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-<span class="go">-7.56485034...</span>
+<span class="go">-7.5648...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lmo</span><span class="o">.</span><span class="n">l_loc</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>  <span class="c1"># no trim; equivalent to the (arithmetic) mean</span>
-<span class="go">-7.56485034...</span>
+<span class="go">-7.5648...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lmo</span><span class="o">.</span><span class="n">l_loc</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>  <span class="c1"># TL-location</span>
-<span class="go">-0.15924180...</span>
+<span class="go">-0.15924...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lmo</span><span class="o">.</span><span class="n">l_loc</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>  <span class="c1"># Fractional trimming (only in Lmo)</span>
-<span class="go">-0.08845121...</span>
+<span class="go">-0.085845...</span>
 </code></pre></div>
 
 <details class="notes" open>
@@ -2102,7 +2752,7 @@ or floats (!).</p>
             <p>
                 <span class="doc-param-annotation">
                   <b>TYPE:</b>
-                    <code>float</code>
+                    <code>int</code>
                 </span>
             </p>
           </td>
@@ -2352,7 +3002,7 @@ or floats (!).</p>
             <p>
                 <span class="doc-param-annotation">
                   <b>TYPE:</b>
-                    <code>float</code>
+                    <code>int</code>
                 </span>
             </p>
           </td>
@@ -3272,6 +3922,143 @@ using L-moments</a></p>
 </div>
 
 
+<div class="doc doc-object doc-function">
+
+
+
+<h4 id="lmo.diagnostic.l_ratio_bounds" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">diagnostic</span><span class="o">.</span><span class="n">l_ratio_bounds</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="o">*</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">)</span></code>
+
+</h4>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Upper bounds on the absolute L-moment ratio's. It is based on the
+bounds introduced by Hosking in 2007, but generalized to allow for
+fractional trimming (i.e. <span class="arithmatex">\((s, t) \in \mathbb{R}^2_+\)</span>), and reformulated
+as a recursive definition.</p>
+<div class="arithmatex">\[
+|\tau_r^{(s, t)}| \le
+    \frac{2}{r} \frac
+    {\Gamma (s \wedge t + 2) \Gamma (s + t + r + 1)}
+    {\Gamma (s \wedge t + r) \Gamma (s + t + 3)}
+\]</div>
+<p>Here, <span class="arithmatex">\(s \wedge t\)</span> denotes the smallest trim-length, i.e. <code>min(s, t)</code>.</p>
+
+<details class="notes" open>
+  <summary>Notes</summary>
+  <p>Without trim (default), the upper bound is <span class="arithmatex">\(1\)</span> for all <span class="arithmatex">\(r \neq 1\)</span>.</p>
+</details>
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>PARAMETER</b></th>
+        <th><b> DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>r</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Order of the L-moment ratio(s), as positive integer scalar or
+array-like.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">npt</a>.<span title="numpy.ArrayLike">ArrayLike</span></code>
+                </span>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td><code>trim</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Tuple of left- and right- trim-lengths, matching those of the
+relevant L-moment ratio's.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code>tuple[float, float]</code>
+                </span>
+                <span class="doc-param-default">
+                  <b>DEFAULT:</b> 
+                    <code>(0, 0)</code>
+                </span>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td><code>dtype</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Floating type to use.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a class="autorefs autorefs-external" title="numpy.dtype" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype">dtype</a>[<span title="lmo.diagnostic.T">T</span>] | type[<span title="lmo.diagnostic.T">T</span>]</code>
+                </span>
+                <span class="doc-param-default">
+                  <b>DEFAULT:</b> 
+                    <code><a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a class="autorefs autorefs-external" title="numpy.float_" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float_">float_</a></code>
+                </span>
+            </p>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>RETURNS</b></th>
+        <th><b>DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+              <span class="doc-returns-annotation">
+                  <code><span title="lmo.diagnostic.T">T</span> | <a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">npt</a>.<span title="numpy.NDArray">NDArray</span>[<span title="lmo.diagnostic.T">T</span>]</code>
+              </span>
+          </td>
+          <td class="doc-returns-details">
+            <div class="doc-md-description">
+              <p>Array or scalar with shape like <span class="arithmatex">\(r\)</span>.</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <ul>
+<li><a class="autorefs autorefs-internal" href="#lmo.l_ratio"><code>l_ratio</code></a></li>
+<li><a class="autorefs autorefs-internal" href="#lmo.l_ratio_se"><code>l_ratio_se</code></a></li>
+</ul>
+</details>
+<details class="references" open>
+  <summary>References</summary>
+  <ul>
+<li><a href="https://doi.org/10.1016/j.jspi.2006.12.002">J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
+L-moments</a></li>
+</ul>
+</details>
+  </div>
+
+</div>
+
+
 
   </div>
 
@@ -3304,7 +4091,7 @@ using L-moments</a></p>
 
 
 <h3 id="lmo.l_weights" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_weights</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="o">*</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">l_weights</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
 
 </h3>
 
@@ -3362,7 +4149,7 @@ observation vector(s) of size <span class="arithmatex">\(n\)</span>), into (an u
               <p>
                 <span class="doc-returns-annotation">
                   <b>TYPE:</b>
-                    <code><a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">npt</a>.<span title="numpy.NDArray">NDArray</span>[<a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a class="autorefs autorefs-external" title="numpy.float_" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float_">float_</a>]</code>
+                    <code><a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">npt</a>.<span title="numpy.NDArray">NDArray</span>[<span title="lmo._lm.T">T</span>]</code>
                 </span>
               </p>
           </td>
@@ -3613,7 +4400,7 @@ L_{ij} =
 
 
 <h4 id="lmo.linalg.ir_pascal" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">ir_pascal</span><span class="p">(</span><span class="n">k</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">ir_pascal</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float_</span><span class="p">)</span></code>
 
 </h4>
 
@@ -3805,7 +4592,7 @@ at <span class="arithmatex">\((k, j)\)</span>:</p>
             <p>
                 <span class="doc-param-annotation">
                   <b>TYPE:</b>
-                    <code><span title="lmo.linalg.T">T</span> | int</code>
+                    <code><span title="lmo.typing.AnyFloat">AnyFloat</span></code>
                 </span>
             </p>
           </td>
@@ -3819,7 +4606,7 @@ at <span class="arithmatex">\((k, j)\)</span>:</p>
             <p>
                 <span class="doc-param-annotation">
                   <b>TYPE:</b>
-                    <code><span title="lmo.linalg.T">T</span> | int</code>
+                    <code><span title="lmo.typing.AnyFloat">AnyFloat</span></code>
                 </span>
             </p>
           </td>
@@ -4107,7 +4894,7 @@ If set to (0, 0), the identity matrix is returned.</p>
         <tr>
           <td>
               <span class="doc-returns-annotation">
-                  <code><a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">npt</a>.<span title="numpy.NDArray">NDArray</span>[<a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a class="autorefs autorefs-external" title="numpy.floating" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.floating">floating</a>[<span title="typing.Any">Any</span>]]</code>
+                  <code><a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">npt</a>.<span title="numpy.NDArray">NDArray</span>[<span title="lmo.linalg.T">T</span>]</code>
               </span>
           </td>
           <td class="doc-returns-details">
