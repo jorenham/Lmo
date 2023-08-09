@@ -2,7 +2,6 @@ __all__ = (
     'ensure_axis_at',
     'as_float_array',
     'ordered',
-    'isrealclose',
 
     'clean_order',
     'clean_trim',
@@ -154,20 +153,6 @@ def ordered(
 
     w_k = _sort_like(_clean_array(aweights))
     return _apply_aweights(x_k, w_k, axis=axis or 0)
-
-
-def isrealclose(
-    a: npt.ArrayLike,
-    /,
-    *,
-    rtol: float = 1e-5,
-    atol: float = 1e-8,
-) -> npt.NDArray[np.bool_] | np.bool_:
-    """True when close to real."""
-    if np.isrealobj(z := np.asarray(a)):
-        return np.ones_like(z, dtype=np.bool_)[()]
-
-    return (abs(z.imag) <= atol + rtol * abs(z.real))[()]
 
 
 def clean_order(
