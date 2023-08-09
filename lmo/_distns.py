@@ -23,6 +23,8 @@ X = TypeVar('X', bound='l_rv')
 F = TypeVar('F', bound=np.floating[Any])
 
 
+_F_EPS: Final[np.float_] = np.finfo(float).eps
+
 
 def _check_lmoments(l_r: npt.NDArray[np.floating[Any]], s: float, t: float):
     if (n := len(l_r)) < 2:
@@ -113,8 +115,8 @@ class l_rv(rv_continuous):  # noqa: N801
         self,
         l_moments: FloatVector,
         trim: AnyTrim = (0, 0),
-        a: float = -np.inf,
-        b: float = np.inf,
+        a: float | None = None,
+        b: float | None = None,
         **kwargs: Any,
     ) -> None:
         r"""
@@ -158,21 +160,21 @@ class l_rv(rv_continuous):  # noqa: N801
         self._lm = l_r
 
         # quantile function (inverse of cdf)
-        ppf = _ppf_poly_series(l_r, s, t)
-        self._tol = np.finfo(ppf.coef.dtype).eps
-        self._ppf_poly = ppf = ppf.trim(self._tol)
+        self._ppf_poly = ppf = _ppf_poly_series(l_r, s, t).trim(_F_EPS)
 
         # inverse survival function
-        self._isf_poly = ppf(1 - ppf.identity(domain=[0, 1])).trim(self._tol)
+        self._isf_poly = ppf(1 - ppf.identity(domain=[0, 1])).trim(_F_EPS)
 
         # empirical support
-        q0, q1 = ppf(np.array([0, 1]))
-        assert q0 < q1, (q0, q1)
+        self._a0, self._b0 = (q0, q1) = ppf(np.array([0, 1]))
+        if q0 >= q1:
+            msg = 'invalid l_rv: ppf(0) >= ppf(1)'
+            raise ArithmeticError(msg)
 
         kwargs.setdefault('momtype', 1)
         super().__init__(  # type: ignore [reportUnknownMemberType]
-            a=max(a, q0),
-            b=min(b, q1),
+            a=q0 if a is None else a,
+            b=q1 if b is None else b,
             **kwargs,
         )
 
@@ -229,7 +231,7 @@ class l_rv(rv_continuous):  # noqa: N801
         cdf_best = None
         for k in range(max(k0 // 2, 2), k0 + max(k0 // 2, 8)):
             # fit
-            cdf = ppf.fit(x, q, k - 1).trim(self._tol)
+            cdf = ppf.fit(x, q, k - 1).trim(_F_EPS)
             k = cdf.degree() + 1
 
             # according to the inverse function theorem, this should be 0
@@ -340,12 +342,13 @@ class l_rv(rv_continuous):  # noqa: N801
             A fitted [`l_rv`][lmo.l_rv] instance.
 
         Todo:
+            - Optimal `rmax` selection (the error appears to be periodic..?)
             - Optimal `trim` selection
         """
         # x needs to be sorted anyway
         x: npt.NDArray[np.floating[Any]] = np.sort(data)
 
-        a, b = x[[0, 1]]
+        a, b = x[[0, -1]]
 
         if rmax is None:
             _rmax = math.ceil(np.log10(x.size) * 4)
