@@ -13,7 +13,7 @@ __all__ = (
 
 import sys
 from math import comb, lgamma
-from typing import Any, TypeVar
+from typing import Any, TypeVar, cast
 
 if sys.version_info >= (3, 11):
     from typing import assert_never
@@ -23,9 +23,9 @@ else:
 import numpy as np
 import numpy.typing as npt
 
-from .typing import AnyInt
+from .typing import AnyFloat, AnyInt
 
-T = TypeVar('T', bound=np.integer[Any] | np.floating[Any])
+T = TypeVar('T', bound=np.object_ | np.integer[Any] | np.floating[Any])
 
 
 def sandwich(
@@ -128,20 +128,31 @@ def pascal(
         out[1::2, 0] = -1
 
     jj = np.arange(1, k, dtype=np.int_)
-    for i in range(1, k):
+    for i in jj:
         out[i, 1:i+1] = i * out[i - 1, :i] // jj[:i]
 
     return out
 
 
-def ir_pascal(k: int, /) -> npt.NDArray[np.float_]:
+def ir_pascal(
+    k: int,
+    /,
+    dtype: np.dtype[T] | type[T] = np.float_,
+) -> npt.NDArray[np.float_]:
     r"""
     Inverse regulatized lower-diagonal Pascal matrix,
     $\bar{L}_{ij} = L^{-1}_ij / i$.
 
     Used to linearly combine order statistics order statistics into L-moments.
     """
-    return pascal(k, np.float_, inv=True) / np.arange(1, k + 1)[:, None]
+    # use native ints to reduce the effect of over-/underflows
+    dtype_native = k > 62
+    _dtype = np.object_ if dtype_native else np.int_
+
+    p = pascal(k, dtype=_dtype, inv=True)
+    out = p / np.arange(1, k + 1, dtype=_dtype)[:, None]  # type: ignore
+
+    return np.asarray(out, dtype)
 
 
 def sh_legendre(
@@ -186,7 +197,7 @@ def sh_legendre(
         - https://wikipedia.org/wiki/Legendre_polynomials
         - https://wikipedia.org/wiki/Pascal_matrix
     """
-    return sh_jacobi(k, 0, 0).astype(dtype)
+    return _sh_jacobi_i(k, 0, 0, dtype=dtype)
 
 
 def _sh_jacobi_i(
@@ -238,8 +249,8 @@ def _sh_jacobi_f(
 
 def sh_jacobi(
     k: AnyInt,
-    a: T | int,
-    b: T | int,
+    a: AnyFloat,
+    b: AnyFloat,
     /,
     dtype: np.dtype[T] | type[T] | None = None,
 ) -> npt.NDArray[T | np.int_]:
@@ -303,10 +314,10 @@ def sh_jacobi(
         raise ValueError(msg)
 
     _dtype = dtype or np.asarray([a, b]).dtype.type
-    if np.issubdtype(_dtype, np.integer):
-        return _sh_jacobi_i(int(k), int(a), int(b), _dtype)
+    if np.issubdtype(_dtype, np.integer) or np.issubdtype(_dtype, np.bool_):
+        return _sh_jacobi_i(int(k), int(a), int(b), dtype=_dtype)
 
-    return _sh_jacobi_f(int(k), float(a), float(b), _dtype)
+    return _sh_jacobi_f(int(k), float(a), float(b), dtype=_dtype)
 
 
 
@@ -347,7 +358,7 @@ def trim_matrix(
     /,
     trim: tuple[int, int],
     dtype: np.dtype[T] | type[T] = np.float_,
-) -> npt.NDArray[np.floating[Any]]:
+) -> npt.NDArray[T]:
     r"""
     Linearization of the trimmed L-moment recurrence relations, following
     the (corrected) derivation by Hosking (2007) from the (shifted) Jacobi
@@ -401,7 +412,7 @@ def trim_matrix(
     if r == 0:
         return np.empty((0, 0), dtype=dtype)
 
-    rr = np.linspace(1, r, r, dtype=np.int64)
+    rr = np.arange(1, r + 1, dtype=np.int_)
 
     t1, t2 = trim
     nc = t1 + t2 - 1 + 2 * rr
@@ -409,28 +420,30 @@ def trim_matrix(
 
     match t1, t2:
         case (0, 0):
-            return np.eye(r, dtype=dtype)
+            out = np.eye(r, dtype=dtype)
         case (0, 1) | (1, 0):
             # (r + 1) / (2 r) * (l_r +/- l_{r+1})
             # = (r + s + t) / (2r + s + t - 1) * (l_r +/- l_{r+1})
-            return succession_matrix(np.outer(c0, [1, t1 - t2]))
+            out = succession_matrix(np.outer(c0, [1, t1 - t2]))
         case (1, 1):
             # (r + 1)(r + 2) / (2 r (2r + 1)) * (l_r +/- l_{r+2})
             # and (r + 1)(r + 2) / (2 r (2r + 1)) = c0 * (r + 1) / (2 r)
-            return succession_matrix(np.outer(c0 * (.5 + .5 / rr), [1, 0, -1]))
+            out = succession_matrix(np.outer(c0 * (.5 + .5 / rr), [1, 0, -1]))
         case (s, t) if s < t:
             # ((r+s+t) * _[r+0] - (r+1) * (r+s) * _[r+1] / r) / (2r+s+t-1)
             c1 = -(rr + 1) * (rr + s) / (rr * nc)
             m0 = succession_matrix(np.c_[c0, c1])
             m1 = trim_matrix(r + 1, (s, t - 1), dtype)
-            return m0 @ m1
+            out = m0 @ m1
         case (s, t) if s >= t:
             c1 = (rr + 1) * (rr + t) / (rr * nc)
             m0 = succession_matrix(np.c_[c0, c1])
             m1 = trim_matrix(r + 1, (s - 1, t), dtype)
-            return m0 @ m1
+            out =  m0 @ m1
         case (int(), int()):
             msg = 'trim values must be non-negative'
             raise ValueError(msg)
         case _ as wtf:  # type: ignore [reportUnnecessaryComparison]
             assert_never(wtf)
+
+    return cast(npt.NDArray[T], out)

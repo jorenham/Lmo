@@ -1,8 +1,10 @@
 __all__ = (
-    'clean_order',
     'ensure_axis_at',
     'as_float_array',
     'ordered',
+
+    'clean_order',
+    'clean_trim',
     'moments_to_ratio',
 )
 
@@ -11,23 +13,10 @@ from typing import Any, SupportsIndex, TypeVar
 import numpy as np
 import numpy.typing as npt
 
-from .typing import IndexOrder, IntVector, SortKind
+from .typing import AnyTrim, IndexOrder, IntVector, SortKind
 
 T = TypeVar('T', bound=np.generic)
 FT = TypeVar('FT', bound=np.floating[Any])
-
-
-def clean_order(
-    order: SupportsIndex,
-    /,
-    name: str = 'r',
-    strict: bool = False,
-) -> int:
-    if (r := order.__index__()) < (r0 := int(strict)):
-        msg = f'expected {name} >= {r0}, got {r}'
-        raise TypeError(msg)
-
-    return r
 
 
 def ensure_axis_at(
@@ -164,6 +153,50 @@ def ordered(
 
     w_k = _sort_like(_clean_array(aweights))
     return _apply_aweights(x_k, w_k, axis=axis or 0)
+
+
+def clean_order(
+    r: SupportsIndex,
+    /,
+    name: str = 'r',
+    rmin: SupportsIndex = 0,
+) -> int:
+    if (_r := r.__index__()) < (_rmin := r.__index__()):
+        msg = f'expected {name} >= {_rmin}, got {_r}'
+        raise TypeError(msg)
+
+    return _r
+
+def clean_trim(trim: AnyTrim) -> tuple[int, int] | tuple[float, float]:
+    _trim = np.asarray_chkfinite(trim)
+
+    if not np.isrealobj(_trim):
+        msg = 'trim must be real'
+        raise TypeError(msg)
+
+    if _trim.ndim > 1:
+        msg = 'trim cannot be vectorized'
+        raise TypeError(trim)
+
+    n = _trim.size
+    if n == 0:
+        _trim = np.array([0, 0])
+    if n == 1:
+        _trim = np.repeat(_trim, 2)
+    elif n > 2:
+        msg = f'expected two trim values, got {n} instead'
+        raise TypeError(msg)
+
+    s, t = _trim
+
+    if s < 0 or t < 0:
+        msg = f'trim must be positive, got {(s, t)}'
+        raise TypeError(msg)
+
+    if s.is_integer() and t.is_integer():
+        return int(s), int(t)
+
+    return float(s), float(t)
 
 
 def moments_to_ratio(

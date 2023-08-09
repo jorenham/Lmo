@@ -49,19 +49,19 @@ def weights(
         msg = f'expected 0 <= r <= n, got {r=} and {n=}'
         raise ValueError(msg)
 
-    i1 = np.arange(1, n + 1)
+    i1 = np.arange(1, n + 1, dtype=dtype)
 
     w_r = np.zeros((r, n), dtype)
     if w_r.size == 0:
         return w_r
 
-    w_r[0] = 1.
+    w_r[0] = 1 / n
 
     for k in range(1, r):
         w_r[k, k:] = w_r[k - 1, k:] * i1[:-k] / (n - k)
 
     # the + 0. eliminates negative zeros
-    return cast(npt.NDArray[T], w_r / n + 0.)
+    return cast(npt.NDArray[T], w_r + 0.)
 
 
 def cov(

@@ -11,11 +11,11 @@ References:
 import functools
 from collections.abc import Sequence
 from math import floor
-from typing import Any, overload
+from typing import Any, cast, overload
 
 import numpy as np
 import numpy.typing as npt
-from scipy.special import beta, betainc  # type: ignore
+from scipy.special import betainc, betaln  # type: ignore
 
 from .typing import AnyNDArray
 
@@ -32,10 +32,15 @@ def _weights(
 
     return np.r_[
         np.zeros(j[0]),
-        beta(j + 1, N - j)
-        / beta(i + 1, n - i)
-        / beta(j - i + 1, N - j - (n - i) + 1)
-        / (N - n + 1),
+        np.exp(
+            cast(
+                float,
+                betaln(j + 1, N - j)
+                - betaln(i + 1, n - i)
+                - betaln(j - i + 1, N - j - (n - i) + 1)
+                - np.log(N - n + 1),
+            ),
+        ),
     ]
 
 

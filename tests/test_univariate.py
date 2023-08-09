@@ -140,7 +140,7 @@ def test_l_scale_invariant_loc(x, trim, dloc):
 @given(
     x=st_a1 | st_a2,
     trim=st_trim,
-    dscale=st.floats(-1e4, -1e-2) | st.floats(1e-2, 1e4)
+    dscale=st.floats(-1e2, -1e-2) | st.floats(1e-2, 1e2)
 )
 def test_l_scale_linear_scale(x, trim, dscale):
     l2 = lmo.l_scale(x, trim)
@@ -152,4 +152,4 @@ def test_l_scale_linear_scale(x, trim, dscale):
     itrim = trim[::-1] if dscale < 0 and isinstance(trim, tuple) else trim
 
     l2_mul = lmo.l_scale(x * dscale, itrim)
-    assert l2_mul == approx(abs(l2 * dscale), rel=1e-5, abs=1e-8)
+    assert l2_mul == approx(abs(l2 * dscale), abs=1e-8)

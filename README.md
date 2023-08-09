@@ -24,13 +24,33 @@ Uniform or multi-dimensional, Lmo can summarize it all with one quick glance!
 
 Unlike the legacy [moments](https://wikipedia.org/wiki/Moment_(mathematics)),
 [L-moments](https://wikipedia.org/wiki/L-moment) **uniquely describe** a 
-probability distribution.
+probability distribution, and are more robust and efficient.
 The "L" stands for Linear; it is a linear combination of order statistics.
 So Lmo is as fast as sorting your samples (in terms of time-complexity).
 
-Even if your data is pathological like [Cauchy](https://wikipedia.org/wiki/Cauchy_distribution), 
-and the L-moments are not defined, the trimmed L-moments (TL-moments) can be 
-used instead:
+## Key Features:
+
+- Calculates trimmed L-moments and L-*co*moments, from data or a distribution
+  function.
+- Complete support for trimmed L-moment (TL-moments): 
+  `lmo.l_moment(..., trim=(1 / 137, 3.1416))`.
+- Fast estimation of L-*co*moment matrices from your multidimensional data.
+- A fully non-parametric `scipy.stats`-like distribution, `lmo.l_rv`.
+  It's very efficient, robust, fast, and requires only some L-mo's!
+- Exact (co)variance structure of the L-moment estimates.
+- Complete [docs](https://jorenham.github.io/lmo/), including overly 
+  complex $\TeX$ spaghetti equations.
+- Clean Pythonic syntax for ease of use.
+- Vectorized functions for very fast fitting.
+- Fully typed, tested, and tickled.
+
+
+## Quick example
+
+
+Even if your data is pathological like 
+[Cauchy](https://wikipedia.org/wiki/Cauchy_distribution), and the L-moments 
+are not defined, the trimmed L-moments (TL-moments) can be used instead:
 
 ```pycon
 >>> import numpy as np
@@ -49,22 +69,24 @@ $\lambda^{(1, 1)}_2 \approx 0.7$
 ([Elamir & Seheult, 2003](https://doi.org/10.1016/S0167-9473(02)00250-5)).
 
 
-## Key Features:
-
-- Calculates trimmed L-moments and L-*co*moments, from data and distributions.
-- Exact non-parametric variance structure of the sample estimates.
-- Coming soon: ~Robust distribution fitting; the method of L-moments~.
-- Complete [docs](https://jorenham.github.io/lmo/), including overly 
-  complex $\TeX$ spaghetti equations.
-- Clean Pythonic syntax for ease of use.
-- Vectorized functions for very fast fitting.
-- Fully typed, tested, and tickled.
-
 
 ---
 
-See the [documentation](https://jorenham.github.io/lmo/) for usage examples and code reference.
+See the [documentation](https://jorenham.github.io/lmo/) for more examples and
+the API reference.
 
+
+## Roadmap:
+
+- Add methods to all `scipy.stats` univariate distributions, for finding 
+  the theoretical/population L-mo's.
+- Robust distribution fitting, using the (generalized) method of L-moments.
+- Theoretical L-moment variance structure calculation.
+- A generic goodness-of-fit test.
+- Automatic trim-length selection.
+- Plotting utilities (deps optional), e.g. for L-moment ratio diagrams.
+- Extended multivariate support, e.g. theoretical L-comoments, and 
+  L-regression.
 
 ## Installation
 
@@ -97,9 +119,6 @@ pip install lmo
   L-moments: L-comoment matrices](https://doi.org/10.1016/j.jmva.2007.01.008)
 - [*W.H. Asquith* (2011) &ndash; Univariate Distributional Analysis with 
   L-moment Statistics](https://hdl.handle.net/2346/ETD-TTU-2011-05-1319)
-- [*C. Dutang* (2017) &ndash; Theoretical L-moments and TL-moments Using
-  Combinatorial Identities and Finite Operators
-  ](https://doi.org/10.1080/03610926.2015.1073313)
 
 
 <!--overview-end-->
