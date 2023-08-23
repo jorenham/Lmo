@@ -1,7 +1,6 @@
-  # noqa: D104
+# noqa: D104
 __all__ = (
     '__version__',
-
     'l_weights',
     'l_moment',
     'l_moment_cov',
@@ -14,7 +13,6 @@ __all__ = (
     'l_variation',
     'l_skew',
     'l_kurtosis',
-
     'l_comoment',
     'l_coratio',
     'l_costats',
@@ -23,7 +21,6 @@ __all__ = (
     'l_corr',
     'l_coskew',
     'l_cokurtosis',
-
     'l_rv',
 )
 

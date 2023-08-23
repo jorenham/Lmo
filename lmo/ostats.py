@@ -113,13 +113,17 @@ def weights(
 
 
 @overload
-def from_cdf(F: float, i: float, n: float) -> float: ...  # noqa: N803
+def from_cdf(F: float, i: float, n: float) -> float:
+    ...  # noqa: N803
+
+
 @overload
 def from_cdf(
     F: AnyNDArray[np.floating[Any]] | Sequence[float],  # noqa: N803
     i: float,
     n: float,
-) -> npt.NDArray[np.float_]: ...
+) -> npt.NDArray[np.float_]:
+    ...
 
 
 def from_cdf(

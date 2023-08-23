@@ -129,7 +129,7 @@ def pascal(
 
     jj = np.arange(1, k, dtype=np.int_)
     for i in jj:
-        out[i, 1:i+1] = i * out[i - 1, :i] // jj[:i]
+        out[i, 1 : i + 1] = i * out[i - 1, :i] // jj[:i]
 
     return out
 
@@ -156,7 +156,7 @@ def ir_pascal(
 
 
 def sh_legendre(
-    k : int,
+    k: int,
     /,
     dtype: np.dtype[T] | type[T] = np.int_,
 ) -> npt.NDArray[T]:
@@ -211,9 +211,7 @@ def _sh_jacobi_i(
     for r in range(k):
         for j in range(r + 1):
             out[r, j] = (
-                (-1) ** (r - j)
-                * comb(r + a + b + j, j)
-                * comb(r + b, r - j)
+                (-1) ** (r - j) * comb(r + a + b + j, j) * comb(r + b, r - j)
             )
     return out
 
@@ -318,7 +316,6 @@ def sh_jacobi(
         return _sh_jacobi_i(int(k), int(a), int(b), dtype=_dtype)
 
     return _sh_jacobi_f(int(k), float(a), float(b), dtype=_dtype)
-
 
 
 def succession_matrix(c: npt.NDArray[T], /) -> npt.NDArray[T]:
@@ -428,7 +425,9 @@ def trim_matrix(
         case (1, 1):
             # (r + 1)(r + 2) / (2 r (2r + 1)) * (l_r +/- l_{r+2})
             # and (r + 1)(r + 2) / (2 r (2r + 1)) = c0 * (r + 1) / (2 r)
-            out = succession_matrix(np.outer(c0 * (.5 + .5 / rr), [1, 0, -1]))
+            out = succession_matrix(
+                np.outer(c0 * (0.5 + 0.5 / rr), [1, 0, -1])
+            )
         case (s, t) if s < t:
             # ((r+s+t) * _[r+0] - (r+1) * (r+s) * _[r+1] / r) / (2r+s+t-1)
             c1 = -(rr + 1) * (rr + s) / (rr * nc)
@@ -439,7 +438,7 @@ def trim_matrix(
             c1 = (rr + 1) * (rr + t) / (rr * nc)
             m0 = succession_matrix(np.c_[c0, c1])
             m1 = trim_matrix(r + 1, (s - 1, t), dtype)
-            out =  m0 @ m1
+            out = m0 @ m1
         case (int(), int()):
             msg = 'trim values must be non-negative'
             raise ValueError(msg)

@@ -35,7 +35,7 @@ _QuadFullOutput: TypeAlias = (
 
 def _l_moment_const(r: int, s: float, t: float, k: int) -> float:
     if r <= k:
-        return 1.
+        return 1.0
     return (
         exp(lgamma(r + s + t + 1) - lgamma(r + s) - lgamma(r + t))
         * gamma(r - k)
@@ -188,6 +188,7 @@ def l_moment_from_cdf(  # noqa: C901
             continue
 
         if r_val == 1:
+
             def integrand(x: float, *args: Any) -> float:
                 # equivalent to E[X_{s+1 : s+t+1}]
                 # see Wiley (2003) eq. 2.1.5
@@ -201,7 +202,7 @@ def l_moment_from_cdf(  # noqa: C901
             k_val = r_val - 2
 
             if r_val <= 12:
-                c_k, lb = j[k_val, :k_val + 1], 0
+                c_k, lb = j[k_val, : k_val + 1], 0
             else:
                 _j_k = scs.jacobi(k_val, t + 1, s + 1)  # type: ignore
                 c_k, lb = _j_k.coef[::-1], -1
@@ -218,12 +219,12 @@ def l_moment_from_cdf(  # noqa: C901
                 and multiply by the weight function.
                 """
                 p = _cdf(x, *args)
-                return p**(s + 1) * (1 - p)**(t + 1) * j_k(p)  # type: ignore
+                return p ** (s + 1) * (1 - p) ** (t + 1) * j_k(p)  # type: ignore
 
         quad_val = _quad(integrand, support, limit, atol, rtol)
         l_r[i] = _l_moment_const(r_val, s, t, 1) * quad_val
 
-    return (np.round(l_r, 12) + .0)[r_idxs].reshape(_r.shape)[()]
+    return (np.round(l_r, 12) + 0.0)[r_idxs].reshape(_r.shape)[()]
 
 
 @overload
@@ -338,7 +339,7 @@ def l_moment_from_ppf(
     j = sh_jacobi(min(r_vals[-1], 12), t, s)
 
     def w(p: float, *args: Any) -> float:
-        return p**s * (1 - p)**t * ppf(p, *args)
+        return p**s * (1 - p) ** t * ppf(p, *args)
 
     # caching the weight function only makes sense for multiple quad calls
     _w = functools.cache(w) if len(r_vals) > 1 else w
@@ -372,7 +373,7 @@ def l_moment_from_ppf(
         quad_val = _quad(integrand, support, limit, atol, rtol)
         l_r[i] = _l_moment_const(r_val, s, t, 0) * quad_val
 
-    return (np.round(l_r, 12) + .0)[r_idxs].reshape(_r.shape)[()]
+    return (np.round(l_r, 12) + 0.0)[r_idxs].reshape(_r.shape)[()]
 
 
 @overload

@@ -2,7 +2,6 @@ __all__ = (
     'ensure_axis_at',
     'as_float_array',
     'ordered',
-
     'clean_order',
     'clean_trim',
     'moments_to_ratio',
@@ -166,6 +165,7 @@ def clean_order(
         raise TypeError(msg)
 
     return _r
+
 
 def clean_trim(trim: AnyTrim) -> tuple[int, int] | tuple[float, float]:
     _trim = np.asarray_chkfinite(trim)

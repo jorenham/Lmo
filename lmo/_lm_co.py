@@ -138,6 +138,7 @@ def l_comoment(
         * [R. Serfling & P. Xiao (2007) - A Contribution to Multivariate
           L-Moments: L-Comoment Matrices](https://doi.org/10.1016/j.jmva.2007.01.008)
     """
+
     def _clean_array(arr: npt.ArrayLike) -> npt.NDArray[T]:
         out = np.asanyarray(arr, dtype=dtype)
         return out if rowvar else out.T
@@ -215,7 +216,7 @@ def l_costats(
     **kwargs: Unpack[LComomentOptions],
 ) -> npt.NDArray[T]:
     """
-    Calculates the L-*co*scale, L-corr(elation), L-*co*skew(ness) and 
+    Calculates the L-*co*scale, L-corr(elation), L-*co*skew(ness) and
     L-*co*kurtosis.
 
     Equivalent to `lmo.l_coratio(a, [2, 2, 3, 4], [0, 2, 2, 2], *, **)`.

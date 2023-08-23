@@ -160,3 +160,7 @@ force-wrap-aliases = true
 
 [tool.ruff.flake8-quotes]
 inline-quotes = "single"
+
+[tool.black]
+line-length = 79
+skip-string-normalization = true
