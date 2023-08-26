@@ -16,7 +16,7 @@ __all__ = (
 import functools
 import warnings
 from collections.abc import Callable
-from math import exp, gamma, lgamma, log
+from math import exp, lgamma, log
 from typing import Any, TypeAlias, cast, overload
 
 import numpy as np
@@ -35,13 +35,18 @@ _QuadFullOutput: TypeAlias = (
 )
 
 
-def _l_moment_const(r: int, s: float, t: float, k: int) -> float:
+def _l_moment_const(r: int, s: float, t: float, k: int = 0) -> float:
     if r <= k:
         return 1.0
-    return (
-        exp(lgamma(r + s + t + 1) - lgamma(r + s) - lgamma(r + t))
-        * gamma(r - k)
-        / r
+
+    # math.lgamma is faster (and has better type annotations) than
+    # scipy.special.loggamma.
+    return exp(
+        lgamma(r - k)
+        + lgamma(r + s + t + 1)
+        - lgamma(r + s)
+        - lgamma(r + t)
+        - log(r),
     )
 
 
@@ -619,16 +624,7 @@ def l_moment_cov_from_cdf(
     assert t >= 0, t
 
     p_n = [_poly.jacobi(n, t, s, domain=[0, 1]) for n in range(r_max)]
-
-    # math.lgamma is faster (and has better type annotations) than
-    # scipy.special.loggamma.
-    c_n = np.exp(
-        np.array([
-            lgamma(n) + lgamma(n + s + t + 1)
-            - (log(n) + lgamma(n + s) + lgamma(n + t))
-            for n in range(1, r_max + 1)
-        ], np.float_),
-    )
+    c_n = np.array([_l_moment_const(n, s, t) for n in range(1, r_max + 1)])
 
     def integrand(x: float, y: float, k: int, r: int) -> float:
         u, v = cdf(x), cdf(y)
