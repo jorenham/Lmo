@@ -104,18 +104,18 @@ def test_tlm_cauchy():
 
 
 @given(a=st.floats(0.1, 10))
-def test_tlm_expon(a: float):
-    l_stats = np.array([a * 5 / 6, a / 4, 2 / 9, 1 / 12])
+def test_lhm_expon(a: float):
+    l_stats = np.array([a / 2, a / 4, 2 / 9, 1 / 12])
 
     ppf = functools.partial(expon_ppf, a=a)
     cdf = functools.partial(expon_cdf, a=a)
 
-    l_ppf = l_moment_from_ppf(ppf, [0, 1, 2, 3, 4], trim=(1, 1))
+    l_ppf = l_moment_from_ppf(ppf, [0, 1, 2, 3, 4], trim=(0, 1))
     l_stats_ppf = l_ppf[1:] / l_ppf[[0, 0, 2, 2]]
 
     assert np.allclose(l_stats_ppf, l_stats)
 
-    l_cdf = l_moment_from_cdf(cdf, [0, 1, 2, 3, 4], trim=(1, 1))
+    l_cdf = l_moment_from_cdf(cdf, [0, 1, 2, 3, 4], trim=(0, 1))
     l_stats_cdf = l_cdf[1:] / l_cdf[[0, 0, 2, 2]]
 
     assert np.allclose(l_stats_cdf, l_stats)
