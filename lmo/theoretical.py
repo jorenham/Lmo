@@ -10,12 +10,13 @@ __all__ = (
     'l_ratio_from_ppf',
     'l_stats_from_cdf',
     'l_stats_from_ppf',
+    'l_moment_cov_from_cdf',
 )
 
 import functools
 import warnings
 from collections.abc import Callable
-from math import exp, gamma, lgamma
+from math import exp, gamma, lgamma, log
 from typing import Any, TypeAlias, cast, overload
 
 import numpy as np
@@ -23,6 +24,7 @@ import numpy.typing as npt
 import scipy.integrate as sci  # type: ignore
 import scipy.special as scs  # type: ignore
 
+from . import _poly
 from ._utils import moments_to_ratio
 from .linalg import sh_jacobi
 from .typing import AnyFloat, AnyInt, IntVector
@@ -534,3 +536,130 @@ def l_stats_from_ppf(
     """
     r, s = np.arange(1, num + 1), [0] * min(2, num) + [2] * (num - 2)
     return l_ratio_from_ppf(ppf, r, s, trim=trim, **kwargs)
+
+
+def l_moment_cov_from_cdf(
+    cdf: Callable[[float], float],
+    r_max: int,
+    /,
+    trim: tuple[AnyFloat, AnyFloat] = (0, 0),
+    *,
+    support: tuple[AnyFloat, AnyFloat] = (-np.inf, np.inf),
+    rtol: float = 1.49e-8,
+    atol: float = 1.49e-8,
+) -> npt.NDArray[np.float_]:
+    r"""
+    L-moments that are estimated from $n$ samples of a distribution with CDF
+    $F$, converge to the multivariate normal distribution. The mean is the
+    vector of the population L-moments, and can be found with something like
+    [`lmo.theoretical.l_moment_from_cdf(cdf, [1, ..., r_max], *, **)`].
+    This function calculates the corresponding $R \times R$ covariance matrix.
+
+    $$
+    \begin{align}
+    \Lambda^{(s,t)}_{k, r}
+        &= \mathrm{Cov}[l^{(s, t)}_k, l^{(s, t)}_r] \\
+        &= c_k c_r
+        \iint\limits_{x < y} \Big[
+            p_k\big(F(x)\big) \, p_r\big(F(y)\big) +
+            p_r\big(F(x)\big) \, p_k\big(F(y)\big)
+        \Big]
+        w^{(s+1,\, t)}\big(F(x)\big) \,
+        w^{(s,\, t+1)}\big(F(y)\big) \,
+        \mathrm{d}x \, \mathrm{d}y
+    \end{align}
+    $$
+
+    where $c_n = \frac{\Gamma(n) \Gamma(n+s+t+1)}{n \Gamma(n+s) \Gamma(n+t)}$,
+    $p_n(u) = P^{(t, s)}_{n-1}(2u - 1)$, $P^{(t, s)}_m$ the
+    Jacobi Polynomial, and $w^{(s,t)}(u) = u^s (1-u)^t$ its weight function.
+
+    Args:
+        cdf:
+            Cumulative Distribution Function (CDF), $F_X(x) = P(X \le x)$.
+            Must be a continuous monotone increasing function with
+            signature `(float) -> float`, whose return value lies in $[0, 1]$.
+        r_max:
+            The amount of L-moment orders to consdider. If for example
+            `r_max = 4`, the covariance matrix will be of shape `(4, 4)`, and
+            the columns and rows correspond to the L-moments of order
+            $r = 1, \dots, r_{max}$.
+        trim:
+            Left- and right- trim. Must be a tuple of two non-negative ints
+            or floats (!).
+
+    Other parameters:
+        support:
+            The (outer) integration limits `(a, b)`, s.t. `a < b`,
+            `cdf(a) == 0` and `cdf(b) == 1`.
+        rtol: See `epsrel` in
+            [`scipy.integrate.dblquad`][scipy.integrate.dblquad].
+        atol: See `epsabs` in
+            [`scipy.integrate.dblquad`][scipy.integrate.dblquad].
+
+    Returns:
+        out: Population L-moment covariance matrix.
+
+    See Also:
+        - [`l_moment_from_cdf`][lmo.theoretical.l_moment_from_cdf] -
+            Population L-moments from the cumulative distribution function
+        - [`l_moment_from_ppf`][lmo.theoretical.l_moment_from_ppf] -
+            Population L-moments from the quantile function
+        - [`lmo.l_moment`][lmo.l_moment] - Unbiased L-moment estimation from
+            samples
+    """
+    a, b = map(float, support)
+
+    assert a < b
+    assert cdf(a) == 0, cdf(a)
+    assert cdf(b) == 1, cdf(b)
+
+    s, t = map(float, trim)
+    assert s >= 0, s
+    assert t >= 0, t
+
+    p_n = [_poly.jacobi(n, t, s, domain=[0, 1]) for n in range(r_max)]
+
+    # math.lgamma is faster (and has better type annotations) than
+    # scipy.special.loggamma.
+    c_n = np.exp(
+        np.array([
+            lgamma(n) + lgamma(n + s + t + 1)
+            - (log(n) + lgamma(n + s) + lgamma(n + t))
+            for n in range(1, r_max + 1)
+        ], np.float_),
+    )
+
+    def integrand(x: float, y: float, k: int, r: int) -> float:
+        u, v = cdf(x), cdf(y)
+        return cast(
+            float,
+            (p_n[k](u) * p_n[r](v) + p_n[r](u) * p_n[k](v))
+            * u * (u * v)**s
+            * (1 - v) * ((1 - u) * (1 - v))**t,
+        )
+
+    def b_x(y: float) -> float:
+        return y
+
+    out = np.empty((r_max, r_max), dtype=np.float_)
+    for k, r in np.ndindex(r_max, r_max):
+        if k > r:
+            continue
+
+        _i, err = sci.dblquad(  # type: ignore [reportUnknownMemberType]
+            integrand,
+            a,
+            b,
+            a,
+            b_x,
+            epsabs=atol,
+            epsrel=rtol,
+        )
+        prec = max(0, int(-np.log10(cast(float, err))))
+        i = round(cast(float, _i), prec) + .0
+
+        out[k, r] = out[r, k] = c_n[k] * c_n[r] * i
+
+    assert np.all(out.diagonal() > 0), out
+    return out + .0
