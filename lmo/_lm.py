@@ -82,7 +82,7 @@ def _l_weights_ostat(
 
     c = ir_pascal(r, dtype=dtype)
     jnj = np.arange(N, dtype=dtype)
-    jnj /= (N - jnj)
+    jnj /= N - jnj
 
     out = np.zeros((r, N), dtype=dtype)
     for n in range(r):
@@ -201,8 +201,8 @@ def l_weights(
     return w
 
 
-
 # Summary statistics
+
 
 @overload
 def l_moment(
@@ -314,7 +314,6 @@ def l_moment(
     *,
     axis: int | None = None,
     dtype: np.dtype[T] | type[T] = np.float_,
-
     fweights: IntVector | None = None,
     aweights: npt.ArrayLike | None = None,
     sort: SortKind | None = 'stable',
@@ -354,7 +353,7 @@ def l_moment(
                 such as the Cauchy distribution.
 
         axis:
-            Axis along wich to calculate the moments. If `None` (default),
+            Axis along which to calculate the moments. If `None` (default),
             all samples in the array will be used.
 
         dtype:
@@ -473,7 +472,7 @@ def l_moment_cov(
         array([0.08142405, 0.68884917])
 
         The L-moment estimates seem to make sense. Let's check their standard
-        errors, by taking the square root of the variances (the diagnoal of the
+        errors, by taking the square root of the variances (the diagonal of the
         covariance matrix):
 
         >>> lmo.l_moment_cov(x, 2, trim=(1, 1))
@@ -504,7 +503,6 @@ def l_moment_cov(
     if ks < r_max:
         msg = 'trimmings must be positive'
         raise ValueError(msg)
-
 
     # projection matrix: PWMs -> generalized trimmed L-moments
     p_l: npt.NDArray[np.floating[Any]]
@@ -548,6 +546,7 @@ def l_ratio(
 ) -> T:
     ...
 
+
 @overload
 def l_ratio(
     a: npt.ArrayLike,
@@ -577,6 +576,7 @@ def l_ratio(
 ) -> npt.NDArray[T] | T:
     ...
 
+
 @overload
 def l_ratio(
     a: npt.ArrayLike,
@@ -590,6 +590,7 @@ def l_ratio(
     **kwargs: Unpack[LMomentOptions],
 ) -> npt.NDArray[np.float_]:
     ...
+
 
 @overload
 def l_ratio(
@@ -744,10 +745,8 @@ def l_ratio_se(
 
     # the classic approximation to propagation of uncertainty for an RV ratio
     with np.errstate(divide='ignore', invalid='ignore'):
-        _s_tt = (l_r / l_s)**2 * (
-            s_rr / l_r**2 +
-            s_ss / l_s**2 -
-            2 * s_rs / (l_r * l_s)
+        _s_tt = (l_r / l_s) ** 2 * (
+            s_rr / l_r**2 + s_ss / l_s**2 - 2 * s_rs / (l_r * l_s)
         )
         # Var[l_r / l_r] = Var[1] = 0
         _s_tt = np.where(_s == 0, s_rr, _s_tt)

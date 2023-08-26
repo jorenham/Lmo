@@ -1,10 +1,10 @@
 # type: ignore
 
-from hypothesis import assume, given, strategies as st
-from hypothesis.extra import numpy as hnp
-
 import numpy as np
-
+from hypothesis import (
+    given,
+    strategies as st,
+)
 from lmo._lm import l_weights
 
 MAX_N = 1 << 10
@@ -67,7 +67,7 @@ def test_l_weights_trim(n, r, trim):
     assert tr > 0
 
     assert np.allclose(w[:, :tl], 0)
-    assert np.allclose(w[:, n-tr:], 0)
+    assert np.allclose(w[:, n - tr :], 0)
 
 
 @given(n=st_n, r=st.integers(2, MAX_R), trim=st_trim_i0)

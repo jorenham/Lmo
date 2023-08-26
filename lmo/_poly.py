@@ -61,7 +61,7 @@ def jacobi_series(
     Construct a polynomial from the weighted sum of shifted Jacobi
     polynomials.
 
-    Rougly equivalent to
+    Roughly equivalent to
     `sum(w[n] * sh_jacobi(n, a, b) for n in range(len(w)))`.
 
     Todo:
@@ -108,9 +108,11 @@ def roots(
 
     return x
 
+
 def integrate(p: PolySeries, /, a: float | None = None) -> PolySeries:
     r"""Calculate the anti-derivative: $P(x) = \int_a^x p(u) \, du$."""
     return p.integ(lbnd=p.domain[0] if a is None else a)
+
 
 def extrema(
     p: PolySeries,

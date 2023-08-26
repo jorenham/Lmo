@@ -62,7 +62,7 @@ def _ppf_poly_series(
         t,
         s,
         domain=[0, 1],
-        # convert to Legendre, even if trimmed; this avoids huge coeficient
+        # convert to Legendre, even if trimmed; this avoids huge coefficient
         kind=npp.Legendre,
         symbol='q',
     )
@@ -238,9 +238,8 @@ class l_rv(rv_continuous):  # noqa: N801
             eps = 1 / cdf.deriv()(x) - y
 
             # Bayesian information criterion (BIC)
-            bic = (
-                (k - 1) * np.log(n)
-                + n * np.log(np.average(eps**2, weights=w))
+            bic = (k - 1) * np.log(n) + n * np.log(
+                np.average(eps**2, weights=w),
             )
 
             # minimize the BIC
@@ -268,7 +267,7 @@ class l_rv(rv_continuous):  # noqa: N801
         s, t = self._trim
         return np.where(
             (_q >= 0) & (_q <= 1),
-            _q ** s * (1 - _q) ** t,
+            _q**s * (1 - _q) ** t,
             cast(float, getattr(self, 'badvalue', np.nan)),  # type: ignore
         )
 
@@ -291,7 +290,7 @@ class l_rv(rv_continuous):  # noqa: N801
                 stacklevel=3,
             )
 
-            if np.ptp(q0) <= 1/4:
+            if np.ptp(q0) <= 1 / 4:
                 # "close enough" if within the same quartile;
                 # probability-weighted interpolation
                 return np.average(q0, weights=q0 * (1 - q0))  # type: ignore
@@ -310,7 +309,8 @@ class l_rv(rv_continuous):  # noqa: N801
     def _updated_ctor_param(self) -> Mapping[str, Any]:
         return cast(
             Mapping[str, Any],
-            super()._updated_ctor_param() | {
+            super()._updated_ctor_param()
+            | {
                 'l_moments': self._lm,
                 'trim': self._trim,
             },

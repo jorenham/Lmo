@@ -61,7 +61,7 @@ def weights(
         w_r[k, k:] = w_r[k - 1, k:] * i1[:-k] / (n - k)
 
     # the + 0. eliminates negative zeros
-    return cast(npt.NDArray[T], w_r + 0.)
+    return cast(npt.NDArray[T], w_r + 0.0)
 
 
 def cov(
@@ -134,12 +134,12 @@ def cov(
             #     2 * i^(k) * (j-k-1)^(k) * x[i] * x[j]
             #     for j in range(i + 1, n)
             # )
-            v_ki[i] = ffact[k, j_k[i:]] * 2 * ffact[k, i] @ x[i + 1:]
+            v_ki[i] = ffact[k, j_k[i:]] * 2 * ffact[k, i] @ x[i + 1 :]
 
         # (n-k-1)^(k+1)
         denom = n * (n - 2 * k - 1) * ffact[k, n - k - 1]
         m_bb = np.einsum(spec, v_ki, x) / denom  # pyright: ignore
-        s_b[k, k] = b[k]**2 - m_bb
+        s_b[k, k] = b[k] ** 2 - m_bb
 
     # for k != l (actually k > l since symmetric)
     # sum(
@@ -154,9 +154,9 @@ def cov(
         v_ki = np.empty(x.shape, dtype=dtype)
         for i in range(n):
             v_ki[i] = (
-                ffact[k, i] * ffact[m, j_k[i:]] +
-                ffact[m, i] * ffact[k, j_l[i:]]
-            ) @ x[i + 1:]
+                ffact[k, i] * ffact[m, j_k[i:]]
+                + ffact[m, i] * ffact[k, j_l[i:]]
+            ) @ x[i + 1 :]
 
         # `(n-k-1)^(l+1)`
         denom = n * (n - k - m - 1) * ffact[m, n - k - 1]

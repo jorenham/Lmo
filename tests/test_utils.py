@@ -1,12 +1,12 @@
 # type: ignore
 
 import numpy as np
-
-from hypothesis import given, strategies as st
+from hypothesis import (
+    given,
+    strategies as st,
+)
 from hypothesis.extra import numpy as hnp
-
 from lmo._utils import ordered
-
 
 st_n = st.integers(2, 50)
 st_x1 = hnp.arrays(shape=st_n, dtype=np.float_, elements=st.floats(-10, 10))
@@ -27,12 +27,14 @@ def test_order_stats_sorted_xx(x):
     assert x_k.shape == x.shape
     assert np.all(x_k[:-1] <= x_k[1:])
 
+
 @given(x=st_x1)
 def test_order_stats_sorted_concomitant(x):
     x_k = ordered(x, -x)
 
     assert x_k.shape == x.shape
     assert np.all(x_k[:-1] >= x_k[1:])
+
 
 @given(x=st_x1)
 def test_order_stats_sorted_concomitant_2d(x):
@@ -48,7 +50,6 @@ def test_order_stats_sorted_concomitant_2d(x):
     assert x_km.shape == x_nm.shape
     assert np.all(x_km[:-1] >= x_km[1:])
     assert np.allclose(x_km, x_mk.T)
-
 
 
 @given(x=st_x1, f=st.integers(1, 100))

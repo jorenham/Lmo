@@ -2,7 +2,6 @@ __all__ = (
     'ensure_axis_at',
     'as_float_array',
     'ordered',
-
     'clean_order',
     'clean_trim',
     'moments_to_ratio',
@@ -110,7 +109,7 @@ def ordered(
     If `y` is provided, the order of `y` is used instead.
     """
     if fweights is not None:
-        # avoid uneccesary repeats by normalizing by the GCD
+        # avoid unnecessary repeats by normalizing by the GCD
         r = np.asarray(fweights)
         # noinspection PyUnresolvedReferences
         if (gcd := np.gcd.reduce(r)) <= 0:
@@ -166,6 +165,7 @@ def clean_order(
         raise TypeError(msg)
 
     return _r
+
 
 def clean_trim(trim: AnyTrim) -> tuple[int, int] | tuple[float, float]:
     _trim = np.asarray_chkfinite(trim)

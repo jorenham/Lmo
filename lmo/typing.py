@@ -1,6 +1,6 @@
 # ruff: noqa: D102,D105,D107
 
-"""Numpy-related type aliasses for internal use."""
+"""Numpy-related type aliases for internal use."""
 
 __all__ = (
     'SupportsArray',
@@ -330,7 +330,7 @@ class LComomentOptions(_LOptions, total=False):
     rowvar: bool
 
 
-# Lmo specific aliasses
+# Lmo specific aliases
 
 AnyTrim: TypeAlias = (
     tuple[AnyFloat, AnyFloat]

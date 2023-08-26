@@ -1,19 +1,24 @@
 import functools
 
-from hypothesis import given, strategies as st
 import numpy as np
-
-from lmo.theoretical import l_moment_from_ppf, l_moment_from_cdf
+from hypothesis import (
+    given,
+    strategies as st,
+)
+from lmo.theoretical import l_moment_from_cdf, l_moment_from_ppf
 
 
 def cauchy_cdf(x: float) -> float:
     return np.arctan(x) / np.pi + 1 / 2
 
+
 def cauchy_ppf(p: float) -> float:
     return np.tan(np.pi * (p - 1 / 2))
 
+
 def expon_cdf(x: float, a: float = 1) -> float:
-    return 1 - np.exp(-x / a) if x >= 0 else 0.
+    return 1 - np.exp(-x / a) if x >= 0 else 0.0
+
 
 def expon_ppf(p: float, a: float = 1) -> float:
     return -a * np.log(1 - p)
@@ -44,12 +49,14 @@ def test_lm_normal():
     mu, sigma = 100, 15
     IQ = NormalDist(mu, sigma)
 
-    l_stats = np.array([
-        mu,
-        sigma / np.sqrt(np.pi),
-        0,
-        30 * np.arctan(np.sqrt(2)) / np.pi - 9,
-    ])
+    l_stats = np.array(
+        [
+            mu,
+            sigma / np.sqrt(np.pi),
+            0,
+            30 * np.arctan(np.sqrt(2)) / np.pi - 9,
+        ]
+    )
 
     l_ppf = l_moment_from_ppf(IQ.inv_cdf, [0, 1, 2, 3, 4])
     l_stats_ppf = l_ppf[1:] / l_ppf[[0, 0, 2, 2]]

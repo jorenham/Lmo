@@ -67,16 +67,13 @@ def normaltest(
 
     # theoretical L-skew and L-kurtosis of the normal distribution (for all
     # loc/mu and scale/sigma)
-    tau3, tau4 = 0.0, 30/np.pi * np.arctan(np.sqrt(2)) - 9
+    tau3, tau4 = 0.0, 30 / np.pi * np.arctan(np.sqrt(2)) - 9
 
     z3 = (t3 - tau3) / np.sqrt(
-        0.1866 / n
-        + (np.sqrt(0.8000) / n)**2,
+        0.1866 / n + (np.sqrt(0.8000) / n) ** 2,
     )
     z4 = (t4 - tau4) / np.sqrt(
-        0.0883 / n
-        + (np.sqrt(0.6800) / n)**2
-        + (np.cbrt(4.9000) / n)**3,
+        0.0883 / n + (np.sqrt(0.6800) / n) ** 2 + (np.cbrt(4.9000) / n) ** 3,
     )
 
     k2 = z3**2 + z4**2
@@ -96,6 +93,7 @@ def l_ratio_bounds(
     dtype: np.dtype[np.float_] = ...,
 ) -> np.float_:
     ...
+
 
 @overload
 def l_ratio_bounds(
@@ -118,6 +116,7 @@ def l_ratio_bounds(
 ) -> npt.NDArray[np.float_]:
     ...
 
+
 @overload
 def l_ratio_bounds(
     r: npt.NDArray[Any] | Sequence[Any],
@@ -138,6 +137,7 @@ def l_ratio_bounds(
     dtype: np.dtype[np.float_] = ...,
 ) -> np.float_ | npt.NDArray[np.float_]:
     ...
+
 
 @overload
 def l_ratio_bounds(

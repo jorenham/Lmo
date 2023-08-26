@@ -45,6 +45,7 @@ pytest = "^7.4"
 hypothesis = {extras = ["numpy"], version = "^6.80"}
 pyright = "^1.1"
 ruff = ">=0.0.283,<1.0"
+codespell = "^2.2.5"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.5"
@@ -111,7 +112,7 @@ target-version = "py310"
 src = ["lmo"]
 extend-exclude = ["tests"]
 
-line-length = 80
+line-length = 79
 format = "grouped"
 select = [
     "F",    # pyflakes
@@ -160,3 +161,7 @@ force-wrap-aliases = true
 
 [tool.ruff.flake8-quotes]
 inline-quotes = "single"
+
+[tool.codespell]
+skip = '*.lock'
+context = 2
