@@ -585,7 +585,7 @@ def l_moment_cov_from_cdf(
             Must be a continuous monotone increasing function with
             signature `(float) -> float`, whose return value lies in $[0, 1]$.
         r_max:
-            The amount of L-moment orders to consdider. If for example
+            The amount of L-moment orders to consider. If for example
             `r_max = 4`, the covariance matrix will be of shape `(4, 4)`, and
             the columns and rows correspond to the L-moments of order
             $r = 1, \dots, r_{max}$.
