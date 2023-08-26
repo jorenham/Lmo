@@ -45,6 +45,7 @@ pytest = "^7.4"
 hypothesis = {extras = ["numpy"], version = "^6.80"}
 pyright = "^1.1"
 ruff = ">=0.0.283,<1.0"
+codespell = "^2.2.5"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.5"
