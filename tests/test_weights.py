@@ -67,7 +67,7 @@ def test_l_weights_trim(n, r, trim):
     assert tr > 0
 
     assert np.allclose(w[:, :tl], 0)
-    assert np.allclose(w[:, n-tr:], 0)
+    assert np.allclose(w[:, n - tr :], 0)
 
 
 @given(n=st_n, r=st.integers(2, MAX_R), trim=st_trim_i0)

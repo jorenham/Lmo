@@ -51,7 +51,6 @@ def test_l_moment_aweights_const(a, r, trim, w_const):
     assert l_r_w == approx(l_r, rel=1e-5, abs=1e-8)
 
 
-
 @given(a=st_a1, r=st_r, trim=st_trim)
 def test_l_ratio_unit(a, r, trim):
     tau = lmo.l_ratio(a, r, r, trim)
