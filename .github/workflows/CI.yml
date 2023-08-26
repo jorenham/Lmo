@@ -30,11 +30,23 @@ jobs:
       - name: install
         run: poetry install --sync --without docs --without debug
 
-      - name: ruff
-        run: poetry run ruff check lmo
+      - name: setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: poetry
+
+      - name: install
+        run: poetry install --sync
 
       - name: pyright
         run: poetry run pyright
 
       - name: pytest
         run: poetry run py.test
+
+      - name: codespell
+        run: poetry run codespell .
+
+      - name: ruff
+        run: poetry run ruff check .

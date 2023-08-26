@@ -1,10 +1,13 @@
 from datetime import timedelta
 
-from hypothesis import given, settings, strategies as st
-from hypothesis.extra import numpy as hnp
-import numpy as np
-
 import lmo
+import numpy as np
+from hypothesis import (
+    given,
+    settings,
+    strategies as st,
+)
+from hypothesis.extra import numpy as hnp
 
 _SEED = 12345
 
@@ -19,7 +22,7 @@ st_trim = st.tuples(st_t, st_t)
 
 __st_a_kwargs = {
     'dtype': hnp.floating_dtypes(
-        sizes=(64, 128) if hasattr(np, 'float128') else (64,)
+        sizes=(64, 128) if hasattr(np, 'float128') else (64,),
     ),
     'elements': st.floats(-(1 << 20), 1 << 20),
 }

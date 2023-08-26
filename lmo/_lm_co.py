@@ -67,10 +67,10 @@ def l_comoment(
 
     Parameters:
         a:
-            1-D or 2-D array-like containing `m` variables and `n` observations.
-            Each row of `a` represents a variable, and each column a single
-            observation of all those variables. Also see `rowvar` below.
-            If `a` is not an array, a conversion is attempted.
+            1-D or 2-D array-like containing `m` variables and `n`
+            observations.  Each row of `a` represents a variable, and each
+            column a single observation of all those variables. Also see
+            `rowvar` below.  If `a` is not an array, a conversion is attempted.
 
         r:
             The L-moment order(s), non-negative integer or array.
@@ -81,9 +81,9 @@ def l_comoment(
 
             Some special cases include:
 
-            - $(0, 0)$: The original **L**-moment, introduced by Hosking (1990).
-                Useful for fitting the e.g. log-normal and generalized extreme
-                value (GEV) distributions.
+            - $(0, 0)$: The original **L**-moment, introduced by Hosking
+                (1990).  Useful for fitting the e.g. log-normal and generalized
+                extreme value (GEV) distributions.
             - $(0, m)$: **LL**-moment (**L**inear combination of **L**owest
                 order statistics), instroduced by Bayazit & Onoz (2002).
                 Assigns more weight to smaller observations.
@@ -266,7 +266,7 @@ def l_coloc(
         array([[-0.10488868, -0.03797989],
                [ 0.03325074, -0.00625729]])
 
-        What this tells us, is somehwat of a mystery: trimmed L-comoments have
+        What this tells us, is somewhat of a mystery: trimmed L-comoments have
         been only been briefly *mentioned* once or twice in the literature.
 
 
@@ -293,7 +293,7 @@ def l_coscale(
 
     Analogous to the (auto-) variance-covariance matrix, the L-coscale matrix
     is positive semi-definite, and its main diagonal contains the L-scale's.
-    conversely, the L-coscale matrix is inherently assymmetric, thus yielding
+    conversely, the L-coscale matrix is inherently asymmetric, thus yielding
     more information.
 
     Examples:

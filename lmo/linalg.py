@@ -426,7 +426,7 @@ def trim_matrix(
             # (r + 1)(r + 2) / (2 r (2r + 1)) * (l_r +/- l_{r+2})
             # and (r + 1)(r + 2) / (2 r (2r + 1)) = c0 * (r + 1) / (2 r)
             out = succession_matrix(
-                np.outer(c0 * (0.5 + 0.5 / rr), [1, 0, -1])
+                np.outer(c0 * (0.5 + 0.5 / rr), [1, 0, -1]),
             )
         case (s, t) if s < t:
             # ((r+s+t) * _[r+0] - (r+1) * (r+s) * _[r+1] / r) / (2r+s+t-1)

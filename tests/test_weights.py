@@ -1,10 +1,10 @@
 # type: ignore
 
-from hypothesis import assume, given, strategies as st
-from hypothesis.extra import numpy as hnp
-
 import numpy as np
-
+from hypothesis import (
+    given,
+    strategies as st,
+)
 from lmo._lm import l_weights
 
 MAX_N = 1 << 10

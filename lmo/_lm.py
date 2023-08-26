@@ -353,7 +353,7 @@ def l_moment(
                 such as the Cauchy distribution.
 
         axis:
-            Axis along wich to calculate the moments. If `None` (default),
+            Axis along which to calculate the moments. If `None` (default),
             all samples in the array will be used.
 
         dtype:
@@ -472,7 +472,7 @@ def l_moment_cov(
         array([0.08142405, 0.68884917])
 
         The L-moment estimates seem to make sense. Let's check their standard
-        errors, by taking the square root of the variances (the diagnoal of the
+        errors, by taking the square root of the variances (the diagonal of the
         covariance matrix):
 
         >>> lmo.l_moment_cov(x, 2, trim=(1, 1))

@@ -1,9 +1,11 @@
 import functools
 
-from hypothesis import given, strategies as st
 import numpy as np
-
-from lmo.theoretical import l_moment_from_ppf, l_moment_from_cdf
+from hypothesis import (
+    given,
+    strategies as st,
+)
+from lmo.theoretical import l_moment_from_cdf, l_moment_from_ppf
 
 
 def cauchy_cdf(x: float) -> float:

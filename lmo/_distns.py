@@ -62,7 +62,7 @@ def _ppf_poly_series(
         t,
         s,
         domain=[0, 1],
-        # convert to Legendre, even if trimmed; this avoids huge coeficient
+        # convert to Legendre, even if trimmed; this avoids huge coefficient
         kind=npp.Legendre,
         symbol='q',
     )
@@ -239,7 +239,7 @@ class l_rv(rv_continuous):  # noqa: N801
 
             # Bayesian information criterion (BIC)
             bic = (k - 1) * np.log(n) + n * np.log(
-                np.average(eps**2, weights=w)
+                np.average(eps**2, weights=w),
             )
 
             # minimize the BIC

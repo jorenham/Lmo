@@ -61,7 +61,7 @@ def jacobi_series(
     Construct a polynomial from the weighted sum of shifted Jacobi
     polynomials.
 
-    Rougly equivalent to
+    Roughly equivalent to
     `sum(w[n] * sh_jacobi(n, a, b) for n in range(len(w)))`.
 
     Todo:

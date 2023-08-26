@@ -109,7 +109,7 @@ def ordered(
     If `y` is provided, the order of `y` is used instead.
     """
     if fweights is not None:
-        # avoid uneccesary repeats by normalizing by the GCD
+        # avoid unnecessary repeats by normalizing by the GCD
         r = np.asarray(fweights)
         # noinspection PyUnresolvedReferences
         if (gcd := np.gcd.reduce(r)) <= 0:

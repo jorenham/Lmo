@@ -1,11 +1,13 @@
 # type: ignore
 
-from pytest import approx
-from hypothesis import given, strategies as st
-from hypothesis.extra import numpy as hnp
-import numpy as np
-
 import lmo
+import numpy as np
+from hypothesis import (
+    given,
+    strategies as st,
+)
+from hypothesis.extra import numpy as hnp
+from pytest import approx
 
 _R_MAX = 8
 _T_MAX = 2
@@ -27,7 +29,7 @@ st_a1_unique = hnp.arrays(shape=st_n, unique=True, **__st_a_kwargs)
 
 st_a2 = hnp.arrays(
     shape=st.tuples(st_n, st.integers(1, 10)),
-    **__st_a_kwargs
+    **__st_a_kwargs,
 )
 
 
@@ -93,7 +95,7 @@ def test_l_loc_const(x0, n, dtype, trim):
     x=st_a1 | st_a2,
     trim=st_trim,
     dloc=st.floats(-1e3, 1e3),
-    dscale=st.floats(1e-3, 1e3)
+    dscale=st.floats(1e-3, 1e3),
 )
 def test_l_loc_linearity(x, trim, dloc, dscale):
     l1 = lmo.l_loc(x, trim)
@@ -140,7 +142,7 @@ def test_l_scale_invariant_loc(x, trim, dloc):
 @given(
     x=st_a1 | st_a2,
     trim=st_trim,
-    dscale=st.floats(-1e2, -1e-2) | st.floats(1e-2, 1e2)
+    dscale=st.floats(-1e2, -1e-2) | st.floats(1e-2, 1e2),
 )
 def test_l_scale_linear_scale(x, trim, dscale):
     l2 = lmo.l_scale(x, trim)

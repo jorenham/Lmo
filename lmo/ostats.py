@@ -113,8 +113,8 @@ def weights(
 
 
 @overload
-def from_cdf(F: float, i: float, n: float) -> float:
-    ...  # noqa: N803
+def from_cdf(F: float, i: float, n: float) -> float:  # noqa: N803
+    ...
 
 
 @overload

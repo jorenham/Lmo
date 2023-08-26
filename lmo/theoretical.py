@@ -219,7 +219,9 @@ def l_moment_from_cdf(  # noqa: C901
                 and multiply by the weight function.
                 """
                 p = _cdf(x, *args)
-                return p ** (s + 1) * (1 - p) ** (t + 1) * j_k(p)  # type: ignore
+                return (
+                    p ** (s + 1) * (1 - p) ** (t + 1) * j_k(p)  # type: ignore
+                )
 
         quad_val = _quad(integrand, support, limit, atol, rtol)
         l_r[i] = _l_moment_const(r_val, s, t, 1) * quad_val
