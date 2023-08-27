@@ -129,7 +129,7 @@ def l_moment_from_cdf(
     cdf: Callable[[float], float],
     r: AnyInt,
     /,
-    trim: tuple[AnyFloat, AnyFloat] = ...,
+    trim: AnyTrim = ...,
     *,
     support: tuple[AnyFloat, AnyFloat] = ...,
     rtol: float = ...,
@@ -144,7 +144,7 @@ def l_moment_from_cdf(
     cdf: Callable[[float], float],
     r: IntVector,
     /,
-    trim: tuple[AnyFloat, AnyFloat] = ...,
+    trim: AnyTrim = ...,
     *,
     support: tuple[AnyFloat, AnyFloat] = ...,
     rtol: float = ...,
@@ -158,7 +158,7 @@ def l_moment_from_cdf(  # noqa: C901
     cdf: Callable[[float], float],
     r: AnyInt | IntVector,
     /,
-    trim: tuple[AnyFloat, AnyFloat] = (0, 0),
+    trim: AnyTrim = (0, 0),
     *,
     support: tuple[AnyFloat, AnyFloat] = (-np.inf, np.inf),
     rtol: float = DEFAULT_RTOL,
@@ -230,7 +230,8 @@ def l_moment_from_cdf(  # noqa: C901
         return np.empty(_r.shape)
 
     r_vals, r_idxs = np.unique(_r, return_inverse=True)
-    s, t = np.asanyarray(trim)
+
+    s, t = clean_trim(trim)
     trimmed = s != 0 or t != 0
 
     a, b = _tighten_cdf_support(cdf, support)
@@ -294,7 +295,7 @@ def l_moment_from_ppf(
     ppf: Callable[[float], float],
     r: AnyInt,
     /,
-    trim: tuple[AnyFloat, AnyFloat] = ...,
+    trim: AnyTrim = ...,
     *,
     support: tuple[AnyFloat, AnyFloat] = ...,
     rtol: float = ...,
@@ -309,7 +310,7 @@ def l_moment_from_ppf(
     ppf: Callable[[float], float],
     r: IntVector,
     /,
-    trim: tuple[AnyFloat, AnyFloat] = ...,
+    trim: AnyTrim = ...,
     *,
     support: tuple[AnyFloat, AnyFloat] = ...,
     rtol: float = ...,
@@ -323,7 +324,7 @@ def l_moment_from_ppf(
     ppf: Callable[[float], float],
     r: AnyInt | IntVector,
     /,
-    trim: tuple[AnyFloat, AnyFloat] = (0, 0),
+    trim: AnyTrim = (0, 0),
     *,
     support: tuple[AnyFloat, AnyFloat] = (0, 1),
     rtol: float = DEFAULT_RTOL,
@@ -396,7 +397,7 @@ def l_moment_from_ppf(
         return np.empty(_r.shape)
 
     r_vals, r_idxs = np.unique(_r, return_inverse=True)
-    s, t = np.asanyarray(trim)
+    s, t = clean_trim(trim)
 
     j = sh_jacobi(min(r_vals[-1], 12), t, s)
 
@@ -444,7 +445,7 @@ def l_ratio_from_cdf(
     r: AnyInt,
     s: AnyInt,
     /,
-    trim: tuple[AnyFloat, AnyFloat] = ...,
+    trim: AnyTrim = ...,
     **kwargs: Any,
 ) -> np.float_:
     ...
@@ -456,7 +457,7 @@ def l_ratio_from_cdf(
     r: IntVector,
     s: AnyInt | IntVector,
     /,
-    trim: tuple[AnyFloat, AnyFloat] = ...,
+    trim: AnyTrim = ...,
     **kwargs: Any,
 ) -> npt.NDArray[np.float_]:
     ...
@@ -468,7 +469,7 @@ def l_ratio_from_cdf(
     r: AnyInt | IntVector,
     s: IntVector,
     /,
-    trim: tuple[AnyFloat, AnyFloat] = ...,
+    trim: AnyTrim = ...,
     **kwargs: Any,
 ) -> npt.NDArray[np.float_]:
     ...
@@ -479,7 +480,7 @@ def l_ratio_from_cdf(
     r: AnyInt | IntVector,
     s: AnyInt | IntVector,
     /,
-    trim: tuple[AnyFloat, AnyFloat] = (0, 0),
+    trim: AnyTrim = (0, 0),
     **kwargs: Any,
 ) -> np.float_ | npt.NDArray[np.float_]:
     """
@@ -501,7 +502,7 @@ def l_ratio_from_ppf(
     r: AnyInt,
     s: AnyInt,
     /,
-    trim: tuple[AnyFloat, AnyFloat] = ...,
+    trim: AnyTrim = ...,
     **kwargs: Any,
 ) -> np.float_:
     ...
@@ -513,7 +514,7 @@ def l_ratio_from_ppf(
     r: IntVector,
     s: AnyInt | IntVector,
     /,
-    trim: tuple[AnyFloat, AnyFloat] = ...,
+    trim: AnyTrim = ...,
     **kwargs: Any,
 ) -> npt.NDArray[np.float_]:
     ...
@@ -525,7 +526,7 @@ def l_ratio_from_ppf(
     r: AnyInt | IntVector,
     s: IntVector,
     /,
-    trim: tuple[AnyFloat, AnyFloat] = ...,
+    trim: AnyTrim = ...,
     **kwargs: Any,
 ) -> npt.NDArray[np.float_]:
     ...
@@ -536,7 +537,7 @@ def l_ratio_from_ppf(
     r: AnyInt | IntVector,
     s: AnyInt | IntVector,
     /,
-    trim: tuple[AnyFloat, AnyFloat] = (0, 0),
+    trim: AnyTrim = (0, 0),
     **kwargs: Any,
 ) -> np.float_ | npt.NDArray[np.float_]:
     """
@@ -555,7 +556,7 @@ def l_ratio_from_ppf(
 def l_stats_from_cdf(
     cdf: Callable[[float], float],
     /,
-    trim: tuple[AnyFloat, AnyFloat] = (0, 0),
+    trim: AnyTrim = (0, 0),
     num: int = 4,
     **kwargs: Any,
 ) -> npt.NDArray[np.float_]:
@@ -577,7 +578,7 @@ def l_stats_from_cdf(
 def l_stats_from_ppf(
     ppf: Callable[[float], float],
     /,
-    trim: tuple[AnyFloat, AnyFloat] = (0, 0),
+    trim: AnyTrim = (0, 0),
     num: int = 4,
     **kwargs: Any,
 ) -> npt.NDArray[np.float_]:
