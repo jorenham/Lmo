@@ -204,7 +204,7 @@ def moments_to_ratio(
     l_rs: npt.NDArray[FT],
     /,
 ) -> FT | npt.NDArray[FT]:
-    assert rs.shape == l_rs.shape, [rs.shape, l_rs.shape]
+    assert rs.shape[:l_rs.ndim] == l_rs.shape[:rs.ndim], [rs.shape, l_rs.shape]
     assert len(rs) == 2
 
     r_eq_s = rs[0] == rs[1]
