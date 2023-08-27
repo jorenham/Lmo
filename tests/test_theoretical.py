@@ -5,7 +5,11 @@ from hypothesis import (
     given,
     strategies as st,
 )
-from lmo.theoretical import l_moment_from_cdf, l_moment_from_ppf
+from lmo.theoretical import (
+    l_moment_from_cdf,
+    l_moment_from_ppf,
+    l_moment_cov_from_cdf,
+)
 
 
 def cauchy_cdf(x: float) -> float:
@@ -22,6 +26,11 @@ def expon_cdf(x: float, a: float = 1) -> float:
 
 def expon_ppf(p: float, a: float = 1) -> float:
     return -a * np.log(1 - p)
+
+
+@np.errstate(over='ignore', under='ignore')
+def gumbel_cdf(x: float, loc: float = 0, scale: float = 1) -> float:
+    return np.exp(-np.exp(-(x - loc) / scale))
 
 
 @given(a=st.floats(0.1, 10))
@@ -119,3 +128,67 @@ def test_lhm_expon(a: float):
     l_stats_cdf = l_cdf[1:] / l_cdf[[0, 0, 2, 2]]
 
     assert np.allclose(l_stats_cdf, l_stats)
+
+
+def test_lm_cov_uniform():
+    k4 = np.array([
+        [1 / 2, 0, -1 / 10, 0],
+        [0, 1 / 30, 0, -1 / 70],
+        [-1 / 10, 0, 1 / 35, 0],
+        [0, -1 / 70, 0, 1 / 105],
+    ]) / 6
+    k4_hat = l_moment_cov_from_cdf(lambda x: x, 4)
+
+    assert np.allclose(k4, k4_hat)
+
+
+def test_lm_cov_expon():
+    k3 = np.array([
+        [1, 1 / 2, 1 / 6],
+        [1 / 2, 1 / 3, 1 / 6],
+        [1 / 6, 1 / 6, 2 / 15],
+    ])
+    k3_hat = l_moment_cov_from_cdf(lambda x: 1-np.exp(-x), 3)
+
+    assert np.allclose(k3, k3_hat)
+
+
+def test_lhm_cov_expon():
+    k3 = np.array([
+        [1 / 3, 1 / 8, 0],
+        [1 / 8, 3 / 40, 1 / 60],
+        [0, 1 / 60, 16 / 945],
+    ])
+    k3_hat = l_moment_cov_from_cdf(expon_cdf, 3, trim=(0, 1))
+
+    assert np.allclose(k3, k3_hat)
+
+
+def test_lm_cov_loc_invariant():
+    k4_hat = l_moment_cov_from_cdf(gumbel_cdf, 4)
+    k4_hat_l = l_moment_cov_from_cdf(
+        functools.partial(gumbel_cdf, loc=-1),
+        4
+    )
+    k4_hat_r = l_moment_cov_from_cdf(
+        functools.partial(gumbel_cdf, loc=1),
+        4
+    )
+
+    assert np.allclose(k4_hat, k4_hat_l)
+    assert np.allclose(k4_hat, k4_hat_r)
+
+
+def test_lm_cov_scale_invariant():
+    k4_hat = l_moment_cov_from_cdf(gumbel_cdf, 4)
+    k4_hat_l = l_moment_cov_from_cdf(
+        functools.partial(gumbel_cdf, scale=1/3),
+        4
+    )
+    k4_hat_r = l_moment_cov_from_cdf(
+        functools.partial(gumbel_cdf, scale=3),
+        4
+    )
+
+    assert np.allclose(k4_hat, k4_hat_l * 9)
+    assert np.allclose(k4_hat, k4_hat_r / 9)
