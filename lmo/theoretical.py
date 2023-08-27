@@ -613,7 +613,9 @@ def l_moment_cov_from_cdf(
     $F$, converge to the multivariate normal distribution. The mean is the
     vector of the population L-moments, and can be found with something like
     [`lmo.theoretical.l_moment_from_cdf(cdf, [1, ..., r_max], *, **)`].
-    This function calculates the corresponding $R \times R$ covariance matrix.
+
+    This function calculates the corresponding $R \times R$ covariance matrix,
+    when $n -> \infty$.
 
     $$
     \begin{align}
@@ -693,11 +695,8 @@ def l_moment_cov_from_cdf(
     def range_x(y: float, *_: int) -> tuple[float, float]:
         return (a, y)
 
-    out = np.empty((r_max, r_max), dtype=np.float_)
-    for k, r in np.ndindex(r_max, r_max):
-        if k > r:
-            continue
-
+    out = np.empty((rs, rs), dtype=np.float_)
+    for k, r in zip(*np.triu_indices(rs), strict=True):
         out[k, r] = out[r, k] = _nquad(
             integrand,
             [(a, b), range_x],
@@ -706,5 +705,50 @@ def l_moment_cov_from_cdf(
             rtol=rtol,
             args=(k, r),
         )
+
+    return out
+
+
+def l_stats_cov_from_cdf(
+    cdf: Callable[[float], float],
+    /,
+    trim: AnyTrim = (0, 0),
+    num: int = 4,
+    **kwargs: Any,
+) -> npt.NDArray[np.float_]:
+    """
+    Similar to [`l_moment_from_cdf`][lmo.theoretical.l_moment_from_cdf], but
+    for the [`lmo.l_stats`][lmo.l_stats].
+    """
+    rs = clean_order(num, 'num', 0)
+    ll_kr = l_moment_cov_from_cdf(cdf, rs, trim=trim, **kwargs)
+    if rs <= 2:
+        return ll_kr
+
+    l_r0 = l_moment_from_cdf(cdf, np.arange(2, rs + 1), trim=trim, **kwargs)
+
+    l_2 = l_r0[0]
+    assert l_2 > 0, l_2
+
+    t_r = np.r_[np.nan, l_r0 / l_2]
+
+    out = np.empty_like(ll_kr)
+    for k, r in zip(*np.triu_indices(rs), strict=True):
+        assert k <= r, (k, r)
+        assert ll_kr[k, r] == ll_kr[r, k]
+
+        if r <= 1:
+            tt = ll_kr[k, r]
+        elif k <= 1:
+            tt = (ll_kr[k, r] - ll_kr[2, k] * t_r[r]) / l_2
+        else:
+            tt = (
+                ll_kr[k, r]
+                - ll_kr[1, k] * t_r[r]
+                - ll_kr[1, r] * t_r[k]
+                + ll_kr[1, 1] * t_r[k] * t_r[r]
+            ) / l_2**2
+
+        out[k, r] = out[r, k] = tt
 
     return out
