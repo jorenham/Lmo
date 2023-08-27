@@ -29,8 +29,8 @@ from ._utils import clean_order, clean_trim, moments_to_ratio
 from .linalg import sh_jacobi
 from .typing import AnyFloat, AnyInt, AnyTrim, IntVector
 
-DEFAULT_RTOL: Final[float] = 1e-5
-DEFAULT_ATOL: Final[float] = 1e-8
+DEFAULT_RTOL: Final[float] = 1.49e-8
+DEFAULT_ATOL: Final[float] = 1.49e-8
 DEFAULT_LIMIT: Final[int] = 100
 
 
