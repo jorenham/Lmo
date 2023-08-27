@@ -37,7 +37,7 @@ So Lmo is as fast as sorting your samples (in terms of time-complexity).
 - Fast estimation of L-*co*moment matrices from your multidimensional data.
 - A fully non-parametric `scipy.stats`-like distribution, `lmo.l_rv`.
   It's very efficient, robust, fast, and requires only some L-mo's!
-- Exact (co)variance structure of the L-moment estimates.
+- Exact (co)variance structure of the sample- and population L-moments.
 - Complete [docs](https://jorenham.github.io/lmo/), including overly 
   complex $\TeX$ spaghetti equations.
 - Clean Pythonic syntax for ease of use.
@@ -81,7 +81,6 @@ the API reference.
 - Add methods to all `scipy.stats` univariate distributions, for finding 
   the theoretical/population L-mo's.
 - Robust distribution fitting, using the (generalized) method of L-moments.
-- Theoretical L-moment variance structure calculation.
 - A generic goodness-of-fit test.
 - Automatic trim-length selection.
 - Plotting utilities (deps optional), e.g. for L-moment ratio diagrams.
