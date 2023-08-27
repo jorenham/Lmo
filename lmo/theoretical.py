@@ -15,9 +15,9 @@ __all__ = (
 
 import functools
 import warnings
-from collections.abc import Callable
-from math import exp, lgamma, log
-from typing import Any, TypeAlias, cast, overload
+from collections.abc import Callable, Sequence
+from math import ceil, exp, lgamma, log
+from typing import Any, Final, cast, overload
 
 import numpy as np
 import numpy.typing as npt
@@ -25,14 +25,13 @@ import scipy.integrate as sci  # type: ignore
 import scipy.special as scs  # type: ignore
 
 from . import _poly
-from ._utils import moments_to_ratio
+from ._utils import clean_order, clean_trim, moments_to_ratio
 from .linalg import sh_jacobi
-from .typing import AnyFloat, AnyInt, IntVector
+from .typing import AnyFloat, AnyInt, AnyTrim, IntVector
 
-_QuadFullOutput: TypeAlias = (
-    tuple[float, float, dict[str, Any]]
-    | tuple[float, float, dict[str, Any], str]
-)
+DEFAULT_RTOL: Final[float] = 1e-5
+DEFAULT_ATOL: Final[float] = 1e-8
+DEFAULT_LIMIT: Final[int] = 100
 
 
 def _l_moment_const(r: int, s: float, t: float, k: int = 0) -> float:
@@ -50,16 +49,46 @@ def _l_moment_const(r: int, s: float, t: float, k: int = 0) -> float:
     )
 
 
+def _tighten_cdf_support(
+    cdf: Callable[[float], float],
+    support: tuple[AnyFloat, AnyFloat],
+) -> tuple[float, float]:
+    """Attempt to tighten the support by checking some common bounds."""
+    a, b = map(float, support)
+
+    # assert a < b, (a, b)
+    # assert (u_a := cdf(a)) == 0, (a, u_a)
+    # assert (u_b := cdf(b)) == 1, (b, u_b)
+
+    # attempt to tighten the default support by checking some common bounds
+    if cdf(0) == 0:
+        # left-bounded at 0 (e.g. weibull)
+        a = 0
+
+        if (u1 := cdf(1)) == 0:
+            # left-bounded at 1 (e.g. pareto)
+            a = 1
+        elif u1 == 1:
+            # right-bounded at 1 (e.g. beta)
+            b = 1
+
+    return a, b
+
+
+def _round_like(x: float, tol: float) -> float:
+    return round(x, -int(np.log10(tol))) + 0.0 if tol else x
+
+
 def _quad(
     integrand: Callable[[float], float],
-    support: tuple[AnyFloat, AnyFloat],
+    domain: tuple[AnyFloat, AnyFloat],
     limit: int,
     atol: float,
     rtol: float,
 ) -> float:
-    quad_val, _, _, *quad_tail = sci.quad(  # type: ignore
+    quad_val, quad_err, _, *quad_tail = sci.quad(  # type: ignore
         integrand,
-        *support,
+        *domain,
         full_output=True,
         limit=limit,
         epsabs=atol,
@@ -70,7 +99,29 @@ def _quad(
         warnings.warn(msg, sci.IntegrationWarning, stacklevel=2)
         return np.nan
 
-    return cast(float, quad_val)
+    return _round_like(cast(float, quad_val), cast(float, quad_err))
+
+
+def _nquad(
+    integrand: Callable[..., float],
+    domains: Sequence[
+        tuple[AnyFloat, AnyFloat] | Callable[..., tuple[float, float]]
+    ],
+    limit: int,
+    atol: float,
+    rtol: float,
+    args: tuple[Any, ...] = (),
+) -> float:
+    quad_val, quad_err = cast(
+        tuple[float, float],
+        sci.nquad(  # type: ignore
+            integrand,
+            domains[::-1],
+            args,
+            opts={'limit': limit, 'epsabs': atol, 'epsrel': rtol},
+        ),
+    )
+    return _round_like(quad_val, quad_err)
 
 
 @overload
@@ -110,9 +161,9 @@ def l_moment_from_cdf(  # noqa: C901
     trim: tuple[AnyFloat, AnyFloat] = (0, 0),
     *,
     support: tuple[AnyFloat, AnyFloat] = (-np.inf, np.inf),
-    rtol: float = 1.49e-8,
-    atol: float = 1.49e-8,
-    limit: int = 100,
+    rtol: float = DEFAULT_RTOL,
+    atol: float = DEFAULT_ATOL,
+    limit: int = DEFAULT_LIMIT,
 ) -> np.float_ | npt.NDArray[np.float_]:
     r"""
     Evaluate the population L-moment of a continuous probability distribution,
@@ -182,6 +233,8 @@ def l_moment_from_cdf(  # noqa: C901
     s, t = np.asanyarray(trim)
     trimmed = s != 0 or t != 0
 
+    a, b = _tighten_cdf_support(cdf, support)
+
     j = sh_jacobi(min(12, r_vals[-1]) - 1, t + 1, s + 1)
 
     # caching F(x) function only makes sense for multiple quad calls
@@ -230,7 +283,7 @@ def l_moment_from_cdf(  # noqa: C901
                     p ** (s + 1) * (1 - p) ** (t + 1) * j_k(p)  # type: ignore
                 )
 
-        quad_val = _quad(integrand, support, limit, atol, rtol)
+        quad_val = _quad(integrand, (a, b), limit, atol, rtol)
         l_r[i] = _l_moment_const(r_val, s, t, 1) * quad_val
 
     return (np.round(l_r, 12) + 0.0)[r_idxs].reshape(_r.shape)[()]
@@ -273,9 +326,9 @@ def l_moment_from_ppf(
     trim: tuple[AnyFloat, AnyFloat] = (0, 0),
     *,
     support: tuple[AnyFloat, AnyFloat] = (0, 1),
-    rtol: float = 1.49e-8,
-    atol: float = 1.49e-8,
-    limit: int = 100,
+    rtol: float = DEFAULT_RTOL,
+    atol: float = DEFAULT_ATOL,
+    limit: int = DEFAULT_LIMIT,
 ) -> np.float_ | npt.NDArray[np.float_]:
     """
     Evaluate the population L-moment of a continuous probability distribution,
@@ -547,11 +600,12 @@ def l_moment_cov_from_cdf(
     cdf: Callable[[float], float],
     r_max: int,
     /,
-    trim: tuple[AnyFloat, AnyFloat] = (0, 0),
+    trim: AnyTrim = (0, 0),
     *,
     support: tuple[AnyFloat, AnyFloat] = (-np.inf, np.inf),
-    rtol: float = 1.49e-8,
-    atol: float = 1.49e-8,
+    rtol: float = DEFAULT_RTOL,
+    atol: float = DEFAULT_ATOL,
+    limit: int = DEFAULT_LIMIT,
 ) -> npt.NDArray[np.float_]:
     r"""
     L-moments that are estimated from $n$ samples of a distribution with CDF
@@ -597,10 +651,9 @@ def l_moment_cov_from_cdf(
         support:
             The (outer) integration limits `(a, b)`, s.t. `a < b`,
             `cdf(a) == 0` and `cdf(b) == 1`.
-        rtol: See `epsrel` in
-            [`scipy.integrate.dblquad`][scipy.integrate.dblquad].
-        atol: See `epsabs` in
-            [`scipy.integrate.dblquad`][scipy.integrate.dblquad].
+        rtol: See `epsrel` in [`scipy.integrate.nquad`][scipy.integrate.nquad].
+        atol: See `epsabs` in [`scipy.integrate.nquad`][scipy.integrate.nquad].
+        limit: See `limit` in [`scipy.integrate.nquad`][scipy.integrate.nquad].
 
     Returns:
         out: Population L-moment covariance matrix.
@@ -612,51 +665,45 @@ def l_moment_cov_from_cdf(
             Population L-moments from the quantile function
         - [`lmo.l_moment`][lmo.l_moment] - Unbiased L-moment estimation from
             samples
+        - [`lmo.l_moment_cov`][lmo.l_moment_cov] - Distribution-free exact
+            L-moment exact covariance estimate.
     """
-    a, b = map(float, support)
+    rs = clean_order(r_max, 'rmax', 0)
+    if rs == 0:
+        return np.empty((0, 0))
 
-    assert a < b
-    assert cdf(a) == 0, cdf(a)
-    assert cdf(b) == 1, cdf(b)
+    _cdf = functools.cache(cdf)
 
-    s, t = map(float, trim)
-    assert s >= 0, s
-    assert t >= 0, t
+    a, b = _tighten_cdf_support(_cdf, support)
+    s, t = clean_trim(trim)
 
-    p_n = [_poly.jacobi(n, t, s, domain=[0, 1]) for n in range(r_max)]
-    c_n = np.array([_l_moment_const(n, s, t) for n in range(1, r_max + 1)])
+    p_n = [_poly.jacobi(n, t, s, domain=[0, 1]) for n in range(rs)]
+    c_n = np.array([_l_moment_const(n, s, t) for n in range(1, rs + 1)])
 
     def integrand(x: float, y: float, k: int, r: int) -> float:
-        u, v = cdf(x), cdf(y)
-        return cast(
+        u, v = _cdf(x), _cdf(y)
+        return  c_n[k] * c_n[r] * cast(
             float,
             (p_n[k](u) * p_n[r](v) + p_n[r](u) * p_n[k](v))
             * u * (u * v)**s
             * (1 - v) * ((1 - u) * (1 - v))**t,
         )
 
-    def b_x(y: float) -> float:
-        return y
+    def range_x(y: float, *_: int) -> tuple[float, float]:
+        return (a, y)
 
     out = np.empty((r_max, r_max), dtype=np.float_)
     for k, r in np.ndindex(r_max, r_max):
         if k > r:
             continue
 
-        _i, err = sci.dblquad(  # type: ignore [reportUnknownMemberType]
+        out[k, r] = out[r, k] = _nquad(
             integrand,
-            a,
-            b,
-            a,
-            b_x,
+            [(a, b), range_x],
+            limit=limit,
+            atol=atol,
+            rtol=rtol,
             args=(k, r),
-            epsabs=atol,
-            epsrel=rtol,
         )
-        prec = max(0, int(-np.log10(cast(float, err))))
-        i = round(cast(float, _i), prec) + .0
 
-        out[k, r] = out[r, k] = c_n[k] * c_n[r] * i
-
-    assert np.all(out.diagonal() > 0), out
-    return out + .0
+    return out
