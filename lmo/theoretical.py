@@ -16,7 +16,7 @@ __all__ = (
 import functools
 import warnings
 from collections.abc import Callable, Sequence
-from math import ceil, exp, lgamma, log
+from math import exp, lgamma, log
 from typing import Any, Final, cast, overload
 
 import numpy as np
