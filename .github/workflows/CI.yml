@@ -32,15 +32,6 @@ jobs:
       - name: install
         run: poetry install --sync --without docs --without debug
 
-      - name: setup python
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
-          cache: poetry
-
-      - name: install
-        run: poetry install --sync
-
       - name: pyright
         run: poetry run pyright
 
