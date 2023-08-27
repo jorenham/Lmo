@@ -649,6 +649,7 @@ def l_moment_cov_from_cdf(
             b,
             a,
             b_x,
+            args=(k, r),
             epsabs=atol,
             epsrel=rtol,
         )
