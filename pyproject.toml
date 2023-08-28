@@ -35,11 +35,11 @@ Documentation = "https://jorenham.github.io/lmo/"
 python = ">=3.10,<3.13"
 numpy = [
     { version = "^1.22", python = "<3.12" },
-    { version = "^1.26.0b1", python = ">=3.12" },
+    { version = ">=1.26.0b1", python = ">=3.12.0rc1" },
 ]
 scipy = [
     { version = "^1.9", python = "<3.12" },
-    { version = "^1.11", python = ">=3.12" },
+    { version = ">=1.11.1", python = ">=3.12.0rc1" },
 ]
 typing_extensions = { version = "^4.1", python = "<3.11"}
 
@@ -59,7 +59,11 @@ mkdocstrings = {extras = ["python"], version = ">=0.22,<1.0"}
 [tool.poetry.group.debug.dependencies]
 ipython = "^8.14"
 ipykernel = "^6.25"
-matplotlib = "^3.7"
+matplotlib = [
+    { version = "^3.7", python = "<3.12" },
+    { version = ">=3.8.0rc1", python = ">=3.12.0rc1" },
+]
+
 line-profiler = "^4.1"
 
 

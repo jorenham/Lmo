@@ -1195,6 +1195,48 @@ pyparsing = ">=2.3.1,<3.1"
 python-dateutil = ">=2.7"
 
 [[package]]
+name = "matplotlib"
+version = "3.8.0rc1"
+description = "Python plotting package"
+optional = false
+python-versions = ">=3.9"
+files = [
+    {file = "matplotlib-3.8.0rc1-cp310-cp310-macosx_10_12_x86_64.whl", hash = "sha256:41efefecdae6b86fb3e180e6014722f1294e7cffd388ad758e17fd82459a3230"},
+    {file = "matplotlib-3.8.0rc1-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:5710e4c681167d7035d0428a2fbae817ddb85f8e9ca3ad9fe657d5c58578f2dc"},
+    {file = "matplotlib-3.8.0rc1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:4e60cd340ef20ac91fb1bf63de7714bb6e75d3a497cdfae8fef4b52c5fb90cdc"},
+    {file = "matplotlib-3.8.0rc1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:730cefef0ef9a757ba69f014aa26866d8d7e1bee35cc76c27d17985947f68c65"},
+    {file = "matplotlib-3.8.0rc1-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:8224c1e942b797123da96ea708f76e0d0570a9af768899a3756ebfd8dedf8eca"},
+    {file = "matplotlib-3.8.0rc1-cp310-cp310-win_amd64.whl", hash = "sha256:c179f7d28345888721dee4d2d76e970b3bdb10836ce41adbabe54b4b1ce56e36"},
+    {file = "matplotlib-3.8.0rc1-cp311-cp311-macosx_10_12_x86_64.whl", hash = "sha256:a5e4ac18a59c0a95e569591e25bd7b12e0ff5afa0a820a0144927a7cbae6896d"},
+    {file = "matplotlib-3.8.0rc1-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:2033d5a089ac2bd4c94f403bb086570fc8d037ea1bf7add6a598a9c927307659"},
+    {file = "matplotlib-3.8.0rc1-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:2ecb1bf0132b4ff76aa36eb7b8f2f5e2bc0ba8545ca1c27cd483fec2db0f74f9"},
+    {file = "matplotlib-3.8.0rc1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:2edbae2012cbe5333f2004efd3e2280adde7213d51d660db31431e3e7af99934"},
+    {file = "matplotlib-3.8.0rc1-cp311-cp311-musllinux_1_1_x86_64.whl", hash = "sha256:0a106cffe9e0fda509b8a8767893fd178ebd156b8c6e8ae39107875e79496b89"},
+    {file = "matplotlib-3.8.0rc1-cp311-cp311-win_amd64.whl", hash = "sha256:b7ed3d6c1d06d6b213689eb84c5e1346c9c448861f1a5b517efaedf2b75c6a63"},
+    {file = "matplotlib-3.8.0rc1-cp39-cp39-macosx_10_12_x86_64.whl", hash = "sha256:6764520d734b466f03bc7bd2435c4d67272656d2d017050fdae60c79a79045bb"},
+    {file = "matplotlib-3.8.0rc1-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:6f694f1ee70dc78eb0928914d431c3c4a7312355aeb2345134d5eace340a3464"},
+    {file = "matplotlib-3.8.0rc1-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:63114cdf9dc2654f9a3db6a341f36c9775ae52df0476cc12a60a5867e67240bf"},
+    {file = "matplotlib-3.8.0rc1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:76acf0912d341bed46201b1fd33587fcce0e99ba7dbd9249eabfbf7a9b0d813e"},
+    {file = "matplotlib-3.8.0rc1-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:27a15e0694c65da85bd4591d2c763b6f9997f8290915e7c760aa508444e2f621"},
+    {file = "matplotlib-3.8.0rc1-cp39-cp39-win_amd64.whl", hash = "sha256:6a6cd7649f9f2faca948baea0e4d9e2d3d25326e091feb5fb5263033eb694f7c"},
+    {file = "matplotlib-3.8.0rc1-pp39-pypy39_pp73-macosx_10_12_x86_64.whl", hash = "sha256:f78c40a01e2d79cd5cffab209cffc9272bad77b40852fdb25eb2f86f2da6236a"},
+    {file = "matplotlib-3.8.0rc1-pp39-pypy39_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a142024ec031136e8a82c0061d31139a2374e14d3615451012e3abb3bce1d343"},
+    {file = "matplotlib-3.8.0rc1-pp39-pypy39_pp73-win_amd64.whl", hash = "sha256:d2f5cc5b2f0bdbe57924ced808087b9297b9fb235e5dcfb436eee2fbdb14c23e"},
+    {file = "matplotlib-3.8.0rc1.tar.gz", hash = "sha256:09948ad848fa096b2f604c042e287dace94af2a0968425cf2564b1baa9e09e22"},
+]
+
+[package.dependencies]
+contourpy = ">=1.0.1"
+cycler = ">=0.10"
+fonttools = ">=4.22.0"
+kiwisolver = ">=1.0.1"
+numpy = ">=1.21"
+packaging = ">=20.0"
+pillow = ">=6.2.0"
+pyparsing = ">=2.3.1"
+python-dateutil = ">=2.7"
+
+[[package]]
 name = "matplotlib-inline"
 version = "0.1.6"
 description = "Inline Matplotlib backend for Jupyter"
@@ -1742,6 +1784,20 @@ python-versions = ">=3.6.8"
 files = [
     {file = "pyparsing-3.0.9-py3-none-any.whl", hash = "sha256:5026bae9a10eeaefb61dab2f09052b9f4307d44aee4eda64b309723d8d206bbc"},
     {file = "pyparsing-3.0.9.tar.gz", hash = "sha256:2b020ecf7d21b687f219b71ecad3631f644a47f01403fa1d1036b0c6416d70fb"},
+]
+
+[package.extras]
+diagrams = ["jinja2", "railroad-diagrams"]
+
+[[package]]
+name = "pyparsing"
+version = "3.1.1"
+description = "pyparsing module - Classes and methods to define and execute parsing grammars"
+optional = false
+python-versions = ">=3.6.8"
+files = [
+    {file = "pyparsing-3.1.1-py3-none-any.whl", hash = "sha256:32c7c0b711493c72ff18a981d24f28aaf9c1fb7ed5e9667c9e84e3db623bdbfb"},
+    {file = "pyparsing-3.1.1.tar.gz", hash = "sha256:ede28a1a32462f5a9705e07aea48001a08f7cf81a021585011deba701581a0db"},
 ]
 
 [package.extras]
@@ -2420,4 +2476,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "c8dc327f24e5a7ebb57116fcd4a4b308ce076fac852be3d8ce09111fdaf4f0ff"
+content-hash = "f42cc6548879844fb6f87fc98cc0e61062adb7248b036c84d866c0f89325681d"
