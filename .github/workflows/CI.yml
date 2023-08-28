@@ -32,14 +32,14 @@ jobs:
       - name: install
         run: poetry install --sync --without docs --without debug
 
+      - name: codespell
+        run: poetry run codespell .
+      
+      - name: ruff
+        run: poetry run ruff check .
+
       - name: pyright
         run: poetry run pyright
 
       - name: pytest
         run: poetry run py.test
-
-      - name: codespell
-        run: poetry run codespell .
-
-      - name: ruff
-        run: poetry run ruff check .
