@@ -701,7 +701,7 @@ def l_moment_cov_from_cdf(
 
         For small sample sizes ($n < 100$), the covariances of the
         higher-order L-moments ($r > 2$) can be biased. But this bias quickly
-        disappears at roughly $n > 200$ (depdening on the trim- and L-moment
+        disappears at roughly $n > 200$ (depending on the trim- and L-moment
         orders).
 
     Args:
