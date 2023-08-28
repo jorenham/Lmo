@@ -598,6 +598,13 @@ def l_moment_from_rv(
     )
 
 
+def _stack_orders(
+    r: AnyInt | IntVector,
+    s: AnyInt | IntVector,
+) -> npt.NDArray[np.int_]:
+    return np.stack(np.broadcast_arrays(np.asarray(r), np.asarray(s)))
+
+
 @overload
 def l_ratio_from_cdf(
     cdf: Callable[[float], float],
@@ -657,7 +664,7 @@ def l_ratio_from_cdf(
         - [`l_ratio_from_ppf`][lmo.theoretical.l_ratio_from_ppf]
         - [`lmo.l_ratio`][lmo.l_ratio]
     """
-    rs = np.stack(np.broadcast_arrays(np.asarray(r), np.asarray(s)))
+    rs = _stack_orders(r, s)
     l_rs = l_moment_from_cdf(cdf, rs, trim, support=support, **kwargs)
 
     return moments_to_ratio(rs, l_rs)
@@ -722,7 +729,7 @@ def l_ratio_from_ppf(
         - [`l_ratio_from_cdf`][lmo.theoretical.l_ratio_from_cdf]
         - [`lmo.l_ratio`][lmo.l_ratio]
     """
-    rs = np.stack(np.broadcast_arrays(np.asarray(r), np.asarray(s)))
+    rs = _stack_orders(r, s)
     l_rs = l_moment_from_ppf(ppf, rs, trim, support=support, **kwargs)
 
     return moments_to_ratio(rs, l_rs)
