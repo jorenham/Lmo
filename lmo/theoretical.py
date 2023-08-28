@@ -6,6 +6,7 @@ distributions.
 __all__ = (
     'l_moment_from_cdf',
     'l_moment_from_ppf',
+    'l_moment_from_rv',
     'l_ratio_from_cdf',
     'l_ratio_from_ppf',
     'l_stats_from_cdf',
@@ -24,6 +25,7 @@ import numpy as np
 import numpy.typing as npt
 import scipy.integrate as sci  # type: ignore
 import scipy.special as scs  # type: ignore
+from scipy.stats.distributions import rv_continuous, rv_frozen  # type: ignore
 
 from . import _poly
 from ._utils import clean_order, clean_trim, moments_to_ratio
@@ -442,6 +444,41 @@ def l_moment_from_ppf(
         l_r[i] = _l_moment_const(r_val, s, t, 0) * quad_val
 
     return (np.round(l_r, 12) + 0.0)[r_idxs].reshape(_r.shape)[()]
+
+
+def l_moment_from_rv(
+    rv: rv_continuous | rv_frozen,
+    r: AnyInt | IntVector,
+    /,
+    trim: AnyTrim = (0, 0),
+    *rv_args: Any,
+    rtol: float = DEFAULT_RTOL,
+    atol: float = DEFAULT_ATOL,
+    limit: int = DEFAULT_LIMIT,
+    **rv_kwds: Any,
+) -> np.float_ | npt.NDArray[np.float_]:
+    _rv = rv if isinstance(rv, rv_frozen) else rv(*rv_args, *rv_kwds)
+
+    kwargs = {'rtol': rtol, 'atol': atol, 'limit': limit}
+    if (momtype := cast(int, _rv.dist.moment_type)) == 0:  # type: ignore
+        return l_moment_from_cdf(
+            cast(Callable[[float], float], _rv.cdf),  # type: ignore
+            r,  # type: ignore
+            trim=trim,
+            support=_rv.support(),
+            **kwargs,  # type: ignore
+        )
+    if momtype == 1:
+        return l_moment_from_ppf(
+            cast(Callable[[float], float], _rv.ppf),  # type: ignore
+            r,  # type: ignore
+            trim=trim,
+            **kwargs,  # type: ignore
+        )
+
+    msg = f'unknown momtype {momtype!r}'
+    raise TypeError(msg)
+
 
 
 @overload
