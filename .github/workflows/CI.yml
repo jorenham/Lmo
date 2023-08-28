@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.10', '3.11']
+        python-version: ['3.10', '3.11', '3.12.0-rc.1']
 
     steps:
       - name: checkout
@@ -29,17 +29,20 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: poetry
 
+      - name: check
+        run: poetry check
+
       - name: install
         run: poetry install --sync --without docs --without debug
-
-      - name: pyright
-        run: poetry run pyright
-
-      - name: pytest
-        run: poetry run py.test
 
       - name: codespell
         run: poetry run codespell .
 
       - name: ruff
         run: poetry run ruff check .
+
+      - name: pyright
+        run: poetry run pyright
+
+      - name: pytest
+        run: poetry run py.test
