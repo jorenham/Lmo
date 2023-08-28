@@ -14,7 +14,9 @@ __all__ = (
     'l_stats_from_ppf',
     'l_stats_from_rv',
     'l_moment_cov_from_cdf',
+    'l_moment_cov_from_rv',
     'l_stats_cov_from_cdf',
+    'l_stats_cov_from_rv',
 )
 
 import functools
@@ -444,6 +446,7 @@ def l_moment_from_ppf(
 def _rv_unwrap(
     rv: rv_continuous | rv_frozen,
     *rv_args: Any,
+    only: Literal['cdf', 'ppf'] | None = None,
     **rv_kwds: Any,
 ) -> tuple[
     Literal['cdf', 'ppf'],
@@ -451,23 +454,19 @@ def _rv_unwrap(
     tuple[float, float],
 ]:
     _rv = rv if isinstance(rv, rv_frozen) else rv(*rv_args, *rv_kwds)
-    momtype = cast(int, _rv.dist.moment_type)
 
-    if momtype == 0:
+    if only == 'cdf' or only is None and cast(int, _rv.dist.moment_type) == 0:
         return (
             'cdf',
             cast(Callable[[float], float], _rv.cdf),
             cast(tuple[float, float], _rv.support()),
         )
-    if momtype == 1:
-        return (
-            'ppf',
-            cast(Callable[[float], float], _rv.ppf),
-            (0, 1),
-        )
 
-    msg = f'unknown momtype {momtype!r}'
-    raise TypeError(msg)
+    return (
+        'ppf',
+        cast(Callable[[float], float], _rv.ppf),
+        (0, 1),
+    )
 
 @overload
 def l_moment_from_rv(
@@ -580,8 +579,6 @@ def l_moment_from_rv(
         - [`lmo.l_moment`][lmo.l_moment]: sample L-moment
 
     """
-    _rv = rv if isinstance(rv, rv_frozen) else rv(*rv_args, *rv_kwds)
-
     functype, func, support = _rv_unwrap(rv, *rv_args, **rv_kwds)
 
     l_moment_from_func = {
@@ -987,7 +984,6 @@ def l_moment_cov_from_cdf(
     /,
     trim: AnyTrim = (0, 0),
     *,
-    scale: float = 1.0,
     support: tuple[AnyFloat, AnyFloat] = (-np.inf, np.inf),
     rtol: float = DEFAULT_RTOL,
     atol: float = DEFAULT_ATOL,
@@ -1068,9 +1064,6 @@ def l_moment_cov_from_cdf(
         trim:
             Left- and right- trim. Must be a tuple of two non-negative ints
             or floats.
-        scale:
-            The scale of the distribution, defaults to 1. The resulting
-            covariances will be divided by `scale**2`.
 
     Other parameters:
         support: The subinterval of the nonzero domain of `cdf`.
@@ -1110,7 +1103,7 @@ def l_moment_cov_from_cdf(
     s, t = clean_trim(trim)
 
     p_n = [_poly.jacobi(n, t, s, domain=[0, 1]) for n in range(rs)]
-    c_n = np.array([_l_moment_const(n + 1, s, t) for n in range(rs)]) / scale
+    c_n = np.array([_l_moment_const(n + 1, s, t) for n in range(rs)])
 
     def integrand(x: float, y: float, k: int, r: int) -> float:
         u, v = _cdf(x), _cdf(y)
@@ -1136,6 +1129,53 @@ def l_moment_cov_from_cdf(
         )
 
     return out
+
+
+
+def l_moment_cov_from_rv(
+    rv: rv_continuous | rv_frozen,
+    r_max: int,
+    /,
+    trim: AnyTrim = (0, 0),
+    *rv_args: Any,
+    rtol: float = DEFAULT_RTOL,
+    atol: float = DEFAULT_ATOL,
+    limit: int = DEFAULT_LIMIT,
+    **rv_kwds: Any,
+) -> npt.NDArray[np.float_]:
+    """
+    Calculate the asymptotic L-moment covariance matrix from a
+    [`scipy.stats`][scipy.stats] distribution.
+
+    See [`l_moment_cov_from_cdf`][lmo.theoretical.l_moment_cov_from_cdf] for
+    more info.
+
+    Examples:
+        >>> from scipy.stats import distributions
+        >>> X = distributions.expon()  # standard exponential distribution
+        >>> l_moment_cov_from_rv(X, 4).round(6)
+        array([[1.      , 0.5     , 0.166667, 0.083333],
+               [0.5     , 0.333333, 0.166667, 0.083333],
+               [0.166667, 0.166667, 0.133333, 0.083333],
+               [0.083333, 0.083333, 0.083333, 0.071429]])
+
+        >>> l_moment_cov_from_rv(X, 4, trim=(0, 1)).round(6)
+        array([[0.333333, 0.125   , 0.      , 0.      ],
+               [0.125   , 0.075   , 0.016667, 0.      ],
+               [0.      , 0.016667, 0.016931, 0.00496 ],
+               [0.      , 0.      , 0.00496 , 0.0062  ]])
+
+    """
+    _, cdf, support = _rv_unwrap(rv, *rv_args, only='cdf', **rv_kwds)
+    return l_moment_cov_from_cdf(
+        cdf,
+        r_max,
+        trim=trim,
+        support=support,
+        rtol=rtol,
+        atol=atol,
+        limit=limit,
+    )
 
 
 def l_stats_cov_from_cdf(
@@ -1237,3 +1277,49 @@ def l_stats_cov_from_cdf(
         out[k, r] = out[r, k] = tt
 
     return out
+
+
+def l_stats_cov_from_rv(
+    rv: rv_continuous | rv_frozen,
+    /,
+    num: int = 4,
+    trim: AnyTrim = (0, 0),
+    *rv_args: Any,
+    rtol: float = DEFAULT_RTOL,
+    atol: float = DEFAULT_ATOL,
+    limit: int = DEFAULT_LIMIT,
+    **rv_kwds: Any,
+) -> npt.NDArray[np.float_]:
+    """
+    Calculate the asymptotic L-stats covariance matrix from a
+    [`scipy.stats`][scipy.stats] distribution.
+
+    See [`l_stats_cov_from_cdf`][lmo.theoretical.l_stats_cov_from_cdf] for
+    more info.
+
+    Examples:
+        >>> from scipy.stats import distributions
+        >>> X = distributions.expon()  # standard exponential distribution
+        >>> l_stats_cov_from_rv(X).round(6)
+        array([[ 1.      ,  0.5     ,  0.      , -0.      ],
+               [ 0.5     ,  0.333333,  0.111111,  0.055555],
+               [ 0.      ,  0.111111,  0.237037,  0.185185],
+               [-0.      ,  0.055555,  0.185185,  0.21164 ]])
+
+        >>> l_stats_cov_from_rv(X, trim=(0, 1)).round(6)
+        array([[ 0.333333,  0.125   , -0.111111, -0.041667],
+               [ 0.125   ,  0.075   ,  0.      , -0.025   ],
+               [-0.111111,  0.      ,  0.21164 ,  0.079365],
+               [-0.041667, -0.025   ,  0.079365,  0.10754 ]])
+
+    """
+    _, cdf, support = _rv_unwrap(rv, *rv_args, only='cdf', **rv_kwds)
+    return l_stats_cov_from_cdf(
+        cdf,
+        num,
+        trim=trim,
+        support=support,
+        rtol=rtol,
+        atol=atol,
+        limit=limit,
+    )
