@@ -163,5 +163,5 @@ force-wrap-aliases = true
 inline-quotes = "single"
 
 [tool.codespell]
-skip = '*.lock'
+skip = '*.lock,.venv,.vscode,dist,docs,site'
 context = 2
