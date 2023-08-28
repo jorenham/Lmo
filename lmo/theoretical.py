@@ -19,7 +19,7 @@ import functools
 import warnings
 from collections.abc import Callable, Sequence
 from math import exp, lgamma, log
-from typing import Any, Final, cast, overload
+from typing import Any, Final, Literal, cast, overload
 
 import numpy as np
 import numpy.typing as npt
@@ -218,10 +218,6 @@ def l_moment_from_cdf(  # noqa: C901
           population L-moment, using the inverse CDF
         - [`l_moment`][lmo.l_moment]: sample L-moment
 
-    Todo:
-        - The equations used for the r=0, r=1, and r>1 cases.
-        - Optional cdf args and kwargs with ParamSpec.
-
     """
     _r = np.asanyarray(r)
     if not np.issubdtype(_r.dtype, np.integer):
@@ -387,10 +383,6 @@ def l_moment_from_ppf(
           population L-moment, using the CDF (i.e. the inverse PPF)
         - [`l_moment`][lmo.l_moment]: sample L-moment
 
-    Todo:
-        - The equations used for the r=0, r>0 cases.
-        - Optional ppf args and kwargs with ParamSpec.
-
     """
     _r = np.asanyarray(r)
     if not np.issubdtype(_r.dtype, np.integer):
@@ -408,8 +400,8 @@ def l_moment_from_ppf(
 
     j = sh_jacobi(min(r_vals[-1], 12), t, s)
 
-    def w(p: float, *args: Any) -> float:
-        return p**s * (1 - p) ** t * ppf(p, *args)
+    def w(p: float) -> float:
+        return p**s * (1 - p) ** t * ppf(p)
 
     # caching the weight function only makes sense for multiple quad calls
     _w = functools.cache(w) if len(r_vals) > 1 else w
@@ -446,6 +438,65 @@ def l_moment_from_ppf(
     return (np.round(l_r, 12) + 0.0)[r_idxs].reshape(_r.shape)[()]
 
 
+# pyright: reportUnknownMemberType=false
+def _rv_unwrap(
+    rv: rv_continuous | rv_frozen,
+    *rv_args: Any,
+    **rv_kwds: Any,
+) -> tuple[
+    Literal['cdf', 'ppf'],
+    Callable[[float], float],
+    tuple[float, float],
+]:
+    _rv = rv if isinstance(rv, rv_frozen) else rv(*rv_args, *rv_kwds)
+    momtype = cast(int, _rv.dist.moment_type)
+
+    if momtype == 0:
+        return (
+            'cdf',
+            cast(Callable[[float], float], _rv.cdf),
+            cast(tuple[float, float], _rv.support()),
+        )
+    if momtype == 1:
+        return (
+            'ppf',
+            cast(Callable[[float], float], _rv.ppf),
+            (0, 1),
+        )
+
+    msg = f'unknown momtype {momtype!r}'
+    raise TypeError(msg)
+
+@overload
+def l_moment_from_rv(
+    ppf: rv_continuous | rv_frozen,
+    r: AnyInt,
+    /,
+    trim: AnyTrim = ...,
+    *rv_args: Any,
+    rtol: float = ...,
+    atol: float = ...,
+    limit: int = ...,
+    **rv_kwds: Any,
+) -> np.float_:
+    ...
+
+
+@overload
+def l_moment_from_rv(
+    ppf: rv_continuous | rv_frozen,
+    r: IntVector,
+    /,
+    trim: AnyTrim = ...,
+    *rv_args: Any,
+    rtol: float = ...,
+    atol: float = ...,
+    limit: int = ...,
+    **rv_kwds: Any,
+) -> npt.NDArray[np.float_]:
+    ...
+
+
 def l_moment_from_rv(
     rv: rv_continuous | rv_frozen,
     r: AnyInt | IntVector,
@@ -457,28 +508,94 @@ def l_moment_from_rv(
     limit: int = DEFAULT_LIMIT,
     **rv_kwds: Any,
 ) -> np.float_ | npt.NDArray[np.float_]:
+    """
+    Evaluate the population L-moment of a
+    [`scipy.stats.rv_continuous`][scipy.stats.rv_continuous] probability
+    distribution instance or frozen instance.
+
+    Examples:
+        Evaluate the population L-moments of the normally-distributed IQ test.
+
+        >>> from scipy.stats import distributions
+        >>> l_moment_from_rv(distributions.norm(100, 15), [1, 2, 3, 4])
+        array([100.       ,   8.4628438,   0.       ,   1.0375592])
+        >>> _[1] * np.sqrt(np.pi)
+        15.000000...
+
+    Notes:
+        If you care about performance, it is generally faster to use
+        [`l_moment_from_cdf`][lmo.theoretical.l_moment_from_cdf] or
+        [`l_moment_from_ppf`][lmo.theoretical.l_moment_from_ppf] directly.
+        For instance by using [`scipy.special.ndtr`][scipy.special.ndtr] or
+        [`scipy.special.ndtri`][scipy.special.ndtri], instead of
+        [`scipy.stats.norm`][scipy.stats.norm].
+
+    Args:
+        rv:
+            Univariate continuously distributed [`scipy.stats`][scipy.stats]
+            random variable (RV).
+            Can be generic or grozen, e.g. `scipy.stats.norm` and
+            `scipy.stats.norm()` are both allowed.
+        r:
+            L-moment order(s), non-negative integer or array-like of integers.
+        trim:
+            Left- and right- trim. Must be a tuple of two non-negative ints
+            or floats (!).
+        *rv_args:
+            Optional positional arguments for the
+            [`scipy.stats.rv_continuous`][scipy.stats.rv_continuous] instance.
+            These are ignored if `rv` is frozen.
+        **rv_kwds:
+            Optional keyword arguments for the
+            [`scipy.stats.rv_continuous`][scipy.stats.rv_continuous] instance.
+            These are ignored if `rv` is frozen.
+
+    Other parameters:
+        rtol: See `epsrel` [`scipy.integrate.quad`][scipy.integrate.quad].
+        atol: See `epsabs` [`scipy.integrate.quad`][scipy.integrate.quad].
+        limit: See `limit` in [`scipy.integrate.quad`][scipy.integrate.quad].
+
+    Raises:
+        TypeError: `r` is not integer-valued
+        ValueError: `r` is empty or negative
+
+    Returns:
+        lmbda:
+            The population L-moment(s), a scalar or float array like `r`.
+            If `nan`, consult the related `IntegrationWarning` message.
+
+    References:
+        - [E. Elamir & A. Seheult (2003) - Trimmed L-moments](
+            https://doi.org/10.1016/S0167-9473(02)00250-5)
+        - [J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
+            L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
+
+    See Also:
+        - [`l_moment_from_cdf`][lmo.theoretical.l_moment_from_cdf]:
+          population L-moment, using the cumulative distribution function.
+        - [`l_moment_from_ppf`][lmo.theoretical.l_moment_from_ppf]:
+          population L-moment, using the inverse CDF (quantile function).
+        - [`lmo.l_moment`][lmo.l_moment]: sample L-moment
+
+    """
     _rv = rv if isinstance(rv, rv_frozen) else rv(*rv_args, *rv_kwds)
 
-    kwargs = {'rtol': rtol, 'atol': atol, 'limit': limit}
-    if (momtype := cast(int, _rv.dist.moment_type)) == 0:  # type: ignore
-        return l_moment_from_cdf(
-            cast(Callable[[float], float], _rv.cdf),  # type: ignore
-            r,  # type: ignore
-            trim=trim,
-            support=_rv.support(),
-            **kwargs,  # type: ignore
-        )
-    if momtype == 1:
-        return l_moment_from_ppf(
-            cast(Callable[[float], float], _rv.ppf),  # type: ignore
-            r,  # type: ignore
-            trim=trim,
-            **kwargs,  # type: ignore
-        )
+    functype, func, support = _rv_unwrap(rv, *rv_args, **rv_kwds)
 
-    msg = f'unknown momtype {momtype!r}'
-    raise TypeError(msg)
+    l_moment_from_func = {
+        'cdf': l_moment_from_cdf,
+        'ppf': l_moment_from_ppf,
+    }[functype]
 
+    return l_moment_from_func(
+        func,
+        r,
+        trim=trim,
+        support=support,
+        rtol=rtol,
+        atol=atol,
+        limit=limit,
+    )
 
 
 @overload
