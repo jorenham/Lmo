@@ -9,6 +9,7 @@ from lmo.theoretical import (
     l_moment_from_cdf,
     l_moment_from_ppf,
     l_moment_cov_from_cdf,
+    l_stats_cov_from_cdf,
 )
 
 
@@ -192,3 +193,15 @@ def test_lm_cov_scale_invariant():
 
     assert np.allclose(k4_hat, k4_hat_l * 9)
     assert np.allclose(k4_hat, k4_hat_r / 9)
+
+
+def test_ls_cov_uniform():
+    k4 = np.array([
+        [1 / 12, 0, -1 / 10, 0],
+        [0, 1 / 180, 0, -1 / 70],
+        [-1 / 10, 0, 6 / 35, 0],
+        [0, -1 / 70, 0, 2 / 35],
+    ])
+    k4_hat = l_stats_cov_from_cdf(lambda x: x)
+
+    assert np.allclose(k4, k4_hat)
