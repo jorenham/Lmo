@@ -605,6 +605,8 @@ def l_ratio_from_cdf(
     s: AnyInt,
     /,
     trim: AnyTrim = ...,
+    *,
+    support: tuple[AnyFloat, AnyFloat] = ...,
     **kwargs: Any,
 ) -> np.float_:
     ...
@@ -617,6 +619,8 @@ def l_ratio_from_cdf(
     s: AnyInt | IntVector,
     /,
     trim: AnyTrim = ...,
+    *,
+    support: tuple[AnyFloat, AnyFloat] = ...,
     **kwargs: Any,
 ) -> npt.NDArray[np.float_]:
     ...
@@ -629,6 +633,8 @@ def l_ratio_from_cdf(
     s: IntVector,
     /,
     trim: AnyTrim = ...,
+    *,
+    support: tuple[AnyFloat, AnyFloat] = ...,
     **kwargs: Any,
 ) -> npt.NDArray[np.float_]:
     ...
@@ -640,6 +646,8 @@ def l_ratio_from_cdf(
     s: AnyInt | IntVector,
     /,
     trim: AnyTrim = (0, 0),
+    *,
+    support: tuple[AnyFloat, AnyFloat] = (-np.inf, np.inf),
     **kwargs: Any,
 ) -> np.float_ | npt.NDArray[np.float_]:
     """
@@ -650,7 +658,7 @@ def l_ratio_from_cdf(
         - [`lmo.l_ratio`][lmo.l_ratio]
     """
     rs = np.stack(np.broadcast_arrays(np.asarray(r), np.asarray(s)))
-    l_rs = l_moment_from_cdf(cdf, rs, trim, **kwargs)
+    l_rs = l_moment_from_cdf(cdf, rs, trim, support=support, **kwargs)
 
     return moments_to_ratio(rs, l_rs)
 
@@ -662,6 +670,8 @@ def l_ratio_from_ppf(
     s: AnyInt,
     /,
     trim: AnyTrim = ...,
+    *,
+    support: tuple[AnyFloat, AnyFloat] = ...,
     **kwargs: Any,
 ) -> np.float_:
     ...
@@ -674,6 +684,8 @@ def l_ratio_from_ppf(
     s: AnyInt | IntVector,
     /,
     trim: AnyTrim = ...,
+    *,
+    support: tuple[AnyFloat, AnyFloat] = ...,
     **kwargs: Any,
 ) -> npt.NDArray[np.float_]:
     ...
@@ -686,6 +698,8 @@ def l_ratio_from_ppf(
     s: IntVector,
     /,
     trim: AnyTrim = ...,
+    *,
+    support: tuple[AnyFloat, AnyFloat] = ...,
     **kwargs: Any,
 ) -> npt.NDArray[np.float_]:
     ...
@@ -697,6 +711,8 @@ def l_ratio_from_ppf(
     s: AnyInt | IntVector,
     /,
     trim: AnyTrim = (0, 0),
+    *,
+    support: tuple[AnyFloat, AnyFloat] = (0, 1),
     **kwargs: Any,
 ) -> np.float_ | npt.NDArray[np.float_]:
     """
@@ -707,7 +723,7 @@ def l_ratio_from_ppf(
         - [`lmo.l_ratio`][lmo.l_ratio]
     """
     rs = np.stack(np.broadcast_arrays(np.asarray(r), np.asarray(s)))
-    l_rs = l_moment_from_ppf(ppf, rs, trim, **kwargs)
+    l_rs = l_moment_from_ppf(ppf, rs, trim, support=support, **kwargs)
 
     return moments_to_ratio(rs, l_rs)
 
@@ -717,6 +733,8 @@ def l_stats_from_cdf(
     /,
     num: int = 4,
     trim: AnyTrim = (0, 0),
+    *,
+    support: tuple[AnyFloat, AnyFloat] = (-np.inf, np.inf),
     **kwargs: Any,
 ) -> npt.NDArray[np.float_]:
     r"""
@@ -746,7 +764,7 @@ def l_stats_from_cdf(
 
     """
     r, s = np.arange(1, num + 1), [0] * min(2, num) + [2] * (num - 2)
-    return l_ratio_from_cdf(cdf, r, s, trim=trim, **kwargs)
+    return l_ratio_from_cdf(cdf, r, s, trim=trim, support=support, **kwargs)
 
 
 def l_stats_from_ppf(
@@ -754,6 +772,8 @@ def l_stats_from_ppf(
     /,
     trim: AnyTrim = (0, 0),
     num: int = 4,
+    *,
+    support: tuple[AnyFloat, AnyFloat] = (0, 1),
     **kwargs: Any,
 ) -> npt.NDArray[np.float_]:
     r"""
@@ -782,7 +802,7 @@ def l_stats_from_ppf(
         - [`lmo.l_stats`][lmo.l_stats] - Unbiased sample estimation of L-stats.
     """
     r, s = np.arange(1, num + 1), [0] * min(2, num) + [2] * (num - 2)
-    return l_ratio_from_ppf(ppf, r, s, trim=trim, **kwargs)
+    return l_ratio_from_ppf(ppf, r, s, trim=trim, support=support, **kwargs)
 
 
 def l_moment_cov_from_cdf(
