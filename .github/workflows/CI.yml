@@ -29,12 +29,15 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: poetry
 
+      - name: check
+        run: poetry check
+
       - name: install
         run: poetry install --sync --without docs --without debug
 
       - name: codespell
         run: poetry run codespell .
-      
+
       - name: ruff
         run: poetry run ruff check .
 
