@@ -11,6 +11,7 @@ __all__ = (
     'l_stats_from_cdf',
     'l_stats_from_ppf',
     'l_moment_cov_from_cdf',
+    'l_stats_cov_from_cdf',
 )
 
 import functools
