@@ -189,6 +189,8 @@ def l_moment_from_cdf(  # noqa: C901
 
     Other parameters:
         support: The subinterval of the nonzero domain of `cdf`.
+            Generally it's not needed to provide this, as it will be guessed
+            automatically.
         rtol: See `epsrel` [`scipy.integrate.quad`][scipy.integrate.quad].
         atol: See `epsabs` [`scipy.integrate.quad`][scipy.integrate.quad].
         limit: See `limit` in [`scipy.integrate.quad`][scipy.integrate.quad].
@@ -355,7 +357,9 @@ def l_moment_from_ppf(
             or floats (!).
 
     Other parameters:
-        support: The subinterval of the nonzero domain of `ppf`.
+        support: The subinterval of the nonzero domain of `cdf`.
+            Generally it's not needed to provide this, as it will be guessed
+            automatically.
         rtol: See `epsrel` [`scipy.integrate.quad`][scipy.integrate.quad].
         atol: See `epsabs` [`scipy.integrate.quad`][scipy.integrate.quad].
         limit: See `limit` in [`scipy.integrate.quad`][scipy.integrate.quad].
@@ -556,20 +560,35 @@ def l_ratio_from_ppf(
 def l_stats_from_cdf(
     cdf: Callable[[float], float],
     /,
-    trim: AnyTrim = (0, 0),
     num: int = 4,
+    trim: AnyTrim = (0, 0),
     **kwargs: Any,
 ) -> npt.NDArray[np.float_]:
-    """
-    Calculates the population L-loc(ation), L-scale, L-skew(ness) and
-    L-kurtosis from a CDF.
+    r"""
+    Calculates the theoretical- / population- L-moments (for $r \le 2$)
+    and L-ratio's (for $r > 2$) of a distribution, from its CDF.
 
-    Alias for `l_ratio_from_cdf(cdf, [1, 2, 3, 4], [0, 0, 2, 2], *, **)`.
+    By default, the first `num = 4` population L-stats are calculated:
+
+    - $\lambda^{(s,t)}_1$ - *L-loc*ation
+    - $\lambda^{(s,t)}_2$ - *L-scale*
+    - $\tau^{(s,t)}_3$ - *L-skew*ness coefficient
+    - $\tau^{(s,t)}_4$ - *L-kurt*osis coefficient
+
+    This function is equivalent to
+    `l_ratio_from_cdf(cdf, [1, 2, 3, 4], [0, 0, 2, 2], *, **)`.
+
+    Note:
+        This should not be confused with the term *L-statistic*, which is
+        sometimes used to describe any linear combination of order statistics.
 
     See Also:
-        - [`l_ratio_from_cdf`][lmo.theoretical.l_ratio_from_cdf]
-        - [`l_moment_from_cdf`][lmo.theoretical.l_moment_from_cdf]
-        - [`l_stats_from_ppf`][lmo.theoretical.l_ratio_from_ppf]
+        - [`l_stats_from_ppf`][lmo.theoretical.l_stats_from_ppf] - Population
+            L-stats from the quantile function.
+        - [`l_ratio_from_cdf`][lmo.theoretical.l_ratio_from_cdf] - Generalized
+            population L-ratio's from the CDF.
+        - [`lmo.l_stats`][lmo.l_stats] - Unbiased sample estimation of L-stats.
+
     """
     r, s = np.arange(1, num + 1), [0] * min(2, num) + [2] * (num - 2)
     return l_ratio_from_cdf(cdf, r, s, trim=trim, **kwargs)
@@ -582,16 +601,30 @@ def l_stats_from_ppf(
     num: int = 4,
     **kwargs: Any,
 ) -> npt.NDArray[np.float_]:
-    """
-    Calculates the population L-loc(ation), L-scale, L-skew(ness) and
-    L-kurtosis from a PPF.
+    r"""
+    Calculates the theoretical- / population- L-moments (for $r \le 2$)
+    and L-ratio's (for $r > 2$) of a distribution, from its quantile function.
 
-    Alias for `l_ratio_from_ppf(cdf, [1, 2, 3, 4], [0, 0, 2, 2], *, **)`.
+    By default, the first `num = 4` population L-stats are calculated:
+
+    - $\lambda^{(s,t)}_1$ - *L-loc*ation
+    - $\lambda^{(s,t)}_2$ - *L-scale*
+    - $\tau^{(s,t)}_3$ - *L-skew*ness coefficient
+    - $\tau^{(s,t)}_4$ - *L-kurt*osis coefficient
+
+    This function is equivalent to
+    `l_ratio_from_cdf(cdf, [1, 2, 3, 4], [0, 0, 2, 2], *, **)`.
+
+    Note:
+        This should not be confused with the term *L-statistic*, which is
+        sometimes used to describe any linear combination of order statistics.
 
     See Also:
-        - [`l_ratio_from_ppf`][lmo.theoretical.l_ratio_from_ppf]
-        - [`l_moment_from_ppf`][lmo.theoretical.l_moment_from_ppf]
-        - [`l_stats_from_cdf`][lmo.theoretical.l_ratio_from_cdf]
+        - [`l_stats_from_cdf`][lmo.theoretical.l_stats_from_cdf] - Population
+            L-stats from the CDF.
+        - [`l_ratio_from_ppf`][lmo.theoretical.l_ratio_from_ppf] - Generalized
+            population L-ratio's from the quantile function.
+        - [`lmo.l_stats`][lmo.l_stats] - Unbiased sample estimation of L-stats.
     """
     r, s = np.arange(1, num + 1), [0] * min(2, num) + [2] * (num - 2)
     return l_ratio_from_ppf(ppf, r, s, trim=trim, **kwargs)
@@ -603,6 +636,7 @@ def l_moment_cov_from_cdf(
     /,
     trim: AnyTrim = (0, 0),
     *,
+    scale: float = 1.0,
     support: tuple[AnyFloat, AnyFloat] = (-np.inf, np.inf),
     rtol: float = DEFAULT_RTOL,
     atol: float = DEFAULT_ATOL,
@@ -610,16 +644,29 @@ def l_moment_cov_from_cdf(
 ) -> npt.NDArray[np.float_]:
     r"""
     L-moments that are estimated from $n$ samples of a distribution with CDF
-    $F$, converge to the multivariate normal distribution. The mean is the
-    vector of the population L-moments, and can be found with something like
-    [`lmo.theoretical.l_moment_from_cdf(cdf, [1, ..., r_max], *, **)`].
+    $F$, converge to the multivariate normal distribution as the sample size
+    $n \rightarrow \infty$.
 
-    This function calculates the corresponding $R \times R$ covariance matrix,
-    when $n -> \infty$.
+    $$
+    \sqrt{n} \left(
+        \vec{l}^{(s, t)} - \vec{\lambda}^{(s, t)}
+    \right)
+    \sim
+    \mathcal{N}(
+        \vec{0},
+        \mathbf{\Lambda}^{(s, t)}
+    )
+    $$
+
+    Here, $\vec{l}^{(s, t)} = \left[l^{(s, t)}_r, \dots, l^{(s, t)}_{r_{max}}
+    \right]^T$ is a vector of estimated sample L-moments,
+    and \vec{\lambda}^{(s, t)} its theoretical ("true") counterpart.
+
+    This function calculates the covariance matrix
 
     $$
     \begin{align}
-    \Lambda^{(s,t)}_{k, r}
+    \bf{\Lambda}^{(s,t)}_{k, r}
         &= \mathrm{Cov}[l^{(s, t)}_k, l^{(s, t)}_r] \\
         &= c_k c_r
         \iint\limits_{x < y} \Big[
@@ -629,12 +676,33 @@ def l_moment_cov_from_cdf(
         w^{(s+1,\, t)}\big(F(x)\big) \,
         w^{(s,\, t+1)}\big(F(y)\big) \,
         \mathrm{d}x \, \mathrm{d}y
+        \;,
     \end{align}
     $$
 
-    where $c_n = \frac{\Gamma(n) \Gamma(n+s+t+1)}{n \Gamma(n+s) \Gamma(n+t)}$,
-    $p_n(u) = P^{(t, s)}_{n-1}(2u - 1)$, $P^{(t, s)}_m$ the
-    Jacobi Polynomial, and $w^{(s,t)}(u) = u^s (1-u)^t$ its weight function.
+    where
+
+    $$
+    c_n = \frac{\Gamma(n) \Gamma(n+s+t+1)}{n \Gamma(n+s) \Gamma(n+t)}\;,
+    $$
+
+    the shifted Jacobi polynomial
+    $p_n(u) = P^{(t, s)}_{n-1}(2u - 1)$, $P^{(t, s)}_m$, and
+    $w^{(s,t)}(u) = u^s (1-u)^t$ its weight function.
+
+    Notes:
+        This function uses [`scipy.integrate.nquad`][scipy.integrate.nquad]
+        for numerical integration. Unexpected results may be returned if the
+        integral does not exist, or does not converge.
+        The results are rounded to match the order of magnitude of the
+        absolute error of [`scipy.integrate.nquad`][scipy.integrate.nquad].
+
+        This function is not vectorized or parallelized.
+
+        For small sample sizes ($n < 100$), the covariances of the
+        higher-order L-moments ($r > 2$) can be biased. But this bias quickly
+        disappears at roughly $n > 200$ (depdening on the trim- and L-moment
+        orders).
 
     Args:
         cdf:
@@ -648,18 +716,21 @@ def l_moment_cov_from_cdf(
             $r = 1, \dots, r_{max}$.
         trim:
             Left- and right- trim. Must be a tuple of two non-negative ints
-            or floats (!).
+            or floats.
+        scale:
+            The scale of the distribution, defaults to 1. The resulting
+            covariances will be divided by `scale**2`.
 
     Other parameters:
-        support:
-            The (outer) integration limits `(a, b)`, s.t. `a < b`,
-            `cdf(a) == 0` and `cdf(b) == 1`.
+        support: The subinterval of the nonzero domain of `cdf`.
+            Generally it's not needed to provide this, as it will be guessed
+            automatically.
         rtol: See `epsrel` in [`scipy.integrate.nquad`][scipy.integrate.nquad].
         atol: See `epsabs` in [`scipy.integrate.nquad`][scipy.integrate.nquad].
         limit: See `limit` in [`scipy.integrate.nquad`][scipy.integrate.nquad].
 
     Returns:
-        out: Population L-moment covariance matrix.
+        out: Covariance matrix, with shape `(r_max, r_max)`.
 
     See Also:
         - [`l_moment_from_cdf`][lmo.theoretical.l_moment_from_cdf] -
@@ -670,6 +741,13 @@ def l_moment_cov_from_cdf(
             samples
         - [`lmo.l_moment_cov`][lmo.l_moment_cov] - Distribution-free exact
             L-moment exact covariance estimate.
+
+    References:
+        - [J.R.M. Hosking (1990) - L-moments: Analysis and Estimation of
+            Distributions Using Linear Combinations of Order Statistics
+            ](https://jstor.org/stable/2345653)
+        - [J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
+            L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
     """
     rs = clean_order(r_max, 'rmax', 0)
     if rs == 0:
@@ -681,7 +759,7 @@ def l_moment_cov_from_cdf(
     s, t = clean_trim(trim)
 
     p_n = [_poly.jacobi(n, t, s, domain=[0, 1]) for n in range(rs)]
-    c_n = np.array([_l_moment_const(n, s, t) for n in range(1, rs + 1)])
+    c_n = np.array([_l_moment_const(n + 1, s, t) for n in range(rs)]) / scale
 
     def integrand(x: float, y: float, k: int, r: int) -> float:
         u, v = _cdf(x), _cdf(y)
@@ -712,13 +790,69 @@ def l_moment_cov_from_cdf(
 def l_stats_cov_from_cdf(
     cdf: Callable[[float], float],
     /,
-    trim: AnyTrim = (0, 0),
     num: int = 4,
+    trim: AnyTrim = (0, 0),
     **kwargs: Any,
 ) -> npt.NDArray[np.float_]:
-    """
+    r"""
     Similar to [`l_moment_from_cdf`][lmo.theoretical.l_moment_from_cdf], but
     for the [`lmo.l_stats`][lmo.l_stats].
+
+    As the sample size $n \rightarrow \infty$, the L-moment ratio's are also
+    distributed (multivariate) normally. The L-stats are defined to be
+    L-moments for $r\le 2$, and L-ratio coefficients otherwise.
+
+    The corresponding covariance matrix has been found to be
+
+    $$
+    \bf{T}^{(s, t)}_{k, r} =
+    \begin{cases}
+        \bf{\Lambda}^{(s, t)}_{k, r}
+            & k \le 2 \wedge r \le 2 \\
+        \frac{
+            \bf{\Lambda}^{(s, t)}_{k, r}
+            - \tau_r \bf{\Lambda}^{(s, t)}_{k, 2}
+        }{
+            \lambda^{(s,t)}_{2}
+        }
+            & k \le 2 \wedge r > 2 \\
+        \frac{
+            \bf{\Lambda}^{(s, t)}_{k, r}
+            - \tau_k \bf{\Lambda}^{(s, t)}_{2, r}
+            - \tau_r \bf{\Lambda}^{(s, t)}_{k, 2}
+            + \tau_k \tau_r \bf{\Lambda}^{(s, t)}_{2, 2}
+        }{
+            \Big( \lambda^{(s,t)}_{2} \Big)^2
+        }
+            & k > 2 \wedge r > 2
+    \end{cases}
+    $$
+
+    where $\bf{\Lambda}^{(s, t)}$ is the covariance matrix of the L-moments
+    from [`l_moment_cov_from_cdf`][lmo.theoretical.l_moment_cov_from_cdf],
+    and $\tau^{(s,t)}_r = \lambda^{(s,t)}_r / \lambda^{(s,t)}_2$ the
+    population L-ratio.
+
+    Args:
+        cdf:
+            Cumulative Distribution Function (CDF), $F_X(x) = P(X \le x)$.
+            Must be a continuous monotone increasing function with
+            signature `(float) -> float`, whose return value lies in $[0, 1]$.
+        num:
+            The amount of L-statistics to return. Defaults to 4.
+        trim:
+            Left- and right- trim. Must be a tuple of two non-negative ints
+            or floats.
+        **kwargs:
+            Optional keyword arguments to pass to
+            [`l_moment_from_cdf`][lmo.theoretical.l_moment_from_cdf].
+
+    References:
+        - [J.R.M. Hosking (1990) - L-moments: Analysis and Estimation of
+            Distributions Using Linear Combinations of Order Statistics
+            ](https://jstor.org/stable/2345653)
+        - [J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
+            L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
     """
     rs = clean_order(num, 'num', 0)
     ll_kr = l_moment_cov_from_cdf(cdf, rs, trim=trim, **kwargs)
@@ -740,7 +874,7 @@ def l_stats_cov_from_cdf(
         if r <= 1:
             tt = ll_kr[k, r]
         elif k <= 1:
-            tt = (ll_kr[k, r] - ll_kr[2, k] * t_r[r]) / l_2
+            tt = (ll_kr[k, r] - ll_kr[1, k] * t_r[r]) / l_2
         else:
             tt = (
                 ll_kr[k, r]
