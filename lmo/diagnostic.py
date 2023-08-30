@@ -2,7 +2,7 @@
 
 __all__ = ('normaltest', 'l_moment_bounds', 'l_ratio_bounds')
 
-from collections.abc import Callable, Sequence
+from collections.abc import Callable
 from math import lgamma
 from typing import Any, NamedTuple, TypeVar, cast, overload
 
@@ -132,6 +132,26 @@ _lm2_bounds = cast(
 )
 
 
+@overload
+def l_moment_bounds(
+    r: IntVector,
+    /,
+    trim: AnyTrim = ...,
+    scale: float = ...,
+) -> npt.NDArray[np.float_]:
+    ...
+
+
+@overload
+def l_moment_bounds(
+    r: AnyInt,
+    /,
+    trim: AnyTrim = ...,
+    scale: float = ...,
+) -> float:
+    ...
+
+
 def l_moment_bounds(
     r: IntVector | AnyInt,
     /,
@@ -143,9 +163,22 @@ def l_moment_bounds(
     $\lambda^{(s,t)}_r$, proportional to the scale $\sigma_X$ (standard
     deviation) of the probability distribution of random variable $X$.
     So $\left| \lambda^{(s,t)}_r(X) \right| \le \sigma_X \, L^{(s,t)}_r$,
-    given that standard deviation $\sigma_X$ of $X$ exists.
+    given that standard deviation $\sigma_X$ of $X$ exists and is finite.
 
-    These bounds are derived by applying the Cauchy-Schwarz inequality to the
+    Warning:
+        These bounds do not apply to distributions with undefined variance,
+        e.g. the Cauchy distribution, even if trimmed L-moments are used.
+        Distributions with infinite variance (e.g. Student's t with $\nu=2$)
+        are a grey area:
+
+        For the L-scale ($r=2$), the corresponding bound will not be a valid
+        one. However, it can still be used to find the L-ratio bounds, because
+        the $\sigma_X$ terms will cancel out.
+        Doing this is not for the faint of heart, as it requires dividing
+        infinity by infinity. So be sure to wear safety glasses.
+
+    The bounds are derived by applying the [Cauchy-Schwarz inequality](
+        https://wikipedia.org/wiki/Cauchy%E2%80%93Schwarz_inequality) to the
     covariance-based definition of generalized trimmed L-moment, for $r > 1$:
 
     $$
@@ -199,7 +232,8 @@ def l_moment_bounds(
         by the author, [@jorenham](https://github.com/jorenham/).
 
     Args:
-        r: The L-moment order(s), non-negative integer or array-like of
+        r:
+            The L-moment order(s), non-negative integer or array-like of
             integers.
         trim:
             Left- and right-trim orders $(s, t)$, as a tuple of non-negative
@@ -211,6 +245,10 @@ def l_moment_bounds(
     Returns:
         out: float array or scalar like `r`.
 
+    See Also:
+        - [`l_ratio_bounds`][lmo.diagnostic.l_ratio_bounds]
+        - [`lmo.l_moment`][lmo.l_moment]
+
     """
     _r = clean_orders(r, rmin=1)
     _trim = clean_trim(trim)
@@ -219,101 +257,72 @@ def l_moment_bounds(
 
 @overload
 def l_ratio_bounds(
-    r: AnyInt,
+    r: IntVector,
     /,
-    trim: tuple[float, float] = ...,
+    trim: AnyTrim = ...,
     *,
-    dtype: np.dtype[np.float_] = ...,
-) -> np.float_:
-    ...
-
-
-@overload
-def l_ratio_bounds(
-    r: AnyInt,
-    /,
-    trim: tuple[float, float] = ...,
-    *,
-    dtype: np.dtype[T] | type[T],
-) -> T:
-    ...
-
-
-@overload
-def l_ratio_bounds(
-    r: npt.NDArray[Any] | Sequence[Any],
-    /,
-    trim: tuple[float, float] = ...,
-    *,
-    dtype: np.dtype[np.float_] = ...,
+    has_variance: bool = ...,
 ) -> npt.NDArray[np.float_]:
     ...
 
 
 @overload
 def l_ratio_bounds(
-    r: npt.NDArray[Any] | Sequence[Any],
+    r: AnyInt,
     /,
-    trim: tuple[float, float] = ...,
+    trim: AnyTrim = ...,
     *,
-    dtype: np.dtype[T] | type[T],
-) -> npt.NDArray[T]:
-    ...
-
-
-@overload
-def l_ratio_bounds(
-    r: npt.ArrayLike,
-    /,
-    trim: tuple[float, float] = ...,
-    *,
-    dtype: np.dtype[np.float_] = ...,
-) -> np.float_ | npt.NDArray[np.float_]:
-    ...
-
-
-@overload
-def l_ratio_bounds(
-    r: npt.ArrayLike,
-    /,
-    trim: tuple[float, float] = ...,
-    *,
-    dtype: np.dtype[T] | type[T],
-) -> T | npt.NDArray[T]:
+    has_variance: bool = ...,
+) -> float:
     ...
 
 
 def l_ratio_bounds(
-    r: npt.ArrayLike,
+    r: IntVector | AnyInt,
     /,
-    trim: tuple[float, float] = (0, 0),
+    trim: AnyTrim = (0, 0),
     *,
-    dtype: np.dtype[T] | type[T] = np.float_,
-) -> T | npt.NDArray[T]:
+    has_variance: bool = True,
+) -> float | npt.NDArray[np.float_]:
     r"""
-    Upper bounds on the absolute L-moment ratio's. It is based on the
-    bounds introduced by Hosking in 2007, but generalized to allow for
-    fractional trimming (i.e. $(s, t) \in \mathbb{R}^2_+$), and reformulated
-    as a recursive definition.
+    Returns the absolute upper bounds $T^{(s,t)}_r$ on L-moment ratio's
+    $\tau^{(s,t)}_r = \lambda^{(s,t)}_r / \lambda^{(s,t)}_r$, for $r \ge 2$.
+    So $\left| \tau^{(s,t)}_r(X) \right| \le T^{(s,t)}_r$, given that
+    $\mathrm{Var}[X] = \sigma^2_X$ exists.
 
-    $$
-    |\tau_r^{(s, t)}| \le
-        \frac{2}{r} \frac
-        {\Gamma (s \wedge t + 2) \Gamma (s + t + r + 1)}
-        {\Gamma (s \wedge t + r) \Gamma (s + t + 3)}
-    $$
+    If the variance of the distribution is not defined, e.g. in case of the
+    [Cauchy distribution](https://wikipedia.org/wiki/Cauchy_distribution),
+    this method will not work. In this case, the looser bounds from
+    Hosking (2007) can be used instead, by passing `has_variance=False`.
 
-    Here, $s \wedge t$ denotes the smallest trim-length, i.e. `min(s, t)`.
+    Examples:
+        Calculate the bounds for different degrees of trimming:
 
-    Notes:
-        Without trim (default), the upper bound is $1$ for all $r \neq 1$.
+        >>> l_ratio_bounds([1, 2, 3, 4])
+        array([       inf, 1.        , 0.77459667, 0.65465367])
+        >>> # the bounds for r=1,2 are the same for all trimmings; skip them
+        >>> l_ratio_bounds([3, 4], trim=(1, 1))
+        array([0.61475926, 0.4546206 ])
+        >>> l_ratio_bounds([3, 4], trim=(.5, 1.5))
+        array([0.65060005, 0.49736473])
+
+        In case of undefined variance, the bounds become a lot looser:
+
+        >>> l_ratio_bounds([3, 4], has_variance=False)
+        array([1., 1.])
+        >>> l_ratio_bounds([3, 4], trim=(1, 1), has_variance=False)
+        array([1.11111111, 1.25      ])
+        >>> l_ratio_bounds([3, 4], trim=(.5, 1.5), has_variance=False)
+        array([1.33333333, 1.71428571])
 
     Args:
         r: Order of the L-moment ratio(s), as positive integer scalar or
             array-like.
         trim: Tuple of left- and right- trim-lengths, matching those of the
             relevant L-moment ratio's.
-        dtype: Floating type to use.
+        has_variance:
+            Set to False if the distribution has undefined variance, in which
+            case the (looser) bounds from J.R.M. Hosking (2007) will be used.
 
     Returns:
         Array or scalar with shape like $r$.
@@ -327,32 +336,24 @@ def l_ratio_bounds(
         L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
 
     """
-    _rs = np.asarray_chkfinite(r, dtype=int)[()]
-    if np.any(_rs < 0):
-        msg = 'expected r >= 0'
-        raise ValueError(msg)
+    if has_variance:
+        return l_moment_bounds(r, trim) / l_moment_bounds(2, trim)
 
-    _n = np.max(_rs) + 1
-    if _n > 9000:
-        msg = f"max(r) = {_n - 1}; it's over 9000!"
-        raise ValueError(msg)
+    # otherwise, fall back to the (very) loose bounds from Hosking
+    _r = clean_orders(r, rmin=1)
+    _n = np.max(_r) + 1
 
-    # the zeroth L-ratio is 1/1, the 2nd L-ratio is L-scale / L-scale
-    out = np.ones(_n, dtype=dtype)
+    s, t = clean_trim(trim)
 
+    out = np.ones(_n)
     if _n > 1:
         # `L-loc / L-scale (= 1 / CV)` is unbounded
         out[1] = np.inf
 
-    s, t = np.asarray_chkfinite(trim)
-    if s < 0 or t < 0:
-        msg = f'trim lengths must be positive, got {trim}'
-        raise ValueError(msg)
-
     if _n > 3 and s and t:
         # if not trimmed, then the bounds are simply 1
         p, q = s + t, min(s, t)
-        for _r in range(3, _n):
-            out[_r] = out[_r - 1] * (1 + p / _r) / (1 + q / (_r - 1))
+        for _k in range(3, _n):
+            out[_k] = out[_k - 1] * (1 + p / _k) / (1 + q / (_k - 1))
 
-    return out[_rs]
+    return out[_r]
