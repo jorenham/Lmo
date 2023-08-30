@@ -1,15 +1,20 @@
 """Statistical test and tools."""
 
-__all__ = ('normaltest', 'l_ratio_bounds')
+__all__ = ('normaltest', 'l_moment_bounds', 'l_ratio_bounds')
 
-from collections.abc import Sequence
-from typing import Any, NamedTuple, TypeVar, overload
+from collections.abc import Callable, Sequence
+from math import lgamma
+from typing import Any, NamedTuple, TypeVar, cast, overload
 
 import numpy as np
 import numpy.typing as npt
+from scipy.stats._multivariate import (  # type: ignore
+    multivariate_normal_frozen,
+)
 
 from ._lm import l_ratio
-from .typing import AnyInt
+from ._utils import clean_orders, clean_trim
+from .typing import AnyInt, AnyTrim, IntVector
 
 T = TypeVar('T', bound=np.floating[Any])
 
@@ -17,6 +22,12 @@ T = TypeVar('T', bound=np.floating[Any])
 class NormaltestResult(NamedTuple):
     statistic: float | npt.NDArray[np.float_]
     pvalue: float | npt.NDArray[np.float_]
+
+
+class GoodnessOfFitResult(NamedTuple):
+    l_dist: multivariate_normal_frozen
+    statistic: float
+    pvalue: float
 
 
 def normaltest(
@@ -82,6 +93,128 @@ def normaltest(
     p_value = np.exp(-k2 / 2)
 
     return NormaltestResult(k2, p_value)
+
+
+def _lm2_bounds_single(r: int, trim: tuple[float, float]) -> float:
+    if r == 1:
+        return float('inf')
+
+    match trim:
+        case (0, 0):
+            return 1 / (2 * r - 1)
+        case (0, 1) | (1, 0):
+            return (r + 1)**2 / (r * (2 * r - 1) * (2 * r + 1))
+        case (1, 1):
+            return (
+                (r + 1)**2 * (r + 2)**2
+                / (2 * r**2 * (2 * r - 1) * (2 * r + 1) * (2 * r + 1))
+            )
+        case (s, t):
+            return np.exp(
+                lgamma(r - .5)
+                - lgamma(s + t + 1)
+                + lgamma(s + .5)
+                - lgamma(r + s)
+                + lgamma(t + .5)
+                - lgamma(r + t)
+                + lgamma(r + s + t + 1) * 2
+                - lgamma(r + s + t + .5),
+            ) / (np.pi * 2 * r**2)
+
+_lm2_bounds = cast(
+    Callable[[IntVector, tuple[float, float]], npt.NDArray[np.float_]],
+    np.vectorize(
+        _lm2_bounds_single,
+        otypes=[float],
+        excluded={1},
+        signature='()->()',
+    ),
+)
+
+
+def l_moment_bounds(
+    r: IntVector | AnyInt,
+    /,
+    trim: AnyTrim = (0, 0),
+    scale: float = 1.0,
+) -> float | npt.NDArray[np.float_]:
+    r"""
+    Returns the absolute upper bounds $L^{(s,t)}_r$ on L-moments
+    $\lambda^{(s,t)}_r$, proportional to the scale $\sigma_X$ (standard
+    deviation) of the probability distribution of random variable $X$.
+    So $\left| \lambda^{(s,t)}_r(X) \right| \le \sigma_X \, L^{(s,t)}_r$,
+    given that standard deviation $\sigma_X$ of $X$ exists.
+
+    These bounds are derived by applying the Cauchy-Schwarz inequality to the
+    covariance-based definition of generalized trimmed L-moment, for $r > 1$:
+
+    $$
+    \lambda^{(s,t)}_r(X) =
+        \frac{r+s+t}{r}
+        \frac{B(r,\, r+s+t)}{B(r+s,\, r+t)}
+        \mathrm{Cov}\left[
+            X,\;
+            F(X)^s
+            \big(1 - F(X)\big)^t
+            P^{(\alpha, \beta)}_r(X)
+        \right]
+    \;,
+    $$
+
+    where $B$ is the
+    [Beta function](https://mathworld.wolfram.com/BetaFunction.html),
+    $P^{(\alpha, \beta)}_r$ the
+    [Jacobi polynomial](https://mathworld.wolfram.com/JacobiPolynomial.html),
+    and $F$ the cumulative distribution function of random variable $X$.
+
+    After a lot of work, one can (and one did) derive the closed-form
+    inequality:
+
+    $$
+    \left| \lambda^{(s,t)}_r(X) \right| \le
+        \frac{\sigma_X}{\sqrt{2 \pi}}
+        \frac{\Gamma(r+s+t+1)}{r}
+        \sqrt{\frac{
+            B(r-\frac{1}{2}, s+\frac{1}{2}, t+\frac{1}{2})
+        }{
+            \Gamma(s+t+1) \Gamma(r+s) \Gamma(r+t)
+        }}
+    $$
+
+    for $r \in \mathbb{N}_{\ge 2}$ and $s, t \in \mathbb{R}_{\ge 0}$, where
+    $\Gamma$ is the
+    [Gamma function](https://mathworld.wolfram.com/GammaFunction.html),
+    and $B$ the multivariate Beta function
+
+    For the untrimmed L-moments, this simplifies to
+
+    $$
+    \left| \lambda_r(X) \right| \le \frac{\sigma_X}{\sqrt{2 r - 1}} \,.
+    $$
+
+    Notes:
+        For $r=1$ there are no bounds, i.e. `float('inf')` is returned.
+
+        There are no references; this novel finding is not (yet..?) published
+        by the author, [@jorenham](https://github.com/jorenham/).
+
+    Args:
+        r: The L-moment order(s), non-negative integer or array-like of
+            integers.
+        trim:
+            Left- and right-trim orders $(s, t)$, as a tuple of non-negative
+            ints or floats.
+        scale:
+            The standard deviation $\sigma_X$ of the random variable $X$.
+            Defaults to 1.
+
+    Returns:
+        out: float array or scalar like `r`.
+
+    """
+    _r = clean_orders(r, rmin=1)
+    _trim = clean_trim(trim)
+    return scale * np.sqrt(_lm2_bounds(_r, _trim))[()]
 
 
 @overload
