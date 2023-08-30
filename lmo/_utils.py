@@ -3,6 +3,7 @@ __all__ = (
     'as_float_array',
     'ordered',
     'clean_order',
+    'clean_orders',
     'clean_trim',
     'moments_to_ratio',
 )
@@ -12,7 +13,7 @@ from typing import Any, SupportsIndex, TypeVar
 import numpy as np
 import numpy.typing as npt
 
-from .typing import AnyTrim, IndexOrder, IntVector, SortKind
+from .typing import AnyInt, AnyTrim, IndexOrder, IntVector, SortKind
 
 T = TypeVar('T', bound=np.generic)
 FT = TypeVar('FT', bound=np.floating[Any])
@@ -158,10 +159,26 @@ def clean_order(
     r: SupportsIndex,
     /,
     name: str = 'r',
-    rmin: SupportsIndex = 0,
+    rmin: int = 0,
 ) -> int:
-    if (_r := r.__index__()) < (_rmin := r.__index__()):
-        msg = f'expected {name} >= {_rmin}, got {_r}'
+    if (_r := r.__index__()) < rmin:
+        msg = f'expected {name} >= {rmin}, got {_r}'
+        raise TypeError(msg)
+
+    return _r
+
+
+def clean_orders(
+    r: IntVector | AnyInt,
+    /,
+    name: str = 'r',
+    rmin: int = 0,
+) -> npt.NDArray[np.int_]:
+    _r = np.asarray_chkfinite(r, np.int_)
+
+    if np.any(invalid := _r < rmin):
+        i = np.argmax(invalid)
+        msg = f'expected all {name} >= {rmin}, got {name}[{i}] = {_r[i]} '
         raise TypeError(msg)
 
     return _r
@@ -189,8 +206,8 @@ def clean_trim(trim: AnyTrim) -> tuple[int, int] | tuple[float, float]:
 
     s, t = _trim
 
-    if s < 0 or t < 0:
-        msg = f'trim must be positive, got {(s, t)}'
+    if s <= -1/2 or t <= -1/2:
+        msg = f'trim must both be >-1/2, got {(s, t)}'
         raise TypeError(msg)
 
     if s.is_integer() and t.is_integer():
