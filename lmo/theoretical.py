@@ -832,8 +832,8 @@ def l_ratio_from_rv(
 def l_stats_from_cdf(
     cdf: Callable[[float], float],
     /,
-    num: int = 4,
     trim: AnyTrim = (0, 0),
+    num: int = 4,
     *,
     support: tuple[AnyFloat, AnyFloat] = (-np.inf, np.inf),
     **kwargs: Any,
