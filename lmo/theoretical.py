@@ -32,7 +32,7 @@ import scipy.special as scs  # type: ignore
 from scipy.stats.distributions import rv_continuous, rv_frozen  # type: ignore
 
 from . import _poly
-from ._utils import clean_order, clean_trim, moments_to_ratio
+from ._utils import clean_order, clean_trim, l_stats_orders, moments_to_ratio
 from .linalg import sh_jacobi
 from .typing import AnyFloat, AnyInt, AnyTrim, IntVector
 
@@ -829,21 +829,11 @@ def l_ratio_from_rv(
 
     return moments_to_ratio(rs, l_rs)
 
-
-def _l_stats_orders(
-    num: int,
-) -> tuple[npt.NDArray[np.int_], npt.NDArray[np.int_]]:
-    return (
-        np.arange(1, num + 1),
-        np.array([0] * min(2, num) + [2] * (num - 2)),
-    )
-
-
 def l_stats_from_cdf(
     cdf: Callable[[float], float],
     /,
-    num: int = 4,
     trim: AnyTrim = (0, 0),
+    num: int = 4,
     *,
     support: tuple[AnyFloat, AnyFloat] = (-np.inf, np.inf),
     **kwargs: Any,
@@ -874,15 +864,15 @@ def l_stats_from_cdf(
         - [`lmo.l_stats`][lmo.l_stats] - Unbiased sample estimation of L-stats.
 
     """
-    r, s = _l_stats_orders(num)
+    r, s = l_stats_orders(num)
     return l_ratio_from_cdf(cdf, r, s, trim, support=support, **kwargs)
 
 
 def l_stats_from_ppf(
     ppf: Callable[[float], float],
     /,
-    num: int = 4,
     trim: AnyTrim = (0, 0),
+    num: int = 4,
     *,
     support: tuple[AnyFloat, AnyFloat] = (0, 1),
     **kwargs: Any,
@@ -912,15 +902,15 @@ def l_stats_from_ppf(
             population L-ratio's from the quantile function.
         - [`lmo.l_stats`][lmo.l_stats] - Unbiased sample estimation of L-stats.
     """
-    r, s = _l_stats_orders(num)
+    r, s = l_stats_orders(num)
     return l_ratio_from_ppf(ppf, r, s, trim, support=support, **kwargs)
 
 
 def l_stats_from_rv(
     rv: rv_continuous | rv_frozen,
     /,
-    num: int = 4,
     trim: AnyTrim = (0, 0),
+    num: int = 4,
     *rv_args: Any,
     rtol: float = DEFAULT_RTOL,
     atol: float = DEFAULT_ATOL,
@@ -964,7 +954,7 @@ def l_stats_from_rv(
         - [`l_ratio_from_rv`][lmo.theoretical.l_ratio_from_ppf]
         - [`lmo.l_stats`][lmo.l_stats] - Unbiased sample estimation of L-stats.
     """
-    r, s = _l_stats_orders(num)
+    r, s = l_stats_orders(num)
     return l_ratio_from_rv(
         rv,
         r,

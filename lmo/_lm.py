@@ -22,7 +22,13 @@ import numpy as np
 import numpy.typing as npt
 
 from . import ostats, pwm_beta
-from ._utils import clean_order, ensure_axis_at, moments_to_ratio, ordered
+from ._utils import (
+    clean_order,
+    ensure_axis_at,
+    l_stats_orders,
+    moments_to_ratio,
+    ordered,
+)
 from .linalg import ir_pascal, sandwich, sh_legendre, trim_matrix
 from .typing import AnyInt, IntVector, LMomentOptions, SortKind
 
@@ -760,6 +766,7 @@ def l_stats(
     a: npt.ArrayLike,
     /,
     trim: tuple[float, float] = (0, 0),
+    num: int = 4,
     *,
     axis: int | None = None,
     dtype: np.dtype[T] | type[T] = np.float_,
@@ -768,7 +775,8 @@ def l_stats(
     """
     Calculates the L-loc(ation), L-scale, L-skew(ness) and L-kurtosis.
 
-    Equivalent to `lmo.l_ratio(a, [1, 2, 3, 4], [0, 0, 2, 2], *, **)`.
+    Equivalent to `lmo.l_ratio(a, [1, 2, 3, 4], [0, 0, 2, 2], *, **)` by
+    default.
 
     Examples:
         >>> import lmo, scipy.stats
@@ -784,7 +792,7 @@ def l_stats(
         - [`lmo.l_ratio`][lmo.l_ratio]
         - [`lmo.l_costats`][lmo.l_costats]
     """
-    r, s = [1, 2, 3, 4], [0, 0, 2, 2]
+    r, s = l_stats_orders(num)
     return l_ratio(a, r, s, trim=trim, axis=axis, dtype=dtype, **kwargs)
 
 
@@ -792,6 +800,7 @@ def l_stats_se(
     a: npt.ArrayLike,
     /,
     trim: tuple[int, int] = (0, 0),
+    num: int = 4,
     *,
     axis: int | None = None,
     dtype: np.dtype[T] | type[T] = np.float_,
@@ -800,7 +809,8 @@ def l_stats_se(
     """
     Calculates the standard errors (SE's) of the [`L-stats`][lmo.l_stats].
 
-    Equivalent to `lmo.l_ratio_se(a, [1, 2, 3, 4], [0, 0, 2, 2], *, **)`.
+    Equivalent to `lmo.l_ratio_se(a, [1, 2, 3, 4], [0, 0, 2, 2], *, **)` by
+    default.
 
     Examples:
         >>> import lmo, scipy.stats
@@ -818,7 +828,7 @@ def l_stats_se(
         - [`lmo.l_stats`][lmo.l_stats]
         - [`lmo.l_ratio_se`][lmo.l_ratio_se]
     """
-    r, s = [1, 2, 3, 4], [0, 0, 2, 2]
+    r, s = l_stats_orders(num)
     return l_ratio_se(a, r, s, trim=trim, axis=axis, dtype=dtype, **kwargs)
 
 
