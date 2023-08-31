@@ -6,6 +6,7 @@ __all__ = (
     'clean_orders',
     'clean_trim',
     'moments_to_ratio',
+    'l_stats_orders',
 )
 
 from typing import Any, SupportsIndex, TypeVar
@@ -236,3 +237,13 @@ def moments_to_ratio(
             np.ones_like(l_rs[0]),
             np.divide(l_rs[0], l_rs[1], where=~r_eq_s),
         )[()]
+
+
+def l_stats_orders(
+    num: int,
+    /,
+) -> tuple[npt.NDArray[np.int_], npt.NDArray[np.int_]]:
+    return (
+        np.arange(1, num + 1),
+        np.array([0] * min(2, num) + [2] * (num - 2)),
+    )
