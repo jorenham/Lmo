@@ -3,6 +3,8 @@
 __all__ = (
     'normaltest',
     'l_moment_gof',
+    'l_stats_gof',
+
     'l_moment_bounds',
     'l_ratio_bounds',
 )
@@ -14,11 +16,12 @@ from typing import Any, NamedTuple, TypeVar, cast, overload
 import numpy as np
 import numpy.typing as npt
 from scipy.special import chdtrc  # type: ignore
+from scipy.stats.distributions import rv_continuous, rv_frozen  # type: ignore
 
-from . import theoretical
+from . import theoretical as _theo
 from ._lm import l_ratio
 from ._utils import clean_orders, clean_trim
-from .typing import AnyFloat, AnyInt, AnyTrim, IntVector
+from .typing import AnyInt, AnyTrim, IntVector
 
 T = TypeVar('T', bound=np.floating[Any])
 
@@ -135,29 +138,44 @@ def normaltest(
     return HypothesisTestResult(k2, p_value)
 
 
-def _gof_chi2(
-    err: npt.NDArray[np.floating[Any]],
-    cov: npt.NDArray[np.floating[Any]],
-) -> tuple[npt.NDArray[np.float_], npt.NDArray[np.float_]]:
+def _gof_stat_single(
+    l_obs: npt.NDArray[np.float_],
+    l_exp: npt.NDArray[np.float_],
+    cov: npt.NDArray[np.float_],
+) -> float:
+    err = l_obs - l_exp
     prec = np.linalg.inv(cov)  # precision matrix
-    stat = np.asarray(err.T @ prec @ err)
-    pval = cast(npt.NDArray[np.float_], chdtrc(err.shape[0], stat))
-    return stat, pval
+    return cast(float, err.T @ prec @ err)
+
+
+_gof_stat = cast(
+    Callable[[
+        npt.NDArray[np.float_],
+        npt.NDArray[np.float_],
+        npt.NDArray[np.float_],
+    ], npt.NDArray[np.float_]],
+    np.vectorize(
+        _gof_stat_single,
+        otypes=[float],
+        excluded={1,2},
+        signature='(n)->()',
+    ),
+)
 
 
 def l_moment_gof(
+    rv_or_cdf: rv_continuous | rv_frozen | Callable[[float], float],
     l_moments: npt.NDArray[np.float_],
     n_obs: int,
-    cdf: Callable[[float], float],
     /,
     trim: AnyTrim = (0, 0),
-    support: tuple[AnyFloat, AnyFloat] = (-np.inf, np.inf),
     **kwargs: Any,
 ) -> HypothesisTestResult:
     r"""
     Goodness-of-fit (GOF) hypothesis test for the null hypothesis that the
-    observed L-moments come from a distribution with the given cumulative
-    distribution function (CDF).
+    observed L-moments come from a distribution with the given
+    [`scipy.stats`][scipy.stats] distribution or cumulative distribution
+    function (CDF).
 
     - `H0`: The theoretical probability distribution, with the given CDF,
         is a good fit for the observed L-moments.
@@ -191,64 +209,55 @@ def l_moment_gof(
         - [`l_moment_from_cdf`][lmo.theoretical.l_moment_from_cdf]
         - ['l_moment_cov_from_cdf'][lmo.theoretical.l_moment_cov_from_cdf]
 
-    Todo:
-        - Vectorize the `l_moments` parameter (axis=0 only).
-        - Add a `nan_policy: 'omit' | 'raise' | 'propagate'` parameter,
-            and apply to both the sample- and theoretical L-moments.
-
     """
     l_r = np.asarray_chkfinite(l_moments)
 
-    if l_r.ndim > 1:
-        msg = f'l_moments must be 1D, shape is {l_r.shape}'
+    if (n := l_r.shape[0]) < 2:
+        msg = f'at least the first 2 L-moments are required, got {n}'
         raise TypeError(msg)
-    if (n := len(l_r)) < 2:
-        msg = f'at least 2 L-moments are required, got {n}'
-        raise TypeError(msg)
-    if n_obs <= n:
-        msg = f'n_obs must be >{n}, got {n_obs}'
-        raise ValueError(msg)
 
     r = np.arange(1, 1 + n)
 
-    lambda_r = theoretical.l_moment_from_cdf(
-        cdf,
-        r,
-        trim=trim,
-        support=support,
-        **kwargs,
-    )
+    if isinstance(rv_or_cdf, rv_continuous | rv_frozen):
+        lambda_r = _theo.l_moment_from_rv(rv_or_cdf, r, trim, **kwargs)
+        lambda_rr = _theo.l_moment_cov_from_rv(rv_or_cdf, n, trim, **kwargs)
+    else:
+        lambda_r = _theo.l_moment_from_cdf(rv_or_cdf, r, trim, **kwargs)
+        lambda_rr = _theo.l_moment_cov_from_cdf(rv_or_cdf, n, trim, **kwargs)
 
-    nanstat = np.nan * lambda_r[0]
-    nanresult = HypothesisTestResult(nanstat, nanstat)
+    stat = n_obs * _gof_stat(l_r.T, lambda_r, lambda_rr).T[()]
+    pval = cast(float | npt.NDArray[np.float_], chdtrc(n, stat))
+    return HypothesisTestResult(stat, pval)
 
-    if lambda_r[1] <= 0 or not np.all(np.isfinite(lambda_r)):
-        # avoid evaluating the (likely to be incorrect) covariance matrix:
-        # return nan(s) (with correct shape)
-        return nanresult
 
-    if n > 2:
-        # ensure the L-ratio's are within the outermost bounds.
-        tau_r = lambda_r[2:] / lambda_r[1]
-        bounds = l_ratio_bounds(r[2:], trim=trim, has_variance=False)
-        if np.any(abs(tau_r) > bounds):
-            return nanresult
+def l_stats_gof(
+    rv_or_cdf: rv_continuous | rv_frozen | Callable[[float], float],
+    l_stats: npt.NDArray[np.float_],
+    n_obs: int,
+    /,
+    trim: AnyTrim = (0, 0),
+    **kwargs: Any,
+) -> HypothesisTestResult:
+    """
+    Analogous to [`lmo.diagnostic.l_moment_gof`][lmo.diagnostic.l_moment_gof],
+    but using the L-stats (see [`lmo.l_stats`][lmo.l_stats]).
+    """
+    t_r = np.asarray_chkfinite(l_stats)
 
-    lambda_rr = theoretical.l_moment_cov_from_cdf(
-        cdf,
-        n,
-        trim=trim,
-        support=support,
-        **kwargs,
-    )
-    if not (
-        np.all(lambda_rr.diagonal() > 0)
-        and np.all(np.isfinite(lambda_rr))
-        and np.all(np.linalg.eigvalsh(lambda_rr) > 0)  # positive definite
-    ):
-        return nanresult
+    if (n := t_r.shape[0]) < 2:
+        msg = f'at least 2 L-stats are required, got {n}'
+        raise TypeError(msg)
 
-    return HypothesisTestResult(*_gof_chi2(l_r - lambda_r, lambda_rr / n_obs))
+    if isinstance(rv_or_cdf, rv_continuous | rv_frozen):
+        tau_r = _theo.l_stats_from_rv(rv_or_cdf, n, trim, **kwargs)
+        tau_rr = _theo.l_stats_cov_from_rv(rv_or_cdf, n, trim, **kwargs)
+    else:
+        tau_r = _theo.l_stats_from_cdf(rv_or_cdf, n, trim, **kwargs)
+        tau_rr = _theo.l_stats_cov_from_cdf(rv_or_cdf, n, trim, **kwargs)
+
+    stat = n_obs * _gof_stat(t_r.T, tau_r, tau_rr).T[()]
+    pval = cast(float | npt.NDArray[np.float_], chdtrc(n, stat))
+    return HypothesisTestResult(stat, pval)
 
 
 
