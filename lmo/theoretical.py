@@ -1209,7 +1209,10 @@ def l_moment_cov_from_cdf(
         limit: See `limit` in [`scipy.integrate.nquad`][scipy.integrate.nquad].
 
     Returns:
-        out: Covariance matrix, with shape `(r_max, r_max)`.
+        cov: Covariance matrix, with shape `(r_max, r_max)`.
+
+    Raises:
+        RuntimeError: If the covariance matrix is invalid.
 
     See Also:
         - [`l_moment_from_cdf`][lmo.theoretical.l_moment_from_cdf] -
@@ -1259,9 +1262,9 @@ def l_moment_cov_from_cdf(
     def range_x(y: float, *_: int) -> tuple[float, float]:
         return (a, y)
 
-    out = np.empty((rs, rs), dtype=np.float_)
+    cov = np.empty((rs, rs), dtype=np.float_)
     for k, r in zip(*np.triu_indices(rs), strict=True):
-        out[k, r] = out[r, k] = _nquad(
+        cov_kr = _nquad(
             integrand,
             [(a, b), range_x],
             limit=limit,
@@ -1269,8 +1272,24 @@ def l_moment_cov_from_cdf(
             rtol=rtol,
             args=(k, r),
         )
+        if k == r and cov_kr <= 0:
+            msg = f'negative variance encountered at {r}: {cov_kr}'
+            raise RuntimeError(msg)
 
-    return out
+        cov[k, r] = cov[r, k] = cov_kr
+
+    # Validate the Cauchy-Schwartz inequality
+    cov_max = np.sqrt(np.outer(cov.diagonal(), cov.diagonal()))
+    invalid = np.abs(cov) > cov_max
+    if np.any(invalid):
+        invalid_kr = list(np.argwhere(invalid)[0])
+        msg = (
+            f'invalid covariance matrix: Cauchy-Schwartz inequality violated '
+            f'at {invalid_kr}: \n{cov}'
+        )
+        raise RuntimeError(msg)
+
+    return cov
 
 
 def l_moment_cov_from_rv(
