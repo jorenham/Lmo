@@ -31,14 +31,13 @@ import scipy.integrate as sci  # type: ignore
 import scipy.special as scs  # type: ignore
 from scipy.stats.distributions import rv_continuous, rv_frozen  # type: ignore
 
-from . import _poly
 from ._utils import clean_order, clean_trim, moments_to_ratio
 from .linalg import sh_jacobi
 from .typing import AnyFloat, AnyInt, AnyTrim, IntVector
 
 DEFAULT_RTOL: Final[float] = 1.49e-8
 DEFAULT_ATOL: Final[float] = 1.49e-8
-DEFAULT_LIMIT: Final[int] = 100
+DEFAULT_LIMIT: Final[int] = 50
 
 
 def _l_moment_const(r: int, s: float, t: float, k: int = 0) -> float:
@@ -82,10 +81,6 @@ def _tighten_cdf_support(
     return a, b
 
 
-def _round_like(x: float, tol: float) -> float:
-    return round(x, -int(np.log10(tol))) + 0.0 if tol else x
-
-
 def _quad(
     integrand: Callable[[float], float],
     domain: tuple[AnyFloat, AnyFloat],
@@ -93,7 +88,7 @@ def _quad(
     atol: float,
     rtol: float,
 ) -> float:
-    quad_val, quad_err, _, *quad_tail = sci.quad(  # type: ignore
+    quad_val, _, _, *quad_tail = sci.quad(  # type: ignore
         integrand,
         *domain,
         full_output=True,
@@ -106,7 +101,7 @@ def _quad(
         warnings.warn(msg, sci.IntegrationWarning, stacklevel=2)
         return np.nan
 
-    return _round_like(cast(float, quad_val), cast(float, quad_err))
+    return cast(float, quad_val)
 
 
 def _nquad(
@@ -119,7 +114,7 @@ def _nquad(
     rtol: float,
     args: tuple[Any, ...] = (),
 ) -> float:
-    quad_val, quad_err = cast(
+    quad_val, _ = cast(
         tuple[float, float],
         sci.nquad(  # type: ignore
             integrand,
@@ -128,7 +123,7 @@ def _nquad(
             opts={'limit': limit, 'epsabs': atol, 'epsrel': rtol},
         ),
     )
-    return _round_like(quad_val, quad_err)
+    return quad_val
 
 
 @overload
@@ -442,31 +437,109 @@ def l_moment_from_ppf(
     return (np.round(l_r, 12) + 0.0)[r_idxs].reshape(_r.shape)[()]
 
 
-# pyright: reportUnknownMemberType=false
-def _rv_unwrap(
+# pyright: reportUnknownMemberType=false,reportPrivateUsage=false
+def _rv_to_func(  # noqa: C901
     rv: rv_continuous | rv_frozen,
-    *rv_args: Any,
+    *rv_args: float,
     only: Literal['cdf', 'ppf'] | None = None,
-    **rv_kwds: Any,
+    ignore_loc: bool = False,
+    **rv_kwds: float,
 ) -> tuple[
     Literal['cdf', 'ppf'],
     Callable[[float], float],
     tuple[float, float],
 ]:
-    _rv = rv if isinstance(rv, rv_frozen) else rv(*rv_args, *rv_kwds)
+    # for perfomance, circumvent as much of the "smart" rv_continuous
+    # machinery as possible, and return the most direct (possibly
+    # non-vectorized) implementation of the CDF or PPF.
 
-    if only == 'cdf' or only is None and cast(int, _rv.dist.moment_type) == 0:
-        return (
-            'cdf',
-            cast(Callable[[float], float], _rv.cdf),
-            cast(tuple[float, float], _rv.support()),
+    if isinstance(rv, rv_frozen):
+        dist, args, kwds = (
+            cast(rv_continuous, rv.dist),
+            cast(tuple[float, ...], rv.args),
+            cast(dict[str, float], rv.kwds),
+        )
+    else:
+        dist, args, kwds = rv, rv_args, rv_kwds
+
+    shapes, loc, scale = cast(
+        tuple[tuple[float, ...], float, float],
+        dist._parse_args(*args, **kwds),  # type: ignore
+    )
+    if ignore_loc:
+        loc = 0
+    if scale <= 0:
+        msg = f'scale must be >0, got {scale}'
+        raise ValueError(msg)
+    if invalid_args := set(np.argwhere(1 - dist._argcheck(shapes))):
+        invalid_params = {
+            cast(str, param.name): args[i]
+            for i, param in enumerate(dist._param_info())  # type: ignore
+            if i in invalid_args
+        }
+        invalid_repr = ', '.join(f'{k}={v}' for k, v in invalid_params.items())
+        msg = (
+            f'shape arguments ({invalid_repr}) of are invalid for '
+            f'{dist.name!r}'
+        )
+        raise ValueError(msg)
+
+    dist_methods = set(type(dist).__dict__)
+    has_cdf1 = '_cdf_single' in dist_methods
+    has_cdf = has_cdf1 or '_cdf' in dist_methods
+    has_ppf1 = '_ppf_single' in dist_methods
+    has_ppf = has_ppf1 or '_ppf' in dist_methods
+
+    if only:
+        name = only
+    else:
+        momtype = dist.moment_type
+        if not has_ppf and has_cdf:
+            name = 'cdf'
+        elif not has_cdf and has_ppf:  # noqa: SIM114
+            name = 'ppf'
+        elif momtype == 1:
+            name = 'ppf'
+        else:
+            name = 'cdf'
+
+    x0_a, x0_b = cast(tuple[float, float], dist._get_support(*shapes))
+    x_a, x_b = loc + scale * x0_a, loc + scale * x0_b
+
+    if name == 'cdf':
+        cdf_raw = cast(
+            Callable[..., float],
+            dist._cdf_single if has_cdf1 else dist._cdf,
         )
 
-    return (
-        'ppf',
-        cast(Callable[[float], float], _rv.ppf),
-        (0, 1),
-    )
+        def cdf(x: float) -> float:
+            if x <= x_a:
+                return 0
+            if x >= x_b:
+                return 1
+            return cdf_raw((x - loc) / scale, *shapes)
+
+        func, support = cdf, (x_a, x_b)
+    else:
+        assert name == 'ppf'
+        ppf_raw = cast(
+            Callable[..., float],
+            dist._ppf_single if has_ppf1 else dist._ppf,
+        )
+
+        def ppf(q: float) -> float:
+            if q < 0 or q > 1:
+                return float('nan')
+            if q == 0:
+                return x_a
+            if q == 1:
+                return x_b
+            return loc + scale * ppf_raw(q, *shapes)
+
+        func, support = ppf, (0, 1)
+
+    return name, func, support
+
 
 @overload
 def l_moment_from_rv(
@@ -579,7 +652,7 @@ def l_moment_from_rv(
         - [`lmo.l_moment`][lmo.l_moment]: sample L-moment
 
     """
-    functype, func, support = _rv_unwrap(rv, *rv_args, **rv_kwds)
+    functype, func, support = _rv_to_func(rv, *rv_args, **rv_kwds)
 
     l_moment_from_func = {
         'cdf': l_moment_from_cdf,
@@ -978,13 +1051,75 @@ def l_stats_from_rv(
     )
 
 
+def _eval_sh_jacobi(
+    n: int,
+    a: float,
+    b: float,
+    x: float,
+) -> float:
+    """
+    Fast evaluation of the n-th shifted Jacobi polynomial.
+    Faster than pre-computing using np.Polynomial, and than
+    `scipy.special.eval_jacobi` for n < 4.
+
+    Todo:
+        move to _poly, vectorize, annotate, document, test
+
+    """
+    if n == 0:
+        return 1
+
+    u = 2 * x - 1
+
+    if a == b == 0:
+        if n == 1:
+            return u
+
+        v = x * (x - 1)
+
+        if n == 2:
+            return 1 + 6 * v
+        if n == 3:
+            return (1 + 10 * v) * u
+        if n == 4:
+            return 1 + 10 * v * (2 + 7 * v)
+
+        return scs.eval_sh_legendre(n, x)
+
+    if n == 1:
+        return (a + b + 2) * x - b - 1
+    if n == 2:
+        return (
+            b * (b + 3)
+            - (a + b + 3) * (
+                2 * b + 4
+                - (a + b + 4) * x
+            ) * x
+        ) / 2 + 1
+    if n == 3:
+        return (
+            (1 + a) * (2 + a) * (3 + a)
+            + (4 + a + b) * (
+                3 * (2 + a) * (3 + a)
+                + (5 + a + b) * (
+                    3 * (3 + a)
+                    + (6 + a + b) * (x - 1)
+                ) * (x - 1)
+            ) * (x - 1)
+        ) / 6
+
+    # don't use `eval_sh_jacobi`: https://github.com/scipy/scipy/issues/18988
+    return scs.eval_jacobi(n, a, b, u)
+
+
+
 def l_moment_cov_from_cdf(
     cdf: Callable[[float], float],
     r_max: int,
     /,
     trim: AnyTrim = (0, 0),
     *,
-    support: tuple[AnyFloat, AnyFloat] = (-np.inf, np.inf),
+    support: tuple[AnyFloat, AnyFloat] | None = None,
     rtol: float = DEFAULT_RTOL,
     atol: float = DEFAULT_ATOL,
     limit: int = DEFAULT_LIMIT,
@@ -1097,21 +1232,28 @@ def l_moment_cov_from_cdf(
     if rs == 0:
         return np.empty((0, 0))
 
-    _cdf = functools.cache(cdf)
-
-    a, b = _tighten_cdf_support(_cdf, support)
     s, t = clean_trim(trim)
 
-    p_n = [_poly.jacobi(n, t, s, domain=[0, 1]) for n in range(rs)]
+    _cdf = functools.cache(cdf)
+
+    if support is None:
+        a, b = _tighten_cdf_support(_cdf, (-np.inf, np.inf))
+    else:
+        a, b = map(float, support)
+
     c_n = np.array([_l_moment_const(n + 1, s, t) for n in range(rs)])
 
     def integrand(x: float, y: float, k: int, r: int) -> float:
         u, v = _cdf(x), _cdf(y)
-        return  c_n[k] * c_n[r] * cast(
-            float,
-            (p_n[k](u) * p_n[r](v) + p_n[r](u) * p_n[k](v))
-            * u * (u * v)**s
-            * (1 - v) * ((1 - u) * (1 - v))**t,
+        return  c_n[k] * c_n[r] * (
+            (
+                _eval_sh_jacobi(k, t, s, u)
+                * _eval_sh_jacobi(r, t, s, v)
+                + _eval_sh_jacobi(r, t, s, u)
+                * _eval_sh_jacobi(k, t, s, v)
+            )
+            * u * (1 - v)
+            * (u * v)**s * ((1 - u) * (1 - v))**t
         )
 
     def range_x(y: float, *_: int) -> tuple[float, float]:
@@ -1129,7 +1271,6 @@ def l_moment_cov_from_cdf(
         )
 
     return out
-
 
 
 def l_moment_cov_from_rv(
@@ -1166,7 +1307,13 @@ def l_moment_cov_from_rv(
                [0.      , 0.      , 0.00496 , 0.0062  ]])
 
     """
-    _, cdf, support = _rv_unwrap(rv, *rv_args, only='cdf', **rv_kwds)
+    _, cdf, support = _rv_to_func(
+        rv,
+        *rv_args,
+        only='cdf',
+        ignore_loc=True,
+        **rv_kwds,
+    )
     return l_moment_cov_from_cdf(
         cdf,
         r_max,
@@ -1313,7 +1460,13 @@ def l_stats_cov_from_rv(
                [-0.041667, -0.025   ,  0.079365,  0.10754 ]])
 
     """
-    _, cdf, support = _rv_unwrap(rv, *rv_args, only='cdf', **rv_kwds)
+    _, cdf, support = _rv_to_func(
+        rv,
+        *rv_args,
+        only='cdf',
+        ignore_loc=True,
+        **rv_kwds,
+    )
     return l_stats_cov_from_cdf(
         cdf,
         num,
