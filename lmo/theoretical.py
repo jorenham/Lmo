@@ -7,14 +7,18 @@ __all__ = (
     'l_moment_from_cdf',
     'l_moment_from_ppf',
     'l_moment_from_rv',
+
+    'l_moment_cov_from_cdf',
+    'l_moment_cov_from_rv',
+
     'l_ratio_from_cdf',
     'l_ratio_from_ppf',
     'l_ratio_from_rv',
+
     'l_stats_from_cdf',
     'l_stats_from_ppf',
     'l_stats_from_rv',
-    'l_moment_cov_from_cdf',
-    'l_moment_cov_from_rv',
+
     'l_stats_cov_from_cdf',
     'l_stats_cov_from_rv',
 )
@@ -130,6 +134,142 @@ def _nquad(
         ),
     )
     return quad_val
+
+
+def _rv_melt(
+    rv: rv_continuous | rv_frozen,
+    *args: float,
+    **kwds: float,
+) -> tuple[rv_continuous, float, float, tuple[float, ...]]:
+    """
+    Extract and validate the loc/scale and shape args from the potentially
+    frozen `scipy.stats` distribution.
+    Returns the `rv_continuous` distribution, loc, scale and shape args.
+    """
+    if isinstance(rv, rv_frozen):
+        dist, args, kwds = (
+            cast(rv_continuous, rv.dist),
+            cast(tuple[float, ...], rv.args),
+            cast(dict[str, float], rv.kwds),
+        )
+    else:
+        dist = rv
+
+    shapes, loc, scale = cast(
+        tuple[tuple[float, ...], float, float],
+        dist._parse_args(*args, **kwds),  # type: ignore
+    )
+    if scale <= 0:
+        msg = f'scale must be >0, got {scale}'
+        raise ValueError(msg)
+    if invalid_args := set(np.argwhere(1 - dist._argcheck(shapes))):
+        invalid_params = {
+            cast(str, param.name): args[i]
+            for i, param in enumerate(dist._param_info())  # type: ignore
+            if i in invalid_args
+        }
+        invalid_repr = ', '.join(f'{k}={v}' for k, v in invalid_params.items())
+        msg = (
+            f'shape arguments ({invalid_repr}) of are invalid for '
+            f'{dist.name!r}'
+        )
+        raise ValueError(msg)
+
+    return dist, loc, scale, shapes
+
+
+# pyright: reportUnknownMemberType=false,reportPrivateUsage=false
+def _rv_fn(
+    rv: rv_continuous | rv_frozen,
+    name: Literal['cdf', 'ppf'],
+    transform: bool,
+    /,
+    *args: float,
+    **kwds: float,
+) -> tuple[Callable[[float], float], tuple[float, float], float, float]:
+    """
+    Get the unvectorized cdf or ppf from a `scipy.stats` distribution,
+    and apply the loc, scale and shape arguments.
+    Return the function, its support, the loc, and the scale.
+    """
+    dist, loc, scale, shapes = _rv_melt(rv, *args, **kwds)
+
+    m_x, s_x = (loc, scale) if transform else (0, 1)
+
+    a0, b0 = cast(tuple[float, float], dist._get_support(*shapes))
+    a, b = m_x + s_x * a0, m_x + s_x * b0
+
+    # prefer the unvectorized implementation if exists
+    if f'_{name}_single' in type(dist).__dict__:
+        fn_raw = cast(Callable[..., float], getattr(dist, f'_{name}_single'))
+    else:
+        fn_raw = cast(Callable[..., float], getattr(dist, f'_{name}'))
+
+    if name == 'ppf':
+        def fn(q: float, /) -> float:
+            if q < 0 or q > 1:
+                return np.nan
+            if q == 0:
+                return a
+            if q == 1:
+                return b
+            return m_x + s_x * fn_raw(q, *shapes)
+
+        support = 0, 1
+    else:
+        def fn(x: float, /) -> float:
+            if x <= a:
+                return 0
+            if x >= b:
+                return 1
+            return fn_raw((x - m_x) / s_x, *shapes)
+
+        support = a, b
+
+    return fn, support, loc, scale
+
+
+# pyright: reportUnknownMemberType=false,reportPrivateUsage=false
+def _rv_fn_select(
+    rv: rv_continuous | rv_frozen,
+    transform: bool,
+    *args: float,
+    **kwds: float,
+) -> tuple[
+    Literal['cdf', 'ppf'],
+    Callable[[float], float],
+    tuple[float, float],
+    float,
+    float,
+]:
+    """
+    Select and extract either the CDF of PPF, depending on which one has been
+    natively implemented.
+    """
+    dist = cast(rv_continuous, rv.dist) if isinstance(rv, rv_frozen) else rv
+
+    dist_methods = type(dist).__dict__
+    has_cdf = '_cdf_single' in dist_methods or '_cdf' in dist_methods
+    has_ppf = '_ppf_single' in dist_methods or '_ppf' in dist_methods
+
+    momtype = dist.moment_type
+    if not has_ppf and has_cdf:
+        name = 'cdf'
+    elif not has_cdf and has_ppf:  # noqa: SIM114
+        name = 'ppf'
+    elif momtype == 1:
+        name = 'ppf'
+    else:
+        name = 'cdf'
+
+    return name, *_rv_fn(rv, name, True, *args, **kwds)
+
+
+def _stack_orders(
+    r: AnyInt | IntVector,
+    s: AnyInt | IntVector,
+) -> npt.NDArray[np.int_]:
+    return np.stack(np.broadcast_arrays(np.asarray(r), np.asarray(s)))
 
 
 @overload
@@ -443,135 +583,6 @@ def l_moment_from_ppf(
     return (np.round(l_r, 12) + 0.0)[r_idxs].reshape(_r.shape)[()]
 
 
-def _rv_melt(
-    rv: rv_continuous | rv_frozen,
-    *args: float,
-    **kwds: float,
-) -> tuple[rv_continuous, float, float, tuple[float, ...]]:
-    """
-    Extract and validate the loc/scale and shape args from the potentially
-    frozen `scipy.stats` distribution.
-    Returns the `rv_continuous` distribution, loc, scale and shape args.
-    """
-    if isinstance(rv, rv_frozen):
-        dist, args, kwds = (
-            cast(rv_continuous, rv.dist),
-            cast(tuple[float, ...], rv.args),
-            cast(dict[str, float], rv.kwds),
-        )
-    else:
-        dist = rv
-
-    shapes, loc, scale = cast(
-        tuple[tuple[float, ...], float, float],
-        dist._parse_args(*args, **kwds),  # type: ignore
-    )
-    if scale <= 0:
-        msg = f'scale must be >0, got {scale}'
-        raise ValueError(msg)
-    if invalid_args := set(np.argwhere(1 - dist._argcheck(shapes))):
-        invalid_params = {
-            cast(str, param.name): args[i]
-            for i, param in enumerate(dist._param_info())  # type: ignore
-            if i in invalid_args
-        }
-        invalid_repr = ', '.join(f'{k}={v}' for k, v in invalid_params.items())
-        msg = (
-            f'shape arguments ({invalid_repr}) of are invalid for '
-            f'{dist.name!r}'
-        )
-        raise ValueError(msg)
-
-    return dist, loc, scale, shapes
-
-
-# pyright: reportUnknownMemberType=false,reportPrivateUsage=false
-def _rv_fn(
-    rv: rv_continuous | rv_frozen,
-    name: Literal['cdf', 'ppf'],
-    transform: bool,
-    /,
-    *args: float,
-    **kwds: float,
-) -> tuple[Callable[[float], float], tuple[float, float], float, float]:
-    """
-    Get the unvectorized cdf or ppf from a `scipy.stats` distribution,
-    and apply the loc, scale and shape arguments.
-    Return the function, its support, the loc, and the scale.
-    """
-    dist, loc, scale, shapes = _rv_melt(rv, *args, **kwds)
-
-    m_x, s_x = (loc, scale) if transform else (0, 1)
-
-    a0, b0 = cast(tuple[float, float], dist._get_support(*shapes))
-    a, b = m_x + s_x * a0, m_x + s_x * b0
-
-    # prefer the unvectorized implementation if exists
-    if f'_{name}_single' in type(dist).__dict__:
-        fn_raw = cast(Callable[..., float], getattr(dist, f'_{name}_single'))
-    else:
-        fn_raw = cast(Callable[..., float], getattr(dist, f'_{name}'))
-
-    if name == 'ppf':
-        def fn(q: float, /) -> float:
-            if q < 0 or q > 1:
-                return np.nan
-            if q == 0:
-                return a
-            if q == 1:
-                return b
-            return m_x + s_x * fn_raw(q, *shapes)
-
-        support = 0, 1
-    else:
-        def fn(x: float, /) -> float:
-            if x <= a:
-                return 0
-            if x >= b:
-                return 1
-            return fn_raw((x - m_x) / s_x, *shapes)
-
-        support = a, b
-
-    return fn, support, loc, scale
-
-
-# pyright: reportUnknownMemberType=false,reportPrivateUsage=false
-def _rv_fn_select(
-    rv: rv_continuous | rv_frozen,
-    transform: bool,
-    *args: float,
-    **kwds: float,
-) -> tuple[
-    Literal['cdf', 'ppf'],
-    Callable[[float], float],
-    tuple[float, float],
-    float,
-    float,
-]:
-    """
-    Select and extract either the CDF of PPF, depending on which one has been
-    natively implemented.
-    """
-    dist = cast(rv_continuous, rv.dist) if isinstance(rv, rv_frozen) else rv
-
-    dist_methods = type(dist).__dict__
-    has_cdf = '_cdf_single' in dist_methods or '_cdf' in dist_methods
-    has_ppf = '_ppf_single' in dist_methods or '_ppf' in dist_methods
-
-    momtype = dist.moment_type
-    if not has_ppf and has_cdf:
-        name = 'cdf'
-    elif not has_cdf and has_ppf:  # noqa: SIM114
-        name = 'ppf'
-    elif momtype == 1:
-        name = 'ppf'
-    else:
-        name = 'cdf'
-
-    return name, *_rv_fn(rv, name, True, *args, **kwds)
-
-
 @overload
 def l_moment_from_rv(
     ppf: rv_continuous | rv_frozen,
@@ -695,13 +706,6 @@ def l_moment_from_rv(
         atol=atol,
         limit=limit,
     )
-
-
-def _stack_orders(
-    r: AnyInt | IntVector,
-    s: AnyInt | IntVector,
-) -> npt.NDArray[np.int_]:
-    return np.stack(np.broadcast_arrays(np.asarray(r), np.asarray(s)))
 
 
 @overload
