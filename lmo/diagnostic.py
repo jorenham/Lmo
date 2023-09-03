@@ -94,7 +94,7 @@ def normaltest(
         >>> normaltest_scipy(x)[1]
         0.08435627...
 
-        At a 5% significance level, Lmo's test is signficiant (i.e. indicating
+        At a 5% significance level, Lmo's test is significant (i.e. indicating
         non-normality), whereas scipy's test isn't (i.e. inconclusive).
 
     Args:
