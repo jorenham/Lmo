@@ -1,6 +1,6 @@
 <!--overview-start-->
 
-<img src="https://jorenham.github.io/lmo/img/lmo.svg" alt="jorenham/lmo" width="128" align="right">
+<img src="https://jorenham.github.io/Lmo/img/lmo.svg" alt="jorenham/lmo" width="128" align="right">
 
 # Lmo - Trimmed L-moments and L-comoments
 
