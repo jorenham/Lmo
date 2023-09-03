@@ -27,7 +27,16 @@ import functools
 import warnings
 from collections.abc import Callable, Sequence
 from math import exp, lgamma, log
-from typing import Any, Final, Literal, cast, overload
+from typing import (
+    Any,
+    Concatenate,
+    Literal,
+    ParamSpec,
+    TypeAlias,
+    TypeVar,
+    cast,
+    overload,
+)
 
 import numpy as np
 import numpy.typing as npt
@@ -43,11 +52,10 @@ from ._utils import (
     round0,
 )
 from .linalg import sh_jacobi
-from .typing import AnyFloat, AnyInt, AnyTrim, IntVector
+from .typing import AnyFloat, AnyInt, AnyTrim, IntVector, QuadOptions
 
-DEFAULT_RTOL: Final[float] = 1.49e-8
-DEFAULT_ATOL: Final[float] = 1.49e-8
-DEFAULT_LIMIT: Final[int] = 50
+T = TypeVar('T')
+Pair: TypeAlias = tuple[T, T]
 
 
 def _l_moment_const(r: int, s: float, t: float, k: int = 0) -> float:
@@ -67,10 +75,10 @@ def _l_moment_const(r: int, s: float, t: float, k: int = 0) -> float:
 
 def _tighten_cdf_support(
     cdf: Callable[[float], float],
-    support: tuple[AnyFloat, AnyFloat],
-) -> tuple[float, float]:
+    support: Pair[AnyFloat] | None = None,
+) -> Pair[float]:
     """Attempt to tighten the support by checking some common bounds."""
-    a, b = map(float, support)
+    a, b = (-np.inf, np.inf) if support is None else map(float, support)
 
     # assert a < b, (a, b)
     # assert (u_a := cdf(a)) == 0, (a, u_a)
@@ -91,20 +99,25 @@ def _tighten_cdf_support(
     return a, b
 
 
+
+Theta = ParamSpec('Theta')
+
 def _quad(
-    integrand: Callable[[float], float],
-    domain: tuple[AnyFloat, AnyFloat],
-    limit: int,
-    atol: float,
-    rtol: float,
+    integrand: Callable[Concatenate[float, Theta], float],
+    domain: Pair[AnyFloat],
+    opts: QuadOptions | None = None,
+    *args: Theta.args,
+    **kwds: Theta.kwargs,
 ) -> float:
+    # quad only has an `args` param for some invalid reason
+    fn = functools.partial(integrand, **kwds) if kwds else integrand
+
     quad_val, _, _, *quad_tail = sci.quad(  # type: ignore
-        integrand,
+        fn,
         *domain,
+        args,
         full_output=True,
-        limit=limit,
-        epsabs=atol,
-        epsrel=rtol,
+        **(opts or {}),
     )
     if quad_tail:
         msg = f"'scipy.integrate.quad' failed: \n{quad_tail[0]}"
@@ -115,25 +128,19 @@ def _quad(
 
 
 def _nquad(
-    integrand: Callable[..., float],
-    domains: Sequence[
-        tuple[AnyFloat, AnyFloat] | Callable[..., tuple[float, float]]
-    ],
-    limit: int,
-    atol: float,
-    rtol: float,
-    args: tuple[Any, ...] = (),
+    integrand: Callable[Concatenate[float, float, Theta], float],
+    domains: Sequence[Pair[AnyFloat] | Callable[..., Pair[AnyFloat]]],
+    opts: QuadOptions | None = None,
+    *args: Theta.args,
+    **kwds: Theta.kwargs,
 ) -> float:
-    quad_val, _ = cast(
+    # nquad only has an `args` param for some invalid reason
+    fn = functools.partial(integrand, **kwds) if kwds else integrand
+
+    return cast(
         tuple[float, float],
-        sci.nquad(  # type: ignore
-            integrand,
-            domains[::-1],
-            args,
-            opts={'limit': limit, 'epsabs': atol, 'epsrel': rtol},
-        ),
-    )
-    return quad_val
+        sci.nquad(fn, domains[::-1], args, opts=opts),
+    )[0]
 
 
 def _rv_melt(
@@ -186,7 +193,7 @@ def _rv_fn(
     /,
     *args: float,
     **kwds: float,
-) -> tuple[Callable[[float], float], tuple[float, float], float, float]:
+) -> tuple[Callable[[float], float], Pair[float], float, float]:
     """
     Get the unvectorized cdf or ppf from a `scipy.stats` distribution,
     and apply the loc, scale and shape arguments.
@@ -238,7 +245,7 @@ def _rv_fn_select(
 ) -> tuple[
     Literal['cdf', 'ppf'],
     Callable[[float], float],
-    tuple[float, float],
+    Pair[float],
     float,
     float,
 ]:
@@ -262,7 +269,7 @@ def _rv_fn_select(
     else:
         name = 'cdf'
 
-    return name, *_rv_fn(rv, name, True, *args, **kwds)
+    return name, *_rv_fn(rv, name, transform, *args, **kwds)
 
 
 def _stack_orders(
@@ -278,11 +285,8 @@ def l_moment_from_cdf(
     r: AnyInt,
     /,
     trim: AnyTrim = ...,
-    *,
-    support: tuple[AnyFloat, AnyFloat] = ...,
-    rtol: float = ...,
-    atol: float = ...,
-    limit: int = ...,
+    support: Pair[AnyFloat] | None = ...,
+    quad_opts: QuadOptions | None = ...,
 ) -> np.float_:
     ...
 
@@ -293,11 +297,8 @@ def l_moment_from_cdf(
     r: IntVector,
     /,
     trim: AnyTrim = ...,
-    *,
-    support: tuple[AnyFloat, AnyFloat] = ...,
-    rtol: float = ...,
-    atol: float = ...,
-    limit: int = ...,
+    support: Pair[AnyFloat] | None = ...,
+    quad_opts: QuadOptions | None = ...,
 ) -> npt.NDArray[np.float_]:
     ...
 
@@ -307,11 +308,8 @@ def l_moment_from_cdf(  # noqa: C901
     r: AnyInt | IntVector,
     /,
     trim: AnyTrim = (0, 0),
-    *,
-    support: tuple[AnyFloat, AnyFloat] = (-np.inf, np.inf),
-    rtol: float = DEFAULT_RTOL,
-    atol: float = DEFAULT_ATOL,
-    limit: int = DEFAULT_LIMIT,
+    support: Pair[AnyFloat] | None = None,
+    quad_opts: QuadOptions | None = None,
 ) -> np.float_ | npt.NDArray[np.float_]:
     r"""
     Evaluate the population L-moment of a continuous probability distribution,
@@ -334,14 +332,14 @@ def l_moment_from_cdf(  # noqa: C901
         trim:
             Left- and right- trim. Must be a tuple of two non-negative ints
             or floats (!).
-
-    Other parameters:
         support: The subinterval of the nonzero domain of `cdf`.
             Generally it's not needed to provide this, as it will be guessed
             automatically.
-        rtol: See `epsrel` [`scipy.integrate.quad`][scipy.integrate.quad].
-        atol: See `epsabs` [`scipy.integrate.quad`][scipy.integrate.quad].
-        limit: See `limit` in [`scipy.integrate.quad`][scipy.integrate.quad].
+
+    Other parameters:
+        quad_opts:
+            Optional dict of options to pass to
+            [`scipy.integrate.quad`][scipy.integrate.quad].
 
     Raises:
         TypeError: `r` is not integer-valued or negative
@@ -430,7 +428,7 @@ def l_moment_from_cdf(  # noqa: C901
                     p ** (s + 1) * (1 - p) ** (t + 1) * j_k(p)  # type: ignore
                 )
 
-        quad_val = _quad(integrand, (a, b), limit, atol, rtol)
+        quad_val = _quad(integrand, (a, b), quad_opts)
         l_r[i] = _l_moment_const(r_val, s, t, 1) * quad_val
 
     return (np.round(l_r, 12) + 0.0)[r_idxs].reshape(_r.shape)[()]
@@ -442,11 +440,8 @@ def l_moment_from_ppf(
     r: AnyInt,
     /,
     trim: AnyTrim = ...,
-    *,
-    support: tuple[AnyFloat, AnyFloat] = ...,
-    rtol: float = ...,
-    atol: float = ...,
-    limit: int = ...,
+    support: Pair[AnyFloat] = ...,
+    quad_opts: QuadOptions | None = ...,
 ) -> np.float_:
     ...
 
@@ -457,11 +452,8 @@ def l_moment_from_ppf(
     r: IntVector,
     /,
     trim: AnyTrim = ...,
-    *,
-    support: tuple[AnyFloat, AnyFloat] = ...,
-    rtol: float = ...,
-    atol: float = ...,
-    limit: int = ...,
+    support: Pair[AnyFloat] = ...,
+    quad_opts: QuadOptions | None = ...,
 ) -> npt.NDArray[np.float_]:
     ...
 
@@ -471,11 +463,8 @@ def l_moment_from_ppf(
     r: AnyInt | IntVector,
     /,
     trim: AnyTrim = (0, 0),
-    *,
-    support: tuple[AnyFloat, AnyFloat] = (0, 1),
-    rtol: float = DEFAULT_RTOL,
-    atol: float = DEFAULT_ATOL,
-    limit: int = DEFAULT_LIMIT,
+    support: Pair[AnyFloat] = (0, 1),
+    quad_opts: QuadOptions | None = None,
 ) -> np.float_ | npt.NDArray[np.float_]:
     """
     Evaluate the population L-moment of a continuous probability distribution,
@@ -501,12 +490,10 @@ def l_moment_from_ppf(
             or floats (!).
 
     Other parameters:
-        support: The subinterval of the nonzero domain of `cdf`.
-            Generally it's not needed to provide this, as it will be guessed
-            automatically.
-        rtol: See `epsrel` [`scipy.integrate.quad`][scipy.integrate.quad].
-        atol: See `epsabs` [`scipy.integrate.quad`][scipy.integrate.quad].
-        limit: See `limit` in [`scipy.integrate.quad`][scipy.integrate.quad].
+        support: Integration limits. Defaults to (0, 1).
+        quad_opts:
+            Optional dict of options to pass to
+            [`scipy.integrate.quad`][scipy.integrate.quad].
 
     Raises:
         TypeError: `r` is not integer-valued
@@ -577,7 +564,7 @@ def l_moment_from_ppf(
         def integrand(p: float) -> float:
             return _w(p) * j_k(p)  # type: ignore
 
-        quad_val = _quad(integrand, support, limit, atol, rtol)
+        quad_val = _quad(integrand, support, quad_opts)
         l_r[i] = _l_moment_const(r_val, s, t, 0) * quad_val
 
     return (np.round(l_r, 12) + 0.0)[r_idxs].reshape(_r.shape)[()]
@@ -590,9 +577,7 @@ def l_moment_from_rv(
     /,
     trim: AnyTrim = ...,
     *rv_args: float,
-    rtol: float = ...,
-    atol: float = ...,
-    limit: int = ...,
+    quad_opts: QuadOptions | None = ...,
     **rv_kwds: float,
 ) -> np.float_:
     ...
@@ -605,9 +590,7 @@ def l_moment_from_rv(
     /,
     trim: AnyTrim = ...,
     *rv_args: float,
-    rtol: float = ...,
-    atol: float = ...,
-    limit: int = ...,
+    quad_opts: QuadOptions | None = ...,
     **rv_kwds: float,
 ) -> npt.NDArray[np.float_]:
     ...
@@ -619,9 +602,7 @@ def l_moment_from_rv(
     /,
     trim: AnyTrim = (0, 0),
     *rv_args: float,
-    rtol: float = DEFAULT_RTOL,
-    atol: float = DEFAULT_ATOL,
-    limit: int = DEFAULT_LIMIT,
+    quad_opts: QuadOptions | None = None,
     **rv_kwds: float,
 ) -> np.float_ | npt.NDArray[np.float_]:
     """
@@ -667,9 +648,9 @@ def l_moment_from_rv(
             These are ignored if `rv` is frozen.
 
     Other parameters:
-        rtol: See `epsrel` [`scipy.integrate.quad`][scipy.integrate.quad].
-        atol: See `epsabs` [`scipy.integrate.quad`][scipy.integrate.quad].
-        limit: See `limit` in [`scipy.integrate.quad`][scipy.integrate.quad].
+        quad_opts:
+            Optional dict of options to pass to
+            [`scipy.integrate.quad`][scipy.integrate.quad].
 
     Raises:
         TypeError: `r` is not integer-valued
@@ -697,15 +678,7 @@ def l_moment_from_rv(
     fn_name, rv_fn, ab, _, _ = _rv_fn_select(rv, True, *rv_args, **rv_kwds)
     lm_fn = {'cdf': l_moment_from_cdf, 'ppf': l_moment_from_ppf}[fn_name]
 
-    return lm_fn(
-        rv_fn,
-        r,
-        trim,
-        support=ab,
-        rtol=rtol,
-        atol=atol,
-        limit=limit,
-    )
+    return lm_fn(rv_fn, r, trim, support=ab, quad_opts=quad_opts)
 
 
 @overload
@@ -715,9 +688,8 @@ def l_ratio_from_cdf(
     s: AnyInt,
     /,
     trim: AnyTrim = ...,
-    *,
-    support: tuple[AnyFloat, AnyFloat] = ...,
-    **kwargs: Any,
+    support: Pair[AnyFloat] | None = ...,
+    quad_opts: QuadOptions | None = ...,
 ) -> np.float_:
     ...
 
@@ -729,9 +701,8 @@ def l_ratio_from_cdf(
     s: AnyInt | IntVector,
     /,
     trim: AnyTrim = ...,
-    *,
-    support: tuple[AnyFloat, AnyFloat] = ...,
-    **kwargs: Any,
+    support: Pair[AnyFloat] | None = ...,
+    quad_opts: QuadOptions | None = ...,
 ) -> npt.NDArray[np.float_]:
     ...
 
@@ -743,9 +714,8 @@ def l_ratio_from_cdf(
     s: IntVector,
     /,
     trim: AnyTrim = ...,
-    *,
-    support: tuple[AnyFloat, AnyFloat] = ...,
-    **kwargs: Any,
+    support: Pair[AnyFloat] | None = ...,
+    quad_opts: QuadOptions | None = ...,
 ) -> npt.NDArray[np.float_]:
     ...
 
@@ -756,9 +726,8 @@ def l_ratio_from_cdf(
     s: AnyInt | IntVector,
     /,
     trim: AnyTrim = (0, 0),
-    *,
-    support: tuple[AnyFloat, AnyFloat] = (-np.inf, np.inf),
-    **kwargs: Any,
+    support: Pair[AnyFloat] | None = None,
+    quad_opts: QuadOptions | None = None,
 ) -> np.float_ | npt.NDArray[np.float_]:
     """
     Population L-ratio's from a CDF.
@@ -768,7 +737,7 @@ def l_ratio_from_cdf(
         - [`lmo.l_ratio`][lmo.l_ratio]
     """
     rs = _stack_orders(r, s)
-    l_rs = l_moment_from_cdf(cdf, rs, trim, support=support, **kwargs)
+    l_rs = l_moment_from_cdf(cdf, rs, trim, support, quad_opts=quad_opts)
 
     return moments_to_ratio(rs, l_rs)
 
@@ -780,9 +749,8 @@ def l_ratio_from_ppf(
     s: AnyInt,
     /,
     trim: AnyTrim = ...,
-    *,
-    support: tuple[AnyFloat, AnyFloat] = ...,
-    **kwargs: Any,
+    support: Pair[AnyFloat] = ...,
+    quad_opts: QuadOptions | None = ...,
 ) -> np.float_:
     ...
 
@@ -794,9 +762,8 @@ def l_ratio_from_ppf(
     s: AnyInt | IntVector,
     /,
     trim: AnyTrim = ...,
-    *,
-    support: tuple[AnyFloat, AnyFloat] = ...,
-    **kwargs: Any,
+    support: Pair[AnyFloat] = ...,
+    quad_opts: QuadOptions | None = ...,
 ) -> npt.NDArray[np.float_]:
     ...
 
@@ -808,9 +775,8 @@ def l_ratio_from_ppf(
     s: IntVector,
     /,
     trim: AnyTrim = ...,
-    *,
-    support: tuple[AnyFloat, AnyFloat] = ...,
-    **kwargs: Any,
+    support: Pair[AnyFloat] = ...,
+    quad_opts: QuadOptions | None = ...,
 ) -> npt.NDArray[np.float_]:
     ...
 
@@ -821,9 +787,8 @@ def l_ratio_from_ppf(
     s: AnyInt | IntVector,
     /,
     trim: AnyTrim = (0, 0),
-    *,
-    support: tuple[AnyFloat, AnyFloat] = (0, 1),
-    **kwargs: Any,
+    support: Pair[AnyFloat] = (0, 1),
+    quad_opts: QuadOptions | None = None,
 ) -> np.float_ | npt.NDArray[np.float_]:
     """
     Population L-ratio's from a PPF.
@@ -833,7 +798,7 @@ def l_ratio_from_ppf(
         - [`lmo.l_ratio`][lmo.l_ratio]
     """
     rs = _stack_orders(r, s)
-    l_rs = l_moment_from_ppf(ppf, rs, trim, support=support, **kwargs)
+    l_rs = l_moment_from_ppf(ppf, rs, trim, support, quad_opts=quad_opts)
 
     return moments_to_ratio(rs, l_rs)
 
@@ -846,9 +811,7 @@ def l_ratio_from_rv(
     /,
     trim: AnyTrim = ...,
     *rv_args: float,
-    rtol: float = ...,
-    atol: float = ...,
-    limit: int = ...,
+    quad_opts: QuadOptions | None = ...,
     **rv_kwds: float,
 ) -> np.float_:
     ...
@@ -862,9 +825,7 @@ def l_ratio_from_rv(
     /,
     trim: AnyTrim = ...,
     *rv_args: float,
-    rtol: float = ...,
-    atol: float = ...,
-    limit: int = ...,
+    quad_opts: QuadOptions | None = ...,
     **rv_kwds: float,
 ) -> npt.NDArray[np.float_]:
     ...
@@ -878,9 +839,7 @@ def l_ratio_from_rv(
     /,
     trim: AnyTrim = ...,
     *rv_args: float,
-    rtol: float = ...,
-    atol: float = ...,
-    limit: int = ...,
+    quad_opts: QuadOptions | None = ...,
     **rv_kwds: float,
 ) -> npt.NDArray[np.float_]:
     ...
@@ -893,9 +852,7 @@ def l_ratio_from_rv(
     /,
     trim: AnyTrim = (0, 0),
     *rv_args: float,
-    rtol: float = DEFAULT_RTOL,
-    atol: float = DEFAULT_ATOL,
-    limit: int = DEFAULT_LIMIT,
+    quad_opts: QuadOptions | None = None,
     **rv_kwds: float,
 ) -> np.float_ | npt.NDArray[np.float_]:
     """
@@ -926,9 +883,7 @@ def l_ratio_from_rv(
         rs,
         trim,
         *rv_args,
-        rtol=rtol,
-        atol=atol,
-        limit=limit,
+        quad_opts=quad_opts,
         **rv_kwds,
     )
 
@@ -936,12 +891,11 @@ def l_ratio_from_rv(
 
 def l_stats_from_cdf(
     cdf: Callable[[float], float],
-    /,
     num: int = 4,
+    /,
     trim: AnyTrim = (0, 0),
-    *,
-    support: tuple[AnyFloat, AnyFloat] = (-np.inf, np.inf),
-    **kwargs: Any,
+    support: Pair[AnyFloat] | None = None,
+    quad_opts: QuadOptions | None = None,
 ) -> npt.NDArray[np.float_]:
     r"""
     Calculates the theoretical- / population- L-moments (for $r \le 2$)
@@ -970,17 +924,16 @@ def l_stats_from_cdf(
 
     """
     r, s = l_stats_orders(num)
-    return l_ratio_from_cdf(cdf, r, s, trim, support=support, **kwargs)
+    return l_ratio_from_cdf(cdf, r, s, trim, support, quad_opts=quad_opts)
 
 
 def l_stats_from_ppf(
     ppf: Callable[[float], float],
-    /,
     num: int = 4,
+    /,
     trim: AnyTrim = (0, 0),
-    *,
-    support: tuple[AnyFloat, AnyFloat] = (0, 1),
-    **kwargs: Any,
+    support: Pair[AnyFloat] = (0, 1),
+    quad_opts: QuadOptions | None = None,
 ) -> npt.NDArray[np.float_]:
     r"""
     Calculates the theoretical- / population- L-moments (for $r \le 2$)
@@ -1008,18 +961,16 @@ def l_stats_from_ppf(
         - [`lmo.l_stats`][lmo.l_stats] - Unbiased sample estimation of L-stats.
     """
     r, s = l_stats_orders(num)
-    return l_ratio_from_ppf(ppf, r, s, trim, support=support, **kwargs)
+    return l_ratio_from_ppf(ppf, r, s, trim, support, quad_opts=quad_opts)
 
 
 def l_stats_from_rv(
     rv: rv_continuous | rv_frozen,
-    /,
     num: int = 4,
+    /,
     trim: AnyTrim = (0, 0),
     *rv_args: float,
-    rtol: float = DEFAULT_RTOL,
-    atol: float = DEFAULT_ATOL,
-    limit: int = DEFAULT_LIMIT,
+    quad_opts: QuadOptions | None = None,
     **rv_kwds: float,
 ) -> npt.NDArray[np.float_]:
     r"""
@@ -1066,9 +1017,7 @@ def l_stats_from_rv(
         s,
         trim,
         *rv_args,
-        rtol=rtol,
-        atol=atol,
-        limit=limit,
+        quad_opts=quad_opts,
         **rv_kwds,
     )
 
@@ -1140,11 +1089,8 @@ def l_moment_cov_from_cdf(
     r_max: int,
     /,
     trim: AnyTrim = (0, 0),
-    *,
-    support: tuple[AnyFloat, AnyFloat] | None = None,
-    rtol: float = DEFAULT_RTOL,
-    atol: float = DEFAULT_ATOL,
-    limit: int = DEFAULT_LIMIT,
+    support: Pair[AnyFloat] | None = None,
+    quad_opts: QuadOptions | None = None,
 ) -> npt.NDArray[np.float_]:
     r"""
     L-moments that are estimated from $n$ samples of a distribution with CDF
@@ -1223,12 +1169,14 @@ def l_moment_cov_from_cdf(
             or floats.
 
     Other parameters:
-        support: The subinterval of the nonzero domain of `cdf`.
+        support:
+            The subinterval of the nonzero domain of `cdf`.
             Generally it's not needed to provide this, as it will be guessed
             automatically.
-        rtol: See `epsrel` in [`scipy.integrate.nquad`][scipy.integrate.nquad].
-        atol: See `epsabs` in [`scipy.integrate.nquad`][scipy.integrate.nquad].
-        limit: See `limit` in [`scipy.integrate.nquad`][scipy.integrate.nquad].
+        quad_opts:
+            Optional dict of options to pass to
+            [`scipy.integrate.quad`][scipy.integrate.quad].
+
 
     Returns:
         cov: Covariance matrix, with shape `(r_max, r_max)`.
@@ -1289,10 +1237,9 @@ def l_moment_cov_from_cdf(
         cov_kr = _nquad(
             integrand,
             [(a, b), range_x],
-            limit=limit,
-            atol=atol,
-            rtol=rtol,
-            args=(k, r),
+            quad_opts,
+            k,
+            r,
         )
         if k == r and cov_kr <= 0:
             msg = f'negative variance encountered at {r}: {cov_kr}'
@@ -1311,7 +1258,7 @@ def l_moment_cov_from_cdf(
         )
         raise RuntimeError(msg)
 
-    return round0(cov, atol)
+    return round0(cov)
 
 
 def l_moment_cov_from_rv(
@@ -1320,9 +1267,7 @@ def l_moment_cov_from_rv(
     /,
     trim: AnyTrim = (0, 0),
     *rv_args: float,
-    rtol: float = DEFAULT_RTOL,
-    atol: float = DEFAULT_ATOL,
-    limit: int = DEFAULT_LIMIT,
+    quad_opts: QuadOptions | None = None,
     **rv_kwds: float,
 ) -> npt.NDArray[np.float_]:
     """
@@ -1355,23 +1300,17 @@ def l_moment_cov_from_rv(
         *rv_args,
         **rv_kwds,
     )
-    return scale**2 * l_moment_cov_from_cdf(
-        cdf,
-        r_max,
-        trim=trim,
-        support=support,
-        rtol=rtol,
-        atol=atol,
-        limit=limit,
-    )
+    cov = l_moment_cov_from_cdf(cdf, r_max, trim, support, quad_opts=quad_opts)
+    return scale**2 * cov
 
 
 def l_stats_cov_from_cdf(
     cdf: Callable[[float], float],
-    /,
     num: int = 4,
+    /,
     trim: AnyTrim = (0, 0),
-    **kwargs: Any,
+    support: Pair[AnyFloat] | None = None,
+    quad_opts: QuadOptions | None = None,
 ) -> npt.NDArray[np.float_]:
     r"""
     Similar to [`l_moment_from_cdf`][lmo.theoretical.l_moment_from_cdf], but
@@ -1422,9 +1361,15 @@ def l_stats_cov_from_cdf(
         trim:
             Left- and right- trim. Must be a tuple of two non-negative ints
             or floats.
-        **kwargs:
-            Optional keyword arguments to pass to
-            [`l_moment_from_cdf`][lmo.theoretical.l_moment_from_cdf].
+
+    Other parameters:
+        support:
+            The subinterval of the nonzero domain of `cdf`.
+            Generally it's not needed to provide this, as it will be guessed
+            automatically.
+        quad_opts:
+            Optional dict of options to pass to
+            [`scipy.integrate.quad`][scipy.integrate.quad].
 
     References:
         - [J.R.M. Hosking (1990) - L-moments: Analysis and Estimation of
@@ -1434,11 +1379,17 @@ def l_stats_cov_from_cdf(
             L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
     """
     rs = clean_order(num, 'num', 0)
-    ll_kr = l_moment_cov_from_cdf(cdf, rs, trim=trim, **kwargs)
+    ll_kr = l_moment_cov_from_cdf(cdf, rs, trim, support, quad_opts=quad_opts)
     if rs <= 2:
         return ll_kr
 
-    l_r0 = l_moment_from_cdf(cdf, np.arange(2, rs + 1), trim=trim, **kwargs)
+    l_r0 = l_moment_from_cdf(
+        cdf,
+        np.arange(2, rs + 1),
+        trim,
+        support,
+        quad_opts=quad_opts,
+    )
 
     l_2 = l_r0[0]
     assert l_2 > 0, l_2
@@ -1464,18 +1415,16 @@ def l_stats_cov_from_cdf(
 
         cov[k, r] = cov[r, k] = tt
 
-    return round0(cov, kwargs.get('atol', DEFAULT_ATOL))
+    return round0(cov)
 
 
 def l_stats_cov_from_rv(
     rv: rv_continuous | rv_frozen,
-    /,
     num: int = 4,
+    /,
     trim: AnyTrim = (0, 0),
     *rv_args: float,
-    rtol: float = DEFAULT_RTOL,
-    atol: float = DEFAULT_ATOL,
-    limit: int = DEFAULT_LIMIT,
+    quad_opts: QuadOptions | None = None,
     **rv_kwds: float,
 ) -> npt.NDArray[np.float_]:
     """
@@ -1512,23 +1461,10 @@ def l_stats_cov_from_rv(
         are independent. And with 2 trim, all L-stats depend on each other.
 
     """
-    cdf, support, _, scale = _rv_fn(
-        rv,
-        'cdf',
-        False,
-        *rv_args,
-        **rv_kwds,
-    )
-    cov = l_stats_cov_from_cdf(
-        cdf,
-        num,
-        trim=trim,
-        support=support,
-        rtol=rtol,
-        atol=atol,
-        limit=limit,
-    )
-    if scale != 1:
+    cdf, support, _, scale = _rv_fn(rv, 'cdf', False, *rv_args, **rv_kwds)
+
+    cov = l_stats_cov_from_cdf(cdf, num, trim, support, quad_opts=quad_opts)
+    if scale != 1 and num:
         cov[:2, :2] *= scale**2
 
     return cov

@@ -28,6 +28,8 @@ __all__ = (
     'LMomentOptions',
     'LComomentOptions',
 
+    'QuadOptions',
+
     'AnyTrim',
 )
 
@@ -328,6 +330,32 @@ class LMomentOptions(_LOptions, total=False):
 class LComomentOptions(_LOptions, total=False):
     """Use like `def spam(**kwargs: Unpack[LComomentOptions]): ...`."""
     rowvar: bool
+
+
+# scipy
+
+class QuadOptions(TypedDict, total=False):
+    """
+    Optional quadrature options to be passed to
+    [`scipy.integrate.quad`][scipy.integrate.quad].
+    """
+    epsabs: float
+    epsrel: float
+    limit: int
+    maxp1: int
+    limlst: int
+    points: Sequence[float] | npt.NDArray[np.floating[Any]]
+    weight: Literal[
+        'cos',
+        'sin',
+        'alg',
+        'alg-loga',
+        'alg-logb',
+        'alg-log',
+        'cauchy',
+    ]
+    wvar: float | tuple[float, float]
+    wopts: tuple[int, npt.NDArray[np.float_]]
 
 
 # Lmo specific aliases
