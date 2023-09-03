@@ -1535,6 +1535,12 @@ def l_moment_influence(
     Returns:
         influence_function:
             The influence function, with vectorized signature `() -> ()`.
+
+    See Also:
+        - [`l_ratio_influence`][lmo.theoretical.l_ratio_influence]
+        - [`l_moment_from_cdf`][lmo.theoretical.l_moment_from_cdf]
+        - [`l_moment_from_rv`][lmo.theoretical.l_moment_from_rv]
+        - [`lmo.l_moment`][lmo.l_moment]
     """
     _r = clean_order(r)
     if _r == 0:
@@ -1628,7 +1634,7 @@ def l_ratio_influence(
         \lambda^{(s, t)}_r
     }{
         \lambda^{(s, t)}_k
-    } ;.
+    } \;.
     $$
 
     Because IF's are a special case of the general Gâteuax derivative, the
@@ -1655,6 +1661,12 @@ def l_ratio_influence(
     Returns:
         influence_function:
             The influence function, with vectorized signature `() -> ()`.
+
+    See Also:
+        - [`l_moment_influence`][lmo.theoretical.l_moment_influence]
+        - [`l_ratio_from_cdf`][lmo.theoretical.l_ratio_from_cdf]
+        - [`l_ratio_from_rv`][lmo.theoretical.l_ratio_from_rv]
+        - [`lmo.l_ratio`][lmo.l_ratio]
 
     """
     _r, _k = clean_order(r), clean_order(k)
