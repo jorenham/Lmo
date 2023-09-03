@@ -1,6 +1,7 @@
 __all__ = (
     'ensure_axis_at',
     'as_float_array',
+    'round0',
     'ordered',
     'clean_order',
     'clean_orders',
@@ -57,6 +58,11 @@ def as_float_array(
 
     # the `_[()]` ensures that 0-d arrays become scalars
     return (out.ravel() if flat and out.ndim != 1 else out)[()]
+
+
+def round0(a: npt.NDArray[T], /, tol: float = 1e-8) -> npt.NDArray[T]:
+    """Round values close to zero."""
+    return np.where(np.abs(a) <= tol, 0, a)
 
 
 def _apply_aweights(
