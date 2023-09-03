@@ -31,7 +31,13 @@ import scipy.integrate as sci  # type: ignore
 import scipy.special as scs  # type: ignore
 from scipy.stats.distributions import rv_continuous, rv_frozen  # type: ignore
 
-from ._utils import clean_order, clean_trim, moments_to_ratio, round0
+from ._utils import (
+    clean_order,
+    clean_trim,
+    l_stats_orders,
+    moments_to_ratio,
+    round0,
+)
 from .linalg import sh_jacobi
 from .typing import AnyFloat, AnyInt, AnyTrim, IntVector
 
@@ -927,8 +933,8 @@ def l_ratio_from_rv(
 def l_stats_from_cdf(
     cdf: Callable[[float], float],
     /,
-    trim: AnyTrim = (0, 0),
     num: int = 4,
+    trim: AnyTrim = (0, 0),
     *,
     support: tuple[AnyFloat, AnyFloat] = (-np.inf, np.inf),
     **kwargs: Any,
@@ -966,8 +972,8 @@ def l_stats_from_cdf(
 def l_stats_from_ppf(
     ppf: Callable[[float], float],
     /,
-    trim: AnyTrim = (0, 0),
     num: int = 4,
+    trim: AnyTrim = (0, 0),
     *,
     support: tuple[AnyFloat, AnyFloat] = (0, 1),
     **kwargs: Any,
@@ -1004,9 +1010,9 @@ def l_stats_from_ppf(
 def l_stats_from_rv(
     rv: rv_continuous | rv_frozen,
     /,
+    num: int = 4,
     trim: AnyTrim = (0, 0),
     *rv_args: float,
-    num: int = 4,
     rtol: float = DEFAULT_RTOL,
     atol: float = DEFAULT_ATOL,
     limit: int = DEFAULT_LIMIT,
