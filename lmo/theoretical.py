@@ -11,7 +11,7 @@ __all__ = (
     'l_moment_cov_from_cdf',
     'l_moment_cov_from_rv',
 
-    'l_moment_influence_function',
+    'l_moment_influence',
 
     'l_ratio_from_cdf',
     'l_ratio_from_ppf',
@@ -1473,7 +1473,7 @@ def l_stats_cov_from_rv(
     return cov
 
 
-def l_moment_influence_function(
+def l_moment_influence(
     rv_or_cdf: (
         rv_continuous
         | rv_frozen
@@ -1485,6 +1485,53 @@ def l_moment_influence_function(
     quad_opts: QuadOptions | None = None,
     support: Pair[float] | None = None,
 ) -> Callable[[npt.ArrayLike], float | npt.NDArray[np.float_]]:
+    r"""
+    Influence Function (IF) of a theoretical L-moment.
+
+    $$
+    \psi_r^{(s, t)}(x)
+        = c^{(s,t)}_r
+        \, F(x)^s
+        \, \big( 1-{F}(x) \big)^t
+        \, \tilde{P}^{(s,t)}_{r-1} \big( F(x) \big)
+        \, x
+        - \lambda^{(s,t)}_r
+        \;,
+    $$
+
+    with $F$ the CDF, $\tilde{P}^{(s,t)}_{r-1}$ the shifted Jacobi polynomial,
+    and
+
+    $$
+    c^{(s,t)}_r
+        = \frac{r+s+t}{r} \frac{B(r, \, r+s+t)}{B(r+s, \, r+t)}
+        \;,
+    $$
+
+    where $B$ is the (complete) Beta function.
+
+    Notes:
+        The order parameter `r` is not vectorized.
+
+    Args:
+        rv_or_cdf:
+            Either a [`scipy.stats`][scipy.stats] continuous distribution
+            instance, or a (vectorized) cumulative distribution function (CDF).
+        r: The L-moment order. Must be a non-negative integer.
+        trim: Left- and right- trim lengths. Defaults to (0, 0).
+
+    Other parameters:
+        support:
+            The subinterval of the nonzero domain of `cdf`. This is ignored if
+            a `scipy.stats` distribution is used.
+        quad_opts:
+            Optional dict of options to pass to
+            [`scipy.integrate.quad`][scipy.integrate.quad].
+
+    Returns:
+        influence_function:
+            The influence function, with vectorized signature `() -> ()`.
+    """
     _r = clean_order(r)
     if _r == 0:
         def influence_function(
@@ -1533,10 +1580,14 @@ def l_moment_influence_function(
         x: npt.ArrayLike,
         /,
     ) -> float | npt.NDArray[np.float_]:
-        """L-moment Influence Function."""
         _x = np.asanyarray(x, np.float_)
         q = cdf(_x)
         alpha = c * q**s * (1 - q)**t * _eval_sh_jacobi(_r - 1, t, s, q) * _x
         return alpha[()] - lm
+
+    influence_function.__doc__ = (
+        f'Theoretical influence function for L-moment with `r={r}` and '
+        f'`trim=({s}, {t})`.'
+    )
 
     return influence_function
