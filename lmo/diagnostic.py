@@ -205,6 +205,34 @@ def l_moment_gof(
         issued, or the function is very slow, then the results are probably
         incorrect, and larger degrees of trimming should be used.
 
+    Examples:
+        Test if the samples are drawn from a normal distribution.
+
+        >>> import lmo
+        >>> import numpy as np
+        >>> from lmo.diagnostic import l_moment_gof
+        >>> from lmo.theoretical import l_moment_from_rv
+        >>> from scipy.stats import norm
+        >>> rng = np.random.default_rng(12345)
+        >>> X = norm(13.12, 1.66)
+        >>> n = 1_000
+        >>> x = X.rvs(n, random_state=rng)
+        >>> x_lm = lmo.l_moment(x, [1,2,3,4])
+        >>> x_lm.round(3)
+        array([ 1.3134e+01,  9.5100e-01, -1.1000e-02,  1.2000e-01])
+        >>> l_moment_gof(X, x_lm, n).pvalue
+        0.8259...
+
+        Contaminated samples:
+
+        >>> y = 0.9 * x + 0.1 * rng.normal(X.mean(), X.std() * 10, n)
+        >>> y_lm = lmo.l_moment(y, [1,2,3,4])
+        >>> y_lm.round(3)
+        array([1.3193e+01, 1.2860e+00, 6.0000e-03, 1.6800e-01])
+        >>> l_moment_gof(X, y_lm, n).pvalue
+        1.2668...e-60
+
+
     See Also:
         - [`l_moment_from_cdf`][lmo.theoretical.l_moment_from_cdf]
         - ['l_moment_cov_from_cdf'][lmo.theoretical.l_moment_cov_from_cdf]
