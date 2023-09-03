@@ -31,14 +31,19 @@ import scipy.integrate as sci  # type: ignore
 import scipy.special as scs  # type: ignore
 from scipy.stats.distributions import rv_continuous, rv_frozen  # type: ignore
 
-from . import _poly
-from ._utils import clean_order, clean_trim, l_stats_orders, moments_to_ratio
+from ._utils import (
+    clean_order,
+    clean_trim,
+    l_stats_orders,
+    moments_to_ratio,
+    round0,
+)
 from .linalg import sh_jacobi
 from .typing import AnyFloat, AnyInt, AnyTrim, IntVector
 
 DEFAULT_RTOL: Final[float] = 1.49e-8
 DEFAULT_ATOL: Final[float] = 1.49e-8
-DEFAULT_LIMIT: Final[int] = 100
+DEFAULT_LIMIT: Final[int] = 50
 
 
 def _l_moment_const(r: int, s: float, t: float, k: int = 0) -> float:
@@ -82,10 +87,6 @@ def _tighten_cdf_support(
     return a, b
 
 
-def _round_like(x: float, tol: float) -> float:
-    return round(x, -int(np.log10(tol))) + 0.0 if tol else x
-
-
 def _quad(
     integrand: Callable[[float], float],
     domain: tuple[AnyFloat, AnyFloat],
@@ -93,7 +94,7 @@ def _quad(
     atol: float,
     rtol: float,
 ) -> float:
-    quad_val, quad_err, _, *quad_tail = sci.quad(  # type: ignore
+    quad_val, _, _, *quad_tail = sci.quad(  # type: ignore
         integrand,
         *domain,
         full_output=True,
@@ -106,7 +107,7 @@ def _quad(
         warnings.warn(msg, sci.IntegrationWarning, stacklevel=2)
         return np.nan
 
-    return _round_like(cast(float, quad_val), cast(float, quad_err))
+    return cast(float, quad_val)
 
 
 def _nquad(
@@ -119,7 +120,7 @@ def _nquad(
     rtol: float,
     args: tuple[Any, ...] = (),
 ) -> float:
-    quad_val, quad_err = cast(
+    quad_val, _ = cast(
         tuple[float, float],
         sci.nquad(  # type: ignore
             integrand,
@@ -128,7 +129,7 @@ def _nquad(
             opts={'limit': limit, 'epsabs': atol, 'epsrel': rtol},
         ),
     )
-    return _round_like(quad_val, quad_err)
+    return quad_val
 
 
 @overload
@@ -397,7 +398,7 @@ def l_moment_from_ppf(
         raise TypeError(msg)
 
     if _r.size == 0:
-        return np.empty(_r.shape)
+        return np.empty(_r.shape, np.float_)
 
     r_vals, r_idxs = np.unique(_r, return_inverse=True)
     s, t = clean_trim(trim)
@@ -442,31 +443,134 @@ def l_moment_from_ppf(
     return (np.round(l_r, 12) + 0.0)[r_idxs].reshape(_r.shape)[()]
 
 
-# pyright: reportUnknownMemberType=false
-def _rv_unwrap(
+def _rv_melt(
     rv: rv_continuous | rv_frozen,
-    *rv_args: Any,
-    only: Literal['cdf', 'ppf'] | None = None,
-    **rv_kwds: Any,
+    *args: float,
+    **kwds: float,
+) -> tuple[rv_continuous, float, float, tuple[float, ...]]:
+    """
+    Extract and validate the loc/scale and shape args from the potentially
+    frozen `scipy.stats` distribution.
+    Returns the `rv_continuous` distribution, loc, scale and shape args.
+    """
+    if isinstance(rv, rv_frozen):
+        dist, args, kwds = (
+            cast(rv_continuous, rv.dist),
+            cast(tuple[float, ...], rv.args),
+            cast(dict[str, float], rv.kwds),
+        )
+    else:
+        dist = rv
+
+    shapes, loc, scale = cast(
+        tuple[tuple[float, ...], float, float],
+        dist._parse_args(*args, **kwds),  # type: ignore
+    )
+    if scale <= 0:
+        msg = f'scale must be >0, got {scale}'
+        raise ValueError(msg)
+    if invalid_args := set(np.argwhere(1 - dist._argcheck(shapes))):
+        invalid_params = {
+            cast(str, param.name): args[i]
+            for i, param in enumerate(dist._param_info())  # type: ignore
+            if i in invalid_args
+        }
+        invalid_repr = ', '.join(f'{k}={v}' for k, v in invalid_params.items())
+        msg = (
+            f'shape arguments ({invalid_repr}) of are invalid for '
+            f'{dist.name!r}'
+        )
+        raise ValueError(msg)
+
+    return dist, loc, scale, shapes
+
+
+# pyright: reportUnknownMemberType=false,reportPrivateUsage=false
+def _rv_fn(
+    rv: rv_continuous | rv_frozen,
+    name: Literal['cdf', 'ppf'],
+    transform: bool,
+    /,
+    *args: float,
+    **kwds: float,
+) -> tuple[Callable[[float], float], tuple[float, float], float, float]:
+    """
+    Get the unvectorized cdf or ppf from a `scipy.stats` distribution,
+    and apply the loc, scale and shape arguments.
+    Return the function, its support, the loc, and the scale.
+    """
+    dist, loc, scale, shapes = _rv_melt(rv, *args, **kwds)
+
+    m_x, s_x = (loc, scale) if transform else (0, 1)
+
+    a0, b0 = cast(tuple[float, float], dist._get_support(*shapes))
+    a, b = m_x + s_x * a0, m_x + s_x * b0
+
+    # prefer the unvectorized implementation if exists
+    if f'_{name}_single' in type(dist).__dict__:
+        fn_raw = cast(Callable[..., float], getattr(dist, f'_{name}_single'))
+    else:
+        fn_raw = cast(Callable[..., float], getattr(dist, f'_{name}'))
+
+    if name == 'ppf':
+        def fn(q: float, /) -> float:
+            if q < 0 or q > 1:
+                return np.nan
+            if q == 0:
+                return a
+            if q == 1:
+                return b
+            return m_x + s_x * fn_raw(q, *shapes)
+
+        support = 0, 1
+    else:
+        def fn(x: float, /) -> float:
+            if x <= a:
+                return 0
+            if x >= b:
+                return 1
+            return fn_raw((x - m_x) / s_x, *shapes)
+
+        support = a, b
+
+    return fn, support, loc, scale
+
+
+# pyright: reportUnknownMemberType=false,reportPrivateUsage=false
+def _rv_fn_select(
+    rv: rv_continuous | rv_frozen,
+    transform: bool,
+    *args: float,
+    **kwds: float,
 ) -> tuple[
     Literal['cdf', 'ppf'],
     Callable[[float], float],
     tuple[float, float],
+    float,
+    float,
 ]:
-    _rv = rv if isinstance(rv, rv_frozen) else rv(*rv_args, *rv_kwds)
+    """
+    Select and extract either the CDF of PPF, depending on which one has been
+    natively implemented.
+    """
+    dist = cast(rv_continuous, rv.dist) if isinstance(rv, rv_frozen) else rv
 
-    if only == 'cdf' or only is None and cast(int, _rv.dist.moment_type) == 0:
-        return (
-            'cdf',
-            cast(Callable[[float], float], _rv.cdf),
-            cast(tuple[float, float], _rv.support()),
-        )
+    dist_methods = type(dist).__dict__
+    has_cdf = '_cdf_single' in dist_methods or '_cdf' in dist_methods
+    has_ppf = '_ppf_single' in dist_methods or '_ppf' in dist_methods
 
-    return (
-        'ppf',
-        cast(Callable[[float], float], _rv.ppf),
-        (0, 1),
-    )
+    momtype = dist.moment_type
+    if not has_ppf and has_cdf:
+        name = 'cdf'
+    elif not has_cdf and has_ppf:  # noqa: SIM114
+        name = 'ppf'
+    elif momtype == 1:
+        name = 'ppf'
+    else:
+        name = 'cdf'
+
+    return name, *_rv_fn(rv, name, True, *args, **kwds)
+
 
 @overload
 def l_moment_from_rv(
@@ -474,11 +578,11 @@ def l_moment_from_rv(
     r: AnyInt,
     /,
     trim: AnyTrim = ...,
-    *rv_args: Any,
+    *rv_args: float,
     rtol: float = ...,
     atol: float = ...,
     limit: int = ...,
-    **rv_kwds: Any,
+    **rv_kwds: float,
 ) -> np.float_:
     ...
 
@@ -489,11 +593,11 @@ def l_moment_from_rv(
     r: IntVector,
     /,
     trim: AnyTrim = ...,
-    *rv_args: Any,
+    *rv_args: float,
     rtol: float = ...,
     atol: float = ...,
     limit: int = ...,
-    **rv_kwds: Any,
+    **rv_kwds: float,
 ) -> npt.NDArray[np.float_]:
     ...
 
@@ -503,11 +607,11 @@ def l_moment_from_rv(
     r: AnyInt | IntVector,
     /,
     trim: AnyTrim = (0, 0),
-    *rv_args: Any,
+    *rv_args: float,
     rtol: float = DEFAULT_RTOL,
     atol: float = DEFAULT_ATOL,
     limit: int = DEFAULT_LIMIT,
-    **rv_kwds: Any,
+    **rv_kwds: float,
 ) -> np.float_ | npt.NDArray[np.float_]:
     """
     Evaluate the population L-moment of a
@@ -517,9 +621,9 @@ def l_moment_from_rv(
     Examples:
         Evaluate the population L-moments of the normally-distributed IQ test.
 
-        >>> from scipy.stats import distributions
-        >>> l_moment_from_rv(distributions.norm(100, 15), [1, 2, 3, 4])
-        array([100.       ,   8.4628438,   0.       ,   1.0375592])
+        >>> from scipy.stats import norm
+        >>> l_moment_from_rv(norm(100, 15), [1, 2, 3, 4]).round(6)
+        array([100.      ,   8.462844,   0.      ,   1.037559])
         >>> _[1] * np.sqrt(np.pi)
         15.000000...
 
@@ -579,18 +683,14 @@ def l_moment_from_rv(
         - [`lmo.l_moment`][lmo.l_moment]: sample L-moment
 
     """
-    functype, func, support = _rv_unwrap(rv, *rv_args, **rv_kwds)
+    fn_name, rv_fn, ab, _, _ = _rv_fn_select(rv, True, *rv_args, **rv_kwds)
+    lm_fn = {'cdf': l_moment_from_cdf, 'ppf': l_moment_from_ppf}[fn_name]
 
-    l_moment_from_func = {
-        'cdf': l_moment_from_cdf,
-        'ppf': l_moment_from_ppf,
-    }[functype]
-
-    return l_moment_from_func(
-        func,
+    return lm_fn(
+        rv_fn,
         r,
-        trim=trim,
-        support=support,
+        trim,
+        support=ab,
         rtol=rtol,
         atol=atol,
         limit=limit,
@@ -741,11 +841,11 @@ def l_ratio_from_rv(
     s: AnyInt,
     /,
     trim: AnyTrim = ...,
-    *rv_args: Any,
+    *rv_args: float,
     rtol: float = ...,
     atol: float = ...,
     limit: int = ...,
-    **rv_kwds: Any,
+    **rv_kwds: float,
 ) -> np.float_:
     ...
 
@@ -757,11 +857,11 @@ def l_ratio_from_rv(
     s: AnyInt | IntVector,
     /,
     trim: AnyTrim = ...,
-    *rv_args: Any,
+    *rv_args: float,
     rtol: float = ...,
     atol: float = ...,
     limit: int = ...,
-    **rv_kwds: Any,
+    **rv_kwds: float,
 ) -> npt.NDArray[np.float_]:
     ...
 
@@ -773,13 +873,14 @@ def l_ratio_from_rv(
     s: IntVector,
     /,
     trim: AnyTrim = ...,
-    *rv_args: Any,
+    *rv_args: float,
     rtol: float = ...,
     atol: float = ...,
     limit: int = ...,
-    **rv_kwds: Any,
+    **rv_kwds: float,
 ) -> npt.NDArray[np.float_]:
     ...
+
 
 def l_ratio_from_rv(
     rv: rv_continuous | rv_frozen,
@@ -787,11 +888,11 @@ def l_ratio_from_rv(
     s: AnyInt | IntVector,
     /,
     trim: AnyTrim = (0, 0),
-    *rv_args: Any,
+    *rv_args: float,
     rtol: float = DEFAULT_RTOL,
     atol: float = DEFAULT_ATOL,
     limit: int = DEFAULT_LIMIT,
-    **rv_kwds: Any,
+    **rv_kwds: float,
 ) -> np.float_ | npt.NDArray[np.float_]:
     """
     Population L-ratio's from a [`scipy.stats`][scipy.stats] univariate
@@ -832,8 +933,8 @@ def l_ratio_from_rv(
 def l_stats_from_cdf(
     cdf: Callable[[float], float],
     /,
-    trim: AnyTrim = (0, 0),
     num: int = 4,
+    trim: AnyTrim = (0, 0),
     *,
     support: tuple[AnyFloat, AnyFloat] = (-np.inf, np.inf),
     **kwargs: Any,
@@ -871,8 +972,8 @@ def l_stats_from_cdf(
 def l_stats_from_ppf(
     ppf: Callable[[float], float],
     /,
-    trim: AnyTrim = (0, 0),
     num: int = 4,
+    trim: AnyTrim = (0, 0),
     *,
     support: tuple[AnyFloat, AnyFloat] = (0, 1),
     **kwargs: Any,
@@ -909,13 +1010,13 @@ def l_stats_from_ppf(
 def l_stats_from_rv(
     rv: rv_continuous | rv_frozen,
     /,
-    trim: AnyTrim = (0, 0),
     num: int = 4,
-    *rv_args: Any,
+    trim: AnyTrim = (0, 0),
+    *rv_args: float,
     rtol: float = DEFAULT_RTOL,
     atol: float = DEFAULT_ATOL,
     limit: int = DEFAULT_LIMIT,
-    **rv_kwds: Any,
+    **rv_kwds: float,
 ) -> npt.NDArray[np.float_]:
     r"""
     Calculates the theoretical- / population- L-moments (for $r \le 2$)
@@ -939,12 +1040,12 @@ def l_stats_from_rv(
 
         >>> from scipy.stats import distributions
         >>> X = distributions.expon()
-        >>> l_stats_from_rv(X)
-        array([1.        , 0.5       , 0.33333333, 0.16666667])
-        >>> l_stats_from_rv(X, trim=(0, 1/2))
-        array([0.66666667, 0.33333333, 0.26666667, 0.1142857 ])
-        >>> l_stats_from_rv(X, trim=(0, 1))
-        array([0.5       , 0.25      , 0.22222222, 0.08333333])
+        >>> l_stats_from_rv(X).round(6)
+        array([1.      , 0.5     , 0.333333, 0.166667])
+        >>> l_stats_from_rv(X, trim=(0, 1/2)).round(6)
+        array([0.666667, 0.333333, 0.266667, 0.114286])
+        >>> l_stats_from_rv(X, trim=(0, 1)).round(6)
+        array([0.5     , 0.25    , 0.222222, 0.083333])
 
     Note:
         This should not be confused with the term *L-statistic*, which is
@@ -968,13 +1069,75 @@ def l_stats_from_rv(
     )
 
 
+def _eval_sh_jacobi(
+    n: int,
+    a: float,
+    b: float,
+    x: float,
+) -> float:
+    """
+    Fast evaluation of the n-th shifted Jacobi polynomial.
+    Faster than pre-computing using np.Polynomial, and than
+    `scipy.special.eval_jacobi` for n < 4.
+
+    Todo:
+        move to _poly, vectorize, annotate, document, test
+
+    """
+    if n == 0:
+        return 1
+
+    u = 2 * x - 1
+
+    if a == b == 0:
+        if n == 1:
+            return u
+
+        v = x * (x - 1)
+
+        if n == 2:
+            return 1 + 6 * v
+        if n == 3:
+            return (1 + 10 * v) * u
+        if n == 4:
+            return 1 + 10 * v * (2 + 7 * v)
+
+        return scs.eval_sh_legendre(n, x)
+
+    if n == 1:
+        return (a + b + 2) * x - b - 1
+    if n == 2:
+        return (
+            b * (b + 3)
+            - (a + b + 3) * (
+                2 * b + 4
+                - (a + b + 4) * x
+            ) * x
+        ) / 2 + 1
+    if n == 3:
+        return (
+            (1 + a) * (2 + a) * (3 + a)
+            + (4 + a + b) * (
+                3 * (2 + a) * (3 + a)
+                + (5 + a + b) * (
+                    3 * (3 + a)
+                    + (6 + a + b) * (x - 1)
+                ) * (x - 1)
+            ) * (x - 1)
+        ) / 6
+
+    # don't use `eval_sh_jacobi`: https://github.com/scipy/scipy/issues/18988
+    return scs.eval_jacobi(n, a, b, u)
+
+
+
 def l_moment_cov_from_cdf(
     cdf: Callable[[float], float],
     r_max: int,
     /,
     trim: AnyTrim = (0, 0),
     *,
-    support: tuple[AnyFloat, AnyFloat] = (-np.inf, np.inf),
+    support: tuple[AnyFloat, AnyFloat] | None = None,
     rtol: float = DEFAULT_RTOL,
     atol: float = DEFAULT_ATOL,
     limit: int = DEFAULT_LIMIT,
@@ -1064,7 +1227,10 @@ def l_moment_cov_from_cdf(
         limit: See `limit` in [`scipy.integrate.nquad`][scipy.integrate.nquad].
 
     Returns:
-        out: Covariance matrix, with shape `(r_max, r_max)`.
+        cov: Covariance matrix, with shape `(r_max, r_max)`.
+
+    Raises:
+        RuntimeError: If the covariance matrix is invalid.
 
     See Also:
         - [`l_moment_from_cdf`][lmo.theoretical.l_moment_from_cdf] -
@@ -1087,29 +1253,36 @@ def l_moment_cov_from_cdf(
     if rs == 0:
         return np.empty((0, 0))
 
-    _cdf = functools.cache(cdf)
-
-    a, b = _tighten_cdf_support(_cdf, support)
     s, t = clean_trim(trim)
 
-    p_n = [_poly.jacobi(n, t, s, domain=[0, 1]) for n in range(rs)]
+    _cdf = functools.cache(cdf)
+
+    if support is None:
+        a, b = _tighten_cdf_support(_cdf, (-np.inf, np.inf))
+    else:
+        a, b = map(float, support)
+
     c_n = np.array([_l_moment_const(n + 1, s, t) for n in range(rs)])
 
     def integrand(x: float, y: float, k: int, r: int) -> float:
         u, v = _cdf(x), _cdf(y)
-        return  c_n[k] * c_n[r] * cast(
-            float,
-            (p_n[k](u) * p_n[r](v) + p_n[r](u) * p_n[k](v))
-            * u * (u * v)**s
-            * (1 - v) * ((1 - u) * (1 - v))**t,
+        return  c_n[k] * c_n[r] * (
+            (
+                _eval_sh_jacobi(k, t, s, u)
+                * _eval_sh_jacobi(r, t, s, v)
+                + _eval_sh_jacobi(r, t, s, u)
+                * _eval_sh_jacobi(k, t, s, v)
+            )
+            * u * (1 - v)
+            * (u * v)**s * ((1 - u) * (1 - v))**t
         )
 
     def range_x(y: float, *_: int) -> tuple[float, float]:
         return (a, y)
 
-    out = np.empty((rs, rs), dtype=np.float_)
+    cov = np.empty((rs, rs), dtype=np.float_)
     for k, r in zip(*np.triu_indices(rs), strict=True):
-        out[k, r] = out[r, k] = _nquad(
+        cov_kr = _nquad(
             integrand,
             [(a, b), range_x],
             limit=limit,
@@ -1117,9 +1290,24 @@ def l_moment_cov_from_cdf(
             rtol=rtol,
             args=(k, r),
         )
+        if k == r and cov_kr <= 0:
+            msg = f'negative variance encountered at {r}: {cov_kr}'
+            raise RuntimeError(msg)
 
-    return out
+        cov[k, r] = cov[r, k] = cov_kr
 
+    # Validate the Cauchy-Schwartz inequality
+    cov_max = np.sqrt(np.outer(cov.diagonal(), cov.diagonal()))
+    invalid = np.abs(cov) > cov_max
+    if np.any(invalid):
+        invalid_kr = list(np.argwhere(invalid)[0])
+        msg = (
+            f'invalid covariance matrix: Cauchy-Schwartz inequality violated '
+            f'at {invalid_kr}: \n{cov}'
+        )
+        raise RuntimeError(msg)
+
+    return round0(cov, atol)
 
 
 def l_moment_cov_from_rv(
@@ -1127,11 +1315,11 @@ def l_moment_cov_from_rv(
     r_max: int,
     /,
     trim: AnyTrim = (0, 0),
-    *rv_args: Any,
+    *rv_args: float,
     rtol: float = DEFAULT_RTOL,
     atol: float = DEFAULT_ATOL,
     limit: int = DEFAULT_LIMIT,
-    **rv_kwds: Any,
+    **rv_kwds: float,
 ) -> npt.NDArray[np.float_]:
     """
     Calculate the asymptotic L-moment covariance matrix from a
@@ -1156,8 +1344,14 @@ def l_moment_cov_from_rv(
                [0.      , 0.      , 0.00496 , 0.0062  ]])
 
     """
-    _, cdf, support = _rv_unwrap(rv, *rv_args, only='cdf', **rv_kwds)
-    return l_moment_cov_from_cdf(
+    cdf, support, _, scale = _rv_fn(
+        rv,
+        'cdf',
+        False,
+        *rv_args,
+        **rv_kwds,
+    )
+    return scale**2 * l_moment_cov_from_cdf(
         cdf,
         r_max,
         trim=trim,
@@ -1247,7 +1441,7 @@ def l_stats_cov_from_cdf(
 
     t_r = np.r_[np.nan, l_r0 / l_2]
 
-    out = np.empty_like(ll_kr)
+    cov = np.empty_like(ll_kr)
     for k, r in zip(*np.triu_indices(rs), strict=True):
         assert k <= r, (k, r)
         assert ll_kr[k, r] == ll_kr[r, k]
@@ -1264,9 +1458,9 @@ def l_stats_cov_from_cdf(
                 + ll_kr[1, 1] * t_r[k] * t_r[r]
             ) / l_2**2
 
-        out[k, r] = out[r, k] = tt
+        cov[k, r] = cov[r, k] = tt
 
-    return out
+    return round0(cov, kwargs.get('atol', DEFAULT_ATOL))
 
 
 def l_stats_cov_from_rv(
@@ -1274,11 +1468,11 @@ def l_stats_cov_from_rv(
     /,
     num: int = 4,
     trim: AnyTrim = (0, 0),
-    *rv_args: Any,
+    *rv_args: float,
     rtol: float = DEFAULT_RTOL,
     atol: float = DEFAULT_ATOL,
     limit: int = DEFAULT_LIMIT,
-    **rv_kwds: Any,
+    **rv_kwds: float,
 ) -> npt.NDArray[np.float_]:
     """
     Calculate the asymptotic L-stats covariance matrix from a
@@ -1288,23 +1482,40 @@ def l_stats_cov_from_rv(
     more info.
 
     Examples:
+        Evaluate the LL-stats covariance matrix of the standard exponential
+        distribution, for 0, 1, and 2 degrees of trimming.
+
         >>> from scipy.stats import distributions
         >>> X = distributions.expon()  # standard exponential distribution
         >>> l_stats_cov_from_rv(X).round(6)
-        array([[ 1.      ,  0.5     ,  0.      , -0.      ],
-               [ 0.5     ,  0.333333,  0.111111,  0.055555],
-               [ 0.      ,  0.111111,  0.237037,  0.185185],
-               [-0.      ,  0.055555,  0.185185,  0.21164 ]])
-
+        array([[1.      , 0.5     , 0.      , 0.      ],
+               [0.5     , 0.333333, 0.111111, 0.055556],
+               [0.      , 0.111111, 0.237037, 0.185185],
+               [0.      , 0.055556, 0.185185, 0.21164 ]])
         >>> l_stats_cov_from_rv(X, trim=(0, 1)).round(6)
         array([[ 0.333333,  0.125   , -0.111111, -0.041667],
                [ 0.125   ,  0.075   ,  0.      , -0.025   ],
                [-0.111111,  0.      ,  0.21164 ,  0.079365],
                [-0.041667, -0.025   ,  0.079365,  0.10754 ]])
+        >>> l_stats_cov_from_rv(X, trim=(0, 2)).round(6)
+        array([[ 0.2     ,  0.066667, -0.114286, -0.02    ],
+               [ 0.066667,  0.038095, -0.014286, -0.023333],
+               [-0.114286, -0.014286,  0.228571,  0.04    ],
+               [-0.02    , -0.023333,  0.04    ,  0.086545]])
+
+        Note that with 0 trim the L-location is independent of the
+        L-skewness and L-kurtosis. With 1 trim, the L-scale and L-skewness
+        are independent. And with 2 trim, all L-stats depend on each other.
 
     """
-    _, cdf, support = _rv_unwrap(rv, *rv_args, only='cdf', **rv_kwds)
-    return l_stats_cov_from_cdf(
+    cdf, support, _, scale = _rv_fn(
+        rv,
+        'cdf',
+        False,
+        *rv_args,
+        **rv_kwds,
+    )
+    cov = l_stats_cov_from_cdf(
         cdf,
         num,
         trim=trim,
@@ -1313,3 +1524,7 @@ def l_stats_cov_from_rv(
         atol=atol,
         limit=limit,
     )
+    if scale != 1:
+        cov[:2, :2] *= scale**2
+
+    return cov

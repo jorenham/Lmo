@@ -1,6 +1,13 @@
 """Statistical test and tools."""
 
-__all__ = ('normaltest', 'l_moment_bounds', 'l_ratio_bounds')
+__all__ = (
+    'normaltest',
+    'l_moment_gof',
+    'l_stats_gof',
+
+    'l_moment_bounds',
+    'l_ratio_bounds',
+)
 
 from collections.abc import Callable
 from math import lgamma
@@ -8,10 +15,10 @@ from typing import Any, NamedTuple, TypeVar, cast, overload
 
 import numpy as np
 import numpy.typing as npt
-from scipy.stats._multivariate import (  # type: ignore
-    multivariate_normal_frozen,
-)
+from scipy.special import chdtrc  # type: ignore
+from scipy.stats.distributions import rv_continuous, rv_frozen  # type: ignore
 
+from . import theoretical as _theo
 from ._lm import l_ratio
 from ._utils import clean_orders, clean_trim
 from .typing import AnyInt, AnyTrim, IntVector
@@ -19,15 +26,40 @@ from .typing import AnyInt, AnyTrim, IntVector
 T = TypeVar('T', bound=np.floating[Any])
 
 
-class NormaltestResult(NamedTuple):
+class HypothesisTestResult(NamedTuple):
+    r"""
+    Results of a hypothesis test.
+
+    Attributes:
+        statistic:
+            The raw test statistic. Its distribution depends on the specific
+            test implementation.
+        pvalue:
+            Two-sided probability value corresponding to the the null
+            hypothesis, $H_0$.
+    """
+
     statistic: float | npt.NDArray[np.float_]
     pvalue: float | npt.NDArray[np.float_]
 
+    @property
+    def is_valid(self) -> bool | npt.NDArray[np.bool_]:
+        """Check if the statistic is finite and not `nan`."""
+        return np.isfinite(self.statistic)
 
-class GoodnessOfFitResult(NamedTuple):
-    l_dist: multivariate_normal_frozen
-    statistic: float
-    pvalue: float
+    def is_significant(
+        self,
+        level: float = 0.05,
+        /,
+    ) -> bool | npt.NDArray[np.bool_]:
+        """
+        Whether or not the null hypothesis can be rejected, with a certain
+        confidence level (5% by default).
+        """
+        if not (0 < level < 1):
+            msg = 'significance level must lie between 0 and 1'
+            raise ValueError(msg)
+        return self.pvalue < level
 
 
 def normaltest(
@@ -35,18 +67,16 @@ def normaltest(
     /,
     *,
     axis: int | None = None,
-) -> NormaltestResult:
+) -> HypothesisTestResult:
     r"""
-    Test the null hypothesis that a sample comes from a normal distribution.
-    Based on the Harri & Coble (2011) test, and includes Hosking's correction.
+    Statistical hypothesis test for **non**-normality, using the L-skewness
+    and L-kurtosis coefficients on the sample data..
 
-    Args:
-        a: The array-like data.
-        axis: Axis along which to compute the test.
+    Adapted from Harri & Coble (2011), and includes Hosking's correction.
 
-    Returns:
-        statistic: The $\tau^2_{3, 4}$ test statistic.
-        pvalue: A 2-sided chi squared probability for the hypothesis test.
+    Definition:
+        - H0: The data was drawn from a normal distribution.
+        - H1: The data was drawn from a non-normal distribution.
 
     Examples:
         Compare the testing power with
@@ -63,6 +93,19 @@ def normaltest(
         0.04806618...
         >>> normaltest_scipy(x)[1]
         0.08435627...
+
+        At a 5% significance level, Lmo's test is significant (i.e. indicating
+        non-normality), whereas scipy's test isn't (i.e. inconclusive).
+
+    Args:
+        a: Array-like of sample data.
+        axis: Axis along which to compute the test.
+
+    Returns:
+        A named tuple with:
+
+            - `statistic`: The $\tau^2_{3, 4}$ test statistic.
+            - `pvalue`: Two-sided chi squared probability for $H_0$.
 
     References:
         [A. Harri & K.H. Coble (2011) - Normality testing: Two new tests
@@ -89,10 +132,161 @@ def normaltest(
 
     k2 = z3**2 + z4**2
 
-    # chi2(k=2) survival function (sf)
+    # special case of the chi^2 survival function for k=2 degrees of freedom
     p_value = np.exp(-k2 / 2)
 
-    return NormaltestResult(k2, p_value)
+    return HypothesisTestResult(k2, p_value)
+
+
+def _gof_stat_single(
+    l_obs: npt.NDArray[np.float_],
+    l_exp: npt.NDArray[np.float_],
+    cov: npt.NDArray[np.float_],
+) -> float:
+    err = l_obs - l_exp
+    prec = np.linalg.inv(cov)  # precision matrix
+    return cast(float, err.T @ prec @ err)
+
+
+_gof_stat = cast(
+    Callable[[
+        npt.NDArray[np.float_],
+        npt.NDArray[np.float_],
+        npt.NDArray[np.float_],
+    ], npt.NDArray[np.float_]],
+    np.vectorize(
+        _gof_stat_single,
+        otypes=[float],
+        excluded={1,2},
+        signature='(n)->()',
+    ),
+)
+
+
+def l_moment_gof(
+    rv_or_cdf: rv_continuous | rv_frozen | Callable[[float], float],
+    l_moments: npt.NDArray[np.float_],
+    n_obs: int,
+    /,
+    trim: AnyTrim = (0, 0),
+    **kwargs: Any,
+) -> HypothesisTestResult:
+    r"""
+    Goodness-of-fit (GOF) hypothesis test for the null hypothesis that the
+    observed L-moments come from a distribution with the given
+    [`scipy.stats`][scipy.stats] distribution or cumulative distribution
+    function (CDF).
+
+    - `H0`: The theoretical probability distribution, with the given CDF,
+        is a good fit for the observed L-moments.
+    - `H1`: The distribution is not a good fit for the observed L-moments.
+
+    The test statistic is the squared Mahalanobis distance between the $n$
+    observed L-moments, and the theoretical L-moments. It asymptically (in
+    sample size) follows the
+    [$\chi^2$](https://wikipedia.org/wiki/Chi-squared_distribution)
+    distribution, with $n$ degrees of freedom.
+
+    The sample L-moments are expected to be of consecutive orders
+    $r = 1, 2, \dots, n$.
+    Generally, the amount of L-moments $n$ should not be less than the amount
+    of parameters of the distribution, including the location and scale
+    parameters. Therefore, it is required to have $n \ge 2$.
+
+    Notes:
+        The theoretical L-moments and their covariance matrix are calculated
+        from the CDF using numerical integration
+        ([`scipy.integrate.quad`][scipy.integrate.quad] and
+        [`scipy.integrate.nquad`][scipy.integrate.nquad]).
+        Undefined or infinite integrals cannot be detected, in which case the
+        results might be incorrect.
+
+        If an [`IntegrationWarning`][scipy.integrate.IntegrationWarning] is
+        issued, or the function is very slow, then the results are probably
+        incorrect, and larger degrees of trimming should be used.
+
+    Examples:
+        Test if the samples are drawn from a normal distribution.
+
+        >>> import lmo
+        >>> import numpy as np
+        >>> from lmo.diagnostic import l_moment_gof
+        >>> from lmo.theoretical import l_moment_from_rv
+        >>> from scipy.stats import norm
+        >>> rng = np.random.default_rng(12345)
+        >>> X = norm(13.12, 1.66)
+        >>> n = 1_000
+        >>> x = X.rvs(n, random_state=rng)
+        >>> x_lm = lmo.l_moment(x, [1,2,3,4])
+        >>> x_lm.round(3)
+        array([ 1.3134e+01,  9.5100e-01, -1.1000e-02,  1.2000e-01])
+        >>> l_moment_gof(X, x_lm, n).pvalue
+        0.8259...
+
+        Contaminated samples:
+
+        >>> y = 0.9 * x + 0.1 * rng.normal(X.mean(), X.std() * 10, n)
+        >>> y_lm = lmo.l_moment(y, [1,2,3,4])
+        >>> y_lm.round(3)
+        array([1.3193e+01, 1.2860e+00, 6.0000e-03, 1.6800e-01])
+        >>> l_moment_gof(X, y_lm, n).pvalue
+        1.2668...e-60
+
+
+    See Also:
+        - [`l_moment_from_cdf`][lmo.theoretical.l_moment_from_cdf]
+        - ['l_moment_cov_from_cdf'][lmo.theoretical.l_moment_cov_from_cdf]
+
+    """
+    l_r = np.asarray_chkfinite(l_moments)
+
+    if (n := l_r.shape[0]) < 2:
+        msg = f'at least the first 2 L-moments are required, got {n}'
+        raise TypeError(msg)
+
+    r = np.arange(1, 1 + n)
+
+    if isinstance(rv_or_cdf, rv_continuous | rv_frozen):
+        lambda_r = _theo.l_moment_from_rv(rv_or_cdf, r, trim, **kwargs)
+        lambda_rr = _theo.l_moment_cov_from_rv(rv_or_cdf, n, trim, **kwargs)
+    else:
+        lambda_r = _theo.l_moment_from_cdf(rv_or_cdf, r, trim, **kwargs)
+        lambda_rr = _theo.l_moment_cov_from_cdf(rv_or_cdf, n, trim, **kwargs)
+
+    stat = n_obs * _gof_stat(l_r.T, lambda_r, lambda_rr).T[()]
+    pval = cast(float | npt.NDArray[np.float_], chdtrc(n, stat))
+    return HypothesisTestResult(stat, pval)
+
+
+def l_stats_gof(
+    rv_or_cdf: rv_continuous | rv_frozen | Callable[[float], float],
+    l_stats: npt.NDArray[np.float_],
+    n_obs: int,
+    /,
+    trim: AnyTrim = (0, 0),
+    **kwargs: Any,
+) -> HypothesisTestResult:
+    """
+    Analogous to [`lmo.diagnostic.l_moment_gof`][lmo.diagnostic.l_moment_gof],
+    but using the L-stats (see [`lmo.l_stats`][lmo.l_stats]).
+    """
+    t_r = np.asarray_chkfinite(l_stats)
+
+    if (n := t_r.shape[0]) < 2:
+        msg = f'at least 2 L-stats are required, got {n}'
+        raise TypeError(msg)
+
+    if isinstance(rv_or_cdf, rv_continuous | rv_frozen):
+        tau_r = _theo.l_stats_from_rv(rv_or_cdf, n, trim, **kwargs)
+        tau_rr = _theo.l_stats_cov_from_rv(rv_or_cdf, n, trim, **kwargs)
+    else:
+        tau_r = _theo.l_stats_from_cdf(rv_or_cdf, n, trim, **kwargs)
+        tau_rr = _theo.l_stats_cov_from_cdf(rv_or_cdf, n, trim, **kwargs)
+
+    stat = n_obs * _gof_stat(t_r.T, tau_r, tau_rr).T[()]
+    pval = cast(float | npt.NDArray[np.float_], chdtrc(n, stat))
+    return HypothesisTestResult(stat, pval)
+
 
 
 def _lm2_bounds_single(r: int, trim: tuple[float, float]) -> float:
