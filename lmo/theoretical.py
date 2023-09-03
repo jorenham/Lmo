@@ -11,6 +11,8 @@ __all__ = (
     'l_moment_cov_from_cdf',
     'l_moment_cov_from_rv',
 
+    'l_moment_influence_function',
+
     'l_ratio_from_cdf',
     'l_ratio_from_ppf',
     'l_ratio_from_rv',
@@ -32,6 +34,7 @@ from typing import (
     Concatenate,
     Literal,
     ParamSpec,
+    SupportsIndex,
     TypeAlias,
     TypeVar,
     cast,
@@ -1026,8 +1029,8 @@ def _eval_sh_jacobi(
     n: int,
     a: float,
     b: float,
-    x: float,
-) -> float:
+    x: float | npt.NDArray[np.float_],
+) -> float | npt.NDArray[np.float_]:
     """
     Fast evaluation of the n-th shifted Jacobi polynomial.
     Faster than pre-computing using np.Polynomial, and than
@@ -1468,3 +1471,72 @@ def l_stats_cov_from_rv(
         cov[:2, :2] *= scale**2
 
     return cov
+
+
+def l_moment_influence_function(
+    rv_or_cdf: (
+        rv_continuous
+        | rv_frozen
+        | Callable[[npt.NDArray[np.float_]], npt.NDArray[np.float_]]
+    ),
+    r: SupportsIndex,
+    /,
+    trim: AnyTrim = (0, 0),
+    quad_opts: QuadOptions | None = None,
+    support: Pair[float] | None = None,
+) -> Callable[[npt.ArrayLike], float | npt.NDArray[np.float_]]:
+    _r = clean_order(r)
+    if _r == 0:
+        def influence_function(
+            x: npt.ArrayLike,
+            /,
+        ) -> float | npt.NDArray[np.float_]:
+            """
+            L-moment Influence Function for `r=0`.
+
+            Args:
+                x: Scalar or array-like of sample observarions.
+
+            Returns:
+                out
+            """
+            return np.asarray(x, np.float_) * 0. + .0  # :+)
+
+        return influence_function
+
+    s, t = clean_trim(trim)
+
+    if isinstance(rv_or_cdf, rv_continuous | rv_frozen):
+        lm = l_moment_from_rv(
+            rv_or_cdf,
+            _r,
+            trim,
+            quad_opts=quad_opts,
+        )
+        cdf = cast(
+            Callable[[npt.NDArray[np.float_]], npt.NDArray[np.float_]],
+            rv_or_cdf.cdf,
+        )
+    else:
+        lm = l_moment_from_cdf(
+            cast(Callable[[float], float], rv_or_cdf),
+            _r,
+            trim,
+            support,
+            quad_opts=quad_opts,
+        )
+        cdf = rv_or_cdf
+
+    c = _l_moment_const(_r, s, t)
+
+    def influence_function(
+        x: npt.ArrayLike,
+        /,
+    ) -> float | npt.NDArray[np.float_]:
+        """L-moment Influence Function."""
+        _x = np.asanyarray(x, np.float_)
+        q = cdf(_x)
+        alpha = c * q**s * (1 - q)**t * _eval_sh_jacobi(_r - 1, t, s, q) * _x
+        return alpha[()] - lm
+
+    return influence_function
