@@ -10,8 +10,10 @@ __all__ = (
 
     'rejection_point',
     'error_sensitivity',
+    'shift_sensitivity',
 )
 
+import warnings
 from collections.abc import Callable
 from math import lgamma
 from typing import Any, NamedTuple, TypeVar, cast, overload
@@ -19,7 +21,11 @@ from typing import Any, NamedTuple, TypeVar, cast, overload
 import numpy as np
 import numpy.typing as npt
 from scipy.integrate import quad  # type: ignore
-from scipy.optimize import OptimizeResult, minimize  # type: ignore
+from scipy.optimize import (  # type: ignore
+    OptimizeResult,
+    OptimizeWarning,
+    minimize,  # type: ignore
+)
 from scipy.special import chdtrc  # type: ignore
 from scipy.stats.distributions import rv_continuous, rv_frozen  # type: ignore
 
@@ -611,8 +617,7 @@ def rejection_point(
         will not be found. In this case, using `trim=2` will return `166.0`.
 
     Args:
-        influence_fn:
-            The influence function.
+        influence_fn: Univariate influence function.
         rho_min:
             The minimum $\rho^*_{T|F}$ of the search space.
             Must be finite and non-negative.
@@ -686,12 +691,12 @@ def error_sensitivity(
         >>> ll_skew_if = l_ratio_influence(expon, 3, trim=(0, 1))
         >>> ll_kurt_if = l_ratio_influence(expon, 4, trim=(0, 1))
         >>> error_sensitivity(ll_skew_if, domain=(0, float('inf')))
-        1.17288889...
+        1.814657...
         >>> error_sensitivity(ll_kurt_if, domain=(0, float('inf')))
-        1.37774354...
+        1.377743...
 
     Args:
-        influence_fn: The influence function.
+        influence_fn: Univariate influence function.
         domain: Domain of the CDF. Defaults to $(-\infty, \infty)$.
 
     Returns:
@@ -715,9 +720,106 @@ def error_sensitivity(
 
     res = cast(
         OptimizeResult,
-        minimize(obj, bounds=bounds, x0=[min(max(0, a), b)]),
+        minimize(
+            obj,
+            bounds=bounds,
+            x0=[min(max(0, a), b)],
+            method='COBYLA',
+        ),
     )
     if not res.success:  # type: ignore
-        raise RuntimeError(res.message)  # type: ignore
+        warnings.warn(
+            cast(str, res.message),  # type: ignore
+            OptimizeWarning,
+            stacklevel=1,
+        ) # type: ignore
+
+    return -cast(float, res.fun)  # type: ignore
+
+
+def shift_sensitivity(
+    influence_fn: Callable[[float], float],
+    /,
+    domain: tuple[float, float] = (float('-inf'), float('inf')),
+) -> float:
+    r"""
+    Evaluate the *local-shift sensitivity* of an influence function
+    $\psi_{T|F}(x)$ given a *statistical functional* $T$ (e.g. an L-moment)
+    and cumulative distribution function $F(x)$.
+
+    $$
+    \lambda^*_{T|F} = \max_{x \neq y}
+    \left| \frac{ \psi_{T|F}(y) - \psi_{T|F}(x) }{ y - x } \right|
+    $$
+
+    Represents the effect of shifting an observation slightly from $x$, to a
+    neighbouring point $y$.
+    For instance, adding an observation at $y$ and removing one at $x$.
+
+    Examples:
+        Evaluate the local-shift sensitivity of the standard exponential
+        distribution's LL-skewness ($\tau^{(0, 1)}_3$) and LL-kurtosis
+        ($\tau^{(0, 1)}_4$) coefficients:
+
+        >>> from lmo.diagnostic import shift_sensitivity
+        >>> from lmo.theoretical import l_ratio_influence
+        >>> from scipy.stats import expon
+        >>> ll_skew_if = l_ratio_influence(expon, 3, trim=(0, 1))
+        >>> ll_kurt_if = l_ratio_influence(expon, 4, trim=(0, 1))
+        >>> domain = 0, float('inf')
+        >>> shift_sensitivity(ll_skew_if, domain)
+        0.837735...
+        >>> shift_sensitivity(ll_kurt_if, domain)
+        1.442062...
+
+        Let's compare these with the untrimmed ones:
+
+        >>> shift_sensitivity(l_ratio_influence(expon, 3), domain)
+        1.920317...
+        >>> shift_sensitivity(l_ratio_influence(expon, 4), domain)
+        1.047565...
+
+    Args:
+        influence_fn: Univariate influence function.
+        domain: Domain of the CDF. Defaults to $(-\infty, \infty)$.
+
+    Returns:
+        Local-shift sensitivity $\lambda^*_{T|F}$ .
+
+    See Also:
+        - [`l_moment_influence`][lmo.theoretical.l_moment_influence]
+        - [`l_ratio_influence`][lmo.theoretical.l_ratio_influence]
+        - [`error_sensitivity`][lmo.diagnostic.error_sensitivity]
+
+    References:
+        - [Frank R. Hampel (1974) - The Influence Curve and its Role in
+            Robust Estimation](https://doi.org/10.2307/2285666)
+
+    """
+
+    def obj(xs: npt.NDArray[np.float_]) -> float:
+        x, y = xs
+        if y == x:
+            return 0
+        return -abs((influence_fn(y) - influence_fn(x)) / (y - x))
+
+    a, b = domain
+    bounds = None if np.isneginf(a) and np.isposinf(b) else [(a, b)]
+
+    res = cast(
+        OptimizeResult,
+        minimize(
+            obj,
+            bounds=bounds,
+            x0=[min(max(0, a), b), min(max(1, a), b)],
+            method='COBYLA',
+        ),
+    )
+    if not res.success:  # type: ignore
+        warnings.warn(
+            cast(str, res.message),  # type: ignore
+            OptimizeWarning,
+            stacklevel=1,
+        ) # type: ignore
 
     return -cast(float, res.fun)  # type: ignore
