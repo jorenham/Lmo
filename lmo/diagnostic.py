@@ -675,6 +675,21 @@ def error_sensitivity(
     \gamma^*_{T|F} = \max_{x} \left| \psi_{T|F}(x) \right|
     $$
 
+    Examples:
+        Evaluate the gross-error sensitivity of the standard exponential
+        distribution's LL-skewness ($\tau^{(0, 1)}_3$) and LL-kurtosis
+        ($\tau^{(0, 1)}_4$) coefficients:
+
+        >>> from lmo.diagnostic import error_sensitivity
+        >>> from lmo.theoretical import l_ratio_influence
+        >>> from scipy.stats import expon
+        >>> ll_skew_if = l_ratio_influence(expon, 3, trim=(0, 1))
+        >>> ll_kurt_if = l_ratio_influence(expon, 4, trim=(0, 1))
+        >>> error_sensitivity(ll_skew_if, domain=(0, float('inf')))
+        1.17288889...
+        >>> error_sensitivity(ll_kurt_if, domain=(0, float('inf')))
+        1.37774354...
+
     Args:
         influence_fn: The influence function.
         domain: Domain of the CDF. Defaults to $(-\infty, \infty)$.
