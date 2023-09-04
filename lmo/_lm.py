@@ -667,9 +667,20 @@ def l_ratio(
 
     Equivalent to `lmo.l_moment(a, r, *, **) / lmo.l_moment(a, s, *, **)`.
 
+    The L-moment with `r=0` is `1`, so the `l_ratio(a, r, 0, *, **)` is
+    equivalent to `l_moment(a, r, *, **)`.
+
     Notes:
-        The L-moment with `r=0` is `1`, so the `l_ratio(a, r, 0, *, **)` is
-        equivalent to `l_moment(a, r, *, **)`
+        Often, when referring to the $r$th *L-ratio*, the L-moment ratio with
+        $k=2$ is implied, i.e. $\tau^{(s, t)}_r$ is short-hand notation
+        for $\tau^{(s, t)}_{r,2}$.
+
+        The L-variation (L-moment Coefficient of Variation, or L-CB) is
+        another special case of the L-moment ratio, $\tau^{(s, t)}_{2,1}$.
+        It is sometimes denoted in the literature by dropping the subscript
+        indices: $\tau^{(s, t)}$.
+        Note that this should only be used with strictly positive
+        distributions.
 
     Examples:
         Estimate the L-location, L-scale, L-skewness and L-kurtosis

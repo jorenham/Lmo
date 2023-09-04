@@ -24,7 +24,6 @@ theme:
   font:
     text: Fira Sans
     code: Fira Mono
-  custom_dir: docs/jinja
 
 extra:
   social:
