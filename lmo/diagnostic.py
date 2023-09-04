@@ -1,4 +1,4 @@
-"""Statistical test and tools."""
+"""Hypothesis tests, estimator properties, and performance metrics."""
 
 __all__ = (
     'normaltest',
@@ -7,6 +7,9 @@ __all__ = (
 
     'l_moment_bounds',
     'l_ratio_bounds',
+
+    'rejection_point',
+    'error_sensitivity',
 )
 
 from collections.abc import Callable
@@ -556,7 +559,7 @@ def l_ratio_bounds(
 
 
 def rejection_point(
-    influence_fn: Callable[[npt.ArrayLike], float | npt.NDArray[np.float_]],
+    influence_fn: Callable[[float], float],
     /,
     rho_min: float = 0,
     rho_max: float = np.inf,
@@ -607,22 +610,36 @@ def rejection_point(
         with 2 degrees of freedom lies between somewhere `1e4` and `1e5`, but
         will not be found. In this case, using `trim=2` will return `166.0`.
 
+    Args:
+        influence_fn:
+            The influence function.
+        rho_min:
+            The minimum $\rho^*_{T|F}$ of the search space.
+            Must be finite and non-negative.
+            Defaults to $0$.
+        rho_max:
+            The maximum $\rho^*_{T|F}$ of the search space.
+            Must be larger than `rho_min`.
+            Defaults to $\infty$.
+
+    Returns:
+        A finite or infinite scalar.
+
     See Also:
         - [`l_moment_influence`][lmo.theoretical.l_moment_influence]
         - [`l_ratio_influence`][lmo.theoretical.l_ratio_influence]
+        - [`error_sensitivity`][lmo.diagnostic.error_sensitivity]
+
     """
     if not 0 <= rho_min < rho_max:
         msg = f'expected 0 <= rho_min < rho_max, got {rho_min=} and {rho_max=}'
         raise ValueError(msg)
-    if rho_min != 0 and np.all(influence_fn([-rho_min, rho_min]) == 0):
-        msg = 'expected influence_fn(r) != 0 for r in [-rho_min, rho_min]'
-        raise ValueError(msg)
 
-    if not np.all(influence_fn([-rho_max, rho_max]) == 0):
+    if influence_fn(rho_max) != 0 or influence_fn(-rho_max) != 0:
         return np.nan
 
     def integrand(x: float) -> float:
-        return np.abs(influence_fn([-x, x])).max()
+        return max(abs(influence_fn(-x)), abs(influence_fn(x)))
 
     def obj(r: npt.NDArray[np.float_]) -> float:
         return quad(integrand, r[0], np.inf)[0]  # type: ignore
@@ -638,11 +655,57 @@ def rejection_point(
     )
 
     rho = cast(float, res.x[0])  # type: ignore
-    if rho <= 1e-5 or np.any(influence_fn([-rho, rho])):
+    if rho <= 1e-5 or influence_fn(-rho) or influence_fn(rho):
         return np.nan
 
     return rho
 
 
-# TODO: IF Gross-error sensitivity
+def error_sensitivity(
+    influence_fn: Callable[[float], float],
+    /,
+    domain: tuple[float, float] = (float('-inf'), float('inf')),
+) -> float:
+    r"""
+    Evaluate the *gross-error sensitivity* of an influence function
+    $\psi_{T|F}(x)$ given a *statistical functional* $T$ (e.g. an L-moment)
+    and cumulative distribution function $F(x)$.
+
+    $$
+    \gamma^*_{T|F} = \max_{x} \left| \psi_{T|F}(x) \right|
+    $$
+
+    Args:
+        influence_fn: The influence function.
+        domain: Domain of the CDF. Defaults to $(-\infty, \infty)$.
+
+    Returns:
+        Gross-error sensitivity $\gamma^*_{T|F}$ .
+
+    See Also:
+        - [`l_moment_influence`][lmo.theoretical.l_moment_influence]
+        - [`l_ratio_influence`][lmo.theoretical.l_ratio_influence]
+        - [`rejection_point`][lmo.diagnostic.rejection_point]
+
+    """
+    a, b = domain
+
+    if np.isinf(influence_fn(a)) or np.isinf(influence_fn(b)):
+        return np.inf
+
+    def obj(xs: npt.NDArray[np.float_]) -> float:
+        return -abs(influence_fn(xs[0]))
+
+    bounds = None if np.isneginf(a) and np.isposinf(b) else [(a, b)]
+
+    res = cast(
+        OptimizeResult,
+        minimize(obj, bounds=bounds, x0=[min(max(0, a), b)]),
+    )
+    if not res.success:  # type: ignore
+        raise RuntimeError(res.message)  # type: ignore
+
+    return -cast(float, res.fun)  # type: ignore
+
+
 # TODO: IF Local-shift sensitivty
