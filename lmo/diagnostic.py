@@ -15,6 +15,8 @@ from typing import Any, NamedTuple, TypeVar, cast, overload
 
 import numpy as np
 import numpy.typing as npt
+from scipy.integrate import quad  # type: ignore
+from scipy.optimize import OptimizeResult, minimize  # type: ignore
 from scipy.special import chdtrc  # type: ignore
 from scipy.stats.distributions import rv_continuous, rv_frozen  # type: ignore
 
@@ -551,3 +553,96 @@ def l_ratio_bounds(
             out[_k] = out[_k - 1] * (1 + p / _k) / (1 + q / (_k - 1))
 
     return out[_r]
+
+
+def rejection_point(
+    influence_fn: Callable[[npt.ArrayLike], float | npt.NDArray[np.float_]],
+    /,
+    rho_min: float = 0,
+    rho_max: float = np.inf,
+) -> float:
+    r"""
+    Evaluate the approximate *rejection point* of an influence function
+    $\psi_{T|F}(x)$ given a *statistical functional* $T$ (e.g. an L-moment)
+    and cumulative distribution function $F(x)$.
+
+    $$
+    \rho^*_{T|F} = \inf_{r>0} \left\{
+        r: | \psi_{T|F}(x) | \le \epsilon, \, |x| > r
+    \right\} \;
+    $$
+
+    with a $\epsilon$ a small positive number, correspoding to the `tol` param
+    of e.g. `lmo.theoretical.l_moment_influence`, which defaults to `1e-8`.
+
+    Examples:
+        The untrimmed L-location isn't robust, e.g. with the standard normal
+        distribution:
+
+        >>> import numpy as np
+        >>> from scipy.stats import distributions as dists
+        >>> from lmo.diagnostic import rejection_point
+        >>> from lmo.theoretical import l_moment_influence
+        >>> if_l_loc_norm = l_moment_influence(dists.norm, 1, trim=0)
+        >>> if_l_loc_norm(np.inf)
+        inf
+        >>> rejection_point(if_l_loc_norm)
+        nan
+
+        For the TL-location of the Gaussian distribution, and even for the
+        Student's t distribution with 4 degrees of freedom (3 also works, but
+        is very slow), they exist.
+
+        >>> if_tl_loc_norm = l_moment_influence(dists.norm, 1, trim=1)
+        >>> if_tl_loc_t4 = l_moment_influence(dists.t(4), 1, trim=1)
+        >>> if_tl_loc_norm(np.inf), if_tl_loc_t4(np.inf)
+        (0.0, 0.0)
+        >>> rejection_point(if_tl_loc_norm), rejection_point(if_tl_loc_t4)
+        (6.0, 206.0)
+
+    Notes:
+        Large rejection points (e.g. >1000) are unlikely to be found.
+
+        For instance, that of the TL-location of the Student's t distribution
+        with 2 degrees of freedom lies between somewhere `1e4` and `1e5`, but
+        will not be found. In this case, using `trim=2` will return `166.0`.
+
+    See Also:
+        - [`l_moment_influence`][lmo.theoretical.l_moment_influence]
+        - [`l_ratio_influence`][lmo.theoretical.l_ratio_influence]
+    """
+    if not 0 <= rho_min < rho_max:
+        msg = f'expected 0 <= rho_min < rho_max, got {rho_min=} and {rho_max=}'
+        raise ValueError(msg)
+    if rho_min != 0 and np.all(influence_fn([-rho_min, rho_min]) == 0):
+        msg = 'expected influence_fn(r) != 0 for r in [-rho_min, rho_min]'
+        raise ValueError(msg)
+
+    if not np.all(influence_fn([-rho_max, rho_max]) == 0):
+        return np.nan
+
+    def integrand(x: float) -> float:
+        return np.abs(influence_fn([-x, x])).max()
+
+    def obj(r: npt.NDArray[np.float_]) -> float:
+        return quad(integrand, r[0], np.inf)[0]  # type: ignore
+
+    res = cast(
+        OptimizeResult,
+        minimize(
+            obj,
+            bounds=[(rho_min, rho_max)],
+            x0=[rho_min],
+            method='COBYLA',
+        ),
+    )
+
+    rho = cast(float, res.x[0])  # type: ignore
+    if rho <= 1e-5 or np.any(influence_fn([-rho, rho])):
+        return np.nan
+
+    return rho
+
+
+# TODO: IF Gross-error sensitivity
+# TODO: IF Local-shift sensitivty

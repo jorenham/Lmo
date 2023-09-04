@@ -63,7 +63,7 @@ def as_float_array(
 
 def round0(a: npt.NDArray[T], /, tol: float = 1e-8) -> npt.NDArray[T]:
     """Round values close to zero."""
-    return np.where(np.abs(a) <= tol, 0, a)
+    return np.where(np.abs(a) <= abs(tol), 0, a) if tol else a
 
 
 def _apply_aweights(

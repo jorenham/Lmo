@@ -1621,6 +1621,8 @@ def l_ratio_influence(
     trim: AnyTrim = (0, 0),
     support: Pair[float] | None = None,
     quad_opts: QuadOptions | None = None,
+    *,
+    tol: float = 1e-8,
 ) -> Callable[[npt.ArrayLike], float | npt.NDArray[np.float_]]:
     r"""
     Construct the influence function of a theoretical L-moment ratio.
@@ -1664,6 +1666,7 @@ def l_ratio_influence(
         quad_opts:
             Optional dict of options to pass to
             [`scipy.integrate.quad`][scipy.integrate.quad].
+        tol: Zero-roundoff absolute threshold.
 
     Returns:
         influence_function:
@@ -1678,8 +1681,8 @@ def l_ratio_influence(
     """
     _r, _k = clean_order(r), clean_order(k)
 
-    if_r = l_moment_influence(rv_or_cdf, r, trim, support, quad_opts)
-    if_k = l_moment_influence(rv_or_cdf, k, trim, support, quad_opts)
+    if_r = l_moment_influence(rv_or_cdf, r, trim, support, quad_opts, tol=0)
+    if_k = l_moment_influence(rv_or_cdf, k, trim, support, quad_opts, tol=0)
 
     if isinstance(rv_or_cdf, rv_continuous | rv_frozen):
         tau_r, lambda_k = l_ratio_from_rv(
@@ -1707,7 +1710,7 @@ def l_ratio_influence(
         # cheat a bit to avoid `inf - inf = nan` situations
         psi_k = np.where(np.isinf(psi_r), 0, if_k(x))
 
-        return (psi_r - tau_r * psi_k) / lambda_k
+        return round0((psi_r - tau_r * psi_k) / lambda_k, tol=tol)
 
     influence_function.__doc__ = (
         f'Theoretical influence function for L-moment ratio with r={_r}, '
