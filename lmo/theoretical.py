@@ -1485,12 +1485,14 @@ def l_moment_influence(
     trim: AnyTrim = (0, 0),
     support: Pair[float] | None = None,
     quad_opts: QuadOptions | None = None,
+    *,
+    tol: float = 1e-8,
 ) -> Callable[[npt.ArrayLike], float | npt.NDArray[np.float_]]:
     r"""
     Influence Function (IF) of a theoretical L-moment.
 
     $$
-    \psi_{\lambda^{(s, t)}_r}(x)
+    \psi_{\lambda^{(s, t)}_r | F}(x)
         = c^{(s,t)}_r
         \, F(x)^s
         \, \big( 1-{F}(x) \big)^t
@@ -1531,6 +1533,7 @@ def l_moment_influence(
         quad_opts:
             Optional dict of options to pass to
             [`scipy.integrate.quad`][scipy.integrate.quad].
+        tol: Zero-roundoff absolute threshold.
 
     Returns:
         influence_function:
@@ -1592,8 +1595,12 @@ def l_moment_influence(
     ) -> float | npt.NDArray[np.float_]:
         _x = np.asanyarray(x, np.float_)
         q = cdf(_x)
-        alpha = c * q**s * (1 - q)**t * _eval_sh_jacobi(_r - 1, t, s, q) * _x
-        return alpha[()] - lm
+        w = round0(c * q**s * (1 - q)**t, tol)
+
+        # cheat a bit and replace 0 * inf by 0, ensuring convergence if s or t
+        alpha = w * _eval_sh_jacobi(_r - 1, t, s, q) * np.where(w, _x, 0)
+
+        return round0(alpha - lm, tol)[()]
 
     influence_function.__doc__ = (
         f'Theoretical influence function for L-moment with {r=} and {trim=}.'
@@ -1616,12 +1623,12 @@ def l_ratio_influence(
     quad_opts: QuadOptions | None = None,
 ) -> Callable[[npt.ArrayLike], float | npt.NDArray[np.float_]]:
     r"""
-    Construct the Influence Function (IF) of a theoretical L-moment ratio.
+    Construct the influence function of a theoretical L-moment ratio.
 
     $$
-    \psi_{\tau^{(s, t)}_{r,k}}(x) = \frac{
-        \psi_{\lambda^{(s, t)}_r}(x)
-        - \tau^{(s, t)}_{r,k} \, \psi_{\lambda^{(s, t)}_k}(x)
+    \psi_{\tau^{(s, t)}_{r,k}|F}(x) = \frac{
+        \psi_{\lambda^{(s, t)}_r|F}(x)
+        - \tau^{(s, t)}_{r,k} \, \psi_{\lambda^{(s, t)}_k|F}(x)
     }{
         \lambda^{(s,t)}_k
     } \;,
@@ -1696,7 +1703,11 @@ def l_ratio_influence(
         x: npt.ArrayLike,
         /,
     ) -> float | npt.NDArray[np.float_]:
-        return (if_r(x) - tau_r * if_k(x)) / lambda_k
+        psi_r = if_r(x)
+        # cheat a bit to avoid `inf - inf = nan` situations
+        psi_k = np.where(np.isinf(psi_r), 0, if_k(x))
+
+        return (psi_r - tau_r * psi_k) / lambda_k
 
     influence_function.__doc__ = (
         f'Theoretical influence function for L-moment ratio with r={_r}, '
