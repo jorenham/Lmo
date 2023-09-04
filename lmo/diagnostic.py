@@ -575,7 +575,7 @@ def rejection_point(
     \right\} \;
     $$
 
-    with a $\epsilon$ a small positive number, correspoding to the `tol` param
+    with a $\epsilon$ a small positive number, corresponding to the `tol` param
     of e.g. `lmo.theoretical.l_moment_influence`, which defaults to `1e-8`.
 
     Examples:
@@ -721,6 +721,3 @@ def error_sensitivity(
         raise RuntimeError(res.message)  # type: ignore
 
     return -cast(float, res.fun)  # type: ignore
-
-
-# TODO: IF Local-shift sensitivty
