@@ -286,43 +286,6 @@ def _rv_fn(
 
     return fn, support, loc, scale
 
-
-# pyright: reportUnknownMemberType=false,reportPrivateUsage=false
-def _rv_fn_select(
-    rv: rv_continuous | rv_frozen,
-    transform: bool,
-    *args: float,
-    **kwds: float,
-) -> tuple[
-    Literal['cdf', 'ppf'],
-    Callable[[float], float],
-    Pair[float],
-    float,
-    float,
-]:
-    """
-    Select and extract either the CDF of PPF, depending on which one has been
-    natively implemented.
-    """
-    dist = cast(rv_continuous, rv.dist) if isinstance(rv, rv_frozen) else rv
-
-    dist_methods = type(dist).__dict__
-    has_cdf = '_cdf_single' in dist_methods or '_cdf' in dist_methods
-    has_ppf = '_ppf_single' in dist_methods or '_ppf' in dist_methods
-
-    momtype = dist.moment_type
-    if not has_ppf and has_cdf:
-        name = 'cdf'
-    elif not has_cdf and has_ppf:  # noqa: SIM114
-        name = 'ppf'
-    elif momtype == 1:
-        name = 'ppf'
-    else:
-        name = 'cdf'
-
-    return name, *_rv_fn(rv, name, transform, *args, **kwds)
-
-
 def _stack_orders(
     r: AnyInt | IntVector,
     s: AnyInt | IntVector,
@@ -339,6 +302,7 @@ def l_moment_from_cdf(
     *,
     support: Pair[AnyFloat] | None = ...,
     quad_opts: QuadOptions | None = ...,
+    alpha: float = ...,
 ) -> np.float_:
     ...
 
@@ -352,6 +316,7 @@ def l_moment_from_cdf(
     *,
     support: Pair[AnyFloat] | None = ...,
     quad_opts: QuadOptions | None = ...,
+    alpha: float = ...,
 ) -> npt.NDArray[np.float_]:
     ...
 
@@ -724,10 +689,18 @@ def l_moment_from_rv(
         - [`lmo.l_moment`][lmo.l_moment]: sample L-moment
 
     """
-    fn_name, rv_fn, ab, _, _ = _rv_fn_select(rv, True, *rv_args, **rv_kwds)
-    lm_fn = {'cdf': l_moment_from_cdf, 'ppf': l_moment_from_ppf}[fn_name]
+    # fn_name, rv_fn, ab, _, _ = _rv_fn_select(rv, True, *rv_args, **rv_kwds)
+    # lm_fn = {'cdf': l_moment_from_cdf, 'ppf': l_moment_from_ppf}[fn_name]
 
-    return lm_fn(rv_fn, r, trim, support=ab, quad_opts=quad_opts)
+    # return lm_fn(rv_fn, r, trim, support=ab, quad_opts=quad_opts)
+    cdf, support, _, _ = _rv_fn(rv, 'cdf', True, *rv_args, **rv_kwds)
+    return l_moment_from_cdf(
+        cdf,
+        r,
+        trim,
+        support=support,
+        quad_opts=quad_opts,
+    )
 
 
 @overload
