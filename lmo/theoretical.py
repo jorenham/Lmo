@@ -27,11 +27,9 @@ __all__ = (
 )
 
 import functools
-import warnings
 from collections.abc import Callable, Sequence
-from math import exp, lgamma, log
+from math import exp, factorial, gamma, lgamma
 from typing import (
-    Any,
     Concatenate,
     Literal,
     ParamSpec,
@@ -56,37 +54,12 @@ from ._utils import (
     moments_to_ratio,
     round0,
 )
-from .linalg import sh_jacobi
 from .typing import AnyFloat, AnyInt, AnyTrim, IntVector, QuadOptions
 
 T = TypeVar('T')
 Pair: TypeAlias = tuple[T, T]
 
 Theta = ParamSpec('Theta')
-
-def _quad(
-    integrand: Callable[Concatenate[float, Theta], float],
-    domain: Pair[AnyFloat],
-    opts: QuadOptions | None = None,
-    *args: Theta.args,
-    **kwds: Theta.kwargs,
-) -> float:
-    # quad only has an `args` param for some invalid reason
-    fn = functools.partial(integrand, **kwds) if kwds else integrand
-
-    quad_val, _, _, *quad_tail = sci.quad(  # type: ignore
-        fn,
-        *domain,
-        args,
-        full_output=True,
-        **(opts or {}),
-    )
-    if quad_tail:
-        msg = f"'scipy.integrate.quad' failed: \n{quad_tail[0]}"
-        warnings.warn(msg, sci.IntegrationWarning, stacklevel=2)
-        return np.nan
-
-    return cast(float, quad_val)
 
 
 def _nquad(
@@ -105,20 +78,18 @@ def _nquad(
     )[0]
 
 
-@functools.lru_cache
+@functools.cache
 def _l_moment_const(r: int, s: float, t: float, k: int = 0) -> float:
     if r <= k:
         return 1.0
 
     # math.lgamma is faster (and has better type annotations) than
     # scipy.special.loggamma.
-    return exp(
-        lgamma(r - k)
-        + lgamma(r + s + t + 1)
-        - lgamma(r + s)
-        - lgamma(r + t)
-        - log(r),
-    )
+    if r + s + t <= 20:
+        v = gamma(r + s + t + 1) / (gamma(r + t) * gamma(r + s))
+    else:
+        v = exp(lgamma(r + s + t + 1) - lgamma(r + s) - lgamma(r + t))
+    return factorial(r - 1 - k) / r * v
 
 
 @overload
@@ -365,6 +336,7 @@ def l_moment_from_cdf(
     r: AnyInt,
     /,
     trim: AnyTrim = ...,
+    *,
     support: Pair[AnyFloat] | None = ...,
     quad_opts: QuadOptions | None = ...,
 ) -> np.float_:
@@ -377,19 +349,22 @@ def l_moment_from_cdf(
     r: IntVector,
     /,
     trim: AnyTrim = ...,
+    *,
     support: Pair[AnyFloat] | None = ...,
     quad_opts: QuadOptions | None = ...,
 ) -> npt.NDArray[np.float_]:
     ...
 
 
-def l_moment_from_cdf(  # noqa: C901
+def l_moment_from_cdf(
     cdf: Callable[[float], float],
     r: AnyInt | IntVector,
     /,
     trim: AnyTrim = (0, 0),
+    *,
     support: Pair[AnyFloat] | None = None,
     quad_opts: QuadOptions | None = None,
+    alpha: float = 0.05,
 ) -> np.float_ | npt.NDArray[np.float_]:
     r"""
     Evaluate the population L-moment of a continuous probability distribution,
@@ -410,16 +385,22 @@ def l_moment_from_cdf(  # noqa: C901
         r:
             L-moment order(s), non-negative integer or array-like of integers.
         trim:
-            Left- and right- trim. Must be a tuple of two non-negative ints
-            or floats (!).
+            Left- and right- trim, either as a $(s, t)$ tuple with
+            $s, t > -1/2$, or $t$ as alias for $(t, t)$.
+
+    Other parameters:
         support: The subinterval of the nonzero domain of `cdf`.
             Generally it's not needed to provide this, as it will be guessed
             automatically.
-
-    Other parameters:
         quad_opts:
             Optional dict of options to pass to
             [`scipy.integrate.quad`][scipy.integrate.quad].
+        alpha:
+            Split the integral into integrals with limits $[a, F(\alpha)]$,
+            $[F(\alpha), F(1 - \alpha)]$ and $[F(1 - \alpha), b]$ to improve
+            numerical stability. So $\alpha$ can be consideresd the size of
+            the tail. Numerical experiments have found 0.05 to give good
+            results for different distributions.
 
     Raises:
         TypeError: `r` is not integer-valued or negative
@@ -442,76 +423,49 @@ def l_moment_from_cdf(  # noqa: C901
         - [`l_moment`][lmo.l_moment]: sample L-moment
 
     """
-    _r = np.asanyarray(r)
-    if not np.issubdtype(_r.dtype, np.integer):
-        msg = 'r must be integer-valued, got {_r.dtype.str!r}'
-        raise TypeError(msg)
-    if np.any(_r < 0):
-        msg = 'r must be non-negative'
-        raise TypeError(msg)
-
-    if _r.size == 0:
-        return np.empty(_r.shape)
-
-    r_vals, r_idxs = np.unique(_r, return_inverse=True)
-
+    rs = clean_orders(np.asanyarray(r))
     s, t = clean_trim(trim)
-    trimmed = s != 0 or t != 0
 
-    a, b = _tighten_cdf_support(cdf, support)
-
-    j = sh_jacobi(min(12, r_vals[-1]) - 1, t + 1, s + 1)
-
-    # caching F(x) function only makes sense for multiple quad calls
-    _cdf = functools.cache(cdf) if np.count_nonzero(r_vals) > 1 else cdf
-
-    l_r = np.empty(r_vals.shape)
-    for i, r_val in np.ndenumerate(r_vals):
-        if r_val == 0:
-            # zeroth l-moment is always 1
-            l_r[i] = 1
-            continue
-
-        if r_val == 1:
-
-            def integrand(x: float, *args: Any) -> float:
-                # equivalent to E[X_{s+1 : s+t+1}]
-                # see Wiley (2003) eq. 2.1.5
-                i_p = p = _cdf(x, *args)
-                if trimmed:
-                    i_p = scs.betainc(s + 1, t + 1, p)  # type: ignore
-
-                return (x >= 0) - i_p
-
-        else:
-            k_val = r_val - 2
-
-            if r_val <= 12:
-                c_k, lb = j[k_val, : k_val + 1], 0
+    def integrand(x: float, _r: int) -> float:
+        p = cdf(x)
+        if _r == 1:
+            if s or t:  # noqa: SIM108
+                v = cast(float, scs.betainc(s + 1, t + 1, p))  # type: ignore
             else:
-                _j_k = scs.jacobi(k_val, t + 1, s + 1)  # type: ignore
-                c_k, lb = _j_k.coef[::-1], -1
+                v = p
+            return np.heaviside(x, .5) - v
 
-            j_k = np.polynomial.Polynomial(c_k, domain=[0, 1], window=[lb, 1])
+        return (
+            p ** (s + 1)
+            * (1 - p) ** (t + 1)
+            * _eval_sh_jacobi(_r - 2, t + 1, s + 1, p)
+        )
 
-            # avoid overflows: split in sign and log, and recombine later
-            # j_k_sgn = np.sign(j_k)
-            # j_k_ln = np.log(np.abs(j_k))
+    a, d = support or _tighten_cdf_support(cdf, support)
+    b, c = cdf(alpha), cdf(1 - alpha)
+    quad_kwds = quad_opts or {}
 
-            def integrand(x: float, *args: Any) -> float:
-                """
-                Evaluate the jacobi polynomial for p at r-1 with (t, s)
-                and multiply by the weight function.
-                """
-                p = _cdf(x, *args)
-                return (
-                    p ** (s + 1) * (1 - p) ** (t + 1) * j_k(p)  # type: ignore
-                )
+    def _l_moment_single(_r: int) -> float:
+        if _r == 0:
+            return 1
 
-        quad_val = _quad(integrand, (a, b), quad_opts)
-        l_r[i] = _l_moment_const(r_val, s, t, 1) * quad_val
+        return _l_moment_const(_r, s, t, 1) * cast(
+            float,
+            sci.quad(integrand, a, b, (_r,), **quad_kwds)[0] +
+            sci.quad(integrand, b, c, (_r,), **quad_kwds)[0] +
+            sci.quad(integrand, c, d, (_r,), **quad_kwds)[0],
+        )
 
-    return (np.round(l_r, 12) + 0.0)[r_idxs].reshape(_r.shape)[()]
+    l_r_cache: dict[int, float] = {}
+    l_r = np.empty_like(rs, dtype=np.float_)
+    for i, _r in np.ndenumerate(rs):
+        _k = int(_r)
+        if _k in l_r_cache:
+            l_r[i] = l_r_cache[_k]
+        else:
+            l_r[i] = l_r_cache[_k] = _l_moment_single(_k)
+
+    return round0(l_r)[()]  # convert back to scalar if needed
 
 
 @overload
@@ -653,7 +607,6 @@ def l_moment_from_ppf(
             sci.quad(integrand, c, d, (_r,), **quad_kwds)[0],
         )
 
-
     l_r_cache: dict[int, float] = {}
     l_r = np.empty_like(rs, dtype=np.float_)
     for i, _r in np.ndenumerate(rs):
@@ -663,7 +616,7 @@ def l_moment_from_ppf(
         else:
             l_r[i] = l_r_cache[_k] = _l_moment_single(_k)
 
-    return l_r[()]  # convert back to scalar if needed
+    return round0(l_r)[()]  # convert back to scalar if needed
 
 
 @overload
@@ -837,7 +790,13 @@ def l_ratio_from_cdf(
         - [`lmo.l_ratio`][lmo.l_ratio]
     """
     rs = _stack_orders(r, s)
-    l_rs = l_moment_from_cdf(cdf, rs, trim, support, quad_opts=quad_opts)
+    l_rs = l_moment_from_cdf(
+        cdf,
+        rs,
+        trim,
+        support=support,
+        quad_opts=quad_opts,
+    )
 
     return moments_to_ratio(rs, l_rs)
 
@@ -1450,7 +1409,7 @@ def l_stats_cov_from_cdf(
         cdf,
         np.arange(2, rs + 1),
         trim,
-        support,
+        support=support,
         quad_opts=quad_opts,
     )
 
@@ -1641,7 +1600,7 @@ def l_moment_influence(
             cast(Callable[[float], float], rv_or_cdf),
             _r,
             trim,
-            support,
+            support=support,
             quad_opts=quad_opts,
         )
         cdf = rv_or_cdf
