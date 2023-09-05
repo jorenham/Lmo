@@ -329,7 +329,7 @@ def l_moment_from_cdf(
     *,
     support: Pair[AnyFloat] | None = None,
     quad_opts: QuadOptions | None = None,
-    alpha: float = 0.05,
+    alpha: float = 0.051,
 ) -> np.float_ | npt.NDArray[np.float_]:
     r"""
     Evaluate the population L-moment of a continuous probability distribution,
