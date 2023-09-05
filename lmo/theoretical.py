@@ -692,9 +692,8 @@ def l_moment_from_rv(
     quad_opts: QuadOptions | None = None,
 ) -> np.float_ | npt.NDArray[np.float_]:
     r"""
-    Evaluate the population L-moment of a
-    [`scipy.stats.rv_continuous`][scipy.stats.rv_continuous] probability
-    distribution instance or frozen instance.
+    Evaluate the population L-moment of a univariate
+    [`scipy.stats`][scipy.stats] probability distribution.
 
     $$
     \lambda^{(s, t)}_r =
@@ -712,7 +711,7 @@ def l_moment_from_rv(
     shifted ($x \mapsto 2x-1$) Jacobi polynomial.
 
     Examples:
-        Evaluate the population L-moments of the IQ test:
+        Evaluate the population L-moments of the normally-distributed IQ test:
 
         >>> from scipy.stats import norm
         >>> l_moment_from_rv(norm(100, 15), [1, 2, 3, 4]).round(6)
@@ -720,12 +719,17 @@ def l_moment_from_rv(
         >>> _[1] * np.sqrt(np.pi)
         15.000000...
 
+        Discrete distributions are also supported, e.g. the Binomial
+        distribution:
+
+        >>> from scipy.stats import binom
+        >>> l_moment_from_rv(binom(10, .6), [1, 2, 3, 4])
+        array([6.        , 1.95190931, 0.52992164, 0.40482607])
+
     Args:
         rv:
-            Univariate continuously distributed [`scipy.stats`][scipy.stats]
-            random variable (RV).
-            Can be generic or grozen, e.g. `scipy.stats.norm` and
-            `scipy.stats.norm()` are both allowed.
+            Univariate [`scipy.stats`][scipy.stats] `rv_continuous`,
+            `rv_discrete` or `rv_frozen` instance.
         r:
             L-moment order(s), non-negative integer or array-like of integers.
         trim:
