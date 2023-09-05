@@ -46,7 +46,11 @@ import numpy as np
 import numpy.typing as npt
 import scipy.integrate as sci  # type: ignore
 import scipy.special as scs  # type: ignore
-from scipy.stats.distributions import rv_continuous, rv_frozen  # type: ignore
+from scipy.stats.distributions import (  # type: ignore
+    rv_continuous,
+    rv_discrete,
+    rv_frozen,
+)
 
 from ._utils import (
     clean_order,
@@ -90,7 +94,7 @@ def _l_moment_const(r: int, s: float, t: float, k: int = 0) -> float:
     # math.lgamma is faster (and has better type annotations) than
     # scipy.special.loggamma.
     if r + s + t <= 20:
-        v = gamma(r + s + t + 1) / (gamma(r + t) * gamma(r + s))
+        v = gamma(r + s + t + 1) / (gamma(r + s) * gamma(r + t))
     else:
         v = exp(lgamma(r + s + t + 1) - lgamma(r + s) - lgamma(r + t))
     return factorial(r - 1 - k) / r * v
@@ -199,10 +203,10 @@ def _tighten_cdf_support(
 
 
 def _rv_melt(
-    rv: rv_continuous | rv_frozen,
+    rv: rv_continuous | rv_discrete | rv_frozen,
     *args: float,
     **kwds: float,
-) -> tuple[rv_continuous, float, float, tuple[float, ...]]:
+) -> tuple[rv_continuous | rv_discrete, float, float, tuple[float, ...]]:
     """
     Extract and validate the loc/scale and shape args from the potentially
     frozen `scipy.stats` distribution.
@@ -242,7 +246,7 @@ def _rv_melt(
 
 # pyright: reportUnknownMemberType=false,reportPrivateUsage=false
 def _rv_fn(
-    rv: rv_continuous | rv_frozen,
+    rv: rv_continuous | rv_discrete | rv_frozen,
     name: Literal['cdf', 'ppf'],
     transform: bool,
     /,
@@ -541,7 +545,7 @@ def l_moment_from_ppf(
     c^{(r,s)}_r
     \int_0^1
         F^s (1 - F)^t
-        \,\tilde{P}^{(t, s)}_{r-1}(x(F))
+        \,\tilde{P}^{(t, s)}_{r-1}(F)
         \,x(F)
         \,\mathrm{d} F
     \;,
@@ -657,60 +661,64 @@ def l_moment_from_ppf(
 
 @overload
 def l_moment_from_rv(
-    ppf: rv_continuous | rv_frozen,
+    ppf: rv_continuous | rv_discrete | rv_frozen,
     r: AnyInt,
     /,
     trim: AnyTrim = ...,
     *,
     quad_opts: QuadOptions | None = ...,
-    alpha: float = ...,
 ) -> np.float_:
     ...
 
 
 @overload
 def l_moment_from_rv(
-    ppf: rv_continuous | rv_frozen,
+    ppf: rv_continuous | rv_discrete | rv_frozen,
     r: IntVector,
     /,
     trim: AnyTrim = ...,
     *,
     quad_opts: QuadOptions | None = ...,
-    alpha: float = ...,
 ) -> npt.NDArray[np.float_]:
     ...
 
 
 def l_moment_from_rv(
-    rv: rv_continuous | rv_frozen,
+    rv: rv_continuous | rv_discrete | rv_frozen,
     r: AnyInt | IntVector,
     /,
     trim: AnyTrim = (0, 0),
     *,
     quad_opts: QuadOptions | None = None,
-    alpha: float = ALPHA,
 ) -> np.float_ | npt.NDArray[np.float_]:
     r"""
     Evaluate the population L-moment of a
     [`scipy.stats.rv_continuous`][scipy.stats.rv_continuous] probability
     distribution instance or frozen instance.
 
+    $$
+    \lambda^{(s, t)}_r =
+    \frac{r+s+t}{r}
+    \frac{B(r,\,r+s+t)}{B(r+s,\,r+t)}
+    \mathbb{E}_X \left[
+        U^s
+        \left(1 - U\right)^t
+        \,\tilde{P}^{(t, s)}_{r-1}(U)
+        \,X
+    \right] \;,
+    $$
+
+    with $U = F_X(X)$ the *rank* of $X$, and $\tilde{P}^{(a,b)}_n(x)$ the
+    shifted ($x \mapsto 2x-1$) Jacobi polynomial.
+
     Examples:
-        Evaluate the population L-moments of the normally-distributed IQ test.
+        Evaluate the population L-moments of the IQ test:
 
         >>> from scipy.stats import norm
         >>> l_moment_from_rv(norm(100, 15), [1, 2, 3, 4]).round(6)
         array([100.      ,   8.462844,   0.      ,   1.037559])
         >>> _[1] * np.sqrt(np.pi)
         15.000000...
-
-    Notes:
-        If you care about performance, it is generally faster to use
-        [`l_moment_from_cdf`][lmo.theoretical.l_moment_from_cdf] or
-        [`l_moment_from_ppf`][lmo.theoretical.l_moment_from_ppf] directly.
-        For instance by using [`scipy.special.ndtr`][scipy.special.ndtr] or
-        [`scipy.special.ndtri`][scipy.special.ndtri], instead of
-        [`scipy.stats.norm`][scipy.stats.norm].
 
     Args:
         rv:
@@ -728,12 +736,6 @@ def l_moment_from_rv(
         quad_opts:
             Optional dict of options to pass to
             [`scipy.integrate.quad`][scipy.integrate.quad].
-        alpha:
-            Split the integral into integrals with limits $[a, F(\alpha)]$,
-            $[F(\alpha), F(1 - \alpha)]$ and $[F(1 - \alpha), b]$ to improve
-            numerical stability. So $\alpha$ can be consideresd the size of
-            the tail. Numerical experiments have found 0.05 to give good
-            results for different distributions.
 
     Raises:
         TypeError: `r` is not integer-valued
@@ -742,7 +744,6 @@ def l_moment_from_rv(
     Returns:
         lmbda:
             The population L-moment(s), a scalar or float array like `r`.
-            If `nan`, consult the related `IntegrationWarning` message.
 
     References:
         - [E. Elamir & A. Seheult (2003) - Trimmed L-moments](
@@ -756,22 +757,36 @@ def l_moment_from_rv(
         - [`l_moment_from_ppf`][lmo.theoretical.l_moment_from_ppf]:
           population L-moment, using the inverse CDF (quantile function).
         - [`lmo.l_moment`][lmo.l_moment]: sample L-moment
-
     """
-    # fn_name, rv_fn, ab, _, _ = _rv_fn_select(rv, True, *rv_args, **rv_kwds)
-    # lm_fn = {'cdf': l_moment_from_cdf, 'ppf': l_moment_from_ppf}[fn_name]
+    cdf = _rv_fn(rv, 'cdf', True)[0]
 
-    # return lm_fn(rv_fn, r, trim, support=ab, quad_opts=quad_opts)
-    cdf, support, _, _ = _rv_fn(rv, 'cdf', True)
-    return l_moment_from_cdf(
-        cdf,
-        r,
-        trim,
-        support=support,
-        quad_opts=quad_opts,
-        alpha=alpha,
-        ppf=cast(Callable[[float], float], rv.ppf),
-    )
+    rs = clean_orders(np.asanyarray(r))
+    s, t = clean_trim(trim)
+
+    def expectant(_r: int, x: float) -> float:
+        q = cdf(x)
+        return q**s * (1 - q)**t * _eval_sh_jacobi(_r - 1, t, s, q) * x
+
+    quad_kwds = quad_opts or {}
+
+    l_r_cache: dict[int, float] = {}
+    l_r = np.empty_like(rs, dtype=np.float_)
+    for i, _r in np.ndenumerate(rs):
+        _k = int(_r)
+        if _k == 0:
+            l_r[i] = 1
+        elif _k in l_r_cache:
+            l_r[i] = l_r_cache[_k]
+        else:
+            l_r[i] = l_r_cache[_k] = _l_moment_const(_k, s, t) * cast(
+                float,
+                rv.expect(
+                    functools.partial(expectant, _k),
+                    **quad_kwds,  # type: ignore
+                ),
+            )
+
+    return round0(l_r)[()]  # convert back to scalar if needed
 
 
 @overload
@@ -937,7 +952,6 @@ def l_ratio_from_rv(
     trim: AnyTrim = ...,
     *,
     quad_opts: QuadOptions | None = ...,
-    alpha: float = ...,
 ) -> np.float_:
     ...
 
@@ -951,7 +965,6 @@ def l_ratio_from_rv(
     trim: AnyTrim = ...,
     *,
     quad_opts: QuadOptions | None = ...,
-    alpha: float = ...,
 ) -> npt.NDArray[np.float_]:
     ...
 
@@ -965,7 +978,6 @@ def l_ratio_from_rv(
     trim: AnyTrim = ...,
     *,
     quad_opts: QuadOptions | None = ...,
-    alpha: float = ...,
 ) -> npt.NDArray[np.float_]:
     ...
 
@@ -978,7 +990,6 @@ def l_ratio_from_rv(
     trim: AnyTrim = (0, 0),
     *,
     quad_opts: QuadOptions | None = None,
-    alpha: float = ALPHA,
 ) -> np.float_ | npt.NDArray[np.float_]:
     """
     Population L-ratio's from a [`scipy.stats`][scipy.stats] univariate
@@ -1008,7 +1019,6 @@ def l_ratio_from_rv(
         rs,
         trim,
         quad_opts=quad_opts,
-        alpha=alpha,
     )
     return moments_to_ratio(rs, l_rs)
 
@@ -1056,6 +1066,7 @@ def l_stats_from_cdf(
         support=support,
         quad_opts=quad_opts,
         alpha=alpha,
+        ppf=ppf,
     )
 
 
@@ -1111,7 +1122,6 @@ def l_stats_from_rv(
     trim: AnyTrim = (0, 0),
     *,
     quad_opts: QuadOptions | None = None,
-    alpha: float = ALPHA,
 ) -> npt.NDArray[np.float_]:
     r"""
     Calculates the theoretical- / population- L-moments (for $r \le 2$)
@@ -1155,7 +1165,6 @@ def l_stats_from_rv(
         *l_stats_orders(num),
         trim,
         quad_opts=quad_opts,
-        alpha=alpha,
     )
 
 
@@ -1186,7 +1195,7 @@ def l_moment_cov_from_cdf(
 
     Here, $\vec{l}^{(s, t)} = \left[l^{(s, t)}_r, \dots, l^{(s, t)}_{r_{max}}
     \right]^T$ is a vector of estimated sample L-moments,
-    and \vec{\lambda}^{(s, t)} its theoretical ("true") counterpart.
+    and $\vec{\lambda}^{(s, t)}$ its theoretical ("true") counterpart.
 
     This function calculates the covariance matrix
 
