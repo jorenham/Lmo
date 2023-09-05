@@ -50,6 +50,7 @@ from scipy.stats.distributions import rv_continuous, rv_frozen  # type: ignore
 
 from ._utils import (
     clean_order,
+    clean_orders,
     clean_trim,
     l_stats_orders,
     moments_to_ratio,
@@ -60,49 +61,6 @@ from .typing import AnyFloat, AnyInt, AnyTrim, IntVector, QuadOptions
 
 T = TypeVar('T')
 Pair: TypeAlias = tuple[T, T]
-
-
-def _l_moment_const(r: int, s: float, t: float, k: int = 0) -> float:
-    if r <= k:
-        return 1.0
-
-    # math.lgamma is faster (and has better type annotations) than
-    # scipy.special.loggamma.
-    return exp(
-        lgamma(r - k)
-        + lgamma(r + s + t + 1)
-        - lgamma(r + s)
-        - lgamma(r + t)
-        - log(r),
-    )
-
-
-def _tighten_cdf_support(
-    cdf: Callable[[float], float],
-    support: Pair[AnyFloat] | None = None,
-) -> Pair[float]:
-    """Attempt to tighten the support by checking some common bounds."""
-    a, b = (-np.inf, np.inf) if support is None else map(float, support)
-
-    # assert a < b, (a, b)
-    # assert (u_a := cdf(a)) == 0, (a, u_a)
-    # assert (u_b := cdf(b)) == 1, (b, u_b)
-
-    # attempt to tighten the default support by checking some common bounds
-    if cdf(0) == 0:
-        # left-bounded at 0 (e.g. weibull)
-        a = 0
-
-        if (u1 := cdf(1)) == 0:
-            # left-bounded at 1 (e.g. pareto)
-            a = 1
-        elif u1 == 1:
-            # right-bounded at 1 (e.g. beta)
-            b = 1
-
-    return a, b
-
-
 
 Theta = ParamSpec('Theta')
 
@@ -145,6 +103,124 @@ def _nquad(
         tuple[float, float],
         sci.nquad(fn, domains[::-1], args, opts=opts),
     )[0]
+
+
+@functools.lru_cache
+def _l_moment_const(r: int, s: float, t: float, k: int = 0) -> float:
+    if r <= k:
+        return 1.0
+
+    # math.lgamma is faster (and has better type annotations) than
+    # scipy.special.loggamma.
+    return exp(
+        lgamma(r - k)
+        + lgamma(r + s + t + 1)
+        - lgamma(r + s)
+        - lgamma(r + t)
+        - log(r),
+    )
+
+
+@overload
+def _eval_sh_jacobi(n: int, a: float, b: float, x: float) -> float:
+    ...
+
+
+@overload
+def _eval_sh_jacobi(
+    n: int,
+    a: float,
+    b: float,
+    x: npt.NDArray[np.float_],
+) -> npt.NDArray[np.float_]:
+    ...
+
+
+def _eval_sh_jacobi(
+    n: int,
+    a: float,
+    b: float,
+    x: float | npt.NDArray[np.float_],
+) -> float | npt.NDArray[np.float_]:
+    """
+    Fast evaluation of the n-th shifted Jacobi polynomial.
+    Faster than pre-computing using np.Polynomial, and than
+    `scipy.special.eval_jacobi` for n < 4.
+
+    Todo:
+        move to _poly, vectorize, annotate, document, test
+
+    """
+    if n == 0:
+        return 1
+
+    u = 2 * x - 1
+
+    if a == b == 0:
+        if n == 1:
+            return u
+
+        v = x * (x - 1)
+
+        if n == 2:
+            return 1 + 6 * v
+        if n == 3:
+            return (1 + 10 * v) * u
+        if n == 4:
+            return 1 + 10 * v * (2 + 7 * v)
+
+        return scs.eval_sh_legendre(n, x)
+
+    if n == 1:
+        return (a + b + 2) * x - b - 1
+    if n == 2:
+        return (
+            b * (b + 3)
+            - (a + b + 3) * (
+                2 * b + 4
+                - (a + b + 4) * x
+            ) * x
+        ) / 2 + 1
+    if n == 3:
+        return (
+            (1 + a) * (2 + a) * (3 + a)
+            + (4 + a + b) * (
+                3 * (2 + a) * (3 + a)
+                + (5 + a + b) * (
+                    3 * (3 + a)
+                    + (6 + a + b) * (x - 1)
+                ) * (x - 1)
+            ) * (x - 1)
+        ) / 6
+
+    # don't use `eval_sh_jacobi`: https://github.com/scipy/scipy/issues/18988
+    return scs.eval_jacobi(n, a, b, u)
+
+
+def _tighten_cdf_support(
+    cdf: Callable[[float], float],
+    support: Pair[AnyFloat] | None = None,
+) -> Pair[float]:
+    """Attempt to tighten the support by checking some common bounds."""
+    a, b = (-np.inf, np.inf) if support is None else map(float, support)
+
+    # assert a < b, (a, b)
+    # assert (u_a := cdf(a)) == 0, (a, u_a)
+    # assert (u_b := cdf(b)) == 1, (b, u_b)
+
+    # attempt to tighten the default support by checking some common bounds
+    if cdf(0) == 0:
+        # left-bounded at 0 (e.g. weibull)
+        a = 0
+
+        if (u1 := cdf(1)) == 0:
+            # left-bounded at 1 (e.g. pareto)
+            a = 1
+        elif u1 == 1:
+            # right-bounded at 1 (e.g. beta)
+            b = 1
+
+    return a, b
 
 
 def _rv_melt(
@@ -444,8 +520,10 @@ def l_moment_from_ppf(
     r: AnyInt,
     /,
     trim: AnyTrim = ...,
+    *,
     support: Pair[AnyFloat] = ...,
     quad_opts: QuadOptions | None = ...,
+    alpha: float = ...,
 ) -> np.float_:
     ...
 
@@ -456,8 +534,10 @@ def l_moment_from_ppf(
     r: IntVector,
     /,
     trim: AnyTrim = ...,
+    *,
     support: Pair[AnyFloat] = ...,
     quad_opts: QuadOptions | None = ...,
+    alpha: float = ...,
 ) -> npt.NDArray[np.float_]:
     ...
 
@@ -467,13 +547,36 @@ def l_moment_from_ppf(
     r: AnyInt | IntVector,
     /,
     trim: AnyTrim = (0, 0),
+    *,
     support: Pair[AnyFloat] = (0, 1),
     quad_opts: QuadOptions | None = None,
+    alpha: float = 0.1,
 ) -> np.float_ | npt.NDArray[np.float_]:
-    """
-    Evaluate the population L-moment of a continuous probability distribution,
-    using its Percentile Function (PPF) $Q_X(p) = F^{-1}_X(p)$,
-    i.e. the inverse of the CDF, commonly known as the quantile function.
+    r"""
+    Evaluate the population L-moment of a univariate probability distribution,
+    using its Percentile Function (PPF) $x(F)$, also commonly known as the
+    quantile function, which is the inverse of the Cumulative Distribution
+    Function (CDF).
+
+    $$
+    \lambda^{(s, t)}_r =
+    c^{(r,s)}_r
+    \int_0^1
+    F^s (1 - F)^t
+    \,\tilde{P}^{(t, s)}_{r-1}(F)
+    \,x(F)
+    \,\mathrm{d} F
+    \;,
+    $$
+
+    where
+
+    $$
+    c^{(r,s)}_r = \frac{B(r,\,r+s+t)}{B(r+s,\,r+t)} \;,
+    $$
+
+    and $\tilde{P}^{(a,b)}_n(x)$ the shifted ($x \mapsto 2x-1$) Jacobi
+    polynomial.
 
     Notes:
         Numerical integration is performed with
@@ -484,24 +587,34 @@ def l_moment_from_ppf(
 
     Args:
         ppf:
-            The quantile function, a monotonically continuous increasing
-            function with signature `(float) -> float`, that maps a
+            The quantile function $x(F)$, a monotonically continuous
+            increasing function with signature `(float) -> float`, that maps a
             probability in $[0, 1]$, to the domain of the distribution.
         r:
             L-moment order(s), non-negative integer or array-like of integers.
+            E.g. 0 gives 1, 1 the L-location, 2 the L-scale, etc.
         trim:
-            Left- and right- trim. Must be a tuple of two non-negative ints
-            or floats (!).
+            Left- and right- trim, either as a $(s, t)$ tuple with
+            $s, t > -1/2$, or $t$ as alias for $(t, t)$.
 
     Other parameters:
-        support: Integration limits. Defaults to (0, 1).
+        support:
+            Integration limits. Defaults to (0, 1), as it should. There is no
+            need to change this to anything else, and only exists to make the
+            function signature consistent with the `*_from_cdf` analogue.
         quad_opts:
             Optional dict of options to pass to
             [`scipy.integrate.quad`][scipy.integrate.quad].
+        alpha:
+            Split the integral into integrals with limits $[0, \alpha]$,
+            $[\alpha, 1-\alpha]$ and $[1-\alpha, 0]$ to improve numerical
+            stability. So $\alpha$ can be consideresd the size of the tail.
+            Numerical experiments have found 0.1 to give good results for
+            different distributions.
 
     Raises:
-        TypeError: `r` is not integer-valued
-        ValueError: `r` is empty or negative
+        TypeError: Invalid `r` or `trim` types.
+        ValueError: Invalid `r` or `trim` values.
 
     Returns:
         lmbda:
@@ -520,58 +633,37 @@ def l_moment_from_ppf(
         - [`l_moment`][lmo.l_moment]: sample L-moment
 
     """
-    _r = np.asanyarray(r)
-    if not np.issubdtype(_r.dtype, np.integer):
-        msg = 'r must be integer-valued, got {_r.dtype.str!r}'
-        raise TypeError(msg)
-    if np.any(_r < 0):
-        msg = 'r must be non-negative'
-        raise TypeError(msg)
-
-    if _r.size == 0:
-        return np.empty(_r.shape, np.float_)
-
-    r_vals, r_idxs = np.unique(_r, return_inverse=True)
+    rs = clean_orders(np.asanyarray(r))
     s, t = clean_trim(trim)
 
-    j = sh_jacobi(min(r_vals[-1], 12), t, s)
+    def integrand(p: float, _r: int) -> float:
+        return p**s * (1 - p) ** t * _eval_sh_jacobi(_r - 1, t, s, p) * ppf(p)
 
-    def w(p: float) -> float:
-        return p**s * (1 - p) ** t * ppf(p)
+    quad_kwds = quad_opts or {}
 
-    # caching the weight function only makes sense for multiple quad calls
-    _w = functools.cache(w) if len(r_vals) > 1 else w
+    def _l_moment_single(_r: int) -> float:
+        if _r == 0:
+            return 1
 
-    # lazy import (don't worry; python imports are cached)
-    from scipy.special import jacobi  # type: ignore
+        a, b, c, d = support[0], alpha, 1 - alpha, support[1]
+        return _l_moment_const(_r, s, t) * cast(
+            float,
+            sci.quad(integrand, a, b, (_r,), **quad_kwds)[0] +
+            sci.quad(integrand, b, c, (_r,), **quad_kwds)[0] +
+            sci.quad(integrand, c, d, (_r,), **quad_kwds)[0],
+        )
 
-    l_r = np.empty(r_vals.shape)
-    for i, r_val in np.ndenumerate(r_vals):
-        if r_val == 0:
-            # zeroth l-moment is always 1
-            l_r[i] = 1
-            continue
 
-        if r_val <= 12:
-            j_k = np.polynomial.Polynomial(
-                j[r_val - 1, :r_val],
-                domain=[0, 1],
-                window=[0, 1],
-            )
+    l_r_cache: dict[int, float] = {}
+    l_r = np.empty_like(rs, dtype=np.float_)
+    for i, _r in np.ndenumerate(rs):
+        _k = int(_r)
+        if _k in l_r_cache:
+            l_r[i] = l_r_cache[_k]
         else:
-            j_k = np.polynomial.Polynomial(
-                jacobi(r_val - 1, t, s).coef[::-1],  # type: ignore
-                domain=[0, 1],
-                window=[-1, 1],
-            )
+            l_r[i] = l_r_cache[_k] = _l_moment_single(_k)
 
-        def integrand(p: float) -> float:
-            return _w(p) * j_k(p)  # type: ignore
-
-        quad_val = _quad(integrand, support, quad_opts)
-        l_r[i] = _l_moment_const(r_val, s, t, 0) * quad_val
-
-    return (np.round(l_r, 12) + 0.0)[r_idxs].reshape(_r.shape)[()]
+    return l_r[()]  # convert back to scalar if needed
 
 
 @overload
@@ -692,6 +784,7 @@ def l_ratio_from_cdf(
     s: AnyInt,
     /,
     trim: AnyTrim = ...,
+    *,
     support: Pair[AnyFloat] | None = ...,
     quad_opts: QuadOptions | None = ...,
 ) -> np.float_:
@@ -705,6 +798,7 @@ def l_ratio_from_cdf(
     s: AnyInt | IntVector,
     /,
     trim: AnyTrim = ...,
+    *,
     support: Pair[AnyFloat] | None = ...,
     quad_opts: QuadOptions | None = ...,
 ) -> npt.NDArray[np.float_]:
@@ -718,6 +812,7 @@ def l_ratio_from_cdf(
     s: IntVector,
     /,
     trim: AnyTrim = ...,
+    *,
     support: Pair[AnyFloat] | None = ...,
     quad_opts: QuadOptions | None = ...,
 ) -> npt.NDArray[np.float_]:
@@ -730,6 +825,7 @@ def l_ratio_from_cdf(
     s: AnyInt | IntVector,
     /,
     trim: AnyTrim = (0, 0),
+    *,
     support: Pair[AnyFloat] | None = None,
     quad_opts: QuadOptions | None = None,
 ) -> np.float_ | npt.NDArray[np.float_]:
@@ -753,6 +849,7 @@ def l_ratio_from_ppf(
     s: AnyInt,
     /,
     trim: AnyTrim = ...,
+    *,
     support: Pair[AnyFloat] = ...,
     quad_opts: QuadOptions | None = ...,
 ) -> np.float_:
@@ -766,6 +863,7 @@ def l_ratio_from_ppf(
     s: AnyInt | IntVector,
     /,
     trim: AnyTrim = ...,
+    *,
     support: Pair[AnyFloat] = ...,
     quad_opts: QuadOptions | None = ...,
 ) -> npt.NDArray[np.float_]:
@@ -779,6 +877,7 @@ def l_ratio_from_ppf(
     s: IntVector,
     /,
     trim: AnyTrim = ...,
+    *,
     support: Pair[AnyFloat] = ...,
     quad_opts: QuadOptions | None = ...,
 ) -> npt.NDArray[np.float_]:
@@ -791,6 +890,7 @@ def l_ratio_from_ppf(
     s: AnyInt | IntVector,
     /,
     trim: AnyTrim = (0, 0),
+    *,
     support: Pair[AnyFloat] = (0, 1),
     quad_opts: QuadOptions | None = None,
 ) -> np.float_ | npt.NDArray[np.float_]:
@@ -802,7 +902,13 @@ def l_ratio_from_ppf(
         - [`lmo.l_ratio`][lmo.l_ratio]
     """
     rs = _stack_orders(r, s)
-    l_rs = l_moment_from_ppf(ppf, rs, trim, support, quad_opts=quad_opts)
+    l_rs = l_moment_from_ppf(
+        ppf,
+        rs,
+        trim,
+        support=support,
+        quad_opts=quad_opts,
+    )
 
     return moments_to_ratio(rs, l_rs)
 
@@ -898,6 +1004,7 @@ def l_stats_from_cdf(
     num: int = 4,
     /,
     trim: AnyTrim = (0, 0),
+    *,
     support: Pair[AnyFloat] | None = None,
     quad_opts: QuadOptions | None = None,
 ) -> npt.NDArray[np.float_]:
@@ -928,7 +1035,14 @@ def l_stats_from_cdf(
 
     """
     r, s = l_stats_orders(num)
-    return l_ratio_from_cdf(cdf, r, s, trim, support, quad_opts=quad_opts)
+    return l_ratio_from_cdf(
+        cdf,
+        r,
+        s,
+        trim,
+        support=support,
+        quad_opts=quad_opts,
+    )
 
 
 def l_stats_from_ppf(
@@ -965,7 +1079,14 @@ def l_stats_from_ppf(
         - [`lmo.l_stats`][lmo.l_stats] - Unbiased sample estimation of L-stats.
     """
     r, s = l_stats_orders(num)
-    return l_ratio_from_ppf(ppf, r, s, trim, support, quad_opts=quad_opts)
+    return l_ratio_from_ppf(
+        ppf,
+        r,
+        s,
+        trim,
+        support=support,
+        quad_opts=quad_opts,
+    )
 
 
 def l_stats_from_rv(
@@ -1024,68 +1145,6 @@ def l_stats_from_rv(
         quad_opts=quad_opts,
         **rv_kwds,
     )
-
-
-def _eval_sh_jacobi(
-    n: int,
-    a: float,
-    b: float,
-    x: float | npt.NDArray[np.float_],
-) -> float | npt.NDArray[np.float_]:
-    """
-    Fast evaluation of the n-th shifted Jacobi polynomial.
-    Faster than pre-computing using np.Polynomial, and than
-    `scipy.special.eval_jacobi` for n < 4.
-
-    Todo:
-        move to _poly, vectorize, annotate, document, test
-
-    """
-    if n == 0:
-        return 1
-
-    u = 2 * x - 1
-
-    if a == b == 0:
-        if n == 1:
-            return u
-
-        v = x * (x - 1)
-
-        if n == 2:
-            return 1 + 6 * v
-        if n == 3:
-            return (1 + 10 * v) * u
-        if n == 4:
-            return 1 + 10 * v * (2 + 7 * v)
-
-        return scs.eval_sh_legendre(n, x)
-
-    if n == 1:
-        return (a + b + 2) * x - b - 1
-    if n == 2:
-        return (
-            b * (b + 3)
-            - (a + b + 3) * (
-                2 * b + 4
-                - (a + b + 4) * x
-            ) * x
-        ) / 2 + 1
-    if n == 3:
-        return (
-            (1 + a) * (2 + a) * (3 + a)
-            + (4 + a + b) * (
-                3 * (2 + a) * (3 + a)
-                + (5 + a + b) * (
-                    3 * (3 + a)
-                    + (6 + a + b) * (x - 1)
-                ) * (x - 1)
-            ) * (x - 1)
-        ) / 6
-
-    # don't use `eval_sh_jacobi`: https://github.com/scipy/scipy/issues/18988
-    return scs.eval_jacobi(n, a, b, u)
-
 
 
 def l_moment_cov_from_cdf(
