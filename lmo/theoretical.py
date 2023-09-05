@@ -228,7 +228,7 @@ def _rv_melt(
     if scale <= 0:
         msg = f'scale must be >0, got {scale}'
         raise ValueError(msg)
-    if invalid_args := set(np.argwhere(1 - dist._argcheck(shapes))):
+    if invalid_args := set(np.argwhere(1 - dist._argcheck(*shapes))):
         invalid_params = {
             cast(str, param.name): args[i]
             for i, param in enumerate(dist._param_info())  # type: ignore
