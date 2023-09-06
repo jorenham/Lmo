@@ -215,7 +215,7 @@ def clean_trim(trim: AnyTrim) -> tuple[int, int] | tuple[float, float]:
 
     if s <= -1/2 or t <= -1/2:
         msg = f'trim must both be >-1/2, got {(s, t)}'
-        raise TypeError(msg)
+        raise ValueError(msg)
 
     if s.is_integer() and t.is_integer():
         return int(s), int(t)
