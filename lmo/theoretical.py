@@ -1063,6 +1063,7 @@ def l_ratio_from_rv(
     )
     return moments_to_ratio(rs, l_rs)
 
+
 def l_stats_from_cdf(
     cdf: Callable[[float], float],
     num: int = 4,
@@ -1163,6 +1164,7 @@ def l_stats_from_rv(
     trim: AnyTrim = (0, 0),
     *,
     quad_opts: QuadOptions | None = None,
+    alpha: float = ALPHA,
 ) -> npt.NDArray[np.float_]:
     r"""
     Calculates the theoretical- / population- L-moments (for $r \le 2$)
@@ -1206,6 +1208,7 @@ def l_stats_from_rv(
         *l_stats_orders(num),
         trim,
         quad_opts=quad_opts,
+        alpha=alpha,
     )
 
 
@@ -1302,7 +1305,6 @@ def l_moment_cov_from_cdf(
         quad_opts:
             Optional dict of options to pass to
             [`scipy.integrate.quad`][scipy.integrate.quad].
-
 
     Returns:
         cov: Covariance matrix, with shape `(r_max, r_max)`.
@@ -1437,6 +1439,8 @@ def l_stats_cov_from_cdf(
     *,
     support: Pair[float] | None = None,
     quad_opts: QuadOptions | None = None,
+    alpha: float = ALPHA,
+    ppf: Callable[[float], float] | None = None,
 ) -> npt.NDArray[np.float_]:
     r"""
     Similar to [`l_moment_from_cdf`][lmo.theoretical.l_moment_from_cdf], but
@@ -1496,6 +1500,8 @@ def l_stats_cov_from_cdf(
         quad_opts:
             Optional dict of options to pass to
             [`scipy.integrate.quad`][scipy.integrate.quad].
+        alpha: Two-sided quantile to split the integral at.
+        ppf: Quantile function, for calculating the split integral limits.
 
     References:
         - [J.R.M. Hosking (1990) - L-moments: Analysis and Estimation of
@@ -1521,6 +1527,8 @@ def l_stats_cov_from_cdf(
         trim,
         support=support,
         quad_opts=quad_opts,
+        alpha=alpha,
+        ppf=ppf,
     )
 
     l_2 = l_r0[0]
@@ -1557,6 +1565,7 @@ def l_stats_cov_from_rv(
     trim: AnyTrim = (0, 0),
     *,
     quad_opts: QuadOptions | None = None,
+    alpha: float = ALPHA,
 ) -> npt.NDArray[np.float_]:
     """
     Calculate the asymptotic L-stats covariance matrix from a
@@ -1593,6 +1602,7 @@ def l_stats_cov_from_rv(
 
     """
     cdf, support, _, scale = _rv_fn(rv, 'cdf', False)
+    ppf = _rv_fn(rv, 'ppf', False)[0]
 
     cov = l_stats_cov_from_cdf(
         cdf,
@@ -1600,6 +1610,8 @@ def l_stats_cov_from_rv(
         trim,
         support=support,
         quad_opts=quad_opts,
+        alpha=alpha,
+        ppf=ppf,
     )
     if scale != 1 and num:
         cov[:2, :2] *= scale**2
@@ -1618,6 +1630,7 @@ def l_moment_influence(
     *,
     support: Pair[float] | None = None,
     quad_opts: QuadOptions | None = None,
+    alpha: float = ALPHA,
     tol: float = 1e-8,
 ) -> Callable[[npt.ArrayLike], float | npt.NDArray[np.float_]]:
     r"""
@@ -1665,6 +1678,7 @@ def l_moment_influence(
         quad_opts:
             Optional dict of options to pass to
             [`scipy.integrate.quad`][scipy.integrate.quad].
+        alpha: Two-sided quantile to split the integral at.
         tol: Zero-roundoff absolute threshold.
 
     Returns:
@@ -1704,6 +1718,7 @@ def l_moment_influence(
             _r,
             trim,
             quad_opts=quad_opts,
+            alpha=alpha,
         )
         cdf = cast(
             Callable[[npt.NDArray[np.float_]], npt.NDArray[np.float_]],
@@ -1753,6 +1768,7 @@ def l_ratio_influence(
     *,
     support: Pair[float] | None = None,
     quad_opts: QuadOptions | None = None,
+    alpha: float = ALPHA,
     tol: float = 1e-8,
 ) -> Callable[[npt.ArrayLike], float | npt.NDArray[np.float_]]:
     r"""
@@ -1797,6 +1813,7 @@ def l_ratio_influence(
         quad_opts:
             Optional dict of options to pass to
             [`scipy.integrate.quad`][scipy.integrate.quad].
+        alpha: Two-sided quantile to split the integral at.
         tol: Zero-roundoff absolute threshold.
 
     Returns:
@@ -1823,6 +1840,7 @@ def l_ratio_influence(
             [_k, 0],
             trim=trim,
             quad_opts=quad_opts,
+            alpha=alpha,
         )
     else:
         tau_r, lambda_k = l_ratio_from_cdf(
