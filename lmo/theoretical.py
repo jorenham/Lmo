@@ -63,11 +63,13 @@ from ._utils import (
 from .typing import AnyFloat, AnyInt, AnyTrim, IntVector, QuadOptions
 
 T = TypeVar('T')
+Theta = ParamSpec('Theta')
+
 Pair: TypeAlias = tuple[T, T]
 
+UnivariateCDF: TypeAlias = Callable[[float], float]
+UnivariatePPF: TypeAlias = Callable[[float], float]
 UnivariateRV: TypeAlias = rv_continuous | rv_discrete | rv_frozen
-
-Theta = ParamSpec('Theta')
 
 ALPHA: Final[float] = 0.1
 
@@ -179,7 +181,7 @@ def _eval_sh_jacobi(
 
 
 def _tighten_cdf_support(
-    cdf: Callable[[float], float],
+    cdf: UnivariateCDF,
     support: Pair[float] | None = None,
 ) -> Pair[float]:
     """Attempt to tighten the support by checking some common bounds."""
@@ -313,7 +315,7 @@ def _stack_orders(
 
 @overload
 def l_moment_from_cdf(
-    cdf: Callable[[float], float],
+    cdf: UnivariateCDF,
     r: AnyInt,
     /,
     trim: AnyTrim = ...,
@@ -321,14 +323,14 @@ def l_moment_from_cdf(
     support: Pair[float] | None = ...,
     quad_opts: QuadOptions | None = ...,
     alpha: float = ...,
-    ppf: Callable[[float], float] | None = ...,
+    ppf: UnivariatePPF | None = ...,
 ) -> np.float_:
     ...
 
 
 @overload
 def l_moment_from_cdf(
-    cdf: Callable[[float], float],
+    cdf: UnivariateCDF,
     r: IntVector,
     /,
     trim: AnyTrim = ...,
@@ -336,13 +338,13 @@ def l_moment_from_cdf(
     support: Pair[float] | None = ...,
     quad_opts: QuadOptions | None = ...,
     alpha: float = ...,
-    ppf: Callable[[float], float] | None = ...,
+    ppf: UnivariatePPF | None = ...,
 ) -> npt.NDArray[np.float_]:
     ...
 
 
 def l_moment_from_cdf(
-    cdf: Callable[[float], float],
+    cdf: UnivariateCDF,
     r: AnyInt | IntVector,
     /,
     trim: AnyTrim = (0, 0),
@@ -350,7 +352,7 @@ def l_moment_from_cdf(
     support: Pair[float] | None = None,
     quad_opts: QuadOptions | None = None,
     alpha: float = ALPHA,
-    ppf: Callable[[float], float] | None = None,
+    ppf: UnivariatePPF | None = None,
 ) -> np.float_ | npt.NDArray[np.float_]:
     r"""
     Evaluate the population L-moment of a continuous probability distribution,
@@ -508,7 +510,7 @@ def l_moment_from_cdf(
 
 @overload
 def l_moment_from_ppf(
-    ppf: Callable[[float], float],
+    ppf: UnivariatePPF,
     r: AnyInt,
     /,
     trim: AnyTrim = ...,
@@ -522,7 +524,7 @@ def l_moment_from_ppf(
 
 @overload
 def l_moment_from_ppf(
-    ppf: Callable[[float], float],
+    ppf: UnivariatePPF,
     r: IntVector,
     /,
     trim: AnyTrim = ...,
@@ -535,7 +537,7 @@ def l_moment_from_ppf(
 
 
 def l_moment_from_ppf(
-    ppf: Callable[[float], float],
+    ppf: UnivariatePPF,
     r: AnyInt | IntVector,
     /,
     trim: AnyTrim = (0, 0),
@@ -808,7 +810,7 @@ def l_moment_from_rv(
 
 @overload
 def l_ratio_from_cdf(
-    cdf: Callable[[float], float],
+    cdf: UnivariateCDF,
     r: AnyInt,
     s: AnyInt,
     /,
@@ -823,7 +825,7 @@ def l_ratio_from_cdf(
 
 @overload
 def l_ratio_from_cdf(
-    cdf: Callable[[float], float],
+    cdf: UnivariateCDF,
     r: IntVector,
     s: AnyInt | IntVector,
     /,
@@ -832,14 +834,14 @@ def l_ratio_from_cdf(
     support: Pair[float] | None = ...,
     quad_opts: QuadOptions | None = ...,
     alpha: float = ...,
-    ppf: Callable[[float], float] | None = ...,
+    ppf: UnivariatePPF | None = ...,
 ) -> npt.NDArray[np.float_]:
     ...
 
 
 @overload
 def l_ratio_from_cdf(
-    cdf: Callable[[float], float],
+    cdf: UnivariateCDF,
     r: AnyInt | IntVector,
     s: IntVector,
     /,
@@ -848,13 +850,13 @@ def l_ratio_from_cdf(
     support: Pair[float] | None = ...,
     quad_opts: QuadOptions | None = ...,
     alpha: float = ...,
-    ppf: Callable[[float], float] | None = ...,
+    ppf: UnivariatePPF | None = ...,
 ) -> npt.NDArray[np.float_]:
     ...
 
 
 def l_ratio_from_cdf(
-    cdf: Callable[[float], float],
+    cdf: UnivariateCDF,
     r: AnyInt | IntVector,
     s: AnyInt | IntVector,
     /,
@@ -863,7 +865,7 @@ def l_ratio_from_cdf(
     support: Pair[float] | None = None,
     quad_opts: QuadOptions | None = None,
     alpha: float = ALPHA,
-    ppf: Callable[[float], float] | None = None,
+    ppf: UnivariatePPF | None = None,
 ) -> np.float_ | npt.NDArray[np.float_]:
     """
     Population L-ratio's from a CDF.
@@ -887,7 +889,7 @@ def l_ratio_from_cdf(
 
 @overload
 def l_ratio_from_ppf(
-    ppf: Callable[[float], float],
+    ppf: UnivariatePPF,
     r: AnyInt,
     s: AnyInt,
     /,
@@ -902,7 +904,7 @@ def l_ratio_from_ppf(
 
 @overload
 def l_ratio_from_ppf(
-    ppf: Callable[[float], float],
+    ppf: UnivariatePPF,
     r: IntVector,
     s: AnyInt | IntVector,
     /,
@@ -917,7 +919,7 @@ def l_ratio_from_ppf(
 
 @overload
 def l_ratio_from_ppf(
-    ppf: Callable[[float], float],
+    ppf: UnivariatePPF,
     r: AnyInt | IntVector,
     s: IntVector,
     /,
@@ -931,7 +933,7 @@ def l_ratio_from_ppf(
 
 
 def l_ratio_from_ppf(
-    ppf: Callable[[float], float],
+    ppf: UnivariatePPF,
     r: AnyInt | IntVector,
     s: AnyInt | IntVector,
     /,
@@ -1065,7 +1067,7 @@ def l_ratio_from_rv(
 
 
 def l_stats_from_cdf(
-    cdf: Callable[[float], float],
+    cdf: UnivariateCDF,
     num: int = 4,
     /,
     trim: AnyTrim = (0, 0),
@@ -1073,7 +1075,7 @@ def l_stats_from_cdf(
     support: Pair[float] | None = None,
     quad_opts: QuadOptions | None = None,
     alpha: float = ALPHA,
-    ppf: Callable[[float], float] | None = None,
+    ppf: UnivariatePPF | None = None,
 ) -> npt.NDArray[np.float_]:
     r"""
     Calculates the theoretical- / population- L-moments (for $r \le 2$)
@@ -1113,7 +1115,7 @@ def l_stats_from_cdf(
 
 
 def l_stats_from_ppf(
-    ppf: Callable[[float], float],
+    ppf: UnivariatePPF,
     num: int = 4,
     /,
     trim: AnyTrim = (0, 0),
@@ -1213,7 +1215,7 @@ def l_stats_from_rv(
 
 
 def l_moment_cov_from_cdf(
-    cdf: Callable[[float], float],
+    cdf: UnivariateCDF,
     r_max: int,
     /,
     trim: AnyTrim = (0, 0),
@@ -1432,7 +1434,7 @@ def l_moment_cov_from_rv(
 
 
 def l_stats_cov_from_cdf(
-    cdf: Callable[[float], float],
+    cdf: UnivariateCDF,
     num: int = 4,
     /,
     trim: AnyTrim = (0, 0),
@@ -1440,7 +1442,7 @@ def l_stats_cov_from_cdf(
     support: Pair[float] | None = None,
     quad_opts: QuadOptions | None = None,
     alpha: float = ALPHA,
-    ppf: Callable[[float], float] | None = None,
+    ppf: UnivariatePPF | None = None,
 ) -> npt.NDArray[np.float_]:
     r"""
     Similar to [`l_moment_from_cdf`][lmo.theoretical.l_moment_from_cdf], but
