@@ -52,6 +52,7 @@ from scipy.stats.distributions import (  # type: ignore
     rv_frozen,
 )
 
+from ._distns import rv_method
 from ._utils import (
     clean_order,
     clean_orders,
@@ -749,7 +750,7 @@ def l_moment_from_rv(
             L-moment order(s), non-negative integer or array-like of integers.
         trim:
             Left- and right- trim. Must be a tuple of two non-negative ints
-            or floats (!).
+            or floats.
 
     Other parameters:
         quad_opts:
@@ -1869,3 +1870,60 @@ def l_ratio_influence(
     )
 
     return influence_function
+
+
+"""
+Methods to be added to `scipy.stats.rv_generic` and `scipy.stats.rv_frozen`.
+"""
+
+
+# pyright: reportUnknownMemberType=false,reportPrivateUsage=false
+# pyright: reportUnknownVariableType=false,reportUnknownLambdaType=false
+# pyright: reportUnknownArgumentType=false
+@rv_method('l_moment')
+def _rv_l_moment(  # type: ignore
+    self: rv_continuous | rv_discrete,
+    order: AnyInt | IntVector,
+    *args: float,
+    trim: AnyTrim = (0, 0),
+    **kwds: float,
+) -> float | npt.NDArray[np.float_]:
+    """L-moment(s) of distribution of specified order(s).
+
+    Parameters
+    ----------
+    order : array_like
+        Order(s) of L-moment(s).
+    arg1, arg2, arg3,... : float
+        The shape parameter(s) for the distribution (see docstring of the
+        instance object for more information)
+    loc : float, optional
+        location parameter (default=0)
+    scale : float, optional
+        scale parameter (default=1)
+    trim : float or tuple, optional
+        left- and right- trim (default=(0, 0))
+
+    Returns
+    -------
+    lm : ndarray or scalar
+        The calculated L-moment(s).
+
+    """  # noqa: D416
+    rs = clean_orders(np.asanyarray(order))
+
+    args, loc, scale = self._parse_args(*args, **kwds)  # type: ignore
+    support = self._get_support(*args)
+
+    if args:
+        cdf = lambda x: self._cdf(x, *args)  # noqa: E731
+        ppf = lambda q: self._ppf(q, *args)  # noqa: E731
+    else:
+        cdf, ppf = self._cdf, self._ppf
+
+    lm = l_moment_from_cdf(cdf, rs, trim, support=support, ppf=ppf)
+
+    lms = np.asarray(lm)
+    lms[rs == 1] += loc
+    lms[rs > 1] *= scale
+    return lms[()]  # convert back to scalar if needed
