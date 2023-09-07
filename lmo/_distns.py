@@ -26,7 +26,11 @@ from ._utils import (
     moments_to_ratio,
 )
 from .diagnostic import l_ratio_bounds
-from .theoretical import l_moment_from_cdf
+from .theoretical import (
+    l_moment_cov_from_cdf,
+    l_moment_from_cdf,
+    l_stats_cov_from_cdf,
+)
 from .typing import (
     AnyInt,
     AnyTrim,
@@ -402,7 +406,7 @@ class PatchClass:
             raise TypeError(msg)
 
         for name, method in cls.__dict__.items():
-            if name.startswith('_') or not callable(method):
+            if name.startswith('__') or not callable(method):
                 continue
             if hasattr(base, name):
                 msg = f'{base.__qualname__}.{name}() already exists'
@@ -419,10 +423,27 @@ class l_rv_generic(PatchClass):  # noqa: N801
     [`scipy.stats.rv_discrete`][scipy.stats.rv_discrete].
     """
 
-    _get_support: Callable[..., tuple[float, float]]
     _cdf: Callable[..., float]
     _ppf: Callable[..., float]
+    _get_support: Callable[..., tuple[float, float]]
+    _parse_args: Callable[..., tuple[tuple[Any, ...], float, float]]
     mean: Callable[..., float]
+
+    def _get_xdf(self, *args: Any) -> tuple[
+        Callable[[float], float],
+        Callable[[float], float],
+    ]:
+        _cdf, _ppf = self._cdf, self._ppf
+        if args:
+            def cdf(x: float, /) -> float:
+                return _cdf(x, *args)
+
+            def ppf(q: float, /):
+                return _ppf(q, *args)
+        else:
+            cdf, ppf = _cdf, _ppf
+
+        return cdf, ppf
 
     @overload
     def l_moment(
@@ -477,6 +498,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
             Evaluate the population L-moments of the normally-distributed IQ
             test:
 
+            >>> import lmo
             >>> from scipy.stats import norm
             >>> norm(100, 15).l_moment([1, 2, 3, 4]).round(6)
             array([100.      ,   8.462844,   0.      ,   1.037559])
@@ -525,21 +547,9 @@ class l_rv_generic(PatchClass):  # noqa: N801
         """
         rs = clean_orders(np.asanyarray(r))
 
-        args, loc, scale = cast(
-            tuple[tuple[float, ...], float, float],
-            self._parse_args(*args, **kwds),  # type: ignore
-        )
+        args, loc, scale = self._parse_args(*args, **kwds)
         support = self._get_support(*args)
-
-        _cdf, _ppf = self._cdf, self._ppf
-        if args:
-            def cdf(x: float, /) -> float:
-                return _cdf(x, *args)
-
-            def ppf(q: float, /):
-                return _ppf(q, *args)
-        else:
-            cdf, ppf = _cdf, _ppf
+        cdf, ppf = self._get_xdf(*args)
 
         lmda = np.asarray(l_moment_from_cdf(
             cdf,
@@ -605,6 +615,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
             Evaluate the population L-CV and LL-CV (CV = coefficient of
             variation) of the standard Rayleigh distribution.
 
+            >>> import lmo
             >>> from scipy.stats import distributions
             >>> X = distributions.rayleigh()
             >>> X.std() / X.mean()  # legacy CV
@@ -654,15 +665,12 @@ class l_rv_generic(PatchClass):  # noqa: N801
             - [`lmo.l_ratio`][lmo.l_ratio] - Sample L-moment ratio estimator
         """
         rs = broadstack(r, k)
-        lms = cast(
-            npt.NDArray[np.float_],
-            self.l_moment(  # type: ignore
-                rs,
-                *args,
-                trim=trim,
-                quad_opts=quad_opts,
-                **kwds,
-            ),
+        lms = self.l_moment(
+            rs,
+            *args,
+            trim=trim,
+            quad_opts=quad_opts,
+            **kwds,
         )
         return moments_to_ratio(rs, lms)
 
@@ -692,6 +700,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
             Summarize the standard exponential distribution for different
             trim-orders.
 
+            >>> import lmo
             >>> from scipy.stats import distributions
             >>> X = distributions.expon()
             >>> X.l_stats().round(6)
@@ -728,16 +737,13 @@ class l_rv_generic(PatchClass):  # noqa: N801
               L-stats.
         """
         r, s = l_stats_orders(moments)
-        return cast(
-            npt.NDArray[np.float_],
-            self.l_ratio(  # type: ignore
-                r,
-                s,
-                *args,
-                trim=trim,
-                quad_opts=quad_opts,
-                **kwds,
-            ),
+        return self.l_ratio(
+            r,
+            s,
+            *args,
+            trim=trim,
+            quad_opts=quad_opts,
+            **kwds,
         )
 
     def l_loc(
@@ -792,6 +798,249 @@ class l_rv_generic(PatchClass):  # noqa: N801
         Alias for `X.l_ratio(4, 2, ...)`.
         """
         return float(self.l_ratio(4, 2, *args, trim=trim, **kwds))
+
+    def l_moments_cov(
+        self,
+        r_max: int,
+        /,
+        *args: Any,
+        trim: AnyTrim = (0, 0),
+        quad_opts: QuadOptions | None = None,
+        **kwds: Any,
+    ) -> npt.NDArray[np.float_]:
+        r"""
+        Variance/covariance matrix of the L-moment estimators.
+
+        L-moments that are estimated from $n$ samples of a distribution with
+        CDF $F$, converge to the multivariate normal distribution as the
+        sample size $n \rightarrow \infty$.
+
+        $$
+        \sqrt{n} \left(
+            \vec{l}^{(s, t)} - \vec{\lambda}^{(s, t)}
+        \right)
+        \sim
+        \mathcal{N}(
+            \vec{0},
+            \mathbf{\Lambda}^{(s, t)}
+        )
+        $$
+
+        Here, $\vec{l}^{(s, t)} = \left[l^{(s,t)}_r, \dots,
+        l^{(s,t)}_{r_{max}}\right]^T$ is a vector of estimated sample
+        L-moments, and $\vec{\lambda}^{(s, t)}$ its theoretical ("true")
+        counterpart.
+
+        This function calculates the covariance matrix
+
+        $$
+        \begin{align}
+        \bf{\Lambda}^{(s,t)}_{k, r}
+            &= \mathrm{Cov}[l^{(s, t)}_k, l^{(s, t)}_r] \\
+            &= c_k c_r
+            \iint\limits_{x < y} \Big[
+                p_k\big(F(x)\big) \, p_r\big(F(y)\big) +
+                p_r\big(F(x)\big) \, p_k\big(F(y)\big)
+            \Big]
+            w^{(s+1,\, t)}\big(F(x)\big) \,
+            w^{(s,\, t+1)}\big(F(y)\big) \,
+            \mathrm{d}x \, \mathrm{d}y
+            \;,
+        \end{align}
+        $$
+
+        where
+
+        $$
+        c_n = \frac{\Gamma(n) \Gamma(n+s+t+1)}{n \Gamma(n+s) \Gamma(n+t)}\;,
+        $$
+
+        the shifted Jacobi polynomial
+        $p_n(u) = P^{(t, s)}_{n-1}(2u - 1)$, $P^{(t, s)}_m$, and
+        $w^{(s,t)}(u) = u^s (1-u)^t$ its weight function.
+
+        Notes:
+            This function is not vectorized or parallelized.
+
+            For small sample sizes ($n < 100$), the covariances of the
+            higher-order L-moments ($r > 2$) can be biased. But this bias
+            quickly disappears at roughly $n > 200$ (depending on the trim-
+            and L-moment orders).
+
+        Examples:
+            >>> import lmo
+            >>> from scipy.stats import distributions
+            >>> X = distributions.expon()  # standard exponential distribution
+            >>> X.l_moments_cov(4).round(6)
+            array([[1.      , 0.5     , 0.166667, 0.083333],
+                [0.5     , 0.333333, 0.166667, 0.083333],
+                [0.166667, 0.166667, 0.133333, 0.083333],
+                [0.083333, 0.083333, 0.083333, 0.071429]])
+
+            >>> X.l_moments_cov(4, trim=(0, 1)).round(6)
+            array([[0.333333, 0.125   , 0.      , 0.      ],
+                [0.125   , 0.075   , 0.016667, 0.      ],
+                [0.      , 0.016667, 0.016931, 0.00496 ],
+                [0.      , 0.      , 0.00496 , 0.0062  ]])
+
+        Args:
+            r_max:
+                The amount of L-moment orders to consider. If for example
+                `r_max = 4`, the covariance matrix will be of shape `(4, 4)`,
+                and the columns and rows correspond to the L-moments of order
+                $r = 1, \dots, r_{max}$.
+            *args:
+                The shape parameter(s) for the distribution (see docstring
+                of the instance object for more information)
+            trim:
+                Left- and right- trim. Can be scalar or 2-tuple of
+                non-negative int or float.
+                or floats.
+            quad_opts:
+                Optional dict of options to pass to
+                [`scipy.integrate.quad`][scipy.integrate.quad].
+            **kwds:
+                Additional keyword arguments to pass to the distribution.
+
+        Returns:
+            cov: Covariance matrix, with shape `(r_max, r_max)`.
+
+        Raises:
+            RuntimeError: If the covariance matrix is invalid.
+
+        References:
+            - [J.R.M. Hosking (1990) - L-moments: Analysis and Estimation of
+                Distributions Using Linear Combinations of Order Statistics
+                ](https://jstor.org/stable/2345653)
+            - [J.R.M. Hosking (2007) - Some theory and practical uses of
+                trimmed L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
+        """
+        args, _, scale = cast(
+            tuple[tuple[float, ...], float, float],
+            self._parse_args(*args, **kwds),
+        )
+        support = self._get_support(*args)
+        cdf, _ = self._get_xdf(*args)
+
+        cov = l_moment_cov_from_cdf(
+            cdf,
+            r_max,
+            trim=trim,
+            support=support,
+            quad_opts=quad_opts,
+        )
+        return scale**2 * cov
+
+    def l_stats_cov(
+        self,
+        *args: Any,
+        moments: int = 4,
+        trim: AnyTrim = (0, 0),
+        quad_opts: QuadOptions | None = None,
+        **kwds: Any,
+    ) -> npt.NDArray[np.float_]:
+        r"""
+        Similar to [`l_moments_cov`][lmo.l_rv_generic.l_moments_cov], but
+        for the [`l_stats`][lmo.l_rv_generic.l_stats].
+
+        As the sample size $n \rightarrow \infty$, the L-moment ratio's are
+        also distributed (multivariate) normally. The L-stats are defined to
+        be L-moments for $r\le 2$, and L-ratio coefficients otherwise.
+
+        The corresponding covariance matrix has been found to be
+
+        $$
+        \bf{T}^{(s, t)}_{k, r} =
+        \begin{cases}
+            \bf{\Lambda}^{(s, t)}_{k, r}
+                & k \le 2 \wedge r \le 2 \\
+            \frac{
+                \bf{\Lambda}^{(s, t)}_{k, r}
+                - \tau_r \bf{\Lambda}^{(s, t)}_{k, 2}
+            }{
+                \lambda^{(s,t)}_{2}
+            }
+                & k \le 2 \wedge r > 2 \\
+            \frac{
+                \bf{\Lambda}^{(s, t)}_{k, r}
+                - \tau_k \bf{\Lambda}^{(s, t)}_{2, r}
+                - \tau_r \bf{\Lambda}^{(s, t)}_{k, 2}
+                + \tau_k \tau_r \bf{\Lambda}^{(s, t)}_{2, 2}
+            }{
+                \Big( \lambda^{(s,t)}_{2} \Big)^2
+            }
+                & k > 2 \wedge r > 2
+        \end{cases}
+        $$
+
+        where $\bf{\Lambda}^{(s, t)}$ is the covariance matrix of the L-moments
+        from [`l_moment_cov_from_cdf`][lmo.theoretical.l_moment_cov_from_cdf],
+        and $\tau^{(s,t)}_r = \lambda^{(s,t)}_r / \lambda^{(s,t)}_2$ the
+        population L-ratio.
+
+        Examples:
+            Evaluate the LL-stats covariance matrix of the standard exponential
+            distribution, for 0, 1, and 2 degrees of trimming.
+
+            >>> import lmo
+            >>> from scipy.stats import distributions
+            >>> X = distributions.expon()  # standard exponential distribution
+            >>> X.l_stats_cov().round(6)
+            array([[1.      , 0.5     , 0.      , 0.      ],
+                [0.5     , 0.333333, 0.111111, 0.055556],
+                [0.      , 0.111111, 0.237037, 0.185185],
+                [0.      , 0.055556, 0.185185, 0.21164 ]])
+            >>> X.l_stats_cov(trim=(0, 1)).round(6)
+            array([[ 0.333333,  0.125   , -0.111111, -0.041667],
+                [ 0.125   ,  0.075   ,  0.      , -0.025   ],
+                [-0.111111,  0.      ,  0.21164 ,  0.079365],
+                [-0.041667, -0.025   ,  0.079365,  0.10754 ]])
+            >>> X.l_stats_cov(trim=(0, 2)).round(6)
+            array([[ 0.2     ,  0.066667, -0.114286, -0.02    ],
+                [ 0.066667,  0.038095, -0.014286, -0.023333],
+                [-0.114286, -0.014286,  0.228571,  0.04    ],
+                [-0.02    , -0.023333,  0.04    ,  0.086545]])
+
+            Note that with 0 trim the L-location is independent of the
+            L-skewness and L-kurtosis. With 1 trim, the L-scale and L-skewness
+            are independent. And with 2 trim, all L-stats depend on each other.
+
+        Args:
+            *args:
+                The shape parameter(s) for the distribution (see docstring
+                of the instance object for more information)
+            moments:
+                The amount of L-statistics to consider. Defaults to 4.
+            trim:
+                Left- and right- trim. Can be scalar or 2-tuple of
+                non-negative int or float.
+                or floats.
+            quad_opts:
+                Optional dict of options to pass to
+                [`scipy.integrate.quad`][scipy.integrate.quad].
+            **kwds:
+                Additional keyword arguments to pass to the distribution.
+
+        References:
+            - [J.R.M. Hosking (1990) - L-moments: Analysis and Estimation of
+                Distributions Using Linear Combinations of Order Statistics
+                ](https://jstor.org/stable/2345653)
+            - [J.R.M. Hosking (2007) - Some theory and practical uses of
+                trimmed L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
+        """
+        args, _, scale = self._parse_args(*args, **kwds)
+        support = self._get_support(*args)
+        cdf, ppf = self._get_xdf(*args)
+
+        cov = l_stats_cov_from_cdf(
+            cdf,
+            moments,
+            trim=trim,
+            support=support,
+            quad_opts=quad_opts,
+            ppf=ppf,
+        )
+        return scale**2 * cov
 
 
 class l_rv_frozen(PatchClass):  # noqa: N801
@@ -898,6 +1147,34 @@ class l_rv_frozen(PatchClass):  # noqa: N801
     def l_kurtosis(self, trim: AnyTrim = (0, 0)) -> float:
         return self.dist.l_kurtosis(*self.args, trim=trim, **self.kwds)
 
+    def l_moments_cov(
+        self,
+        r_max: int,
+        /,
+        trim: AnyTrim = (0, 0),
+        quad_opts: QuadOptions | None = None,
+    ) -> npt.NDArray[np.float_]:
+        return self.dist.l_moments_cov(
+            r_max,
+            *self.args,
+            trim=trim,
+            quad_opts=quad_opts,
+            **self.kwds,
+        )
+
+    def l_stats_cov(
+        self,
+        moments: int = 4,
+        trim: AnyTrim = (0, 0),
+        quad_opts: QuadOptions | None = None,
+    ) -> npt.NDArray[np.float_]:
+        return self.dist.l_stats_cov(
+            *self.args,
+            moments=moments,
+            trim=trim,
+            quad_opts=quad_opts,
+            **self.kwds,
+        )
 
 l_rv_generic.patch(cast(type[object], rv_continuous.__base__))
 l_rv_frozen.patch(cast(type[object], rv_frozen))
