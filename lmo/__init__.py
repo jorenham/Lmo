@@ -1,6 +1,9 @@
 # noqa: D104
 __all__ = (
     '__version__',
+
+    'theoretical',
+
     'l_weights',
     'l_moment',
     'l_moment_cov',
@@ -24,9 +27,16 @@ __all__ = (
     'l_rv',
 )
 
-from typing import Final as _Final
+from typing import (
+    TYPE_CHECKING as _TYPE_CHECKING,
+    Final as _Final,
+)
 
-from ._distns import l_rv
+from . import theoretical
+from ._distns import (
+    l_rv,
+    patch_rv as _patch_rv,
+)
 from ._lm import (
     l_kurtosis,
     l_loc,
@@ -54,3 +64,6 @@ from ._lm_co import (
 from ._meta import get_version as _get_version
 
 __version__: _Final[str] = _get_version()
+
+if not _TYPE_CHECKING:
+    _patch_rv()

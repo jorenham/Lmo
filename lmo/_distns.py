@@ -1,26 +1,33 @@
 # pyright: reportIncompatibleMethodOverride=false
 
-__all__ = ('l_rv',)
+__all__ = ('l_rv', 'patch_rv', 'rv_method')
 
 import functools
 import math
 import warnings
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from typing import Any, Final, SupportsIndex, TypeVar, cast
 
 import numpy as np
 import numpy.polynomial as npp
 import numpy.typing as npt
-from scipy.stats.distributions import rv_continuous  # type: ignore
+from scipy.stats.distributions import (  # type: ignore
+    rv_continuous,
+    rv_frozen,
+)
 
-from . import _poly as pu
-from ._lm import l_moment
+from ._poly import jacobi_series, roots
 from ._utils import clean_order, clean_trim
 from .diagnostic import l_ratio_bounds
 from .typing import AnyTrim, FloatVector, PolySeries
 
 X = TypeVar('X', bound='l_rv')
 F = TypeVar('F', bound=np.floating[Any])
+
+M = TypeVar('M', bound=Callable[..., Any])
+
+_BREADCRUMB = 'Tickle me!'
+_RV_METHODS: Final[dict[str, Callable[..., Any]]] = {}
 
 
 _F_EPS: Final[np.float_] = np.finfo(float).eps
@@ -57,7 +64,7 @@ def _ppf_poly_series(
     r = np.arange(1, len(l_r) + 1)
     c = (s + t - 1 + 2 * r) * r / (s + t + r)
 
-    return pu.jacobi_series(
+    return jacobi_series(
         c * l_r,
         t,
         s,
@@ -279,7 +286,7 @@ class l_rv(rv_continuous):  # noqa: N801
 
     def _cdf_single(self, x: float) -> float:
         # find all q where Q(q) == x
-        q0 = pu.roots(self._ppf_poly - x)
+        q0 = roots(self._ppf_poly - x)
 
         if (n := len(q0)) == 0:
             return self.badvalue
@@ -345,6 +352,9 @@ class l_rv(rv_continuous):  # noqa: N801
             - Optimal `rmax` selection (the error appears to be periodic..?)
             - Optimal `trim` selection
         """
+        # avoid circular imports
+        from ._lm import l_moment
+
         # x needs to be sorted anyway
         x: npt.NDArray[np.floating[Any]] = np.sort(data)
 
@@ -366,3 +376,84 @@ class l_rv(rv_continuous):  # noqa: N801
         )
 
         return cls(l_r, trim=_trim, a=a, b=b)
+
+
+def rv_method(name: str, /):
+    """
+    Internal decorator that enqueues a method to be added to all
+    `scipy` distributions.
+    """
+    assert not any(
+        hasattr(rv, name) for rv in (rv_continuous.__base__, rv_frozen)
+    ), f'rv method {name} already exists'
+    if hasattr(rv_continuous, '__lmo__'):
+        warnings.warn(
+            f"{name!r} not added to the scipy.stats rv's; already patched",
+            ImportWarning,
+            stacklevel=2,
+        )
+
+    def _rv_method(fn: M, /) -> M:
+        _RV_METHODS[name] = fn
+        return fn
+    return _rv_method
+
+
+def _patch_rv_generic() -> bool:
+    rv_generic = rv_continuous.__base__
+    assert rv_generic.__name__ == 'rv_generic', rv_generic.__name__
+
+    if hasattr(rv_generic, '__lmo__'):
+        # already patched
+        return False
+
+    for name, method in _RV_METHODS.items():
+        assert not hasattr(rv_generic, name), f'rv_generic.{name}() exists'
+
+        method.__qualname__ = f'rv_generic.{name}'
+        setattr(rv_generic, name, method)
+
+    rv_generic.__lmo__ = _BREADCRUMB  # type: ignore
+    return True
+
+
+# pyright: reportUnknownMemberType=false
+def _patch_rv_frozen() -> bool:
+    if hasattr(rv_frozen, '__lmo__'):
+        # already patched
+        return False
+
+    for name, method in _RV_METHODS.items():
+        assert not hasattr(rv_frozen, name), f'rv_frozen.{name}() exists'
+
+        def _method_frozen(self: rv_frozen, *args: Any, **kwds: Any):
+            return getattr(self.dist, name)(  # type: ignore
+                *args,
+                *self.args,
+                *kwds,
+                **self.kwds,
+            )
+
+        _method_frozen.__name__ = name
+        _method_frozen.__qualname__ = f'rv_frozen.{name}'
+        _method_frozen.__doc__ = method.__doc__
+        _method_frozen.__annotations__ = {
+            p: s for p, s in method.__annotations__.items()
+            if p not in {'args', 'kwds'}
+        } | {'self': _method_frozen.__annotations__['self']}
+        setattr(rv_frozen, name, _method_frozen)
+
+    rv_frozen.__lmo__ = _BREADCRUMB  # type: ignore
+    return True
+
+
+def patch_rv():
+    if not _RV_METHODS:
+        warnings.warn(
+            'failed to patch scipy.stats distributions',
+            ImportWarning,
+            stacklevel=1,
+        )
+
+    _patch_rv_generic()
+    _patch_rv_frozen()
