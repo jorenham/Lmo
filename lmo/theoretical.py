@@ -1877,9 +1877,6 @@ Methods to be added to `scipy.stats.rv_generic` and `scipy.stats.rv_frozen`.
 """
 
 
-# pyright: reportUnknownMemberType=false,reportPrivateUsage=false
-# pyright: reportUnknownVariableType=false,reportUnknownLambdaType=false
-# pyright: reportUnknownArgumentType=false
 @rv_method('l_moment')
 def _rv_l_moment(  # type: ignore
     self: rv_continuous | rv_discrete,
@@ -1912,18 +1909,25 @@ def _rv_l_moment(  # type: ignore
     """  # noqa: D416
     rs = clean_orders(np.asanyarray(order))
 
-    args, loc, scale = self._parse_args(*args, **kwds)  # type: ignore
-    support = self._get_support(*args)
+    args, loc, scale = cast(
+        tuple[tuple[float, ...], float, float],
+        self._parse_args(*args, **kwds),  # type: ignore
+    )
+    support = cast(tuple[float, float], self._get_support(*args))
+
+    _cdf = cast(Callable[[float], float], self._cdf)
+    _ppf = cast(Callable[[float], float], self._ppf)
 
     if args:
-        cdf = lambda x: self._cdf(x, *args)  # noqa: E731
-        ppf = lambda q: self._ppf(q, *args)  # noqa: E731
+        def cdf(x: float, /) -> float:
+            return _cdf(x, *args)
+
+        def ppf(q: float, /):
+            return _ppf(q, *args)
     else:
-        cdf, ppf = self._cdf, self._ppf
+        cdf, ppf = _cdf, _ppf
 
     lm = l_moment_from_cdf(cdf, rs, trim, support=support, ppf=ppf)
-
-    lms = np.asarray(lm)
-    lms[rs == 1] += loc
-    lms[rs > 1] *= scale
-    return lms[()]  # convert back to scalar if needed
+    lm[rs == 1] += loc
+    lm[rs > 1] *= scale
+    return lm[()]  # convert back to scalar if needed
