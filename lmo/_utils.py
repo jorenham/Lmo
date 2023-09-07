@@ -7,6 +7,7 @@ __all__ = (
     'clean_orders',
     'clean_trim',
     'moments_to_ratio',
+    'moments_to_stats_cov',
     'l_stats_orders',
 )
 
@@ -243,6 +244,36 @@ def moments_to_ratio(
             np.ones_like(l_rs[0]),
             np.divide(l_rs[0], l_rs[1], where=~r_eq_s),
         )[()]
+
+
+def moments_to_stats_cov(
+    t_0r: npt.NDArray[np.float_],
+    ll_kr: npt.NDArray[np.float_],
+) -> npt.NDArray[np.float_]:
+    # t_0r are L-ratio's for r = 0, 1, ..., R (t_0r[0] == 1 / L-scale)
+    # t_0r[1] isn't used, and can be set to anything
+    # ll_kr is the L-moment cov of size R**2 (orders start at 1 here)
+    assert len(t_0r) > 0
+    assert (len(t_0r) - 1)**2 == ll_kr.size
+
+    t_0, t_r = t_0r[0], t_0r[1:]
+    tt_kr = np.empty_like(ll_kr)
+    for k, r in zip(*np.triu_indices_from(tt_kr), strict=True):
+        if r <= 1:
+            tt = ll_kr[k, r]
+        elif k <= 1:
+            tt = t_0 * (ll_kr[k, r] - ll_kr[1, k] * t_r[r])
+        else:
+            tt = t_0**2 * (
+                ll_kr[k, r]
+                - ll_kr[1, k] * t_r[r]
+                - ll_kr[1, r] * t_r[k]
+                + ll_kr[1, 1] * t_r[k] * t_r[r]
+            )
+
+        tt_kr[k, r] = tt_kr[r, k] = tt
+
+    return tt_kr
 
 
 def l_stats_orders(
