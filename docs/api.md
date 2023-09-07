@@ -10,15 +10,8 @@
       filters: 
       - "!l_weights"
       - "!^l_co"
+      - "!^l_rv"
       heading_level: 4
-
-
-### Population L-moments
-
-::: lmo.theoretical
-    options:
-      heading_level: 4
-
 
 ### Sample L-comoments
 
@@ -28,12 +21,20 @@
       heading_level: 4
 
 
+### Distributions
+
+::: lmo
+    options:
+      members:
+      - l_rv_generic
+      - l_rv_nonparametric
+      heading_level: 4
+
 ### Statistical test and tools 
 
 ::: lmo.diagnostic
     options:
       heading_level: 4
-
 
 ## Low-level API
 
@@ -43,6 +44,11 @@
       - l_weights
       heading_level: 3
 
+### `theoretical`
+
+::: lmo.theoretical
+    options:
+      heading_level: 4
 
 ### `linalg`
 

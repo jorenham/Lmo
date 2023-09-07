@@ -253,3 +253,10 @@ def l_stats_orders(
         np.arange(1, num + 1),
         np.array([0] * min(2, num) + [2] * (num - 2)),
     )
+
+
+def broadstack(
+    r: AnyInt | IntVector,
+    s: AnyInt | IntVector,
+) -> npt.NDArray[np.int_]:
+    return np.stack(np.broadcast_arrays(np.asarray(r), np.asarray(s)))
