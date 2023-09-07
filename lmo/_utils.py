@@ -15,8 +15,6 @@ from typing import Any, SupportsIndex, TypeVar
 import numpy as np
 import numpy.typing as npt
 
-from .typing import AnyInt, IntVector
-
 from .typing import AnyInt, AnyTrim, IndexOrder, IntVector, SortKind
 
 T = TypeVar('T', bound=np.generic)
