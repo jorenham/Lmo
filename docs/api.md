@@ -27,8 +27,13 @@
     options:
       members:
       - l_rv_generic
-      - l_rv_frozen
       - l_rv_nonparametric
+      heading_level: 4
+
+### Statistical test and tools 
+
+::: lmo.diagnostic
+    options:
       heading_level: 4
 
 ## Low-level API
@@ -39,20 +44,11 @@
       - l_weights
       heading_level: 3
 
-
-### Theoretical L-moments
+### `theoretical`
 
 ::: lmo.theoretical
     options:
       heading_level: 4
-
-
-### Statistical test and tools 
-
-::: lmo.diagnostic
-    options:
-      heading_level: 4
-
 
 ### `linalg`
 
