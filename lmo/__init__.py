@@ -2,8 +2,6 @@
 __all__ = (
     '__version__',
 
-    'theoretical',
-
     'l_weights',
     'l_moment',
     'l_moment_cov',
@@ -29,7 +27,6 @@ __all__ = (
 
 from typing import Final as _Final
 
-from . import theoretical
 from ._distns import l_rv
 from ._lm import (
     l_kurtosis,

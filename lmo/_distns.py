@@ -6,7 +6,7 @@ import functools
 import math
 import warnings
 from collections.abc import Callable, Mapping
-from typing import Any, Final, SupportsIndex, TypeVar, cast
+from typing import Any, ClassVar, Final, SupportsIndex, TypeVar, cast, overload
 
 import numpy as np
 import numpy.polynomial as npp
@@ -17,9 +17,24 @@ from scipy.stats.distributions import (  # type: ignore
 )
 
 from ._poly import jacobi_series, roots
-from ._utils import clean_order, clean_trim
+from ._utils import (
+    broadstack,
+    clean_order,
+    clean_orders,
+    clean_trim,
+    l_stats_orders,
+    moments_to_ratio,
+)
 from .diagnostic import l_ratio_bounds
-from .typing import AnyTrim, FloatVector, PolySeries
+from .theoretical import l_moment_from_cdf
+from .typing import (
+    AnyInt,
+    AnyTrim,
+    FloatVector,
+    IntVector,
+    PolySeries,
+    QuadOptions,
+)
 
 X = TypeVar('X', bound='l_rv')
 F = TypeVar('F', bound=np.floating[Any])
@@ -417,3 +432,579 @@ def _patch_rv_frozen(name: str, method: Callable[..., Any]):
         if p not in {'args', 'kwds'}
     } | {'self': _method_frozen.__annotations__['self']}
     setattr(rv_frozen, name, _method_frozen)
+
+
+class PatchClass:
+    patched: ClassVar[set[type[object]]] = set()
+
+    @classmethod
+    def patch(cls, base: type[object]) -> None:
+        if not isinstance(base, type):
+            msg = 'patch() argument must be a type'
+            raise TypeError(msg)
+        if base in cls.patched:
+            msg = f'{base.__qualname__} already patched'
+            raise TypeError(msg)
+
+        for name, method in cls.__dict__.items():
+            if name.startswith('_') or not callable(method):
+                continue
+            if hasattr(base, name):
+                msg = f'{base.__qualname__}.{name}() already exists'
+                raise TypeError(msg)
+            setattr(base, name, method)
+
+        cls.patched.add(base)
+
+
+class rv_generic_extra(PatchClass):  # noqa: N801
+    _get_support: Callable[..., tuple[float, float]]
+    _cdf: Callable[..., float]
+    _ppf: Callable[..., float]
+    mean: Callable[..., float]
+
+    @overload
+    def l_moment(
+        self,
+        order: AnyInt,
+        /,
+        *args: Any,
+        trim: AnyTrim = ...,
+        quad_opts: QuadOptions | None = ...,
+        **kwds: Any,
+    ) -> np.float_: ...
+
+    @overload
+    def l_moment(
+        self,
+        order: IntVector,
+        /,
+        *args: Any,
+        trim: AnyTrim = ...,
+        quad_opts: QuadOptions | None = ...,
+        **kwds: Any,
+    ) -> npt.NDArray[np.float_]: ...
+
+    def l_moment(
+        self,
+        order: AnyInt | IntVector,
+        /,
+        *args: Any,
+        trim: AnyTrim = (0, 0),
+        quad_opts: QuadOptions | None = None,
+        **kwds: Any,
+    ) -> np.float_ | npt.NDArray[np.float_]:
+        """L-moment(s) of distribution of specified order(s).
+
+        Parameters
+        ----------
+        order : array_like
+            Order(s) of L-moment(s).
+        arg1, arg2, arg3,... : float
+            The shape parameter(s) for the distribution (see docstring of the
+            instance object for more information)
+        loc : float, optional
+            location parameter (default=0)
+        scale : float, optional
+            scale parameter (default=1)
+        trim : float or tuple, optional
+            left- and right- trim (default=(0, 0))
+
+        Returns
+        -------
+        lm : ndarray or scalar
+            The calculated L-moment(s).
+
+        """  # noqa: D416
+        rs = clean_orders(np.asanyarray(order))
+
+        args, loc, scale = cast(
+            tuple[tuple[float, ...], float, float],
+            self._parse_args(*args, **kwds),  # type: ignore
+        )
+        support = self._get_support(*args)
+
+        _cdf, _ppf = self._cdf, self._ppf
+        if args:
+            def cdf(x: float, /) -> float:
+                return _cdf(x, *args)
+
+            def ppf(q: float, /):
+                return _ppf(q, *args)
+        else:
+            cdf, ppf = _cdf, _ppf
+
+        lm = np.asarray(l_moment_from_cdf(
+            cdf,
+            rs,
+            trim=trim,
+            support=support,
+            ppf=ppf,
+            quad_opts=quad_opts,
+        ))
+        lm[rs == 1] += loc
+        lm[rs > 1] *= scale
+        return lm[()]  # convert back to scalar if needed
+
+    @overload
+    def l_ratio(
+        self,
+        order: AnyInt,
+        order_denom: AnyInt | IntVector,
+        /,
+        *args: Any,
+        trim: AnyTrim = ...,
+        quad_opts: QuadOptions | None = ...,
+        **kwds: Any,
+    ) -> np.float_: ...
+
+    @overload
+    def l_ratio(
+        self,
+        order: IntVector,
+        order_denom: AnyInt | IntVector,
+        /,
+        *args: Any,
+        trim: AnyTrim = ...,
+        quad_opts: QuadOptions | None = ...,
+        **kwds: Any,
+    ) -> npt.NDArray[np.float_]: ...
+
+
+    def l_ratio(
+        self,
+        order: AnyInt | IntVector,
+        order_denom: AnyInt | IntVector,
+        /,
+        *args: Any,
+        trim: AnyTrim = (0, 0),
+        quad_opts: QuadOptions | None = None,
+        **kwds: Any,
+    ) -> np.float_ | npt.NDArray[np.float_]:
+        """L-moment ratio('s) of distribution of specified order(s).
+
+        Parameters
+        ----------
+        order : array_like
+            Order(s) of L-moment(s).
+        order_denom : array_like
+            Order(s) of L-moment denominator(s).
+        arg1, arg2, arg3,... : float
+            The shape parameter(s) for the distribution (see docstring of the
+            instance object for more information)
+        loc : float, optional
+            location parameter (default=0)
+        scale : float, optional
+            scale parameter (default=1)
+        trim : float or tuple, optional
+            left- and right- trim (default=(0, 0))
+
+        Returns
+        -------
+        tm : ndarray or scalar
+            The calculated L-moment ratio('s).
+
+        """  # noqa: D416
+        rs = broadstack(order, order_denom)
+        lms = cast(
+            npt.NDArray[np.float_],
+            self.l_moment(  # type: ignore
+                rs,
+                *args,
+                trim=trim,
+                quad_opts=quad_opts,
+                **kwds,
+            ),
+        )
+        return moments_to_ratio(rs, lms)
+
+    def l_stats(
+        self,
+        *args: Any,
+        trim: AnyTrim = (0, 0),
+        moments: int = 4,
+        quad_opts: QuadOptions | None = None,
+        **kwds: Any,
+    ) -> np.float_ | npt.NDArray[np.float_]:
+        """L-moments (order <= 2) and L-moment ratio's (order > 2).
+
+        By default, the first `num = 4` L-stats are calculated. This is
+        equivalent to `l_ratio([1, 2, 3, 4], [0, 0, 2, 2], *, **)`, i.e. the
+        L-location, L-scale, L-skew, and L-kurtosis.
+
+        Parameters
+        ----------
+        arg1, arg2, arg3,... : float
+            The shape parameter(s) for the distribution (see docstring of the
+            instance object for more information)
+        loc : float, optional
+            location parameter (default=0)
+        scale : float, optional
+            scale parameter (default=1)
+        trim : float or tuple, optional
+            left- and right- trim (default=(0, 0))
+        moments : int, optional
+            the amount of L-moment stats to compute (default=4)
+
+        Returns
+        -------
+        tm : ndarray or scalar
+            The calculated L-moment ratio('s).
+
+        """  # noqa: D416
+        r, s = l_stats_orders(moments)
+        return cast(
+            npt.NDArray[np.float_],
+            self.l_ratio(  # type: ignore
+                r,
+                s,
+                *args,
+                trim=trim,
+                quad_opts=quad_opts,
+                **kwds,
+            ),
+        )
+
+    def l_loc(
+        self,
+        *args: Any,
+        trim: AnyTrim = (0, 0),
+        **kwds: Any,
+    ) -> float:
+        """L-location of the distribution, i.e. the 1st L-moment.
+
+        Without trim (default), the L-location is equivalent to the mean.
+
+        Parameters
+        ----------
+        arg1, arg2, arg3,... : float
+            The shape parameter(s) for the distribution (see docstring of the
+            instance object for more information)
+        loc : float, optional
+            location parameter (default=0)
+        scale : float, optional
+            scale parameter (default=1)
+        trim : float or tuple, optional
+            left- and right- trim (default=(0, 0))
+
+        Returns
+        -------
+        l_loc : float
+            The L-location of the distribution.
+
+        """  # noqa: D416
+        if not any(clean_trim(trim)):
+            return self.mean(*args, **kwds)
+
+        return float(self.l_moment(1, *args, trim=trim, **kwds))
+
+    def l_scale(
+        self,
+        *args: Any,
+        trim: AnyTrim = (0, 0),
+        **kwds: Any,
+    ) -> float:
+        """L-scale of the distribution, i.e. the 2nd L-moment.
+
+        Without trim (default), the L-location is equivalent to half the Gini
+        mean (absolute) difference (GMD).
+
+        Just like the standard deviation, the L-scale is location-invariant,
+        and varies proportionally to positive scaling.
+
+        Parameters
+        ----------
+        arg1, arg2, arg3,... : float
+            The shape parameter(s) for the distribution (see docstring of the
+            instance object for more information)
+        loc : float, optional
+            location parameter (default=0)
+        scale : float, optional
+            scale parameter (default=1)
+        trim : float or tuple, optional
+            left- and right- trim (default=(0, 0))
+
+        Returns
+        -------
+        l_scale : float
+                The L-scale of the distribution.
+
+        """  # noqa: D416
+        return float(self.l_moment(2, *args, trim=trim, **kwds))
+
+    def l_skew(
+        self,
+        *args: Any,
+        trim: AnyTrim = (0, 0),
+        **kwds: Any,
+    ) -> float:
+        """L-skewness coefficient of the distribution; the 3rd L-moment ratio.
+
+        Parameters
+        ----------
+        arg1, arg2, arg3,... : float
+            The shape parameter(s) for the distribution (see docstring of the
+            instance object for more information)
+        loc : float, optional
+            location parameter (default=0)
+        scale : float, optional
+            scale parameter (default=1)
+        trim : float or tuple, optional
+            left- and right- trim (default=(0, 0))
+
+        Returns
+        -------
+        l_skew : float
+            The L-skewness coefficient of the distribution.
+
+        """  # noqa: D416
+        return float(self.l_ratio(3, 2, *args, trim=trim, **kwds))
+
+    def l_kurtosis(
+        self,
+        *args: Any,
+        trim: AnyTrim = (0, 0),
+        **kwds: Any,
+    ) -> float:
+        """L-kurtosis coefficient of the distribution; the 4th L-moment ratio.
+
+        Parameters
+        ----------
+        arg1, arg2, arg3,... : float
+            The shape parameter(s) for the distribution (see docstring of the
+            instance object for more information)
+        loc : float, optional
+            location parameter (default=0)
+        scale : float, optional
+            scale parameter (default=1)
+        trim : float or tuple, optional
+            left- and right- trim (default=(0, 0))
+
+        Returns
+        -------
+        l_kurtosis : float
+            The L-kurtosis coefficient of the distribution.
+
+        """  # noqa: D416
+        return float(self.l_ratio(4, 2, *args, trim=trim, **kwds))
+
+
+
+class rv_frozen_extra(PatchClass):  # noqa: N801
+    dist: rv_generic_extra
+    args: tuple[Any, ...]
+    kwds: Mapping[str, Any]
+
+    @overload
+    def l_moment(
+        self,
+        order: AnyInt,
+        /,
+        trim: AnyTrim = ...,
+        quad_opts: QuadOptions | None = ...,
+    ) -> np.float_: ...
+
+    @overload
+    def l_moment(
+        self,
+        order: IntVector,
+        /,
+        trim: AnyTrim = ...,
+        quad_opts: QuadOptions | None = ...,
+    ) -> npt.NDArray[np.float_]: ...
+
+    def l_moment(
+        self,
+        order: AnyInt | IntVector,
+        /,
+        trim: AnyTrim = (0, 0),
+        quad_opts: QuadOptions | None = None,
+    ) -> np.float_ | npt.NDArray[np.float_]:
+        """L-moment(s) of distribution of specified order(s).
+
+        Parameters
+        ----------
+        order : array_like
+            Order(s) of L-moment(s).
+        trim : float or tuple, optional
+            left- and right- trim (default=(0, 0))
+
+        Returns
+        -------
+        lm : ndarray or scalar
+            The calculated L-moment(s).
+
+        """  # noqa: D416
+        return self.dist.l_moment(
+            order,
+            *self.args,
+            trim=trim,
+            quad_opts=quad_opts,
+            **self.kwds,
+        )
+
+    @overload
+    def l_ratio(
+        self,
+        order: AnyInt,
+        order_denom: AnyInt | IntVector,
+        /,
+        trim: AnyTrim = ...,
+        quad_opts: QuadOptions | None = ...,
+    ) -> np.float_: ...
+
+    @overload
+    def l_ratio(
+        self,
+        order: IntVector,
+        order_denom: AnyInt | IntVector,
+        /,
+        trim: AnyTrim = ...,
+        quad_opts: QuadOptions | None = ...,
+    ) -> npt.NDArray[np.float_]: ...
+
+    def l_ratio(
+        self,
+        order: AnyInt | IntVector,
+        order_denom: AnyInt | IntVector,
+        /,
+        trim: AnyTrim = (0, 0),
+        quad_opts: QuadOptions | None = None,
+    ) -> np.float_ | npt.NDArray[np.float_]:
+        """L-moment ratio('s) of distribution of specified order(s).
+
+        Parameters
+        ----------
+        order : array_like
+            Order(s) of L-moment(s).
+        order_denom : array_like
+            Order(s) of L-moment denominator(s).
+        trim : float or tuple, optional
+            left- and right- trim (default=(0, 0))
+
+        Returns
+        -------
+        tm : ndarray or scalar
+            The calculated L-moment ratio('s).
+
+        """  # noqa: D416
+        return self.dist.l_ratio(
+            order,
+            order_denom,
+            *self.args,
+            trim=trim,
+            quad_opts=quad_opts,
+            **self.kwds,
+        )
+
+    def l_stats(
+        self,
+        trim: AnyTrim = (0, 0),
+        moments: int = 4,
+        quad_opts: QuadOptions | None = None,
+    ) -> np.float_ | npt.NDArray[np.float_]:
+        """L-moments (order <= 2) and L-moment ratio's (order > 2).
+
+        By default, the first `num = 4` L-stats are calculated. This is
+        equivalent to `l_ratio([1, 2, 3, 4], [0, 0, 2, 2], *, **)`, i.e. the
+        L-location, L-scale, L-skew, and L-kurtosis.
+
+        Parameters
+        ----------
+        trim : float or tuple, optional
+            left- and right- trim (default=(0, 0))
+        moments : int, optional
+            the amount of L-moment stats to compute (default=4)
+
+        Returns
+        -------
+        tm : ndarray or scalar
+            The calculated L-moment ratio('s).
+
+        """  # noqa: D416
+        return self.dist.l_stats(
+            *self.args,
+            trim=trim,
+            moments=moments,
+            quad_opts=quad_opts,
+            **self.kwds,
+        )
+
+    def l_loc(self, trim: AnyTrim = (0, 0)) -> float:
+        """L-location of the distribution, i.e. the 1st L-moment.
+
+        Without trim (default), the L-location is equivalent to the mean.
+
+        Parameters
+        ----------
+        trim : float or tuple, optional
+            left- and right- trim (default=(0, 0))
+
+        Returns
+        -------
+        l_loc : float
+            The L-location of the distribution.
+
+        """  # noqa: D416
+        return self.dist.l_loc(*self.args, trim=trim, **self.kwds)
+
+
+    def l_scale(self, trim: AnyTrim = (0, 0)) -> float:
+        """L-scale of the distribution, i.e. the 2nd L-moment.
+
+        Without trim (default), the L-location is equivalent to half the Gini
+        mean (absolute) difference (GMD).
+
+        Just like the standard deviation, the L-scale is location-invariant,
+        and varies proportionally to positive scaling.
+
+        Parameters
+        ----------
+        trim : float or tuple, optional
+            left- and right- trim (default=(0, 0))
+
+        Returns
+        -------
+        l_scale : float
+            The L-scale of the distribution.
+
+        """  # noqa: D416
+        return self.dist.l_scale(*self.args, trim=trim, **self.kwds)
+
+
+    def l_skew(self, trim: AnyTrim = (0, 0)) -> float:
+        """L-skewness coefficient of the distribution; the 3rd L-moment ratio.
+
+        Parameters
+        ----------
+        trim : float or tuple, optional
+            left- and right- trim (default=(0, 0))
+
+        Returns
+        -------
+        l_skew : float
+            The L-skewness coefficient of the distribution.
+
+        """  # noqa: D416
+        return self.dist.l_skew(*self.args, trim=trim, **self.kwds)
+
+
+    def l_kurtosis(self, trim: AnyTrim = (0, 0)) -> float:
+        """L-kurtosis coefficient of the distribution; the 4th L-moment ratio.
+
+        Parameters
+        ----------
+        trim : float or tuple, optional
+            left- and right- trim (default=(0, 0))
+
+        Returns
+        -------
+        l_kurtosis : float
+            The L-kurtosis coefficient of the distribution.
+
+        """  # noqa: D416
+        return self.dist.l_kurtosis(*self.args, trim=trim, **self.kwds)
+
+
+rv_generic_extra.patch(cast(type[object], rv_continuous.__base__))
+rv_frozen_extra.patch(cast(type[object], rv_frozen))
