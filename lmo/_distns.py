@@ -29,6 +29,8 @@ from .diagnostic import l_ratio_bounds
 from .theoretical import (
     l_moment_cov_from_cdf,
     l_moment_from_cdf,
+    l_moment_influence_from_cdf,
+    l_ratio_influence_from_cdf,
     l_stats_cov_from_cdf,
 )
 from .typing import (
@@ -43,6 +45,7 @@ from .typing import (
 X = TypeVar('X', bound='l_rv_nonparametric')
 F = TypeVar('F', bound=np.floating[Any])
 M = TypeVar('M', bound=Callable[..., Any])
+V = TypeVar('V', bound=float | npt.NDArray[np.float_])
 
 _F_EPS: Final[np.float_] = np.finfo(float).eps
 
@@ -429,17 +432,19 @@ class l_rv_generic(PatchClass):  # noqa: N801
     _parse_args: Callable[..., tuple[tuple[Any, ...], float, float]]
     mean: Callable[..., float]
 
-    def _get_xdf(self, *args: Any) -> tuple[
+    def _get_xdf(self, *args: Any, loc: float = 0, scale: float = 1) -> tuple[
         Callable[[float], float],
         Callable[[float], float],
     ]:
+        assert scale > 0
+
         _cdf, _ppf = self._cdf, self._ppf
-        if args:
+        if args or loc != 0 or scale != 1:
             def cdf(x: float, /) -> float:
-                return _cdf(x, *args)
+                return _cdf((x - loc) / scale, *args)
 
             def ppf(q: float, /):
-                return _ppf(q, *args)
+                return _ppf(q, *args) * scale + loc
         else:
             cdf, ppf = _cdf, _ppf
 
@@ -1042,6 +1047,194 @@ class l_rv_generic(PatchClass):  # noqa: N801
         )
         return scale**2 * cov
 
+    def l_moment_influence(
+        self,
+        r: AnyInt,
+        /,
+        *args: Any,
+        trim: AnyTrim = (0, 0),
+        quad_opts: QuadOptions | None = None,
+        tol: float = 1e-8,
+        **kwds: Any,
+    ) -> Callable[[V], V]:
+        r"""
+        Returns the influence function (IF) of an L-moment.
+
+        $$
+        \psi_{\lambda^{(s, t)}_r | F}(x)
+            = c^{(s,t)}_r
+            \, F(x)^s
+            \, \big( 1-{F}(x) \big)^t
+            \, \tilde{P}^{(s,t)}_{r-1} \big( F(x) \big)
+            \, x
+            - \lambda^{(s,t)}_r
+            \;,
+        $$
+
+        with $F$ the CDF, $\tilde{P}^{(s,t)}_{r-1}$ the shifted Jacobi
+        polynomial, and
+
+        $$
+        c^{(s,t)}_r
+            = \frac{r+s+t}{r} \frac{B(r, \, r+s+t)}{B(r+s, \, r+t)}
+            \;,
+        $$
+
+        where $B$ is the (complete) Beta function.
+
+        The proof is trivial, because population L-moments are
+        [linear functionals](https://wikipedia.org/wiki/Linear_form).
+
+        Notes:
+            The order parameter `r` is not vectorized.
+
+        Args:
+            r:
+                The L-moment order $r \in \mathbb{N}^+$..
+            *args:
+                The shape parameter(s) for the distribution (see docstring
+                of the instance object for more information)
+            trim:
+                Left- and right- trim. Can be scalar or 2-tuple of
+                non-negative int or float.
+                or floats.
+            quad_opts:
+                Optional dict of options to pass to
+                [`scipy.integrate.quad`][scipy.integrate.quad].
+            tol:
+                Values that are absolutely smaller than this will be rounded
+                to zero.
+            **kwds:
+                Additional keyword arguments to pass to the distribution.
+
+        Returns:
+            influence_function:
+                The (vectorized) influence function,
+                $\psi_{\lambda^{(s, t)}_r | F}(x)$.
+
+        See Also:
+            - [`lmo.l_rv_generic.l_moment`][lmo.l_rv_generic.l_moment]
+            - [`lmo.l_moment`][lmo.l_moment]
+
+        References:
+            - [Frank R. Hampel (1974) - The Influence Curve and its Role in
+                Robust Estimation](https://doi.org/10.2307/2285666)
+
+        """
+        lm = self.l_moment(r, *args, trim=trim, quad_opts=quad_opts, **kwds)
+
+        args, loc, scale = self._parse_args(*args, **kwds)
+        cdf = cast(
+            Callable[[npt.NDArray[np.float_]], npt.NDArray[np.float_]],
+            self._get_xdf(*args, loc=loc, scale=scale)[0],
+        )
+
+        return l_moment_influence_from_cdf(
+            cdf,
+            r,
+            trim=trim,
+            support=self._get_support(*args),
+            l_moment=lm,
+            tol=tol,
+        )
+
+    def l_ratio_influence(
+        self,
+        r: AnyInt,
+        k: AnyInt,
+        /,
+        *args: Any,
+        trim: AnyTrim = (0, 0),
+        quad_opts: QuadOptions | None = None,
+        tol: float = 1e-8,
+        **kwds: Any,
+    ) -> Callable[[V], V]:
+        r"""
+        Returns the influence function (IF) of an L-moment ratio.
+
+        $$
+        \psi_{\tau^{(s, t)}_{r,k}|F}(x) = \frac{
+            \psi_{\lambda^{(s, t)}_r|F}(x)
+            - \tau^{(s, t)}_{r,k} \, \psi_{\lambda^{(s, t)}_k|F}(x)
+        }{
+            \lambda^{(s,t)}_k
+        } \;,
+        $$
+
+        where the L-moment ratio is defined as
+
+        $$
+        \tau^{(s, t)}_{r,k} = \frac{
+            \lambda^{(s, t)}_r
+        }{
+            \lambda^{(s, t)}_k
+        } \;.
+        $$
+
+        Because IF's are a special case of the general Gâteuax derivative, the
+        L-ratio IF is derived by applying the chain rule to the
+        [L-moment IF][lmo.theoretical.l_moment_influence_from_cdf].
+
+
+        Args:
+            r:
+                L-moment ratio order, i.e. the order of the numerator L-moment.
+            k:
+                Denominator L-moment order, defaults to 2.
+            *args:
+                The shape parameter(s) for the distribution (see docstring
+                of the instance object for more information)
+            trim:
+                Left- and right- trim. Can be scalar or 2-tuple of
+                non-negative int or float.
+                or floats.
+            quad_opts:
+                Optional dict of options to pass to
+                [`scipy.integrate.quad`][scipy.integrate.quad].
+            tol:
+                Values that are absolutely smaller than this will be rounded
+                to zero.
+            **kwds:
+                Additional keyword arguments to pass to the distribution.
+
+        Returns:
+            influence_function:
+                The influence function, with vectorized signature `() -> ()`.
+
+        See Also:
+            - [`lmo.l_rv_generic.l_ratio`][lmo.l_rv_generic.l_ratio]
+            - [`lmo.l_ratio`][lmo.l_ratio]
+
+        References:
+            - [Frank R. Hampel (1974) - The Influence Curve and its Role in
+                Robust Estimation](https://doi.org/10.2307/2285666)
+
+        """
+        lmr, lmk = self.l_moment(
+            [r, k],
+            *args,
+            trim=trim,
+            quad_opts=quad_opts,
+            **kwds,
+        )
+
+        args, loc, scale = self._parse_args(*args, **kwds)
+        cdf = cast(
+            Callable[[npt.NDArray[np.float_]], npt.NDArray[np.float_]],
+            self._get_xdf(*args, loc=loc, scale=scale)[0],
+        )
+
+        return l_ratio_influence_from_cdf(
+            cdf,
+            r,
+            k,
+            trim=trim,
+            support=self._get_support(*args),
+            l_moments=(lmr, lmk),
+            quad_opts=quad_opts,
+            tol=tol,
+        )
+
 
 class l_rv_frozen(PatchClass):  # noqa: N801
     dist: l_rv_generic
@@ -1173,6 +1366,42 @@ class l_rv_frozen(PatchClass):  # noqa: N801
             moments=moments,
             trim=trim,
             quad_opts=quad_opts,
+            **self.kwds,
+        )
+
+    def l_moment_influence(
+        self,
+        r: AnyInt,
+        /,
+        trim: AnyTrim = (0, 0),
+        quad_opts: QuadOptions | None = None,
+        tol: float = 1e-8,
+    ) -> Callable[[V], V]:
+        return self.dist.l_moment_influence(
+            r,
+            *self.args,
+            trim=trim,
+            quad_opts=quad_opts,
+            tol=tol,
+            **self.kwds,
+        )
+
+    def l_ratio_influence(
+        self,
+        r: AnyInt,
+        k: AnyInt,
+        /,
+        trim: AnyTrim = (0, 0),
+        quad_opts: QuadOptions | None = None,
+        tol: float = 1e-8,
+    ) -> Callable[[V], V]:
+        return self.dist.l_ratio_influence(
+            r,
+            k,
+            *self.args,
+            trim=trim,
+            quad_opts=quad_opts,
+            tol=tol,
             **self.kwds,
         )
 

@@ -22,8 +22,8 @@ __all__ = (
     'l_stats_cov_from_cdf',
     'l_stats_cov_from_rv',
 
-    'l_moment_influence',
-    'l_ratio_influence',
+    'l_moment_influence_from_cdf',
+    'l_ratio_influence_from_cdf',
 )
 
 import functools
@@ -35,7 +35,6 @@ from typing import (
     Final,
     Literal,
     ParamSpec,
-    SupportsIndex,
     TypeAlias,
     TypeVar,
     cast,
@@ -64,6 +63,7 @@ from ._utils import (
 from .typing import AnyFloat, AnyInt, AnyTrim, IntVector, QuadOptions
 
 T = TypeVar('T')
+V = TypeVar('V', bound=float | npt.NDArray[np.float_])
 Theta = ParamSpec('Theta')
 
 Pair: TypeAlias = tuple[T, T]
@@ -1620,20 +1620,18 @@ def l_stats_cov_from_rv(
     return cov
 
 
-def l_moment_influence(
-    rv_or_cdf: (
-        UnivariateRV
-        | Callable[[npt.NDArray[np.float_]], npt.NDArray[np.float_]]
-    ),
-    r: SupportsIndex,
+def l_moment_influence_from_cdf(
+    cdf: Callable[[npt.NDArray[np.float_]], npt.NDArray[np.float_]],
+    r: AnyInt,
     /,
     trim: AnyTrim = (0, 0),
     *,
     support: Pair[float] | None = None,
+    l_moment: float | np.float_ | None = None,
     quad_opts: QuadOptions | None = None,
     alpha: float = ALPHA,
     tol: float = 1e-8,
-) -> Callable[[npt.ArrayLike], float | npt.NDArray[np.float_]]:
+) -> Callable[[V], V]:
     r"""
     Influence Function (IF) of a theoretical L-moment.
 
@@ -1666,19 +1664,19 @@ def l_moment_influence(
         The order parameter `r` is not vectorized.
 
     Args:
-        rv_or_cdf:
-            Either a [`scipy.stats`][scipy.stats] continuous distribution
-            instance, or a (vectorized) cumulative distribution function (CDF).
+        cdf: Vectorized cumulative distribution function (CDF).
         r: The L-moment order. Must be a non-negative integer.
         trim: Left- and right- trim lengths. Defaults to (0, 0).
 
     Other parameters:
         support:
-            The subinterval of the nonzero domain of `cdf`. This is ignored if
-            a `scipy.stats` distribution is used.
+            The subinterval of the nonzero domain of `cdf`.
         quad_opts:
             Optional dict of options to pass to
             [`scipy.integrate.quad`][scipy.integrate.quad].
+        l_moment:
+            The relevant L-moment to use. If not provided, it is calculated
+            from the CDF.
         alpha: Two-sided quantile to split the integral at.
         tol: Zero-roundoff absolute threshold.
 
@@ -1687,17 +1685,13 @@ def l_moment_influence(
             The influence function, with vectorized signature `() -> ()`.
 
     See Also:
-        - [`l_ratio_influence`][lmo.theoretical.l_ratio_influence]
         - [`l_moment_from_cdf`][lmo.theoretical.l_moment_from_cdf]
-        - [`l_moment_from_rv`][lmo.theoretical.l_moment_from_rv]
         - [`lmo.l_moment`][lmo.l_moment]
+
     """
-    _r = clean_order(r)
+    _r = clean_order(int(r))
     if _r == 0:
-        def influence_function(
-            x: npt.ArrayLike,
-            /,
-        ) -> float | npt.NDArray[np.float_]:
+        def influence0(x: V, /) -> V:
             """
             L-moment Influence Function for `r=0`.
 
@@ -1707,40 +1701,28 @@ def l_moment_influence(
             Returns:
                 out
             """
-            return np.asarray(x, np.float_) * 0. + .0  # :+)
+            _x = np.asanyarray(x, np.float_)[()]
+            return cast(V, _x * 0. + .0)  # :+)
 
-        return influence_function
+        return influence0
 
     s, t = clean_trim(trim)
 
-    if isinstance(rv_or_cdf, UnivariateRV):
-        lm = l_moment_from_rv(
-            rv_or_cdf,
+    if l_moment is None:
+        lm = l_moment_from_cdf(
+            cast(Callable[[float], float], cdf),
             _r,
-            trim,
+            trim=(s, t),
+            support=support,
             quad_opts=quad_opts,
             alpha=alpha,
         )
-        cdf = cast(
-            Callable[[npt.NDArray[np.float_]], npt.NDArray[np.float_]],
-            rv_or_cdf.cdf,
-        )
     else:
-        lm = l_moment_from_cdf(
-            cast(Callable[[float], float], rv_or_cdf),
-            _r,
-            trim,
-            support=support,
-            quad_opts=quad_opts,
-        )
-        cdf = rv_or_cdf
+        lm = l_moment
 
     c = _l_moment_const(_r, s, t)
 
-    def influence_function(
-        x: npt.ArrayLike,
-        /,
-    ) -> float | npt.NDArray[np.float_]:
+    def influence(x: V, /) -> V:
         _x = np.asanyarray(x, np.float_)
         q = cdf(_x)
         w = round0(c * q**s * (1 - q)**t, tol)
@@ -1748,30 +1730,28 @@ def l_moment_influence(
         # cheat a bit and replace 0 * inf by 0, ensuring convergence if s or t
         alpha = w * _eval_sh_jacobi(_r - 1, t, s, q) * np.where(w, _x, 0)
 
-        return round0(alpha - lm, tol)[()]
+        return cast(V, round0(alpha - lm, tol)[()])
 
-    influence_function.__doc__ = (
+    influence.__doc__ = (
         f'Theoretical influence function for L-moment with {r=} and {trim=}.'
     )
 
-    return influence_function
+    return influence
 
 
-def l_ratio_influence(
-    rv_or_cdf: (
-        UnivariateRV
-        | Callable[[npt.NDArray[np.float_]], npt.NDArray[np.float_]]
-    ),
-    r: SupportsIndex,
-    k: SupportsIndex = 2,
+def l_ratio_influence_from_cdf(
+    cdf: Callable[[npt.NDArray[np.float_]], npt.NDArray[np.float_]],
+    r: AnyInt,
+    k: AnyInt = 2,
     /,
     trim: AnyTrim = (0, 0),
     *,
     support: Pair[float] | None = None,
+    l_moments: Pair[float] | Pair[np.float_] | None = None,
     quad_opts: QuadOptions | None = None,
     alpha: float = ALPHA,
     tol: float = 1e-8,
-) -> Callable[[npt.ArrayLike], float | npt.NDArray[np.float_]]:
+) -> Callable[[V], V]:
     r"""
     Construct the influence function of a theoretical L-moment ratio.
 
@@ -1796,21 +1776,21 @@ def l_ratio_influence(
 
     Because IF's are a special case of the general Gâteuax derivative, the
     L-ratio IF is derived by applying the chain rule to the
-    [L-moment IF][lmo.theoretical.l_moment_influence].
+    [L-moment IF][lmo.theoretical.l_moment_influence_from_cdf].
 
 
     Args:
-        rv_or_cdf:
-            Either a [`scipy.stats`][scipy.stats] continuous distribution
-            instance, or a (vectorized) cumulative distribution function (CDF).
+        cdf: Vectorized cumulative distribution function (CDF).
         r: L-moment ratio order, i.e. the order of the numerator L-moment.
         k: Denominator L-moment order, defaults to 2.
         trim: Left- and right- trim lengths. Defaults to (0, 0).
 
     Other parameters:
         support:
-            The subinterval of the nonzero domain of `cdf`. This is ignored if
-            a `scipy.stats` distribution is used.
+            The subinterval of the nonzero domain of `cdf`.
+        l_moments:
+            The L-moments corresponding to $r$ and $k$. If not provided, they
+            are calculated from the CDF.
         quad_opts:
             Optional dict of options to pass to
             [`scipy.integrate.quad`][scipy.integrate.quad].
@@ -1822,45 +1802,53 @@ def l_ratio_influence(
             The influence function, with vectorized signature `() -> ()`.
 
     See Also:
-        - [`l_moment_influence`][lmo.theoretical.l_moment_influence]
         - [`l_ratio_from_cdf`][lmo.theoretical.l_ratio_from_cdf]
-        - [`l_ratio_from_rv`][lmo.theoretical.l_ratio_from_rv]
         - [`lmo.l_ratio`][lmo.l_ratio]
 
     """
-    _r, _k = clean_order(r), clean_order(k)
+    _r, _k = clean_order(int(r)), clean_order(int(k))
 
     kwds: dict[str, Any] = {'support': support, 'quad_opts': quad_opts}
-    if_r = l_moment_influence(rv_or_cdf, r, trim, tol=0, **kwds)
-    if_k = l_moment_influence(rv_or_cdf, k, trim, tol=0, **kwds)
 
-    if isinstance(rv_or_cdf, UnivariateRV):
-        tau_r, lambda_k = l_ratio_from_rv(
-            rv_or_cdf,
+    if l_moments is None:
+        l_r, l_k = l_moment_from_cdf(
+            cast(Callable[[float], float], cdf),
             [_r, _k],
-            [_k, 0],
             trim=trim,
-            quad_opts=quad_opts,
             alpha=alpha,
-        )
-    else:
-        tau_r, lambda_k = l_ratio_from_cdf(
-            cast(Callable[[float], float], rv_or_cdf),
-            [_r, _k],
-            [_k, 0],
-            trim=trim,
             **kwds,
         )
+    else:
+        l_r, l_k = l_moments
 
-    def influence_function(
-        x: npt.ArrayLike,
-        /,
-    ) -> float | npt.NDArray[np.float_]:
+    if_r = l_moment_influence_from_cdf(
+        cdf,
+        _r,
+        trim,
+        l_moment=l_r,
+        tol=0,
+        **kwds,
+    )
+    if_k = l_moment_influence_from_cdf(
+        cdf,
+        _k,
+        trim,
+        l_moment=l_k,
+        tol=0,
+        **kwds,
+    )
+
+    if abs(l_k) <= tol:
+        msg = f'L-ratio ({r=}, {k=}) denominator is approximately zero.'
+        raise ZeroDivisionError(msg)
+    t_r = l_r / l_k
+
+    def influence_function(x: V, /) -> V:
         psi_r = if_r(x)
         # cheat a bit to avoid `inf - inf = nan` situations
         psi_k = np.where(np.isinf(psi_r), 0, if_k(x))
 
-        return round0((psi_r - tau_r * psi_k) / lambda_k, tol=tol)
+        return cast(V, round0((psi_r - t_r * psi_k) / l_k, tol=tol)[()])
 
     influence_function.__doc__ = (
         f'Theoretical influence function for L-moment ratio with r={_r}, '

@@ -580,7 +580,7 @@ def rejection_point(
     $$
 
     with a $\epsilon$ a small positive number, corresponding to the `tol` param
-    of e.g. `lmo.theoretical.l_moment_influence`, which defaults to `1e-8`.
+    of e.g. `lmo.l_rv_generic.l_moment_influence`, which defaults to `1e-8`.
 
     Examples:
         The untrimmed L-location isn't robust, e.g. with the standard normal
@@ -589,8 +589,7 @@ def rejection_point(
         >>> import numpy as np
         >>> from scipy.stats import distributions as dists
         >>> from lmo.diagnostic import rejection_point
-        >>> from lmo.theoretical import l_moment_influence
-        >>> if_l_loc_norm = l_moment_influence(dists.norm, 1, trim=0)
+        >>> if_l_loc_norm = dists.norm.l_moment_influence(1, trim=0)
         >>> if_l_loc_norm(np.inf)
         inf
         >>> rejection_point(if_l_loc_norm)
@@ -600,8 +599,8 @@ def rejection_point(
         Student's t distribution with 4 degrees of freedom (3 also works, but
         is very slow), they exist.
 
-        >>> if_tl_loc_norm = l_moment_influence(dists.norm, 1, trim=1)
-        >>> if_tl_loc_t4 = l_moment_influence(dists.t(4), 1, trim=1)
+        >>> if_tl_loc_norm = dists.norm.l_moment_influence(1, trim=1)
+        >>> if_tl_loc_t4 = dists.t(4).l_moment_influence(1, trim=1)
         >>> if_tl_loc_norm(np.inf), if_tl_loc_t4(np.inf)
         (0.0, 0.0)
         >>> rejection_point(if_tl_loc_norm), rejection_point(if_tl_loc_t4)
@@ -629,8 +628,7 @@ def rejection_point(
         A finite or infinite scalar.
 
     See Also:
-        - [`l_moment_influence`][lmo.theoretical.l_moment_influence]
-        - [`l_ratio_influence`][lmo.theoretical.l_ratio_influence]
+        - [`l_moment_influence`][lmo.l_rv_generic.l_moment_influence]
         - [`error_sensitivity`][lmo.diagnostic.error_sensitivity]
 
     """
@@ -684,10 +682,9 @@ def error_sensitivity(
         ($\tau^{(0, 1)}_4$) coefficients:
 
         >>> from lmo.diagnostic import error_sensitivity
-        >>> from lmo.theoretical import l_ratio_influence
         >>> from scipy.stats import expon
-        >>> ll_skew_if = l_ratio_influence(expon, 3, trim=(0, 1))
-        >>> ll_kurt_if = l_ratio_influence(expon, 4, trim=(0, 1))
+        >>> ll_skew_if = expon.l_ratio_influence(3, 2, trim=(0, 1))
+        >>> ll_kurt_if = expon.l_ratio_influence(4, 2, trim=(0, 1))
         >>> error_sensitivity(ll_skew_if, domain=(0, float('inf')))
         1.814657...
         >>> error_sensitivity(ll_kurt_if, domain=(0, float('inf')))
@@ -701,8 +698,7 @@ def error_sensitivity(
         Gross-error sensitivity $\gamma^*_{T|F}$ .
 
     See Also:
-        - [`l_moment_influence`][lmo.theoretical.l_moment_influence]
-        - [`l_ratio_influence`][lmo.theoretical.l_ratio_influence]
+        - [`l_moment_influence`][lmo.l_rv_generic.l_moment_influence]
         - [`rejection_point`][lmo.diagnostic.rejection_point]
 
     """
@@ -760,10 +756,9 @@ def shift_sensitivity(
         ($\tau^{(0, 1)}_4$) coefficients:
 
         >>> from lmo.diagnostic import shift_sensitivity
-        >>> from lmo.theoretical import l_ratio_influence
         >>> from scipy.stats import expon
-        >>> ll_skew_if = l_ratio_influence(expon, 3, trim=(0, 1))
-        >>> ll_kurt_if = l_ratio_influence(expon, 4, trim=(0, 1))
+        >>> ll_skew_if = expon.l_ratio_influence(3, 2, trim=(0, 1))
+        >>> ll_kurt_if = expon.l_ratio_influence(4, 2, trim=(0, 1))
         >>> domain = 0, float('inf')
         >>> shift_sensitivity(ll_skew_if, domain)
         0.837735...
@@ -772,9 +767,9 @@ def shift_sensitivity(
 
         Let's compare these with the untrimmed ones:
 
-        >>> shift_sensitivity(l_ratio_influence(expon, 3), domain)
+        >>> shift_sensitivity(expon.l_ratio_influence(3, 2), domain)
         1.920317...
-        >>> shift_sensitivity(l_ratio_influence(expon, 4), domain)
+        >>> shift_sensitivity(expon.l_ratio_influence(4, 2), domain)
         1.047565...
 
     Args:
@@ -785,8 +780,7 @@ def shift_sensitivity(
         Local-shift sensitivity $\lambda^*_{T|F}$ .
 
     See Also:
-        - [`l_moment_influence`][lmo.theoretical.l_moment_influence]
-        - [`l_ratio_influence`][lmo.theoretical.l_ratio_influence]
+        - [`l_moment_influence`][lmo.l_rv_generic.l_moment_influence]
         - [`error_sensitivity`][lmo.diagnostic.error_sensitivity]
 
     References:
