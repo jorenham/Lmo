@@ -1235,6 +1235,46 @@ class l_rv_generic(PatchClass):  # noqa: N801
             tol=tol,
         )
 
+    def fit_l_loc_scale(
+        self,
+        data: npt.ArrayLike,
+        *args: Any,
+        trim: AnyTrim = (0, 0),
+    ) -> tuple[float, float]:
+        """
+        Estimate loc and scale parameters from data using 1st and 2nd
+        L-moments.
+
+        Args:
+            data:
+                Data to fit.
+            *args:
+                The shape parameter(s) for the distribution (see docstring of
+                the instance object for more information).
+            trim:
+                Left- and right- trim. Can be scalar or 2-tuple of
+                non-negative int or float.
+                or floats.
+
+        Returns:
+            loc_hat: Estimated location parameter for the data.
+            scale_hat: Estimated scale paramter for the data.
+
+        """
+        l1, l2 = self.l_moment([1, 2], *args, trim=trim)
+
+        from ._lm import l_moment
+        l1_hat, l2_hat = l_moment(data, [1, 2], trim=clean_trim(trim))
+
+        scale_hat = l2_hat / l2
+        with np.errstate(invalid='ignore'):
+            loc_hat = l1_hat - scale_hat * l1
+        if not np.isfinite(loc_hat):
+            loc_hat = 0
+        if not (np.isfinite(scale_hat) and scale_hat > 0):
+            scale_hat = 1
+        return loc_hat, scale_hat
+
 
 class l_rv_frozen(PatchClass):  # noqa: N801
     dist: l_rv_generic
