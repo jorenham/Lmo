@@ -1884,7 +1884,7 @@ def _rv_l_moment(  # type: ignore
     *args: float,
     trim: AnyTrim = (0, 0),
     **kwds: float,
-) -> float | npt.NDArray[np.float_]:
+) -> np.float_ | npt.NDArray[np.float_]:
     """L-moment(s) of distribution of specified order(s).
 
     Parameters
@@ -1927,7 +1927,48 @@ def _rv_l_moment(  # type: ignore
     else:
         cdf, ppf = _cdf, _ppf
 
-    lm = l_moment_from_cdf(cdf, rs, trim, support=support, ppf=ppf)
+    lm = np.asarray(l_moment_from_cdf(cdf, rs, trim, support=support, ppf=ppf))
     lm[rs == 1] += loc
     lm[rs > 1] *= scale
     return lm[()]  # convert back to scalar if needed
+
+
+@rv_method('l_ratio')
+def _rv_l_ratio(  # type: ignore
+    self: rv_continuous | rv_discrete,
+    order: AnyInt | IntVector,
+    order_denom: AnyInt | IntVector,
+    *args: float,
+    trim: AnyTrim = (0, 0),
+    **kwds: float,
+) -> np.float_ | npt.NDArray[np.float_]:
+    """L-moment ratio('s) of distribution of specified order(s).
+
+    Parameters
+    ----------
+    order : array_like
+        Order(s) of L-moment(s).
+    order_denom : array_like
+        Order(s) of L-moment denominator(s).
+    arg1, arg2, arg3,... : float
+        The shape parameter(s) for the distribution (see docstring of the
+        instance object for more information)
+    loc : float, optional
+        location parameter (default=0)
+    scale : float, optional
+        scale parameter (default=1)
+    trim : float or tuple, optional
+        left- and right- trim (default=(0, 0))
+
+    Returns
+    -------
+    tm : ndarray or scalar
+        The calculated L-moment ratio('s).
+
+    """  # noqa: D416
+    rs = _stack_orders(order, order_denom)
+    lms = cast(
+        npt.NDArray[np.float_],
+        self.l_moment(rs, *args, trim=trim, **kwds),  # type: ignore
+    )
+    return moments_to_ratio(rs, lms)

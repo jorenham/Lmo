@@ -1,6 +1,6 @@
 # pyright: reportIncompatibleMethodOverride=false
 
-__all__ = ('l_rv', 'patch_rv', 'rv_method')
+__all__ = ('l_rv', 'rv_method')
 
 import functools
 import math
@@ -23,12 +23,7 @@ from .typing import AnyTrim, FloatVector, PolySeries
 
 X = TypeVar('X', bound='l_rv')
 F = TypeVar('F', bound=np.floating[Any])
-
 M = TypeVar('M', bound=Callable[..., Any])
-
-_BREADCRUMB = 'Tickle me!'
-_RV_METHODS: Final[dict[str, Callable[..., Any]]] = {}
-
 
 _F_EPS: Final[np.float_] = np.finfo(float).eps
 
@@ -386,74 +381,39 @@ def rv_method(name: str, /):
     assert not any(
         hasattr(rv, name) for rv in (rv_continuous.__base__, rv_frozen)
     ), f'rv method {name} already exists'
-    if hasattr(rv_continuous, '__lmo__'):
-        warnings.warn(
-            f"{name!r} not added to the scipy.stats rv's; already patched",
-            ImportWarning,
-            stacklevel=2,
-        )
 
     def _rv_method(fn: M, /) -> M:
-        _RV_METHODS[name] = fn
+        _patch_rv_generic(name, fn)
+        _patch_rv_frozen(name, fn)
         return fn
+
     return _rv_method
 
 
-def _patch_rv_generic() -> bool:
+def _patch_rv_generic(name: str, method: Callable[..., Any]):
     rv_generic = rv_continuous.__base__
     assert rv_generic.__name__ == 'rv_generic', rv_generic.__name__
 
-    if hasattr(rv_generic, '__lmo__'):
-        # already patched
-        return False
-
-    for name, method in _RV_METHODS.items():
-        assert not hasattr(rv_generic, name), f'rv_generic.{name}() exists'
-
-        method.__qualname__ = f'rv_generic.{name}'
-        setattr(rv_generic, name, method)
-
-    rv_generic.__lmo__ = _BREADCRUMB  # type: ignore
-    return True
+    method.__name__ = name
+    method.__qualname__ = f'rv_generic.{name}'
+    setattr(rv_generic, name, method)
 
 
 # pyright: reportUnknownMemberType=false
-def _patch_rv_frozen() -> bool:
-    if hasattr(rv_frozen, '__lmo__'):
-        # already patched
-        return False
-
-    for name, method in _RV_METHODS.items():
-        assert not hasattr(rv_frozen, name), f'rv_frozen.{name}() exists'
-
-        def _method_frozen(self: rv_frozen, *args: Any, **kwds: Any):
-            return getattr(self.dist, name)(  # type: ignore
-                *args,
-                *self.args,
-                **kwds,
-                **self.kwds,
-            )
-
-        _method_frozen.__name__ = name
-        _method_frozen.__qualname__ = f'rv_frozen.{name}'
-        _method_frozen.__doc__ = method.__doc__
-        _method_frozen.__annotations__ = {
-            p: s for p, s in method.__annotations__.items()
-            if p not in {'args', 'kwds'}
-        } | {'self': _method_frozen.__annotations__['self']}
-        setattr(rv_frozen, name, _method_frozen)
-
-    rv_frozen.__lmo__ = _BREADCRUMB  # type: ignore
-    return True
-
-
-def patch_rv():
-    if not _RV_METHODS:
-        warnings.warn(
-            'failed to patch scipy.stats distributions',
-            ImportWarning,
-            stacklevel=1,
+def _patch_rv_frozen(name: str, method: Callable[..., Any]):
+    def _method_frozen(self: rv_frozen, *args: Any, **kwds: Any):
+        return getattr(self.dist, name)(  # type: ignore
+            *args,
+            *self.args,
+            **kwds,
+            **self.kwds,
         )
 
-    _patch_rv_generic()
-    _patch_rv_frozen()
+    _method_frozen.__name__ = name
+    _method_frozen.__qualname__ = f'rv_frozen.{name}'
+    _method_frozen.__doc__ = method.__doc__
+    _method_frozen.__annotations__ = {
+        p: s for p, s in method.__annotations__.items()
+        if p not in {'args', 'kwds'}
+    } | {'self': _method_frozen.__annotations__['self']}
+    setattr(rv_frozen, name, _method_frozen)
