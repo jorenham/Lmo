@@ -22,12 +22,17 @@ __all__ = (
     'l_corr',
     'l_coskew',
     'l_cokurtosis',
-    'l_sample_rv',
+
+    'l_rv_nonparametric',
+    'l_rv_generic',
 )
 
 from typing import Final as _Final
 
-from ._distns import l_sample_rv
+from ._distns import (
+    l_rv_generic,
+    l_rv_nonparametric,
+)
 from ._lm import (
     l_kurtosis,
     l_loc,

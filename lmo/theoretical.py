@@ -774,6 +774,8 @@ def l_moment_from_rv(
             L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
 
     See Also:
+        - [`rv.generic.l_moment`][lmo.l_rv_generic.l_moment]:
+          method of `scipy.stats` distributions.
         - [`l_moment_from_cdf`][lmo.theoretical.l_moment_from_cdf]:
           population L-moment, using the cumulative distribution function.
         - [`l_moment_from_ppf`][lmo.theoretical.l_moment_from_ppf]:
