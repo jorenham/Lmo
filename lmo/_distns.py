@@ -1,6 +1,6 @@
 # pyright: reportIncompatibleMethodOverride=false
 
-__all__ = ('l_sample_rv', 'rv_method')
+__all__ = ('l_sample_rv', 'rv_generic_extra', 'rv_frozen_extra')
 
 import functools
 import math
@@ -387,52 +387,6 @@ class l_sample_rv(rv_continuous):  # noqa: N801
         )
 
         return cls(l_r, trim=_trim, a=a, b=b)
-
-
-def rv_method(name: str, /):
-    """
-    Internal decorator that enqueues a method to be added to all
-    `scipy` distributions.
-    """
-    assert not any(
-        hasattr(rv, name) for rv in (rv_continuous.__base__, rv_frozen)
-    ), f'rv method {name} already exists'
-
-    def _rv_method(fn: M, /) -> M:
-        _patch_rv_generic(name, fn)
-        _patch_rv_frozen(name, fn)
-        return fn
-
-    return _rv_method
-
-
-def _patch_rv_generic(name: str, method: Callable[..., Any]):
-    rv_generic = rv_continuous.__base__
-    assert rv_generic.__name__ == 'rv_generic', rv_generic.__name__
-
-    method.__name__ = name
-    method.__qualname__ = f'rv_generic.{name}'
-    setattr(rv_generic, name, method)
-
-
-# pyright: reportUnknownMemberType=false
-def _patch_rv_frozen(name: str, method: Callable[..., Any]):
-    def _method_frozen(self: rv_frozen, *args: Any, **kwds: Any):
-        return getattr(self.dist, name)(  # type: ignore
-            *args,
-            *self.args,
-            **kwds,
-            **self.kwds,
-        )
-
-    _method_frozen.__name__ = name
-    _method_frozen.__qualname__ = f'rv_frozen.{name}'
-    _method_frozen.__doc__ = method.__doc__
-    _method_frozen.__annotations__ = {
-        p: s for p, s in method.__annotations__.items()
-        if p not in {'args', 'kwds'}
-    } | {'self': _method_frozen.__annotations__['self']}
-    setattr(rv_frozen, name, _method_frozen)
 
 
 class PatchClass:
