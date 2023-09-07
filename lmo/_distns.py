@@ -794,7 +794,6 @@ class l_rv_generic(PatchClass):  # noqa: N801
         return float(self.l_ratio(4, 2, *args, trim=trim, **kwds))
 
 
-
 class l_rv_frozen(PatchClass):  # noqa: N801
     dist: l_rv_generic
     args: tuple[Any, ...]
@@ -825,21 +824,6 @@ class l_rv_frozen(PatchClass):  # noqa: N801
         trim: AnyTrim = (0, 0),
         quad_opts: QuadOptions | None = None,
     ) -> np.float_ | npt.NDArray[np.float_]:
-        """L-moment(s) of distribution of specified order(s).
-
-        Parameters
-        ----------
-        order : array_like
-            Order(s) of L-moment(s).
-        trim : float or tuple, optional
-            left- and right- trim (default=(0, 0))
-
-        Returns
-        -------
-        lm : ndarray or scalar
-            The calculated L-moment(s).
-
-        """  # noqa: D416
         return self.dist.l_moment(
             order,
             *self.args,
@@ -876,23 +860,6 @@ class l_rv_frozen(PatchClass):  # noqa: N801
         trim: AnyTrim = (0, 0),
         quad_opts: QuadOptions | None = None,
     ) -> np.float_ | npt.NDArray[np.float_]:
-        """L-moment ratio('s) of distribution of specified order(s).
-
-        Parameters
-        ----------
-        order : array_like
-            Order(s) of L-moment(s).
-        order_denom : array_like
-            Order(s) of L-moment denominator(s).
-        trim : float or tuple, optional
-            left- and right- trim (default=(0, 0))
-
-        Returns
-        -------
-        tm : ndarray or scalar
-            The calculated L-moment ratio('s).
-
-        """  # noqa: D416
         return self.dist.l_ratio(
             order,
             order_denom,
@@ -908,25 +875,6 @@ class l_rv_frozen(PatchClass):  # noqa: N801
         moments: int = 4,
         quad_opts: QuadOptions | None = None,
     ) -> np.float_ | npt.NDArray[np.float_]:
-        """L-moments (order <= 2) and L-moment ratio's (order > 2).
-
-        By default, the first `num = 4` L-stats are calculated. This is
-        equivalent to `l_ratio([1, 2, 3, 4], [0, 0, 2, 2], *, **)`, i.e. the
-        L-location, L-scale, L-skew, and L-kurtosis.
-
-        Parameters
-        ----------
-        trim : float or tuple, optional
-            left- and right- trim (default=(0, 0))
-        moments : int, optional
-            the amount of L-moment stats to compute (default=4)
-
-        Returns
-        -------
-        tm : ndarray or scalar
-            The calculated L-moment ratio('s).
-
-        """  # noqa: D416
         return self.dist.l_stats(
             *self.args,
             trim=trim,
@@ -936,78 +884,18 @@ class l_rv_frozen(PatchClass):  # noqa: N801
         )
 
     def l_loc(self, trim: AnyTrim = (0, 0)) -> float:
-        """L-location of the distribution, i.e. the 1st L-moment.
-
-        Without trim (default), the L-location is equivalent to the mean.
-
-        Parameters
-        ----------
-        trim : float or tuple, optional
-            left- and right- trim (default=(0, 0))
-
-        Returns
-        -------
-        l_loc : float
-            The L-location of the distribution.
-
-        """  # noqa: D416
         return self.dist.l_loc(*self.args, trim=trim, **self.kwds)
 
 
     def l_scale(self, trim: AnyTrim = (0, 0)) -> float:
-        """L-scale of the distribution, i.e. the 2nd L-moment.
-
-        Without trim (default), the L-location is equivalent to half the Gini
-        mean (absolute) difference (GMD).
-
-        Just like the standard deviation, the L-scale is location-invariant,
-        and varies proportionally to positive scaling.
-
-        Parameters
-        ----------
-        trim : float or tuple, optional
-            left- and right- trim (default=(0, 0))
-
-        Returns
-        -------
-        l_scale : float
-            The L-scale of the distribution.
-
-        """  # noqa: D416
         return self.dist.l_scale(*self.args, trim=trim, **self.kwds)
 
 
     def l_skew(self, trim: AnyTrim = (0, 0)) -> float:
-        """L-skewness coefficient of the distribution; the 3rd L-moment ratio.
-
-        Parameters
-        ----------
-        trim : float or tuple, optional
-            left- and right- trim (default=(0, 0))
-
-        Returns
-        -------
-        l_skew : float
-            The L-skewness coefficient of the distribution.
-
-        """  # noqa: D416
         return self.dist.l_skew(*self.args, trim=trim, **self.kwds)
 
 
     def l_kurtosis(self, trim: AnyTrim = (0, 0)) -> float:
-        """L-kurtosis coefficient of the distribution; the 4th L-moment ratio.
-
-        Parameters
-        ----------
-        trim : float or tuple, optional
-            left- and right- trim (default=(0, 0))
-
-        Returns
-        -------
-        l_kurtosis : float
-            The L-kurtosis coefficient of the distribution.
-
-        """  # noqa: D416
         return self.dist.l_kurtosis(*self.args, trim=trim, **self.kwds)
 
 
