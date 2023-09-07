@@ -2041,3 +2041,146 @@ def _rv_l_stats(  # type: ignore
             **kwds,
         ),
     )
+
+
+@rv_method('l_loc')
+def _rv_l_loc(  # type: ignore
+    self: rv_continuous | rv_discrete,
+    *args: float,
+    trim: AnyTrim = (0, 0),
+    **kwds: float,
+) -> float:
+    """L-location of the distribution, i.e. the 1st L-moment.
+
+    Without trim (default), the L-location is equivalent to the mean.
+
+    Parameters
+    ----------
+    arg1, arg2, arg3,... : float
+        The shape parameter(s) for the distribution (see docstring of the
+        instance object for more information)
+    loc : float, optional
+        location parameter (default=0)
+    scale : float, optional
+        scale parameter (default=1)
+    trim : float or tuple, optional
+        left- and right- trim (default=(0, 0))
+
+    Returns
+    -------
+    l_loc : float
+        The L-location of the distribution.
+
+    """  # noqa: D416
+    if not any(clean_trim(trim)):
+        return cast(float, self.mean(*args, **kwds))
+
+    return cast(
+        float,
+        self.l_moment(1, *args, trim=trim, **kwds),  # type: ignore
+    )
+
+
+@rv_method('l_scale')
+def _rv_l_scale(  # type: ignore
+    self: rv_continuous | rv_discrete,
+    *args: float,
+    trim: AnyTrim = (0, 0),
+    **kwds: float,
+) -> float:
+    """L-scale of the distribution, i.e. the 2nd L-moment.
+
+    Without trim (default), the L-location is equivalent to half the Gini
+    mean (absolute) difference (GMD).
+
+    Just like the standard deviation, the L-scale is location-invariant, and
+    varies proportionally to positive scaling.
+
+    Parameters
+    ----------
+    arg1, arg2, arg3,... : float
+        The shape parameter(s) for the distribution (see docstring of the
+        instance object for more information)
+    loc : float, optional
+        location parameter (default=0)
+    scale : float, optional
+        scale parameter (default=1)
+    trim : float or tuple, optional
+        left- and right- trim (default=(0, 0))
+
+    Returns
+    -------
+    l_scale : float
+            The L-scale of the distribution.
+
+    """  # noqa: D416
+    return cast(
+        float,
+        self.l_moment(2, *args, trim=trim, **kwds),  # type: ignore
+    )
+
+
+@rv_method('l_skew')
+def _rv_l_skew(  # type: ignore
+    self: rv_continuous | rv_discrete,
+    *args: float,
+    trim: AnyTrim = (0, 0),
+    **kwds: float,
+) -> float:
+    """L-skewness coefficient of the distribution; the 3rd L-moment ratio.
+
+    Parameters
+    ----------
+    arg1, arg2, arg3,... : float
+        The shape parameter(s) for the distribution (see docstring of the
+        instance object for more information)
+    loc : float, optional
+        location parameter (default=0)
+    scale : float, optional
+        scale parameter (default=1)
+    trim : float or tuple, optional
+        left- and right- trim (default=(0, 0))
+
+    Returns
+    -------
+    l_skew : float
+        The L-skewness coefficient of the distribution.
+
+    """  # noqa: D416
+    return cast(
+        float,
+        self.l_ratio(3, 2, *args, trim=trim, **kwds),  # type: ignore
+    )
+
+
+@rv_method('l_kurtosis')
+def _rv_l_kurtosis(  # type: ignore
+    self: rv_continuous | rv_discrete,
+    *args: float,
+    trim: AnyTrim = (0, 0),
+    **kwds: float,
+) -> float:
+    """L-kurtosis coefficient of the distribution; the 4th L-moment ratio.
+
+    Parameters
+    ----------
+    arg1, arg2, arg3,... : float
+        The shape parameter(s) for the distribution (see docstring of the
+        instance object for more information)
+    loc : float, optional
+        location parameter (default=0)
+    scale : float, optional
+        scale parameter (default=1)
+    trim : float or tuple, optional
+        left- and right- trim (default=(0, 0))
+
+    Returns
+    -------
+    l_kurtosis : float
+        The L-kurtosis coefficient of the distribution.
+
+    """  # noqa: D416
+    return cast(
+        float,
+        self.l_ratio(4, 2, *args, trim=trim, **kwds),  # type: ignore
+    )
