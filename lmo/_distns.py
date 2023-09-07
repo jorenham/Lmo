@@ -185,7 +185,7 @@ class l_sample_rv(rv_continuous):  # noqa: N801
         # empirical support
         self._a0, self._b0 = (q0, q1) = ppf(np.array([0, 1]))
         if q0 >= q1:
-            msg = 'invalid l_rv: ppf(0) >= ppf(1)'
+            msg = 'invalid l_sample_rv: ppf(0) >= ppf(1)'
             raise ArithmeticError(msg)
 
         kwargs.setdefault('momtype', 1)
@@ -342,7 +342,8 @@ class l_sample_rv(rv_continuous):  # noqa: N801
         trim: AnyTrim = (0, 0),
     ) -> 'l_sample_rv':
         r"""
-        Estimate L-moment from the samples, and return a new `l_rv` instance.
+        Estimate L-moment from the samples, and return a new `l_sample_rv`
+        instance.
 
         Args:
             data:
@@ -356,7 +357,7 @@ class l_sample_rv(rv_continuous):  # noqa: N801
                 to the provided `l_moments`.
 
         Returns:
-            A fitted [`l_rv`][lmo.l_rv] instance.
+            A fitted [`l_sample_rv`][lmo.l_sample_rv] instance.
 
         Todo:
             - Optimal `rmax` selection (the error appears to be periodic..?)
