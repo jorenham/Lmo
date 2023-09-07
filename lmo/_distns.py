@@ -430,7 +430,7 @@ def _patch_rv_frozen() -> bool:
             return getattr(self.dist, name)(  # type: ignore
                 *args,
                 *self.args,
-                *kwds,
+                **kwds,
                 **self.kwds,
             )
 
