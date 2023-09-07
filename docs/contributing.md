@@ -31,6 +31,7 @@ following 1337 shellscript (keep in mind that the CI runs this on all supported
 Python versions):
 
 ```bash
+poetry run codespell check lmo
 poetry run ruff check lmo
 poetry run pyright
 poetry run py.test
