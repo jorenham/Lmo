@@ -1881,6 +1881,7 @@ Methods to be added to `scipy.stats.rv_generic` and `scipy.stats.rv_frozen`.
 def _rv_l_moment(  # type: ignore
     self: rv_continuous | rv_discrete,
     order: AnyInt | IntVector,
+    /,
     *args: float,
     trim: AnyTrim = (0, 0),
     **kwds: float,
@@ -1938,6 +1939,7 @@ def _rv_l_ratio(  # type: ignore
     self: rv_continuous | rv_discrete,
     order: AnyInt | IntVector,
     order_denom: AnyInt | IntVector,
+    /,
     *args: float,
     trim: AnyTrim = (0, 0),
     **kwds: float,
@@ -1972,3 +1974,44 @@ def _rv_l_ratio(  # type: ignore
         self.l_moment(rs, *args, trim=trim, **kwds),  # type: ignore
     )
     return moments_to_ratio(rs, lms)
+
+
+@rv_method('l_stats')
+def _rv_l_stats(  # type: ignore
+    self: rv_continuous | rv_discrete,
+    *args: float,
+    trim: AnyTrim = (0, 0),
+    moments: int = 4,
+    **kwds: float,
+) -> np.float_ | npt.NDArray[np.float_]:
+    """L-moments (order <= 2) and L-moment ratio's (order > 2).
+
+    By default, the first `num = 4` L-stats are calculated. This is
+    equivalent to `l_ratio([1, 2, 3, 4], [0, 0, 2, 2], *, **)`, i.e. the
+    L-location, L-scale, L-skew, and L-kurtosis.
+
+    Parameters
+    ----------
+    arg1, arg2, arg3,... : float
+        The shape parameter(s) for the distribution (see docstring of the
+        instance object for more information)
+    loc : float, optional
+        location parameter (default=0)
+    scale : float, optional
+        scale parameter (default=1)
+    trim : float or tuple, optional
+        left- and right- trim (default=(0, 0))
+    moments : int, optional
+        the amount of L-moment stats to compute (default=4)
+
+    Returns
+    -------
+    tm : ndarray or scalar
+        The calculated L-moment ratio('s).
+
+    """  # noqa: D416
+    r, s = l_stats_orders(moments)
+    return cast(
+        npt.NDArray[np.float_],
+        self.l_ratio(r, s, *args, trim=trim, **kwds),  # type: ignore
+    )
