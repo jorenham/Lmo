@@ -1,6 +1,6 @@
 # pyright: reportIncompatibleMethodOverride=false
 
-__all__ = ('l_rv', 'rv_method')
+__all__ = ('l_sample_rv', 'rv_method')
 
 import functools
 import math
@@ -36,7 +36,7 @@ from .typing import (
     QuadOptions,
 )
 
-X = TypeVar('X', bound='l_rv')
+X = TypeVar('X', bound='l_sample_rv')
 F = TypeVar('F', bound=np.floating[Any])
 M = TypeVar('M', bound=Callable[..., Any])
 
@@ -85,7 +85,7 @@ def _ppf_poly_series(
     )
 
 
-class l_rv(rv_continuous):  # noqa: N801
+class l_sample_rv(rv_continuous):  # noqa: N801
     r"""
     Estimate a distribution using the given L-moments.
     See [`scipy.stats.rv_continuous`][scipy.stats.rv_continuous] for the
@@ -340,7 +340,7 @@ class l_rv(rv_continuous):  # noqa: N801
         /,
         rmax: SupportsIndex | None = None,
         trim: AnyTrim = (0, 0),
-    ) -> 'l_rv':
+    ) -> 'l_sample_rv':
         r"""
         Estimate L-moment from the samples, and return a new `l_rv` instance.
 
