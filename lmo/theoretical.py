@@ -73,6 +73,7 @@ UnivariatePPF: TypeAlias = Callable[[float], float]
 UnivariateRV: TypeAlias = rv_continuous | rv_discrete | rv_frozen
 
 ALPHA: Final[float] = 0.1
+QUAD_LIMIT: Final[int] = 100
 
 
 def _nquad(
@@ -485,6 +486,7 @@ def l_moment_from_cdf(
     b, c = (ppf(alpha), ppf(1 - alpha)) if ppf else (a, d)
 
     kwds = quad_opts or {}
+    kwds.setdefault('limit', QUAD_LIMIT)
 
     def _l_moment_single(_r: int) -> float:
         if _r == 0:
@@ -647,6 +649,7 @@ def l_moment_from_ppf(
         return p**s * (1 - p) ** t * _eval_sh_jacobi(_r - 1, t, s, p) * ppf(p)
 
     quad_kwds = quad_opts or {}
+    quad_kwds.setdefault('limit', QUAD_LIMIT)
 
     def _l_moment_single(_r: int) -> float:
         if _r == 0:
@@ -1041,7 +1044,7 @@ def l_ratio_from_rv(
         >>> X = distributions.poisson(2)
         >>> X.std() / X.mean()
         0.7071067...
-        >>> l_ratio_from_rv(X, 2, 1, quad_opts={'limit': 100})
+        >>> l_ratio_from_rv(X, 2, 1)
         0.3857527...
         >>> l_ratio_from_rv(X, 2, 1, trim=(0, 1))
         0.4097538...
@@ -1884,6 +1887,7 @@ def _rv_l_moment(  # type: ignore
     /,
     *args: float,
     trim: AnyTrim = (0, 0),
+    quad_opts: QuadOptions | None = None,
     **kwds: float,
 ) -> np.float_ | npt.NDArray[np.float_]:
     """L-moment(s) of distribution of specified order(s).
@@ -1928,7 +1932,14 @@ def _rv_l_moment(  # type: ignore
     else:
         cdf, ppf = _cdf, _ppf
 
-    lm = np.asarray(l_moment_from_cdf(cdf, rs, trim, support=support, ppf=ppf))
+    lm = np.asarray(l_moment_from_cdf(
+        cdf,
+        rs,
+        trim=trim,
+        support=support,
+        ppf=ppf,
+        quad_opts=quad_opts,
+    ))
     lm[rs == 1] += loc
     lm[rs > 1] *= scale
     return lm[()]  # convert back to scalar if needed
@@ -1942,6 +1953,7 @@ def _rv_l_ratio(  # type: ignore
     /,
     *args: float,
     trim: AnyTrim = (0, 0),
+    quad_opts: QuadOptions | None = None,
     **kwds: float,
 ) -> np.float_ | npt.NDArray[np.float_]:
     """L-moment ratio('s) of distribution of specified order(s).
@@ -1971,7 +1983,13 @@ def _rv_l_ratio(  # type: ignore
     rs = _stack_orders(order, order_denom)
     lms = cast(
         npt.NDArray[np.float_],
-        self.l_moment(rs, *args, trim=trim, **kwds),  # type: ignore
+        self.l_moment(  # type: ignore
+            rs,
+            *args,
+            trim=trim,
+            quad_opts=quad_opts,
+            **kwds,
+        ),
     )
     return moments_to_ratio(rs, lms)
 
@@ -1982,6 +2000,7 @@ def _rv_l_stats(  # type: ignore
     *args: float,
     trim: AnyTrim = (0, 0),
     moments: int = 4,
+    quad_opts: QuadOptions | None = None,
     **kwds: float,
 ) -> np.float_ | npt.NDArray[np.float_]:
     """L-moments (order <= 2) and L-moment ratio's (order > 2).
@@ -2013,5 +2032,12 @@ def _rv_l_stats(  # type: ignore
     r, s = l_stats_orders(moments)
     return cast(
         npt.NDArray[np.float_],
-        self.l_ratio(r, s, *args, trim=trim, **kwds),  # type: ignore
+        self.l_ratio(  # type: ignore
+            r,
+            s,
+            *args,
+            trim=trim,
+            quad_opts=quad_opts,
+            **kwds,
+        ),
     )
