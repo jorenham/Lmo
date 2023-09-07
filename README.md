@@ -28,14 +28,15 @@ probability distribution, and are more robust and efficient.
 The "L" stands for Linear; it is a linear combination of order statistics.
 So Lmo is as fast as sorting your samples (in terms of time-complexity).
 
-## Key Features:
 
-- Calculates trimmed L-moments and L-*co*moments, from data or a distribution
-  function.
+## Key Features
+
+- Calculates trimmed L-moments and L-*co*moments, from samples or a
+  `scipy.stats` distribution.
 - Complete support for trimmed L-moment (TL-moments): 
   `lmo.l_moment(..., trim=(1 / 137, 3.1416))`.
 - Fast estimation of L-*co*moment matrices from your multidimensional data.
-- A fully non-parametric `scipy.stats`-like distribution, `lmo.l_rv`.
+- A fully non-parametric distribution: `lmo.l_rv_nonparametric`.  
   It's very efficient, robust, fast, and requires only some L-mo's!
 - Exact (co)variance structure of the sample- and population L-moments.
 - Complete [docs](https://jorenham.github.io/lmo/), including overly 
@@ -50,25 +51,25 @@ So Lmo is as fast as sorting your samples (in terms of time-complexity).
 
 Even if your data is pathological like 
 [Cauchy](https://wikipedia.org/wiki/Cauchy_distribution), and the L-moments 
-are not defined, the trimmed L-moments (TL-moments) can be used instead:
+are not defined, the trimmed L-moments (TL-moments) can be used instead.
+Let's calculate the TL-location and TL-scale of a small amount of samples:
 
 ```pycon
 >>> import numpy as np
 >>> import lmo
 >>> rng = np.random.default_rng(1980)
 >>> x = rng.standard_cauchy(96)  # pickle me, Lmo
->>> x.mean(), x.std()  # don't try this at home
-(-1.7113440959133905, 19.573507308373326)
->>> lmo.l_loc(x, trim=(1, 1)), lmo.l_scale(x, (1, 1)) 
-(-0.17937038148581977, 0.6828766469913776)
+>>> lmo.l_moment(x, [1, 2], trim=(1, 1)).
+array([-0.17937038,  0.68287665])
 ```
 
-For reference; the theoretical TL-location and TL-scale of the standard 
-Cauchy distribution are $\lambda^{(1, 1)}_{1} = 0$ and 
-$\lambda^{(1, 1)}_2 \approx 0.7$ 
-([Elamir & Seheult, 2003](https://doi.org/10.1016/S0167-9473(02)00250-5)).
+Now compare with the theoretical standard Cauchy TL-moments:
 
-
+```pycon
+>>> from scipy.stats import cauchy
+>>> cauchy.l_moment([1, 2], trim=(1, 1))
+array([0.        , 0.69782723])
+```
 
 ---
 
@@ -76,16 +77,14 @@ See the [documentation](https://jorenham.github.io/lmo/) for more examples and
 the API reference.
 
 
-## Roadmap:
+## Roadmap
 
-- Add methods to all `scipy.stats` univariate distributions, for finding 
-  the theoretical/population L-mo's.
 - Robust distribution fitting, using the (generalized) method of L-moments.
-- A generic goodness-of-fit test.
 - Automatic trim-length selection.
 - Plotting utilities (deps optional), e.g. for L-moment ratio diagrams.
 - Extended multivariate support, e.g. theoretical L-comoments, and 
   L-regression.
+
 
 ## Installation
 
@@ -94,7 +93,6 @@ Lmo is on [PyPI](https://pypi.org/project/lmo/), so you can do something like:
 ```shell
 pip install lmo
 ```
-
 
 ## Dependencies
 
