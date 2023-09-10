@@ -8,6 +8,7 @@ See Also:
 """
 
 __all__ = (
+    'eval_sh_jacobi',
     'jacobi',
     'jacobi_series',
     'roots',
@@ -16,7 +17,7 @@ __all__ = (
     'maxima',
 )
 
-from typing import Any, TypeVar, cast
+from typing import Any, TypeVar, cast, overload
 
 import numpy as np
 import numpy.polynomial as npp
@@ -26,6 +27,78 @@ import scipy.special as scs  # type: ignore
 from .typing import FloatVector, PolySeries
 
 P = TypeVar('P', bound=PolySeries)
+
+
+@overload
+def eval_sh_jacobi(n: int, a: float, b: float, x: float) -> float:
+    ...
+
+
+@overload
+def eval_sh_jacobi(
+    n: int,
+    a: float,
+    b: float,
+    x: npt.NDArray[np.float_],
+) -> npt.NDArray[np.float_]:
+    ...
+
+
+def eval_sh_jacobi(
+    n: int,
+    a: float,
+    b: float,
+    x: float | npt.NDArray[np.float_],
+) -> float | npt.NDArray[np.float_]:
+    """
+    Fast evaluation of the n-th shifted Jacobi polynomial.
+    Faster than pre-computing using np.Polynomial, and than
+    `scipy.special.eval_jacobi` for n < 4.
+    """
+    if n == 0:
+        return 1
+
+    u = 2 * x - 1
+
+    if a == b == 0:
+        if n == 1:
+            return u
+
+        v = x * (x - 1)
+
+        if n == 2:
+            return 1 + 6 * v
+        if n == 3:
+            return (1 + 10 * v) * u
+        if n == 4:
+            return 1 + 10 * v * (2 + 7 * v)
+
+        return scs.eval_sh_legendre(n, x)  # type: ignore
+
+    if n == 1:
+        return (a + b + 2) * x - b - 1
+    if n == 2:
+        return (
+            b * (b + 3)
+            - (a + b + 3) * (
+                2 * b + 4
+                - (a + b + 4) * x
+            ) * x
+        ) / 2 + 1
+    if n == 3:
+        return (
+            (1 + a) * (2 + a) * (3 + a)
+            + (4 + a + b) * (
+                3 * (2 + a) * (3 + a)
+                + (5 + a + b) * (
+                    3 * (3 + a)
+                    + (6 + a + b) * (x - 1)
+                ) * (x - 1)
+            ) * (x - 1)
+        ) / 6
+
+    # don't use `eval_sh_jacobi`: https://github.com/scipy/scipy/issues/18988
+    return scs.eval_jacobi(n, a, b, u)  # type: ignore
 
 
 def _jacobi_coefs(n: int, a: float, b: float) -> npt.NDArray[np.float_]:
