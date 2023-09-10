@@ -28,7 +28,7 @@ __all__ = (
 
 import functools
 from collections.abc import Callable, Sequence
-from math import exp, factorial, gamma, isfinite, lgamma
+from math import exp, factorial, gamma, lgamma
 from typing import (
     Any,
     Concatenate,
