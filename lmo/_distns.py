@@ -1359,7 +1359,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
 
         Returns:
             loc_hat: Estimated location parameter for the data.
-            scale_hat: Estimated scale paramter for the data.
+            scale_hat: Estimated scale parameter for the data.
 
         """
         l1, l2 = self.l_moment([1, 2], *args, trim=trim)
