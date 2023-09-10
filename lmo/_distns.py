@@ -1282,8 +1282,39 @@ class l_rv_generic(PatchClass):  # noqa: N801
     ) -> tuple[float, ...]:
         """
         Return estimates of shape (if applicable), location, and scale
-        parameters from data. The estimation method is Method of
-        L-Moments (LMM).
+        parameters from data, using Method of L-Moments (LMM).
+
+        Examples:
+            Fitting of the generalized extreme value (GEV) distribution with
+            MLE (maximum likelihood estimation, which is used by default in
+            `.fit`) vs LMM with different degrees of trimming.
+
+            >>> from scipy.stats import genextreme
+            >>> c, loc, scale = -0.5, 0, 1
+            >>> data = genextreme(c, loc, scale).rvs(1000, random_state=12345)
+            >>> genextreme.fit(data)
+            (-0.4670..., 0.0294..., 1.0241...)
+            >>> genextreme.fit_l(data)
+            (-0.4474..., 0.0857..., 1.0363...)
+            >>> genextreme.fit_l(data, trim=(0, 1))
+            (-0.4830..., 0.0226..., 1.0171...)
+            >>> genextreme.fit_l(data, trim=(0, 2))
+            (-0.4860..., 0.0160..., 1.0169...)
+
+        Args:
+            data:
+                Data to fit.
+            *args:
+                The shape parameter(s) for the distribution (see docstring of
+                the instance object for more information).
+            trim:
+                Left- and right- trim. Can be scalar or 2-tuple of
+                non-negative int or float.
+
+        Returns:
+            Tuple of floats with estimates of the shape parameters (if
+            applicable), followed by those for location and scale.
+
         """
         _x = np.sort(data, kind='stable')
         _trim = clean_trim(trim)
