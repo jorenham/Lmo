@@ -11,6 +11,7 @@ from typing import Any, ClassVar, Final, SupportsIndex, TypeVar, cast, overload
 import numpy as np
 import numpy.polynomial as npp
 import numpy.typing as npt
+from scipy.optimize import minimize  # type: ignore
 from scipy.stats.distributions import (  # type: ignore
     rv_continuous,
     rv_frozen,
@@ -428,9 +429,17 @@ class l_rv_generic(PatchClass):  # noqa: N801
 
     _cdf: Callable[..., float]
     _ppf: Callable[..., float]
+    _argcheck: Callable[..., int]
+    _fitstart: Callable[..., tuple[float, ...]]
     _get_support: Callable[..., tuple[float, float]]
     _parse_args: Callable[..., tuple[tuple[Any, ...], float, float]]
+    _unpack_loc_scale: Callable[
+        [npt.ArrayLike],
+        tuple[float, float, tuple[float, ...]],
+    ]
+    fit: Callable[..., tuple[float, ...]]
     mean: Callable[..., float]
+    numargs: int
 
     def _get_xdf(self, *args: Any, loc: float = 0, scale: float = 1) -> tuple[
         Callable[[float], float],
@@ -1235,6 +1244,68 @@ class l_rv_generic(PatchClass):  # noqa: N801
             tol=tol,
         )
 
+    def _l_moment_error(
+        self,
+        theta: npt.NDArray[np.float_],
+        trim: tuple[float, float],
+        l_data: npt.NDArray[np.float_],
+    ) -> float:
+        loc, scale, args = self._unpack_loc_scale(theta)
+        if scale <= 0 or not self._argcheck(*args):
+            return np.inf
+
+        l_dist = self.l_moment(
+            np.arange(1, len(l_data) + 1),
+            *args,
+            loc=loc,
+            scale=scale,
+            trim=trim,
+        )
+        if np.any(np.isnan(l_dist)):
+            msg = (
+                'Method of L-moments encountered a non-finite distribution '
+                'L-moment and cannot continue.'
+            )
+            raise ValueError(msg)
+
+
+        return (
+            ((l_data - l_dist) / np.maximum(np.abs(l_data), 1e-8))**2
+        ).sum()
+
+
+    def fit_l(
+        self,
+        data: npt.ArrayLike,
+        *args: float,
+        trim: AnyTrim = (0, 0),
+    ) -> tuple[float, ...]:
+        """
+        Return estimates of shape (if applicable), location, and scale
+        parameters from data. The estimation method is Method of
+        L-Moments (LMM).
+        """
+        _x = np.sort(data, kind='stable')
+        _trim = clean_trim(trim)
+
+        from ._lm import l_moment
+
+        l_data = l_moment(_x, np.arange(self.numargs + 2) + 1, trim=_trim)
+
+        theta0 = args or self._fitstart(_x)[:-2]
+        theta0 = theta0 + self.fit_l_loc_scale(_x, *theta0, trim=_trim)
+
+        theta = cast(
+            npt.NDArray[np.float_],
+            minimize(
+                self._l_moment_error,
+                theta0,
+                (_trim, l_data),
+            ).x,  # type: ignore
+        )
+
+        return tuple(theta)
+
     def fit_l_loc_scale(
         self,
         data: npt.ArrayLike,
@@ -1254,7 +1325,6 @@ class l_rv_generic(PatchClass):  # noqa: N801
             trim:
                 Left- and right- trim. Can be scalar or 2-tuple of
                 non-negative int or float.
-                or floats.
 
         Returns:
             loc_hat: Estimated location parameter for the data.
@@ -1269,10 +1339,12 @@ class l_rv_generic(PatchClass):  # noqa: N801
         scale_hat = l2_hat / l2
         with np.errstate(invalid='ignore'):
             loc_hat = l1_hat - scale_hat * l1
+
         if not np.isfinite(loc_hat):
             loc_hat = 0
         if not (np.isfinite(scale_hat) and scale_hat > 0):
             scale_hat = 1
+
         return loc_hat, scale_hat
 
 
