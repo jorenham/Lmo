@@ -1102,9 +1102,16 @@ def l_moment_influence(
         _x = np.asarray(x)
 
         # ECDF
-        k = np.maximum(np.searchsorted(x_k, _x, side='right') - 1, 0)
+        # k = np.maximum(np.searchsorted(x_k, _x, side='right') - 1, 0)
+        w = cast(V, np.interp(
+            _x,
+            x_k,
+            w_k,
+            left=0 if s else w_k[0],
+            right=0 if t else w_k[-1],
+        ))
 
-        alpha = n * w_k[k] * _x
+        alpha = n * w * np.where(w, _x, 0)
         return cast(V, round0(alpha - l_r, tol=tol)[()])
 
     influence_function.__doc__ = (
