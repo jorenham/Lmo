@@ -28,7 +28,7 @@ __all__ = (
 
 import functools
 from collections.abc import Callable, Sequence
-from math import exp, factorial, gamma, lgamma
+from math import exp, factorial, gamma, isfinite, lgamma
 from typing import (
     Any,
     Concatenate,
@@ -479,6 +479,9 @@ def l_moment_from_cdf(
     a, d = support or _tighten_cdf_support(cdf, support)
     b, c = (ppf(alpha), ppf(1 - alpha)) if ppf else (a, d)
 
+    loc0 = a if np.isfinite(a) and a > 0 else 0
+
+
     kwds = quad_opts or {}
     kwds.setdefault('limit', QUAD_LIMIT)
 
@@ -491,7 +494,7 @@ def l_moment_from_cdf(
             (sci.quad(integrand, a, b, (_r,), **kwds)[0] if a < b else 0) +
             sci.quad(integrand, b, c, (_r,), **kwds)[0] +
             (sci.quad(integrand, c, d, (_r,), **kwds)[0] if c < d else 0),
-        )
+        ) + loc0 * (_r == 1)
 
     l_r_cache: dict[int, float] = {}
     l_r = np.empty_like(rs, dtype=np.float_)
