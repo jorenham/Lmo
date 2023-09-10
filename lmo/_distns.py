@@ -1295,7 +1295,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
 
         Notes:
             The implementation mimics that of
-            `rv_generic.fit(..., method='MM')`.
+            [`fit(method='MM')`][scipy.stats.rv_continuous.fit]
 
         Examples:
             Fitting of the generalized extreme value (GEV) distribution with
@@ -1365,6 +1365,10 @@ class l_rv_generic(PatchClass):  # noqa: N801
         """
         Estimate loc and scale parameters from data using 1st and 2nd
         L-moments.
+
+        Notes:
+            The implementation mimics that of
+            [`fit_loc_scale()`][scipy.stats.rv_continuous.fit_loc_scale]
 
         Args:
             data:
