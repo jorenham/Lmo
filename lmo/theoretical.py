@@ -1701,11 +1701,16 @@ def l_moment_influence_from_cdf(
     else:
         lm = l_moment
 
+    a, b = support or _tighten_cdf_support(cast(UnivariateCDF, cdf), support)
     c = _l_moment_const(_r, s, t)
 
     def influence(x: V, /) -> V:
         _x = np.asanyarray(x, np.float_)
-        q = cdf(_x)
+        q = np.piecewise(
+            _x,
+            [_x <= a, (_x > a) & (_x < b), _x >= b],
+            [0, cdf, 1],
+        )
         w = round0(c * q**s * (1 - q)**t, tol)
 
         # cheat a bit and replace 0 * inf by 0, ensuring convergence if s or t
