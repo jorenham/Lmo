@@ -2,35 +2,44 @@
 
 __all__ = (
     'l_weights',
-    'l_moment',
-    'l_moment_cov',
-    'l_ratio',
-    'l_ratio_se',
-    'l_stats',
-    'l_stats_se',
+
     'l_loc',
     'l_scale',
     'l_variation',
     'l_skew',
     'l_kurtosis',
+
+    'l_moment',
+    'l_ratio',
+    'l_stats',
+
+    'l_moment_cov',
+    'l_ratio_se',
+    'l_stats_se',
+
+    'l_moment_influence',
 )
 
 import sys
-from typing import Any, Final, TypeVar, cast, overload
+from collections.abc import Callable
+from typing import Any, Final, SupportsIndex, TypeVar, cast, overload
 
 import numpy as np
 import numpy.typing as npt
 
 from . import ostats, pwm_beta
+from ._poly import eval_sh_jacobi
 from ._utils import (
     clean_order,
+    clean_trim,
     ensure_axis_at,
     l_stats_orders,
     moments_to_ratio,
     ordered,
+    plotting_positions,
 )
 from .linalg import ir_pascal, sandwich, sh_legendre, trim_matrix
-from .typing import AnyInt, IntVector, LMomentOptions, SortKind
+from .typing import AnyInt, AnyTrim, IntVector, LMomentOptions, SortKind
 
 if sys.version_info < (3, 11):
     from typing_extensions import Unpack
@@ -38,6 +47,7 @@ else:
     from typing import Unpack
 
 T = TypeVar('T', bound=np.floating[Any])
+V = TypeVar('V', bound=float | npt.NDArray[np.floating[Any]])
 
 
 # Low-level weight methods
@@ -1045,3 +1055,70 @@ def l_stats_se(
     """
     r, s = l_stats_orders(num)
     return l_ratio_se(a, r, s, trim=trim, axis=axis, dtype=dtype, **kwargs)
+
+
+def l_moment_influence(
+    a: npt.ArrayLike,
+    r: SupportsIndex,
+    /,
+    trim: AnyTrim = (0, 0),
+    *,
+    sort: SortKind | None = 'stable',
+    gamma: float = -0.35,
+    delta: float = .0,
+) -> Callable[[V], V]:
+    r"""
+    Empirical Influence Function (EIF) of a sample L-moment.
+
+    Notes:
+        This function is not vectorized.
+
+    Args:
+        a:
+            1-D array-like containing observed samples.
+        r:
+            L-moment order. Must be a non-negative integer.
+        trim:
+            Left- and right- trim. Can be scalar or 2-tuple of
+            non-negative int or float.
+        sort ('quick' | 'stable' | 'heap'):
+            Sorting algorithm, see [`numpy.sort`][numpy.sort].
+        gamma:
+            Plotting-position parameter $\gamma > -1$.
+        delta:
+            Plotting-position parameter $\delta > \gamma$.
+
+    Returns:
+        empirical_influence_function:
+            The (vectorized) empirical influence function.
+
+    """
+    _r = clean_order(r)
+    s, t = clean_trim(trim)
+
+    x_k = np.sort(a, kind=sort)
+    n = len(x_k)
+
+    # "plug-in" L-moment estimate (biased, but the resulting EIF isn't)
+    p_k = plotting_positions(n, gamma=gamma, delta=delta)
+    l_r = np.mean(
+        p_k**s * (1 - p_k)**t * eval_sh_jacobi(_r - 1, t, s, p_k) * x_k,
+    )
+
+    def influence(x: V, /) -> V:
+        _x = np.asarray(x)
+
+        p = np.interp(_x, x_k, p_k)
+        p[x < x_k[0]] = 0
+        p[x > x_k[-1]] = 1
+
+        alpha = cast(
+            V,
+            p**s * (1 - p)**t * eval_sh_jacobi(_r - 1, t, s, p) * _x,
+        )
+        return cast(V, alpha - l_r)
+
+    influence.__doc__ = (
+        f'Empirical L-moment influence function for {r=}, {trim=}, and {n=}.'
+    )
+    return influence

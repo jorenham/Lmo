@@ -2,26 +2,33 @@
 __all__ = (
     '__version__',
 
-    'l_weights',
-    'l_moment',
-    'l_moment_cov',
-    'l_ratio',
-    'l_ratio_se',
-    'l_stats',
-    'l_stats_se',
     'l_loc',
     'l_scale',
     'l_variation',
     'l_skew',
     'l_kurtosis',
-    'l_comoment',
-    'l_coratio',
-    'l_costats',
+
+    'l_moment',
+    'l_ratio',
+    'l_stats',
+
+    'l_moment_cov',
+    'l_ratio_se',
+    'l_stats_se',
+
+    'l_moment_influence',
+
+    'l_weights',
+
     'l_coloc',
     'l_coscale',
     'l_corr',
     'l_coskew',
     'l_cokurtosis',
+
+    'l_comoment',
+    'l_coratio',
+    'l_costats',
 
     'l_rv_nonparametric',
     'l_rv_generic',
@@ -38,6 +45,7 @@ from ._lm import (
     l_loc,
     l_moment,
     l_moment_cov,
+    l_moment_influence,
     l_ratio,
     l_ratio_se,
     l_scale,
