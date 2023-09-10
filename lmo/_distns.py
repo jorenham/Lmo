@@ -6,12 +6,20 @@ import functools
 import math
 import warnings
 from collections.abc import Callable, Mapping
-from typing import Any, ClassVar, Final, SupportsIndex, TypeVar, cast, overload
+from typing import (
+    Any,
+    ClassVar,
+    Final,
+    SupportsIndex,
+    TypeVar,
+    cast,
+    overload,
+)
 
 import numpy as np
 import numpy.polynomial as npp
 import numpy.typing as npt
-from scipy.optimize import minimize  # type: ignore
+from scipy.optimize import OptimizeResult, minimize  # type: ignore
 from scipy.stats.distributions import (  # type: ignore
     rv_continuous,
     rv_frozen,
@@ -1279,10 +1287,15 @@ class l_rv_generic(PatchClass):  # noqa: N801
         data: npt.ArrayLike,
         *args: float,
         trim: AnyTrim = (0, 0),
+        optimizer: str | Callable[..., OptimizeResult] = 'Nelder-Mead',
     ) -> tuple[float, ...]:
         """
         Return estimates of shape (if applicable), location, and scale
         parameters from data, using Method of L-Moments (LMM).
+
+        Notes:
+            The implementation mimics that of
+            `rv_generic.fit(..., method='MM')`.
 
         Examples:
             Fitting of the generalized extreme value (GEV) distribution with
@@ -1310,6 +1323,11 @@ class l_rv_generic(PatchClass):  # noqa: N801
             trim:
                 Left- and right- trim. Can be scalar or 2-tuple of
                 non-negative int or float.
+            optimizer:
+                See the `method` parameter in
+                [`scipy.optimize.minimize`][scipy.optimize.minimize]. Defaults
+                to `'Nelder-Mead'`. Note that other methods (e.g.`'BFGS'`
+                or `'SLSQP'`) can be a lot faster, but may not be as accurate.
 
         Returns:
             Tuple of floats with estimates of the shape parameters (if
@@ -1332,6 +1350,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
                 self._l_moment_error,
                 theta0,
                 (_trim, l_data),
+                method=optimizer,
             ).x,  # type: ignore
         )
 
