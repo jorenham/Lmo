@@ -6,11 +6,20 @@ import functools
 import math
 import warnings
 from collections.abc import Callable, Mapping
-from typing import Any, ClassVar, Final, SupportsIndex, TypeVar, cast, overload
+from typing import (
+    Any,
+    ClassVar,
+    Final,
+    SupportsIndex,
+    TypeVar,
+    cast,
+    overload,
+)
 
 import numpy as np
 import numpy.polynomial as npp
 import numpy.typing as npt
+from scipy.optimize import OptimizeResult, minimize  # type: ignore
 from scipy.stats.distributions import (  # type: ignore
     rv_continuous,
     rv_frozen,
@@ -428,9 +437,17 @@ class l_rv_generic(PatchClass):  # noqa: N801
 
     _cdf: Callable[..., float]
     _ppf: Callable[..., float]
+    _argcheck: Callable[..., int]
+    _fitstart: Callable[..., tuple[float, ...]]
     _get_support: Callable[..., tuple[float, float]]
     _parse_args: Callable[..., tuple[tuple[Any, ...], float, float]]
+    _unpack_loc_scale: Callable[
+        [npt.ArrayLike],
+        tuple[float, float, tuple[float, ...]],
+    ]
+    fit: Callable[..., tuple[float, ...]]
     mean: Callable[..., float]
+    numargs: int
 
     def _get_xdf(self, *args: Any, loc: float = 0, scale: float = 1) -> tuple[
         Callable[[float], float],
@@ -1234,6 +1251,155 @@ class l_rv_generic(PatchClass):  # noqa: N801
             quad_opts=quad_opts,
             tol=tol,
         )
+
+    def _l_moment_error(
+        self,
+        theta: npt.NDArray[np.float_],
+        trim: tuple[float, float],
+        l_data: npt.NDArray[np.float_],
+    ) -> float:
+        loc, scale, args = self._unpack_loc_scale(theta)
+        if scale <= 0 or not self._argcheck(*args):
+            return np.inf
+
+        l_dist = self.l_moment(
+            np.arange(1, len(l_data) + 1),
+            *args,
+            loc=loc,
+            scale=scale,
+            trim=trim,
+        )
+        if np.any(np.isnan(l_dist)):
+            msg = (
+                'Method of L-moments encountered a non-finite distribution '
+                'L-moment and cannot continue.'
+            )
+            raise ValueError(msg)
+
+
+        return (
+            ((l_data - l_dist) / np.maximum(np.abs(l_data), 1e-8))**2
+        ).sum()
+
+
+    def fit_l(
+        self,
+        data: npt.ArrayLike,
+        *args: float,
+        trim: AnyTrim = (0, 0),
+        optimizer: str | Callable[..., OptimizeResult] = 'Nelder-Mead',
+    ) -> tuple[float, ...]:
+        """
+        Return estimates of shape (if applicable), location, and scale
+        parameters from data, using Method of L-Moments (LMM).
+
+        Notes:
+            The implementation mimics that of
+            [`fit(method='MM')`][scipy.stats.rv_continuous.fit]
+
+        Examples:
+            Fitting of the generalized extreme value (GEV) distribution with
+            MLE (maximum likelihood estimation, which is used by default in
+            `.fit`) vs LMM with different degrees of trimming.
+
+            >>> from scipy.stats import genextreme
+            >>> c, loc, scale = -0.5, 0, 1
+            >>> data = genextreme(c, loc, scale).rvs(1000, random_state=12345)
+            >>> genextreme.fit(data)
+            (-0.4670..., 0.0294..., 1.0241...)
+            >>> genextreme.fit_l(data)
+            (-0.447..., 0.085..., 1.036...)
+            >>> genextreme.fit_l(data, trim=(0, 1))
+            (-0.483..., 0.022..., 1.017...)
+            >>> genextreme.fit_l(data, trim=(0, 2))
+            (-0.486..., 0.016..., 1.016...)
+
+        Args:
+            data:
+                Data to fit.
+            *args:
+                The shape parameter(s) for the distribution (see docstring of
+                the instance object for more information).
+            trim:
+                Left- and right- trim. Can be scalar or 2-tuple of
+                non-negative int or float.
+            optimizer:
+                See the `method` parameter in
+                [`scipy.optimize.minimize`][scipy.optimize.minimize]. Defaults
+                to `'Nelder-Mead'`. Note that other methods (e.g.`'BFGS'`
+                or `'SLSQP'`) can be a lot faster, but may not be as accurate.
+
+        Returns:
+            Tuple of floats with estimates of the shape parameters (if
+            applicable), followed by those for location and scale.
+
+        """
+        _x = np.sort(data, kind='stable')
+        _trim = clean_trim(trim)
+
+        from ._lm import l_moment
+
+        l_data = l_moment(_x, np.arange(self.numargs + 2) + 1, trim=_trim)
+
+        theta0 = args or self._fitstart(_x)[:-2]
+        theta0 = theta0 + self.fit_l_loc_scale(_x, *theta0, trim=_trim)
+
+        theta = cast(
+            npt.NDArray[np.float_],
+            minimize(
+                self._l_moment_error,
+                theta0,
+                (_trim, l_data),
+                method=optimizer,
+            ).x,  # type: ignore
+        )
+
+        return tuple(theta)
+
+    def fit_l_loc_scale(
+        self,
+        data: npt.ArrayLike,
+        *args: Any,
+        trim: AnyTrim = (0, 0),
+    ) -> tuple[float, float]:
+        """
+        Estimate loc and scale parameters from data using 1st and 2nd
+        L-moments.
+
+        Notes:
+            The implementation mimics that of
+            [`fit_loc_scale()`][scipy.stats.rv_continuous.fit_loc_scale]
+
+        Args:
+            data:
+                Data to fit.
+            *args:
+                The shape parameter(s) for the distribution (see docstring of
+                the instance object for more information).
+            trim:
+                Left- and right- trim. Can be scalar or 2-tuple of
+                non-negative int or float.
+
+        Returns:
+            loc_hat: Estimated location parameter for the data.
+            scale_hat: Estimated scale parameter for the data.
+
+        """
+        l1, l2 = self.l_moment([1, 2], *args, trim=trim)
+
+        from ._lm import l_moment
+        l1_hat, l2_hat = l_moment(data, [1, 2], trim=clean_trim(trim))
+
+        scale_hat = l2_hat / l2
+        with np.errstate(invalid='ignore'):
+            loc_hat = l1_hat - scale_hat * l1
+
+        if not np.isfinite(loc_hat):
+            loc_hat = 0
+        if not (np.isfinite(scale_hat) and scale_hat > 0):
+            scale_hat = 1
+
+        return loc_hat, scale_hat
 
 
 class l_rv_frozen(PatchClass):  # noqa: N801

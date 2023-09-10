@@ -58,6 +58,7 @@ from ._utils import (
     clean_trim,
     l_stats_orders,
     moments_to_ratio,
+    moments_to_stats_cov,
     round0,
 )
 from .typing import AnyFloat, AnyInt, AnyTrim, IntVector, QuadOptions
@@ -478,6 +479,9 @@ def l_moment_from_cdf(
     a, d = support or _tighten_cdf_support(cdf, support)
     b, c = (ppf(alpha), ppf(1 - alpha)) if ppf else (a, d)
 
+    loc0 = a if np.isfinite(a) and a > 0 else 0
+
+
     kwds = quad_opts or {}
     kwds.setdefault('limit', QUAD_LIMIT)
 
@@ -490,7 +494,7 @@ def l_moment_from_cdf(
             (sci.quad(integrand, a, b, (_r,), **kwds)[0] if a < b else 0) +
             sci.quad(integrand, b, c, (_r,), **kwds)[0] +
             (sci.quad(integrand, c, d, (_r,), **kwds)[0] if c < d else 0),
-        )
+        ) + loc0 * (_r == 1)
 
     l_r_cache: dict[int, float] = {}
     l_r = np.empty_like(rs, dtype=np.float_)
@@ -1522,41 +1526,18 @@ def l_stats_cov_from_cdf(
     if rs <= 2:
         return ll_kr
 
-    l_r0 = l_moment_from_cdf(
+    l_2r = l_moment_from_cdf(
         cdf,
         np.arange(2, rs + 1),
-        trim,
+        trim=trim,
         support=support,
         quad_opts=quad_opts,
         alpha=alpha,
         ppf=ppf,
     )
+    t_0r = np.r_[1, 0, l_2r] / l_2r[0]
 
-    l_2 = l_r0[0]
-    assert l_2 > 0, l_2
-
-    t_r = np.r_[np.nan, l_r0 / l_2]
-
-    cov = np.empty_like(ll_kr)
-    for k, r in zip(*np.triu_indices(rs), strict=True):
-        assert k <= r, (k, r)
-        assert ll_kr[k, r] == ll_kr[r, k]
-
-        if r <= 1:
-            tt = ll_kr[k, r]
-        elif k <= 1:
-            tt = (ll_kr[k, r] - ll_kr[1, k] * t_r[r]) / l_2
-        else:
-            tt = (
-                ll_kr[k, r]
-                - ll_kr[1, k] * t_r[r]
-                - ll_kr[1, r] * t_r[k]
-                + ll_kr[1, 1] * t_r[k] * t_r[r]
-            ) / l_2**2
-
-        cov[k, r] = cov[r, k] = tt
-
-    return round0(cov)
+    return round0(moments_to_stats_cov(t_0r, ll_kr))
 
 
 def l_stats_cov_from_rv(

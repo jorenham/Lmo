@@ -35,6 +35,7 @@ So Lmo is as fast as sorting your samples (in terms of time-complexity).
   `scipy.stats` distribution.
 - Full support for trimmed L-moment (TL-moments), e.g.
   `lmo.l_moment(..., trim=(1/137, 3.1416))`.
+- Method of L-moments for robust distribution fitting.
 - Fast estimation of L-*co*moment matrices from your multidimensional data.
 - Goodness-of-fit test, using L-moment or L-moment ratio's.
 - Non-parametric estimation of continuous distributions 
@@ -81,7 +82,6 @@ the API reference.
 
 ## Roadmap
 
-- Robust distribution fitting, using the (generalized) method of L-moments.
 - Automatic trim-length selection.
 - Plotting utilities (deps optional), e.g. for L-moment ratio diagrams.
 - Extended multivariate support, e.g. theoretical L-comoments, and 
