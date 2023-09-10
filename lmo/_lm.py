@@ -449,80 +449,6 @@ def l_moment(
     return cast(npt.NDArray[T] | T, l_r.take(_r, 0))
 
 
-def l_moment_cov(
-    a: npt.ArrayLike,
-    r_max: AnyInt,
-    /,
-    trim: tuple[int, int] = (0, 0),
-    *,
-    axis: int | None = None,
-    dtype: np.dtype[T] | type[T] = np.float_,
-    **kwargs: Unpack[LMomentOptions],
-) -> npt.NDArray[T]:
-    """
-    Non-parmateric auto-covariance matrix of the generalized trimmed
-    L-moment point estimates with orders `r = 1, ..., r_max`.
-
-    Returns:
-        S_l: Variance-covariance matrix/tensor of shape `(r_max, r_max, ...)`
-
-    Examples:
-        Fitting of the cauchy distribution with TL-moments. The location is
-        equal to the TL-location, and scale should be $0.698$ times the
-        TL(1)-scale, see Elamir & Seheult (2003).
-
-        >>> import lmo, numpy as np
-        >>> rng = np.random.default_rng(12345)
-        >>> x = rng.standard_cauchy(1337)
-        >>> lmo.l_moment(x, [1, 2], trim=(1, 1))
-        array([0.08142405, 0.68884917])
-
-        The L-moment estimates seem to make sense. Let's check their standard
-        errors, by taking the square root of the variances (the diagonal of the
-        covariance matrix):
-
-        >>> lmo.l_moment_cov(x, 2, trim=(1, 1))
-        array([[ 4.89407076e-03, -4.26419310e-05],
-               [-4.26419310e-05,  1.30898414e-03]])
-        >>> np.sqrt(_.diagonal())
-        array([0.06995764, 0.03617989])
-
-    See Also:
-        - [`lmo.l_moment`][lmo.l_moment]
-        - [Covariance matrix - Wikipedia](
-            https://wikipedia.org/wiki/Covariance_matrix)
-
-    References:
-        - [E. Elamir & A. Seheult (2003) - Trimmed L-moments](
-            https://doi.org/10.1016/S0167-9473(02)00250-5)
-        - [E. Elamir & A. Seheult (2004) - Exact variance structure of sample
-            L-moments](https://doi.org/10.1016/S0378-3758(03)00213-1)
-
-    Todo:
-        - Use the direct (Jacobi) method from Hosking (2015).
-    """
-    if any(int(t) != t for t in trim):
-        msg = 'l_moment_cov does not support fractional trimming (yet)'
-        raise TypeError(msg)
-
-    ks = int(r_max + sum(trim))
-    if ks < r_max:
-        msg = 'trimmings must be positive'
-        raise ValueError(msg)
-
-    # projection matrix: PWMs -> generalized trimmed L-moments
-    p_l: npt.NDArray[np.floating[Any]]
-    p_l = trim_matrix(int(r_max), trim=trim, dtype=dtype) @ sh_legendre(ks)
-    # clean some numerical noise
-    # p_l = np.round(p_l, 12) + 0.
-
-    # PWM covariance matrix
-    s_b = pwm_beta.cov(a, ks, axis=axis, dtype=dtype, **kwargs)
-
-    # tasty, eh?
-    return sandwich(p_l, s_b, dtype=dtype)
-
-
 @overload
 def l_ratio(
     a: npt.ArrayLike,
@@ -702,77 +628,6 @@ def l_ratio(
     return moments_to_ratio(rs, l_rs)
 
 
-def l_ratio_se(
-    a: npt.ArrayLike,
-    r: AnyInt | IntVector,
-    s: AnyInt | IntVector,
-    /,
-    trim: tuple[int, int] = (0, 0),
-    *,
-    axis: int | None = None,
-    dtype: np.dtype[T] | type[T] = np.float_,
-    **kwargs: Unpack[LMomentOptions],
-) -> npt.NDArray[T]:
-    """
-    Non-parametric estimates of the Standard Error (SE) in the L-ratio
-    estimates from [`lmo.l_ratio`][lmo.l_ratio].
-
-    Examples:
-        Estimate the values and errors of the TL-loc, scale, skew and kurtosis
-        for Cauchy-distributed samples. The theoretical values are
-        `[0.0, 0.698, 0.0, 0.343]` (Elamir & Seheult, 2003), respectively.
-
-        >>> import lmo, numpy as np
-        >>> rng = np.random.default_rng(12345)
-        >>> x = rng.standard_cauchy(42)
-        >>> lmo.l_ratio(x, [1, 2, 3, 4], [0, 0, 2, 2], trim=(1, 1))
-        array([-0.25830513,  0.61738638, -0.03069701,  0.25550176])
-        >>> lmo.l_ratio_se(x, [1, 2, 3, 4], [0, 0, 2, 2], trim=(1, 1))
-        array([0.32857302, 0.12896501, 0.13835403, 0.07188138])
-
-    See Also:
-        - [`lmo.l_ratio`][lmo.l_ratio]
-        - [`lmo.l_moment_cov`][lmo.l_moment_cov]
-        - [Propagation of uncertainty](
-            https://wikipedia.org/wiki/Propagation_of_uncertainty)
-
-    References:
-        - [E. Elamir & A. Seheult (2003) - Trimmed L-moments](
-            https://doi.org/10.1016/S0167-9473(02)00250-5)
-        - [E. Elamir & A. Seheult (2004) - Exact variance structure of sample
-            L-moments](https://doi.org/10.1016/S0378-3758(03)00213-1)
-
-    """
-    _r, _s = np.broadcast_arrays(np.asarray(r), np.asarray(s))
-    _rs = np.stack((_r, _s))
-    r_max: AnyInt = np.amax(np.r_[_r, _s].ravel())
-
-    # L-moments
-    l_rs = l_moment(a, _rs, trim, axis=axis, dtype=dtype, **kwargs)
-    l_r, l_s = l_rs[0], l_rs[1]
-
-    # L-moment auto-covariance matrix
-    k_l = l_moment_cov(a, r_max, trim, axis=axis, dtype=dtype, **kwargs)
-    # prepend the "zeroth" moment, with has 0 (co)variance
-    k_l = np.pad(k_l, (1, 0), constant_values=0)
-
-    s_rr = k_l[_r, _r]  # Var[l_r]
-    s_ss = k_l[_s, _s]  # Var[l_r]
-    s_rs = k_l[_r, _s]  # Cov[l_r, l_s]
-
-    # the classic approximation to propagation of uncertainty for an RV ratio
-    with np.errstate(divide='ignore', invalid='ignore'):
-        _s_tt = (l_r / l_s) ** 2 * (
-            s_rr / l_r**2 + s_ss / l_s**2 - 2 * s_rs / (l_r * l_s)
-        )
-        # Var[l_r / l_r] = Var[1] = 0
-        _s_tt = np.where(_s == 0, s_rr, _s_tt)
-        # Var[l_r / l_0] == Var[l_r / 1] == Var[l_r]
-        s_tt = np.where(_r == _s, 0, _s_tt)
-
-    return np.sqrt(s_tt)
-
-
 def l_stats(
     a: npt.ArrayLike,
     /,
@@ -805,42 +660,6 @@ def l_stats(
     """
     r, s = l_stats_orders(num)
     return l_ratio(a, r, s, trim=trim, axis=axis, dtype=dtype, **kwargs)
-
-
-def l_stats_se(
-    a: npt.ArrayLike,
-    /,
-    trim: tuple[int, int] = (0, 0),
-    num: int = 4,
-    *,
-    axis: int | None = None,
-    dtype: np.dtype[T] | type[T] = np.float_,
-    **kwargs: Unpack[LMomentOptions],
-) -> npt.NDArray[T]:
-    """
-    Calculates the standard errors (SE's) of the [`L-stats`][lmo.l_stats].
-
-    Equivalent to `lmo.l_ratio_se(a, [1, 2, 3, 4], [0, 0, 2, 2], *, **)` by
-    default.
-
-    Examples:
-        >>> import lmo, scipy.stats
-        >>> x = scipy.stats.gumbel_r.rvs(size=99, random_state=12345)
-        >>> lmo.l_stats(x)
-        array([0.79014773, 0.68346357, 0.12207413, 0.12829047])
-        >>> lmo.l_stats_se(x)
-        array([0.12305147, 0.05348839, 0.04472984, 0.03408495])
-
-        The theoretical L-stats of the standard Gumbel distribution are
-        `[0.577, 0.693, 0.170, 0.150]`. The corresponding relative z-scores
-        are `[-1.730, 0.181, 1.070, 0.648]`.
-
-    See Also:
-        - [`lmo.l_stats`][lmo.l_stats]
-        - [`lmo.l_ratio_se`][lmo.l_ratio_se]
-    """
-    r, s = l_stats_orders(num)
-    return l_ratio_se(a, r, s, trim=trim, axis=axis, dtype=dtype, **kwargs)
 
 
 def l_loc(
@@ -1045,3 +864,184 @@ def l_kurtosis(
         - [`scipy.stats.kurtosis`][scipy.stats.kurtosis]
     """
     return l_ratio(a, 4, 2, trim, axis=axis, dtype=dtype, **kwargs)
+
+
+def l_moment_cov(
+    a: npt.ArrayLike,
+    r_max: AnyInt,
+    /,
+    trim: tuple[int, int] = (0, 0),
+    *,
+    axis: int | None = None,
+    dtype: np.dtype[T] | type[T] = np.float_,
+    **kwargs: Unpack[LMomentOptions],
+) -> npt.NDArray[T]:
+    """
+    Non-parmateric auto-covariance matrix of the generalized trimmed
+    L-moment point estimates with orders `r = 1, ..., r_max`.
+
+    Returns:
+        S_l: Variance-covariance matrix/tensor of shape `(r_max, r_max, ...)`
+
+    Examples:
+        Fitting of the cauchy distribution with TL-moments. The location is
+        equal to the TL-location, and scale should be $0.698$ times the
+        TL(1)-scale, see Elamir & Seheult (2003).
+
+        >>> import lmo, numpy as np
+        >>> rng = np.random.default_rng(12345)
+        >>> x = rng.standard_cauchy(1337)
+        >>> lmo.l_moment(x, [1, 2], trim=(1, 1))
+        array([0.08142405, 0.68884917])
+
+        The L-moment estimates seem to make sense. Let's check their standard
+        errors, by taking the square root of the variances (the diagonal of the
+        covariance matrix):
+
+        >>> lmo.l_moment_cov(x, 2, trim=(1, 1))
+        array([[ 4.89407076e-03, -4.26419310e-05],
+               [-4.26419310e-05,  1.30898414e-03]])
+        >>> np.sqrt(_.diagonal())
+        array([0.06995764, 0.03617989])
+
+    See Also:
+        - [`lmo.l_moment`][lmo.l_moment]
+        - [Covariance matrix - Wikipedia](
+            https://wikipedia.org/wiki/Covariance_matrix)
+
+    References:
+        - [E. Elamir & A. Seheult (2003) - Trimmed L-moments](
+            https://doi.org/10.1016/S0167-9473(02)00250-5)
+        - [E. Elamir & A. Seheult (2004) - Exact variance structure of sample
+            L-moments](https://doi.org/10.1016/S0378-3758(03)00213-1)
+
+    Todo:
+        - Use the direct (Jacobi) method from Hosking (2015).
+    """
+    if any(int(t) != t for t in trim):
+        msg = 'l_moment_cov does not support fractional trimming (yet)'
+        raise TypeError(msg)
+
+    ks = int(r_max + sum(trim))
+    if ks < r_max:
+        msg = 'trimmings must be positive'
+        raise ValueError(msg)
+
+    # projection matrix: PWMs -> generalized trimmed L-moments
+    p_l: npt.NDArray[np.floating[Any]]
+    p_l = trim_matrix(int(r_max), trim=trim, dtype=dtype) @ sh_legendre(ks)
+    # clean some numerical noise
+    # p_l = np.round(p_l, 12) + 0.
+
+    # PWM covariance matrix
+    s_b = pwm_beta.cov(a, ks, axis=axis, dtype=dtype, **kwargs)
+
+    # tasty, eh?
+    return sandwich(p_l, s_b, dtype=dtype)
+
+
+def l_ratio_se(
+    a: npt.ArrayLike,
+    r: AnyInt | IntVector,
+    s: AnyInt | IntVector,
+    /,
+    trim: tuple[int, int] = (0, 0),
+    *,
+    axis: int | None = None,
+    dtype: np.dtype[T] | type[T] = np.float_,
+    **kwargs: Unpack[LMomentOptions],
+) -> npt.NDArray[T]:
+    """
+    Non-parametric estimates of the Standard Error (SE) in the L-ratio
+    estimates from [`lmo.l_ratio`][lmo.l_ratio].
+
+    Examples:
+        Estimate the values and errors of the TL-loc, scale, skew and kurtosis
+        for Cauchy-distributed samples. The theoretical values are
+        `[0.0, 0.698, 0.0, 0.343]` (Elamir & Seheult, 2003), respectively.
+
+        >>> import lmo, numpy as np
+        >>> rng = np.random.default_rng(12345)
+        >>> x = rng.standard_cauchy(42)
+        >>> lmo.l_ratio(x, [1, 2, 3, 4], [0, 0, 2, 2], trim=(1, 1))
+        array([-0.25830513,  0.61738638, -0.03069701,  0.25550176])
+        >>> lmo.l_ratio_se(x, [1, 2, 3, 4], [0, 0, 2, 2], trim=(1, 1))
+        array([0.32857302, 0.12896501, 0.13835403, 0.07188138])
+
+    See Also:
+        - [`lmo.l_ratio`][lmo.l_ratio]
+        - [`lmo.l_moment_cov`][lmo.l_moment_cov]
+        - [Propagation of uncertainty](
+            https://wikipedia.org/wiki/Propagation_of_uncertainty)
+
+    References:
+        - [E. Elamir & A. Seheult (2003) - Trimmed L-moments](
+            https://doi.org/10.1016/S0167-9473(02)00250-5)
+        - [E. Elamir & A. Seheult (2004) - Exact variance structure of sample
+            L-moments](https://doi.org/10.1016/S0378-3758(03)00213-1)
+
+    """
+    _r, _s = np.broadcast_arrays(np.asarray(r), np.asarray(s))
+    _rs = np.stack((_r, _s))
+    r_max: AnyInt = np.amax(np.r_[_r, _s].ravel())
+
+    # L-moments
+    l_rs = l_moment(a, _rs, trim, axis=axis, dtype=dtype, **kwargs)
+    l_r, l_s = l_rs[0], l_rs[1]
+
+    # L-moment auto-covariance matrix
+    k_l = l_moment_cov(a, r_max, trim, axis=axis, dtype=dtype, **kwargs)
+    # prepend the "zeroth" moment, with has 0 (co)variance
+    k_l = np.pad(k_l, (1, 0), constant_values=0)
+
+    s_rr = k_l[_r, _r]  # Var[l_r]
+    s_ss = k_l[_s, _s]  # Var[l_r]
+    s_rs = k_l[_r, _s]  # Cov[l_r, l_s]
+
+    # the classic approximation to propagation of uncertainty for an RV ratio
+    with np.errstate(divide='ignore', invalid='ignore'):
+        _s_tt = (l_r / l_s) ** 2 * (
+            s_rr / l_r**2 + s_ss / l_s**2 - 2 * s_rs / (l_r * l_s)
+        )
+        # Var[l_r / l_r] = Var[1] = 0
+        _s_tt = np.where(_s == 0, s_rr, _s_tt)
+        # Var[l_r / l_0] == Var[l_r / 1] == Var[l_r]
+        s_tt = np.where(_r == _s, 0, _s_tt)
+
+    return np.sqrt(s_tt)
+
+
+def l_stats_se(
+    a: npt.ArrayLike,
+    /,
+    trim: tuple[int, int] = (0, 0),
+    num: int = 4,
+    *,
+    axis: int | None = None,
+    dtype: np.dtype[T] | type[T] = np.float_,
+    **kwargs: Unpack[LMomentOptions],
+) -> npt.NDArray[T]:
+    """
+    Calculates the standard errors (SE's) of the [`L-stats`][lmo.l_stats].
+
+    Equivalent to `lmo.l_ratio_se(a, [1, 2, 3, 4], [0, 0, 2, 2], *, **)` by
+    default.
+
+    Examples:
+        >>> import lmo, scipy.stats
+        >>> x = scipy.stats.gumbel_r.rvs(size=99, random_state=12345)
+        >>> lmo.l_stats(x)
+        array([0.79014773, 0.68346357, 0.12207413, 0.12829047])
+        >>> lmo.l_stats_se(x)
+        array([0.12305147, 0.05348839, 0.04472984, 0.03408495])
+
+        The theoretical L-stats of the standard Gumbel distribution are
+        `[0.577, 0.693, 0.170, 0.150]`. The corresponding relative z-scores
+        are `[-1.730, 0.181, 1.070, 0.648]`.
+
+    See Also:
+        - [`lmo.l_stats`][lmo.l_stats]
+        - [`lmo.l_ratio_se`][lmo.l_ratio_se]
+    """
+    r, s = l_stats_orders(num)
+    return l_ratio_se(a, r, s, trim=trim, axis=axis, dtype=dtype, **kwargs)
