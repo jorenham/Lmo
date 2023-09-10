@@ -9,7 +9,6 @@ __all__ = (
     'moments_to_ratio',
     'moments_to_stats_cov',
     'l_stats_orders',
-    'plotting_positions',
 )
 
 from typing import Any, SupportsIndex, TypeVar
@@ -292,15 +291,3 @@ def broadstack(
     s: AnyInt | IntVector,
 ) -> npt.NDArray[np.int_]:
     return np.stack(np.broadcast_arrays(np.asarray(r), np.asarray(s)))
-
-
-def plotting_positions(
-    n: int,
-    /,
-    gamma: float = -.35,
-    delta: float = .0,
-) -> npt.NDArray[np.float_]:
-    assert n > 1
-    assert -1 < gamma < delta
-
-    return np.linspace((1 + gamma) / (n + delta), (n + gamma) / (n + delta), n)

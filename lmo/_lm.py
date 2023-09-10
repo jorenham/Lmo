@@ -29,7 +29,6 @@ import numpy as np
 import numpy.typing as npt
 
 from . import ostats, pwm_beta
-from ._poly import eval_sh_jacobi
 from ._utils import (
     clean_order,
     clean_trim,
@@ -37,7 +36,6 @@ from ._utils import (
     l_stats_orders,
     moments_to_ratio,
     ordered,
-    plotting_positions,
     round0,
 )
 from .linalg import ir_pascal, sandwich, sh_legendre, trim_matrix
@@ -1066,8 +1064,6 @@ def l_moment_influence(
     trim: AnyTrim = (0, 0),
     *,
     sort: SortKind | None = 'stable',
-    gamma: float = -0.35,
-    delta: float = .0,
     tol: float = 1e-8,
 ) -> Callable[[V], V]:
     r"""
@@ -1086,8 +1082,6 @@ def l_moment_influence(
     Other parameters:
         sort ('quick' | 'stable' | 'heap'):
             Sorting algorithm, see [`numpy.sort`][numpy.sort].
-        gamma: Plotting-position parameter $\gamma > -1$.
-        delta: Plotting-position parameter $\delta > \gamma$.
         tol: Zero-roundoff absolute threshold.
 
     Returns:
@@ -1101,24 +1095,17 @@ def l_moment_influence(
     x_k = np.sort(a, kind=sort)
     n = len(x_k)
 
-    # "plug-in" L-moment estimate (biased, but the resulting EIF isn't)
-    p_k = plotting_positions(n, gamma=gamma, delta=delta)
-    l_r = np.mean(
-        p_k**s * (1 - p_k)**t * eval_sh_jacobi(_r - 1, t, s, p_k) * x_k,
-    )
+    w_k = l_weights(_r, n, (s, t))[-1]
+    l_r = np.inner(w_k, x_k)
 
     def influence_function(x: V, /) -> V:
         _x = np.asarray(x)
 
-        p = np.interp(_x, x_k, p_k)
-        p[x < x_k[0]] = 0
-        p[x > x_k[-1]] = 1
+        # ECDF
+        k = np.maximum(np.searchsorted(x_k, _x, side='right') - 1, 0)
 
-        alpha = cast(
-            V,
-            p**s * (1 - p)**t * eval_sh_jacobi(_r - 1, t, s, p) * _x,
-        )
-        return cast(V, round0(alpha - l_r)[()])  # type: ignore
+        alpha = n * w_k[k] * _x
+        return cast(V, round0(alpha - l_r, tol=tol)[()])
 
     influence_function.__doc__ = (
         f'Empirical L-moment influence function for {r=}, {trim=}, and {n=}.'
@@ -1136,8 +1123,6 @@ def l_ratio_influence(
     trim: AnyTrim = (0, 0),
     *,
     sort: SortKind | None = 'stable',
-    gamma: float = -0.35,
-    delta: float = .0,
     tol: float = 1e-8,
 ) -> Callable[[V], V]:
     r"""
@@ -1157,8 +1142,6 @@ def l_ratio_influence(
     Other parameters:
         sort ('quick' | 'stable' | 'heap'):
             Sorting algorithm, see [`numpy.sort`][numpy.sort].
-        gamma: Plotting-position parameter $\gamma > -1$.
-        delta: Plotting-position parameter $\delta > \gamma$.
         tol: Zero-roundoff absolute threshold.
 
     Returns:
@@ -1170,15 +1153,14 @@ def l_ratio_influence(
     _r, _k = clean_order(r), clean_order(k)
     n = len(_x)
 
-    kwds = {'gamma': gamma, 'delta': delta, 'tol': tol}
-    eif_r = l_moment_influence(_x, _r, trim, sort='stable', **kwds)
-    eif_k = l_moment_influence(_x, _k, trim, sort='stable', **kwds)
+    eif_r = l_moment_influence(_x, _r, trim, sort='stable', tol=0)
+    eif_k = l_moment_influence(_x, _k, trim, sort='stable', tol=0)
 
     l_r, l_k = cast(tuple[float, float], (eif_r.l, eif_k.l))  # type: ignore
-
     if abs(l_k) <= tol * abs(l_r):
         msg = f'L-ratio ({r=}, {k=}) denominator is approximately zero.'
         raise ZeroDivisionError(msg)
+
     t_r = l_r / l_k
 
     def influence_function(x: V, /) -> V:
