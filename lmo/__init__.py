@@ -17,6 +17,7 @@ __all__ = (
     'l_stats_se',
 
     'l_moment_influence',
+    'l_ratio_influence',
 
     'l_weights',
 
@@ -47,6 +48,7 @@ from ._lm import (
     l_moment_cov,
     l_moment_influence,
     l_ratio,
+    l_ratio_influence,
     l_ratio_se,
     l_scale,
     l_skew,

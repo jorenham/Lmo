@@ -18,6 +18,7 @@ __all__ = (
     'l_stats_se',
 
     'l_moment_influence',
+    'l_ratio_influence',
 )
 
 import sys
@@ -37,6 +38,7 @@ from ._utils import (
     moments_to_ratio,
     ordered,
     plotting_positions,
+    round0,
 )
 from .linalg import ir_pascal, sandwich, sh_legendre, trim_matrix
 from .typing import AnyInt, AnyTrim, IntVector, LMomentOptions, SortKind
@@ -1066,6 +1068,7 @@ def l_moment_influence(
     sort: SortKind | None = 'stable',
     gamma: float = -0.35,
     delta: float = .0,
+    tol: float = 1e-8,
 ) -> Callable[[V], V]:
     r"""
     Empirical Influence Function (EIF) of a sample L-moment.
@@ -1074,22 +1077,21 @@ def l_moment_influence(
         This function is not vectorized.
 
     Args:
-        a:
-            1-D array-like containing observed samples.
-        r:
-            L-moment order. Must be a non-negative integer.
+        a: 1-D array-like containing observed samples.
+        r: L-moment order. Must be a non-negative integer.
         trim:
             Left- and right- trim. Can be scalar or 2-tuple of
             non-negative int or float.
+
+    Other parameters:
         sort ('quick' | 'stable' | 'heap'):
             Sorting algorithm, see [`numpy.sort`][numpy.sort].
-        gamma:
-            Plotting-position parameter $\gamma > -1$.
-        delta:
-            Plotting-position parameter $\delta > \gamma$.
+        gamma: Plotting-position parameter $\gamma > -1$.
+        delta: Plotting-position parameter $\delta > \gamma$.
+        tol: Zero-roundoff absolute threshold.
 
     Returns:
-        empirical_influence_function:
+        influence_function:
             The (vectorized) empirical influence function.
 
     """
@@ -1105,7 +1107,7 @@ def l_moment_influence(
         p_k**s * (1 - p_k)**t * eval_sh_jacobi(_r - 1, t, s, p_k) * x_k,
     )
 
-    def influence(x: V, /) -> V:
+    def influence_function(x: V, /) -> V:
         _x = np.asarray(x)
 
         p = np.interp(_x, x_k, p_k)
@@ -1116,9 +1118,78 @@ def l_moment_influence(
             V,
             p**s * (1 - p)**t * eval_sh_jacobi(_r - 1, t, s, p) * _x,
         )
-        return cast(V, alpha - l_r)
+        return cast(V, round0(alpha - l_r)[()])  # type: ignore
 
-    influence.__doc__ = (
+    influence_function.__doc__ = (
         f'Empirical L-moment influence function for {r=}, {trim=}, and {n=}.'
     )
-    return influence
+    # piggyback the L-moment, to avoid recomputing it in l_ratio_influence
+    influence_function.l = l_r  # type: ignore
+    return influence_function
+
+
+def l_ratio_influence(
+    a: npt.ArrayLike,
+    r: SupportsIndex,
+    k: SupportsIndex = 2,
+    /,
+    trim: AnyTrim = (0, 0),
+    *,
+    sort: SortKind | None = 'stable',
+    gamma: float = -0.35,
+    delta: float = .0,
+    tol: float = 1e-8,
+) -> Callable[[V], V]:
+    r"""
+    Empirical Influence Function (EIF) of a sample L-moment ratio.
+
+    Notes:
+        This function is not vectorized.
+
+    Args:
+        a: 1-D array-like containing observed samples.
+        r: L-moment ratio order. Must be a non-negative integer.
+        k: Denominator L-moment order, defaults to 2.
+        trim:
+            Left- and right- trim. Can be scalar or 2-tuple of
+            non-negative int or float.
+
+    Other parameters:
+        sort ('quick' | 'stable' | 'heap'):
+            Sorting algorithm, see [`numpy.sort`][numpy.sort].
+        gamma: Plotting-position parameter $\gamma > -1$.
+        delta: Plotting-position parameter $\delta > \gamma$.
+        tol: Zero-roundoff absolute threshold.
+
+    Returns:
+        influence_function:
+            The (vectorized) empirical influence function.
+
+    """
+    _x = np.sort(a, kind=sort)
+    _r, _k = clean_order(r), clean_order(k)
+    n = len(_x)
+
+    kwds = {'gamma': gamma, 'delta': delta, 'tol': tol}
+    eif_r = l_moment_influence(_x, _r, trim, sort='stable', **kwds)
+    eif_k = l_moment_influence(_x, _k, trim, sort='stable', **kwds)
+
+    l_r, l_k = cast(tuple[float, float], (eif_r.l, eif_k.l))  # type: ignore
+
+    if abs(l_k) <= tol * abs(l_r):
+        msg = f'L-ratio ({r=}, {k=}) denominator is approximately zero.'
+        raise ZeroDivisionError(msg)
+    t_r = l_r / l_k
+
+    def influence_function(x: V, /) -> V:
+        psi_r = eif_r(x)
+        # cheat a bit to avoid `inf - inf = nan` situations
+        psi_k = np.where(np.isinf(psi_r), 0, eif_k(x))
+
+        return cast(V, round0((psi_r - t_r * psi_k) / l_k, tol=tol)[()])
+
+    influence_function.__doc__ = (
+        f'Theoretical influence function for L-moment ratio with r={_r}, '
+        f'k={_k}, {trim=}, and {n=}'
+    )
+    return influence_function
