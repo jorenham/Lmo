@@ -703,7 +703,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
         moments: int = 4,
         quad_opts: QuadOptions | None = None,
         **kwds: Any,
-    ) -> np.float_ | npt.NDArray[np.float_]:
+    ) -> npt.NDArray[np.float_]:
         r"""
         The L-moments (for $r \le 2$) and L-ratio's (for $r > 2$).
 

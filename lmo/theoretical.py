@@ -6,21 +6,13 @@ distributions.
 __all__ = (
     'l_moment_from_cdf',
     'l_moment_from_ppf',
-    'l_moment_from_rv',
-
     'l_ratio_from_cdf',
     'l_ratio_from_ppf',
-    'l_ratio_from_rv',
-
     'l_stats_from_cdf',
     'l_stats_from_ppf',
-    'l_stats_from_rv',
 
     'l_moment_cov_from_cdf',
-    'l_moment_cov_from_rv',
-
     'l_stats_cov_from_cdf',
-    'l_stats_cov_from_rv',
 
     'l_moment_influence_from_cdf',
     'l_ratio_influence_from_cdf',
@@ -33,7 +25,6 @@ from typing import (
     Any,
     Concatenate,
     Final,
-    Literal,
     ParamSpec,
     TypeAlias,
     TypeVar,
@@ -77,6 +68,7 @@ UnivariateRV: TypeAlias = rv_continuous | rv_discrete | rv_frozen
 ALPHA: Final[float] = 0.1
 QUAD_LIMIT: Final[int] = 100
 
+# pyright: reportUnknownMemberType=false
 
 def _nquad(
     integrand: Callable[Concatenate[float, float, Theta], float],
@@ -133,106 +125,6 @@ def _tighten_cdf_support(
 
     return a, b
 
-
-def _rv_melt(
-    rv: UnivariateRV,
-    *args: float,
-    **kwds: float,
-) -> tuple[rv_continuous | rv_discrete, float, float, tuple[float, ...]]:
-    """
-    Extract and validate the loc/scale and shape args from the potentially
-    frozen `scipy.stats` distribution.
-    Returns the `rv_continuous` distribution, loc, scale and shape args.
-    """
-    if isinstance(rv, rv_frozen):
-        dist, args, kwds = (
-            cast(rv_continuous, rv.dist),
-            cast(tuple[float, ...], rv.args),
-            cast(dict[str, float], rv.kwds),
-        )
-    else:
-        dist = rv
-
-    shapes, loc, scale = cast(
-        tuple[tuple[float, ...], float, float],
-        dist._parse_args(*args, **kwds),  # type: ignore
-    )
-    if scale <= 0:
-        msg = f'scale must be >0, got {scale}'
-        raise ValueError(msg)
-    if invalid_args := set(np.argwhere(1 - dist._argcheck(*shapes))):
-        invalid_params = {
-            cast(str, param.name): args[i]
-            for i, param in enumerate(dist._param_info())  # type: ignore
-            if i in invalid_args
-        }
-        invalid_repr = ', '.join(f'{k}={v}' for k, v in invalid_params.items())
-        msg = (
-            f'shape arguments ({invalid_repr}) of are invalid for '
-            f'{dist.name!r}'
-        )
-        raise ValueError(msg)
-
-    return dist, loc, scale, shapes
-
-
-# pyright: reportUnknownMemberType=false,reportPrivateUsage=false
-def _rv_fn(
-    rv: UnivariateRV,
-    name: Literal['cdf', 'ppf'],
-    transform: bool,
-    /,
-    *args: float,
-    **kwds: float,
-) -> tuple[
-    Callable[[float], float],
-    Pair[float],
-    float,
-    float,
-]:
-    """
-    Get the unvectorized cdf or ppf from a `scipy.stats` distribution,
-    and apply the loc, scale and shape arguments.
-    Return the function, its support, the loc, and the scale.
-    """
-    dist, loc, scale, shapes = _rv_melt(rv, *args, **kwds)
-    assert scale > 0
-
-    m_x, s_x = (loc, scale) if transform else (0, 1)
-
-    a0, b0 = cast(tuple[float, float], dist._get_support(*shapes))
-    a, b = m_x + s_x * a0, m_x + s_x * b0
-
-    # prefer the unvectorized implementation if exists
-    if f'_{name}_single' in type(dist).__dict__:
-        fn_raw = cast(Callable[..., float], getattr(dist, f'_{name}_single'))
-    else:
-        fn_raw = cast(Callable[..., float], getattr(dist, f'_{name}'))
-
-    if name == 'ppf':
-        def ppf(q: float, /) -> float:
-            if q < 0 or q > 1:
-                return np.nan
-            if q == 0:
-                return a
-            if q == 1:
-                return b
-            return m_x + s_x * fn_raw(q, *shapes)
-
-        fn = ppf
-        support = 0, 1
-    else:
-        def cdf(x: float, /) -> float:
-            if x <= a:
-                return 0
-            if x >= b:
-                return 1
-            return fn_raw((x - m_x) / s_x, *shapes)
-
-        fn = cdf
-        support = a, b
-
-    return fn, support, loc, scale
 
 @overload
 def l_moment_from_cdf(
@@ -598,145 +490,6 @@ def l_moment_from_ppf(
 
 
 @overload
-def l_moment_from_rv(
-    rv: UnivariateRV,
-    r: AnyInt,
-    /,
-    trim: AnyTrim = ...,
-    *,
-    quad_opts: QuadOptions | None = ...,
-    alpha: float = ...,
-) -> np.float_:
-    ...
-
-
-@overload
-def l_moment_from_rv(
-    rv: UnivariateRV,
-    r: IntVector,
-    /,
-    trim: AnyTrim = ...,
-    *,
-    quad_opts: QuadOptions | None = ...,
-    alpha: float = ...,
-) -> npt.NDArray[np.float_]:
-    ...
-
-
-def l_moment_from_rv(
-    rv: UnivariateRV,
-    r: AnyInt | IntVector,
-    /,
-    trim: AnyTrim = (0, 0),
-    *,
-    quad_opts: QuadOptions | None = None,
-    alpha: float = ALPHA,
-) -> np.float_ | npt.NDArray[np.float_]:
-    r"""
-    Evaluate the population L-moment of a univariate
-    [`scipy.stats`][scipy.stats] probability distribution.
-
-    $$
-    \lambda^{(s, t)}_r =
-    \frac{r+s+t}{r}
-    \frac{B(r,\,r+s+t)}{B(r+s,\,r+t)}
-    \mathbb{E}_X \left[
-        U^s
-        \left(1 - U\right)^t
-        \,\tilde{P}^{(t, s)}_{r-1}(U)
-        \,X
-    \right] \;,
-    $$
-
-    with $U = F_X(X)$ the *rank* of $X$, and $\tilde{P}^{(a,b)}_n(x)$ the
-    shifted ($x \mapsto 2x-1$) Jacobi polynomial.
-
-    Examples:
-        Evaluate the population L-moments of the normally-distributed IQ test:
-
-        >>> from scipy.stats import norm
-        >>> l_moment_from_rv(norm(100, 15), [1, 2, 3, 4]).round(6)
-        array([100.      ,   8.462844,   0.      ,   1.037559])
-        >>> _[1] * np.sqrt(np.pi)
-        15.000000...
-
-        Discrete distributions are also supported, e.g. the Binomial
-        distribution:
-
-        >>> from scipy.stats import binom
-        >>> l_moment_from_rv(binom(10, .6), [1, 2, 3, 4]).round(6)
-        array([ 6.      ,  0.862238, -0.019729,  0.096461])
-
-    Args:
-        rv:
-            Univariate [`scipy.stats`][scipy.stats] `rv_continuous`,
-            `rv_discrete` or `rv_frozen` instance.
-        r:
-            L-moment order(s), non-negative integer or array-like of integers.
-        trim:
-            Left- and right- trim. Must be a tuple of two non-negative ints
-            or floats.
-
-    Other parameters:
-        quad_opts:
-            Optional dict of options to pass to
-            [`scipy.integrate.quad`][scipy.integrate.quad].
-        alpha:
-            Split the integral into integrals with limits $[a, \alpha]$,
-            $[\alpha, 1-\alpha]$ and $[1-\alpha, b]$ to improve numerical
-            stability. So $\alpha$ can be consideresd the size of the tail.
-            Numerical experiments have found 0.1 to give good results for
-            different distributions.
-
-    Raises:
-        TypeError: `r` is not integer-valued
-        ValueError: `r` is empty or negative
-
-    Returns:
-        lmbda:
-            The population L-moment(s), a scalar or float array like `r`.
-
-    References:
-        - [E. Elamir & A. Seheult (2003) - Trimmed L-moments](
-            https://doi.org/10.1016/S0167-9473(02)00250-5)
-        - [J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
-            L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
-
-    See Also:
-        - [`rv.generic.l_moment`][lmo.l_rv_generic.l_moment]:
-          method of `scipy.stats` distributions.
-        - [`l_moment_from_cdf`][lmo.theoretical.l_moment_from_cdf]:
-          population L-moment, using the cumulative distribution function.
-        - [`l_moment_from_ppf`][lmo.theoretical.l_moment_from_ppf]:
-          population L-moment, using the inverse CDF (quantile function).
-        - [`lmo.l_moment`][lmo.l_moment]: sample L-moment
-    """
-    rs = clean_orders(np.asanyarray(r))
-
-    cdf, support, loc, scale = _rv_fn(rv, 'cdf', False)
-    ppf = _rv_fn(rv, 'ppf', False)[0]
-
-    assert scale > 0, scale
-
-    lm = l_moment_from_cdf(
-        cdf,
-        rs,
-        trim,
-        support=support,
-        quad_opts=quad_opts,
-        alpha=alpha,
-        ppf=ppf,
-    )
-    if loc == 0 and scale == 1:
-        return lm
-
-    lms = np.asarray(lm)
-    lms[rs == 1] += loc
-    lms[rs > 1] *= scale
-
-    return lms[()]  # convert back to scalar if needed
-
-@overload
 def l_ratio_from_cdf(
     cdf: UnivariateCDF,
     r: AnyInt,
@@ -890,110 +643,6 @@ def l_ratio_from_ppf(
     return moments_to_ratio(rs, l_rs)
 
 
-@overload
-def l_ratio_from_rv(
-    rv: UnivariateRV,
-    r: AnyInt,
-    s: AnyInt = ...,
-    /,
-    trim: AnyTrim = ...,
-    *,
-    quad_opts: QuadOptions | None = ...,
-    alpha: float = ...,
-) -> np.float_:
-    ...
-
-
-@overload
-def l_ratio_from_rv(
-    rv: UnivariateRV,
-    r: IntVector,
-    s: AnyInt | IntVector,
-    /,
-    trim: AnyTrim = ...,
-    *,
-    quad_opts: QuadOptions | None = ...,
-    alpha: float = ...,
-) -> npt.NDArray[np.float_]:
-    ...
-
-
-@overload
-def l_ratio_from_rv(
-    rv: UnivariateRV,
-    r: AnyInt | IntVector,
-    s: IntVector,
-    /,
-    trim: AnyTrim = ...,
-    *,
-    quad_opts: QuadOptions | None = ...,
-    alpha: float = ...,
-) -> npt.NDArray[np.float_]:
-    ...
-
-
-def l_ratio_from_rv(
-    rv: UnivariateRV,
-    r: AnyInt | IntVector,
-    s: AnyInt | IntVector = 2,
-    /,
-    trim: AnyTrim = (0, 0),
-    *,
-    quad_opts: QuadOptions | None = None,
-    alpha: float = ALPHA,
-) -> np.float_ | npt.NDArray[np.float_]:
-    r"""
-    Population L-ratio's from a [`scipy.stats`][scipy.stats] univariate
-    continuous probability distribution.
-
-    See [`l_moment_from_rv`][lmo.theoretical.l_moment_from_rv] for a
-    description of the parameters.
-
-    Examples:
-        Evaluate the population L-CV and LL-CV (CV = coefficient of variation)
-        of the standard Rayleigh distribution.
-
-        >>> from scipy.stats import distributions
-        >>> X = distributions.rayleigh()
-        >>> X.std() / X.mean()
-        0.5227232...
-        >>> l_ratio_from_rv(X, 2, 1)
-        0.2928932...
-        >>> l_ratio_from_rv(X, 2, 1, trim=(0, 1))
-        0.2752551...
-
-        And similarly, for the (discrete) Poisson distribution with rate
-        parameter set to 2, the L-CF and LL-CV evaluate to:
-
-        >>> X = distributions.poisson(2)
-        >>> X.std() / X.mean()
-        0.7071067...
-        >>> l_ratio_from_rv(X, 2, 1)
-        0.3857527...
-        >>> l_ratio_from_rv(X, 2, 1, trim=(0, 1))
-        0.4097538...
-
-        Note that (untrimmed) L-CV requires a higher (subdivision) limit in
-        the integration routine, otherwise it'll complain that it didn't
-        converge (enough) yet. This is because it's effectively integrating
-        a non-smooth function, which is mathematically iffy, but works fine
-        in this numerical application.
-
-    See Also:
-        - [`l_moment_from_rv`][lmo.theoretical.l_moment_from_rv]
-        - [`lmo.l_ratio`][lmo.l_ratio]
-    """
-    rs = broadstack(r, s)
-    l_rs = l_moment_from_rv(
-        rv,
-        rs,
-        trim,
-        quad_opts=quad_opts,
-        alpha=alpha,
-    )
-    return moments_to_ratio(rs, l_rs)
-
-
 def l_stats_from_cdf(
     cdf: UnivariateCDF,
     num: int = 4,
@@ -1082,61 +731,6 @@ def l_stats_from_ppf(
         *l_stats_orders(num),
         trim,
         support=support,
-        quad_opts=quad_opts,
-        alpha=alpha,
-    )
-
-
-def l_stats_from_rv(
-    rv: UnivariateRV,
-    num: int = 4,
-    /,
-    trim: AnyTrim = (0, 0),
-    *,
-    quad_opts: QuadOptions | None = None,
-    alpha: float = ALPHA,
-) -> npt.NDArray[np.float_]:
-    r"""
-    Calculates the theoretical- / population- L-moments (for $r \le 2$)
-    and L-ratio's (for $r > 2$) of a [`scipy.stats`][scipy.stats] distribution.
-
-    By default, the first `num = 4` population L-stats are calculated:
-
-    - $\lambda^{(s,t)}_1$ - *L-loc*ation
-    - $\lambda^{(s,t)}_2$ - *L-scale*
-    - $\tau^{(s,t)}_3$ - *L-skew*ness coefficient
-    - $\tau^{(s,t)}_4$ - *L-kurt*osis coefficient
-
-    This function is equivalent to
-    `l_ratio_from_rv(rv, [1, 2, 3, 4], [0, 0, 2, 2], *, **)`.
-
-    See [`l_moment_from_rv`][lmo.theoretical.l_moment_from_rv] for a
-    description of the parameters.
-
-    Examples:
-        Summarize the standard exponential distribution for different trims.
-
-        >>> from scipy.stats import distributions
-        >>> X = distributions.expon()
-        >>> l_stats_from_rv(X).round(6)
-        array([1.      , 0.5     , 0.333333, 0.166667])
-        >>> l_stats_from_rv(X, trim=(0, 1/2)).round(6)
-        array([0.666667, 0.333333, 0.266667, 0.114286])
-        >>> l_stats_from_rv(X, trim=(0, 1)).round(6)
-        array([0.5     , 0.25    , 0.222222, 0.083333])
-
-    Note:
-        This should not be confused with the term *L-statistic*, which is
-        sometimes used to describe any linear combination of order statistics.
-
-    See Also:
-        - [`l_ratio_from_rv`][lmo.theoretical.l_ratio_from_ppf]
-        - [`lmo.l_stats`][lmo.l_stats] - Unbiased sample estimation of L-stats.
-    """
-    return l_ratio_from_rv(
-        rv,
-        *l_stats_orders(num),
-        trim,
         quad_opts=quad_opts,
         alpha=alpha,
     )
@@ -1319,48 +913,6 @@ def l_moment_cov_from_cdf(
     return round0(cov)
 
 
-def l_moment_cov_from_rv(
-    rv: UnivariateRV,
-    r_max: int,
-    /,
-    trim: AnyTrim = (0, 0),
-    *,
-    quad_opts: QuadOptions | None = None,
-) -> npt.NDArray[np.float_]:
-    """
-    Calculate the asymptotic L-moment covariance matrix from a
-    [`scipy.stats`][scipy.stats] distribution.
-
-    See [`l_moment_cov_from_cdf`][lmo.theoretical.l_moment_cov_from_cdf] for
-    more info.
-
-    Examples:
-        >>> from scipy.stats import distributions
-        >>> X = distributions.expon()  # standard exponential distribution
-        >>> l_moment_cov_from_rv(X, 4).round(6)
-        array([[1.      , 0.5     , 0.166667, 0.083333],
-               [0.5     , 0.333333, 0.166667, 0.083333],
-               [0.166667, 0.166667, 0.133333, 0.083333],
-               [0.083333, 0.083333, 0.083333, 0.071429]])
-
-        >>> l_moment_cov_from_rv(X, 4, trim=(0, 1)).round(6)
-        array([[0.333333, 0.125   , 0.      , 0.      ],
-               [0.125   , 0.075   , 0.016667, 0.      ],
-               [0.      , 0.016667, 0.016931, 0.00496 ],
-               [0.      , 0.      , 0.00496 , 0.0062  ]])
-
-    """
-    cdf, support, _, scale = _rv_fn(rv, 'cdf', False)
-    cov = l_moment_cov_from_cdf(
-        cdf,
-        r_max,
-        trim,
-        support=support,
-        quad_opts=quad_opts,
-    )
-    return scale**2 * cov
-
-
 def l_stats_cov_from_cdf(
     cdf: UnivariateCDF,
     num: int = 4,
@@ -1463,67 +1015,6 @@ def l_stats_cov_from_cdf(
     t_0r = np.r_[1, 0, l_2r] / l_2r[0]
 
     return round0(moments_to_stats_cov(t_0r, ll_kr))
-
-
-def l_stats_cov_from_rv(
-    rv: UnivariateRV,
-    num: int = 4,
-    /,
-    trim: AnyTrim = (0, 0),
-    *,
-    quad_opts: QuadOptions | None = None,
-    alpha: float = ALPHA,
-) -> npt.NDArray[np.float_]:
-    """
-    Calculate the asymptotic L-stats covariance matrix from a
-    [`scipy.stats`][scipy.stats] distribution.
-
-    See [`l_stats_cov_from_cdf`][lmo.theoretical.l_stats_cov_from_cdf] for
-    more info.
-
-    Examples:
-        Evaluate the LL-stats covariance matrix of the standard exponential
-        distribution, for 0, 1, and 2 degrees of trimming.
-
-        >>> from scipy.stats import distributions
-        >>> X = distributions.expon()  # standard exponential distribution
-        >>> l_stats_cov_from_rv(X).round(6)
-        array([[1.      , 0.5     , 0.      , 0.      ],
-               [0.5     , 0.333333, 0.111111, 0.055556],
-               [0.      , 0.111111, 0.237037, 0.185185],
-               [0.      , 0.055556, 0.185185, 0.21164 ]])
-        >>> l_stats_cov_from_rv(X, trim=(0, 1)).round(6)
-        array([[ 0.333333,  0.125   , -0.111111, -0.041667],
-               [ 0.125   ,  0.075   ,  0.      , -0.025   ],
-               [-0.111111,  0.      ,  0.21164 ,  0.079365],
-               [-0.041667, -0.025   ,  0.079365,  0.10754 ]])
-        >>> l_stats_cov_from_rv(X, trim=(0, 2)).round(6)
-        array([[ 0.2     ,  0.066667, -0.114286, -0.02    ],
-               [ 0.066667,  0.038095, -0.014286, -0.023333],
-               [-0.114286, -0.014286,  0.228571,  0.04    ],
-               [-0.02    , -0.023333,  0.04    ,  0.086545]])
-
-        Note that with 0 trim the L-location is independent of the
-        L-skewness and L-kurtosis. With 1 trim, the L-scale and L-skewness
-        are independent. And with 2 trim, all L-stats depend on each other.
-
-    """
-    cdf, support, _, scale = _rv_fn(rv, 'cdf', False)
-    ppf = _rv_fn(rv, 'ppf', False)[0]
-
-    cov = l_stats_cov_from_cdf(
-        cdf,
-        num,
-        trim,
-        support=support,
-        quad_opts=quad_opts,
-        alpha=alpha,
-        ppf=ppf,
-    )
-    if scale != 1 and num:
-        cov[:2, :2] *= scale**2
-
-    return cov
 
 
 def l_moment_influence_from_cdf(

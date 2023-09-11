@@ -16,7 +16,15 @@ __all__ = (
 import warnings
 from collections.abc import Callable
 from math import lgamma
-from typing import Any, NamedTuple, TypeVar, cast, overload
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    NamedTuple,
+    TypeAlias,
+    TypeVar,
+    cast,
+    overload,
+)
 
 import numpy as np
 import numpy.typing as npt
@@ -27,14 +35,23 @@ from scipy.optimize import (  # type: ignore
     minimize,  # type: ignore
 )
 from scipy.special import chdtrc  # type: ignore
-from scipy.stats.distributions import rv_continuous, rv_frozen  # type: ignore
+from scipy.stats.distributions import (  # type: ignore
+    rv_continuous,
+    rv_discrete,
+    rv_frozen,
+)
 
 from . import theoretical as _theo
 from ._lm import l_ratio
 from ._utils import clean_orders, clean_trim
 from .typing import AnyInt, AnyTrim, IntVector
 
+if TYPE_CHECKING:
+    from ._distns import l_rv_generic
+
 T = TypeVar('T', bound=np.floating[Any])
+
+AnyRV: TypeAlias = rv_continuous | rv_discrete | rv_discrete
 
 
 class HypothesisTestResult(NamedTuple):
@@ -175,7 +192,7 @@ _gof_stat = cast(
 
 
 def l_moment_gof(
-    rv_or_cdf: rv_continuous | rv_frozen | Callable[[float], float],
+    rv_or_cdf: AnyRV | Callable[[float], float],
     l_moments: npt.NDArray[np.float_],
     n_obs: int,
     /,
@@ -222,7 +239,6 @@ def l_moment_gof(
         >>> import lmo
         >>> import numpy as np
         >>> from lmo.diagnostic import l_moment_gof
-        >>> from lmo.theoretical import l_moment_from_rv
         >>> from scipy.stats import norm
         >>> rng = np.random.default_rng(12345)
         >>> X = norm(13.12, 1.66)
@@ -255,12 +271,14 @@ def l_moment_gof(
 
     r = np.arange(1, 1 + n)
 
-    if isinstance(rv_or_cdf, rv_continuous | rv_frozen):
-        lambda_r = _theo.l_moment_from_rv(rv_or_cdf, r, trim, **kwargs)
-        lambda_rr = _theo.l_moment_cov_from_rv(rv_or_cdf, n, trim, **kwargs)
+    if isinstance(rv_or_cdf, rv_continuous.__base__ | rv_frozen):
+        rv = cast('l_rv_generic', rv_or_cdf)
+        lambda_r = rv.l_moment(r, trim=trim, **kwargs)
+        lambda_rr = rv.l_moments_cov(n, trim=trim, **kwargs)
     else:
-        lambda_r = _theo.l_moment_from_cdf(rv_or_cdf, r, trim, **kwargs)
-        lambda_rr = _theo.l_moment_cov_from_cdf(rv_or_cdf, n, trim, **kwargs)
+        cdf = cast(Callable[[float], float], rv_or_cdf)
+        lambda_r = _theo.l_moment_from_cdf(cdf, r, trim, **kwargs)
+        lambda_rr = _theo.l_moment_cov_from_cdf(cdf, n, trim, **kwargs)
 
     stat = n_obs * _gof_stat(l_r.T, lambda_r, lambda_rr).T[()]
     pval = cast(float | npt.NDArray[np.float_], chdtrc(n, stat))
@@ -268,7 +286,7 @@ def l_moment_gof(
 
 
 def l_stats_gof(
-    rv_or_cdf: rv_continuous | rv_frozen | Callable[[float], float],
+    rv_or_cdf: AnyRV | Callable[[float], float],
     l_stats: npt.NDArray[np.float_],
     n_obs: int,
     /,
@@ -285,12 +303,14 @@ def l_stats_gof(
         msg = f'at least 2 L-stats are required, got {n}'
         raise TypeError(msg)
 
-    if isinstance(rv_or_cdf, rv_continuous | rv_frozen):
-        tau_r = _theo.l_stats_from_rv(rv_or_cdf, n, trim, **kwargs)
-        tau_rr = _theo.l_stats_cov_from_rv(rv_or_cdf, n, trim, **kwargs)
+    if isinstance(rv_or_cdf, rv_continuous.__base__ | rv_frozen):
+        rv = cast('l_rv_generic', rv_or_cdf)
+        tau_r = rv.l_stats(moments=n, trim=trim, **kwargs)
+        tau_rr = rv.l_stats_cov(moments=n, trim=trim, **kwargs)
     else:
-        tau_r = _theo.l_stats_from_cdf(rv_or_cdf, n, trim, **kwargs)
-        tau_rr = _theo.l_stats_cov_from_cdf(rv_or_cdf, n, trim, **kwargs)
+        cdf = cast(Callable[[float], float], rv_or_cdf)
+        tau_r = _theo.l_stats_from_cdf(cdf, n, trim, **kwargs)
+        tau_rr = _theo.l_stats_cov_from_cdf(cdf, n, trim, **kwargs)
 
     stat = n_obs * _gof_stat(t_r.T, tau_r, tau_rr).T[()]
     pval = cast(float | npt.NDArray[np.float_], chdtrc(n, stat))
