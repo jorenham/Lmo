@@ -16,6 +16,9 @@ __all__ = (
 
     'l_moment_influence_from_cdf',
     'l_ratio_influence_from_cdf',
+
+    'l_comoment_from_pdf',
+    'l_coratio_from_pdf',
 )
 
 import functools
@@ -179,7 +182,7 @@ def l_moment_from_cdf(
             \left(H(x) - I_{F(x)}(s+1, \,t+1)\right)
             \,\mathrm{d} x
         & r = 1 \\
-        \frac{c^{(r,s)}_r}{r}
+        \frac{c^{(s,t)}_r}{r}
         \int_{-\infty}^{\infty}
             F(x)^{s+1}
             \left(1 - F(x)\right)^{t+1}
@@ -192,7 +195,7 @@ def l_moment_from_cdf(
     where
 
     $$
-    c^{(r,s)}_r =
+    c^{(s,t)}_r =
     \frac{r+s+t}{r}
     \frac{B(r,\,r+s+t)}{B(r+s,\,r+t)} \;,
     $$
@@ -371,7 +374,7 @@ def l_moment_from_ppf(
 
     $$
     \lambda^{(s, t)}_r =
-    c^{(r,s)}_r
+    c^{(s,t)}_r
     \int_0^1
         F^s (1 - F)^t
         \,\tilde{P}^{(t, s)}_{r-1}(F)
@@ -383,7 +386,7 @@ def l_moment_from_ppf(
     where
 
     $$
-    c^{(r,s)}_r =
+    c^{(s,t)}_r =
     \frac{r+s+t}{r}
     \frac{B(r,\,r+s+t)}{B(r+s,\,r+t)} \;,
     $$
@@ -1258,3 +1261,259 @@ def l_ratio_influence_from_cdf(
     )
 
     return influence_function
+
+
+# Multivariate
+
+def l_comoment_from_pdf(
+    pdf: Callable[[npt.NDArray[np.float_]], float],
+    cdfs: Sequence[Callable[[float], float]],
+    r: AnyInt,
+    /,
+    trim: AnyTrim = (0, 0),
+    *,
+    supports: Sequence[Pair[float]] | None = None,
+    quad_opts: QuadOptions | None = None,
+) -> npt.NDArray[np.float_]:
+    r"""
+    Evaluate the theoretical L-*co*moment matrix of a multivariate probability
+    distribution, using the joint PDF $f_{\vec{X}}(\vec{x})$ and $n$ marginal
+    CDFs $F_X(x)$ of random vector $\vec{X}$.
+
+    The L-*co*moment matrix is defined as
+
+    $$
+    \Lambda_{r}^{(s, t)} =
+        \left[
+            \lambda_{r [ij]}^{(s, t)}
+        \right]_{n \times n}
+    \;,
+    $$
+
+    with elements
+
+    $$
+    \begin{align}
+    \lambda_{r [ij]}^{(s, t)}
+        &= c^{(s,t)}_r \int_{\mathbb{R^n}}
+            x_i
+            \,F_j(x_j)^s \,\bar{F}_j(x_j)^t
+            \,\tilde{P}^{(s, t)}_r \big(F_j(x_j) \big)
+            \,f(\vec{x})
+            \, d \vec{x} \\
+        &= c^{(s,t)}_r \, \mathbb{E}_{\vec{X}} \left[
+            X_i
+            \,F_j(X_j)^s \,\bar{F}_j(X_j)^t
+            \,\tilde{P}^{(s, t)}_r \big(F_j(X_j) \big)
+            \,f(\vec{X})
+        \right]
+        \;,
+    \end{align}
+    $$
+
+    with vector $\vec{x} = \begin{bmatrix} x_1 & \cdots & x_n \end{bmatrix}^T$,
+    $f$ the joint PDF, $F_i$ the marginal CDF of $X_i$ and $\bar{F}_i$ its
+    complement (the *Survival Function*), $\tilde{P}^{(s, t)}_n$ the shifted
+    Jacobi polynomial, and
+
+    $$
+    c^{(s,t)}_r =
+    \frac{r+s+t}{r}
+    \frac{B(r,\,r+s+t)}{B(r+s,\,r+t)} \;,
+    $$
+
+    a positive constant.
+
+    For $r \ge 2$, it can also be expressed as
+
+    $$
+    \lambda_{r [ij]}^{(s, t)}
+        = c^{(s,t)}_r \mathrm{Cov} \left[
+            X_i ,\;
+            F_j(X_j)^s
+            \,\bar{F}_j(X_j)^t
+            \,\tilde{P}^{(s, t)}_r \big(F_j(X_j) \big)
+            \,f(\vec{X})
+        \right]
+        \;,
+    $$
+
+    and without trim ($s = t = 0$), this simplifies to
+
+    $$
+    \lambda_{r [ij]}
+        = \mathrm{Cov} \left[
+            X_i ,\;
+            \,\tilde{P}_r \big(F_j(X_j) \big)
+            \,f(\vec{X})
+        \right]
+        \;,
+    $$
+
+    with $\tilde{P}_n$ the shifted Legendre polynomial. This last form is
+    precisely the definition introduced by Serfling & Xiao (2007).
+
+    Note that the L-comoments along the diagonal, are equivalent to the
+    (univariate) L-moments, i.e.
+
+    $$
+    \lambda_{r [ii]}^{(s, t)}\big( \vec{X} \big)
+    = \lambda_{r}^{(s, t)}\big( X_i \big) \;.
+    $$
+
+    Notes:
+        At the time of writing, trimmed L-comoments have not been explicitly
+        defined in the literature. Instead, the author
+        ([@jorenham](https://github.com/jorenham/)) derived it
+        by generizing the (untrimmed) L-comoment definition by Serfling &
+        Xiao (2007), analogous to the generalization of L-moments
+        into TL-moments by Elamir & Seheult (2003).
+
+    Examples:
+        Find the L-coscale and TL-coscale matrices of the multivariate
+        Student's t distribution with 4 degrees of freedom:
+
+        >>> from lmo.theoretical import l_comoment_from_pdf
+        >>> from scipy.stats import multivariate_t, t
+        >>> df = 4
+        >>> loc = np.array([0.5, -0.2])
+        >>> cov = np.array([[2.0, 0.3], [0.3, 0.5]])
+        >>> X = multivariate_t(loc, cov, df)
+        >>> cdfs = [t(df, loc[i], np.sqrt(cov[i, i])).cdf for i in range(2)]
+        >>> l_cov = l_comoment_from_pdf(X.pdf, cdfs, 2)
+        >>> l_cov.round(4)
+        array([[1.0413, 0.3124],
+               [0.1562, 0.5207]])
+        >>> tl_cov = l_comoment_from_pdf(X.pdf, cdfs, 2, trim=1)
+        >>> tl_cov.round(4)
+        array([[0.4893, 0.1468],
+               [0.0734, 0.2447]])
+
+        The correlation coefficient can be recovered in several ways:
+
+        >>> cov[0, 1] / np.sqrt(cov[0, 0] * cov[1, 1])  # "true" correlation
+        0.3
+        >>> np.round(l_cov[0, 1] / l_cov[0, 0], 4)
+        0.3
+        >>> np.round(l_cov[1, 0] / l_cov[1, 1], 4)
+        0.3
+        >>> np.round(tl_cov[0, 1] / tl_cov[0, 0], 4)
+        0.3
+        >>> np.round(tl_cov[1, 0] / tl_cov[1, 1], 4)
+        0.3
+
+    Args:
+        pdf:
+            Joint Probability Distribution Function (PDF), that accepts a
+            float vector of size $n$, and returns a scalar in $[0, 1]$.
+        cdfs:
+            Sequence with $n$ marginal CDF's.
+        r:
+            Non-negative integer $r$ with the L-moment order.
+        trim:
+            Left- and right- trim, either as a $(s, t)$ tuple with
+            $s, t > -1/2$, or $t$ as alias for $(t, t)$.
+
+    Other parameters:
+        supports:
+            A sequence with $n$ 2-tuples, corresponding to the marginal
+            integration limits. Defaults to $[(-\infty, \infty), \dots]$.
+        quad_opts:
+            Optional dict of options to pass to
+            [`scipy.integrate.quad`][scipy.integrate.quad].
+
+    Returns:
+        lmbda:
+            The population L-*co*moment matrix with shape $n \times n$.
+
+    References:
+        - [E. Elamir & A. Seheult (2003) - Trimmed L-moments](
+            https://doi.org/10.1016/S0167-9473(02)00250-5)
+        - [R. Serfling & P. Xiao (2007) - A Contribution to Multivariate
+          L-Moments: L-Comoment
+          Matrices](https://doi.org/10.1016/j.jmva.2007.01.008)
+    """
+    n = len(cdfs)
+    limits = supports or [_tighten_cdf_support(cdf, None) for cdf in cdfs]
+
+    _r = clean_order(int(r))
+    s, t = clean_trim(trim)
+
+    l_r = np.empty((n, n))
+
+    c = _l_moment_const(_r, s, t)
+
+    def integrand(i: int, j: int, *xs: float) -> float:
+        x = np.asarray(xs)
+        q_j = cdfs[j](x[j])
+        p_j = eval_sh_jacobi(_r - 1, t, s, q_j)
+        return c * x[i] * q_j**s * (1 - q_j)**t * p_j * pdf(x)
+
+    for i, j in np.ndindex(l_r.shape):
+        if i == j:
+            l_r[i, j] = l_moment_from_cdf(
+                cdfs[i],
+                _r,
+                trim=(s, t),
+                support=limits[i],
+                quad_opts=quad_opts,
+            )
+        else:
+            l_r[i, j] = cast(
+                float,
+                sci.nquad(
+                    functools.partial(integrand, i, j),
+                    limits,
+                    opts=quad_opts,
+                )[0],
+            ) if _r else 0
+
+    return round0(l_r)
+
+
+def l_coratio_from_pdf(
+    pdf: Callable[[npt.NDArray[np.float_]], float],
+    cdfs: Sequence[Callable[[float], float]],
+    r: AnyInt,
+    r0: AnyInt = 2,
+    /,
+    trim: AnyTrim = (0, 0),
+    *,
+    supports: Sequence[Pair[float]] | None = None,
+    quad_opts: QuadOptions | None = None,
+) -> npt.NDArray[np.float_]:
+    r"""
+    Evaluate the theoretical L-*co*moment ratio matrix of a multivariate
+    probability distribution, using the joint PDF $f_{\vec{X}}(\vec{x})$ and
+    $n$ marginal CDFs $F_X(x)$ of random vector $\vec{X}$.
+
+    $$
+    \tilde \Lambda_{r,r_0}^{(s, t)} =
+        \left[
+            \left. \lambda_{r [ij]}^{(s, t)} \right/
+            \lambda_{r_0 [jj]}^{(s, t)}
+        \right]_{n \times n}
+    $$
+
+    See Also:
+        - [`l_comoment_from_pdf`][lmo.theoretical.l_comoment_from_pdf]
+        - [`lmo.l_coratio`][lmo.l_coratio]
+    """
+    ll_r = l_comoment_from_pdf(
+        pdf,
+        cdfs,
+        r,
+        trim=trim,
+        supports=supports,
+        quad_opts=quad_opts,
+    )
+    ll_r0 = l_comoment_from_pdf(
+        pdf,
+        cdfs,
+        r0,
+        trim=trim,
+        supports=supports,
+        quad_opts=quad_opts,
+    )
+
+    return ll_r / np.expand_dims(ll_r0.diagonal(), -1)
