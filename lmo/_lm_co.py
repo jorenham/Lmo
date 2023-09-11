@@ -17,7 +17,7 @@ from numpy import typing as npt
 
 from ._lm import l_weights
 from ._utils import clean_order, ordered
-from .typing import AnyInt, IntVector, LComomentOptions, SortKind
+from .typing import AnyInt, AnyTrim, IntVector, LComomentOptions, SortKind
 
 if sys.version_info < (3, 11):
     from typing_extensions import Unpack
@@ -31,7 +31,7 @@ def l_comoment(
     a: npt.ArrayLike,
     r: AnyInt | IntVector,
     /,
-    trim: tuple[float, float] = (0, 0),
+    trim: AnyTrim = (0, 0),
     *,
     dtype: np.dtype[T] | type[T] = np.float_,
     rowvar: bool = True,
@@ -179,7 +179,7 @@ def l_coratio(
     r: AnyInt | IntVector,
     s: AnyInt | IntVector,
     /,
-    trim: tuple[float, float] = (0, 0),
+    trim: AnyTrim = (0, 0),
     *,
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Unpack[LComomentOptions],
@@ -210,7 +210,7 @@ def l_coratio(
 def l_costats(
     a: npt.ArrayLike,
     /,
-    trim: tuple[float, float] = (0, 0),
+    trim: AnyTrim = (0, 0),
     *,
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Unpack[LComomentOptions],
@@ -232,7 +232,7 @@ def l_costats(
 def l_coloc(
     a: npt.ArrayLike,
     /,
-    trim: tuple[float, float] = (0, 0),
+    trim: AnyTrim = (0, 0),
     *,
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Unpack[LComomentOptions],
@@ -281,7 +281,7 @@ def l_coloc(
 def l_coscale(
     a: npt.ArrayLike,
     /,
-    trim: tuple[float, float] = (0, 0),
+    trim: AnyTrim = (0, 0),
     *,
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Unpack[LComomentOptions],
@@ -317,7 +317,7 @@ def l_coscale(
 def l_corr(
     a: npt.ArrayLike,
     /,
-    trim: tuple[float, float] = (0, 0),
+    trim: AnyTrim = (0, 0),
     *,
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Unpack[LComomentOptions],
@@ -363,7 +363,7 @@ def l_corr(
 def l_coskew(
     a: npt.ArrayLike,
     /,
-    trim: tuple[float, float] = (0, 0),
+    trim: AnyTrim = (0, 0),
     *,
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Unpack[LComomentOptions],
@@ -383,7 +383,7 @@ def l_coskew(
 def l_cokurtosis(
     a: npt.ArrayLike,
     /,
-    trim: tuple[float, float] = (0, 0),
+    trim: AnyTrim = (0, 0),
     *,
     dtype: np.dtype[T] | type[T] = np.float_,
     **kwargs: Unpack[LComomentOptions],
