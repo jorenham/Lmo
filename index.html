@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.2.6">
+      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.2.8">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.0e669242.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.046329b4.min.css">
       
         
         <link rel="stylesheet" href="assets/stylesheets/palette.85d0ee34.min.css">
@@ -275,7 +275,7 @@
       
         <li class="md-nav__item">
   <a href="#key-features" class="md-nav__link">
-    Key Features:
+    Key Features
   </a>
   
 </li>
@@ -289,7 +289,7 @@
       
         <li class="md-nav__item">
   <a href="#roadmap" class="md-nav__link">
-    Roadmap:
+    Roadmap
   </a>
   
 </li>
@@ -389,7 +389,7 @@
       
         <li class="md-nav__item">
   <a href="#key-features" class="md-nav__link">
-    Key Features:
+    Key Features
   </a>
   
 </li>
@@ -403,7 +403,7 @@
       
         <li class="md-nav__item">
   <a href="#roadmap" class="md-nav__link">
-    Roadmap:
+    Roadmap
   </a>
   
 </li>
@@ -449,7 +449,7 @@
 
 <!-- BEGIN INCLUDE ../README.md '&lt;!--overview-start--&gt;' '&lt;!--overview-end--&gt;' -->
 
-<p><img src="https://jorenham.github.io/lmo/img/lmo.svg" alt="jorenham/lmo" width="128" align="right"></p>
+<p><img src="https://jorenham.github.io/Lmo/img/lmo.svg" alt="jorenham/lmo" width="128" align="right"></p>
 <h1 id="lmo-trimmed-l-moments-and-l-comoments">Lmo - Trimmed L-moments and L-comoments</h1>
 <p><img alt="GitHub Workflow Status (with branch)" src="https://img.shields.io/github/actions/workflow/status/jorenham/lmo/CI.yml?branch=master&amp;style=flat-square" />
 <a href="https://pypi.org/project/lmo/"><img alt="PyPI" src="https://img.shields.io/pypi/v/lmo?style=flat-square" /></a>
@@ -469,18 +469,21 @@ Uniform or multi-dimensional, Lmo can summarize it all with one quick glance!
 probability distribution, and are more robust and efficient.
 The "L" stands for Linear; it is a linear combination of order statistics.
 So Lmo is as fast as sorting your samples (in terms of time-complexity).</p>
-<h2 id="key-features">Key Features:</h2>
+<h2 id="key-features">Key Features</h2>
 <ul>
-<li>Calculates trimmed L-moments and L-<em>co</em>moments, from data or a distribution
-  function.</li>
-<li>Complete support for trimmed L-moment (TL-moments): 
-  <code>lmo.l_moment(..., trim=(1 / 137, 3.1416))</code>.</li>
+<li>Calculates trimmed L-moments and L-<em>co</em>moments, from samples or any
+  <code>scipy.stats</code> distribution.</li>
+<li>Full support for trimmed L-moment (TL-moments), e.g.
+  <code>lmo.l_moment(..., trim=(1/137, 3.1416))</code>.</li>
+<li>Method of L-moments for robust distribution fitting.</li>
 <li>Fast estimation of L-<em>co</em>moment matrices from your multidimensional data.</li>
-<li>A fully non-parametric <code>scipy.stats</code>-like distribution, <code>lmo.l_rv</code>.
-  It's very efficient, robust, fast, and requires only some L-mo's!</li>
+<li>Goodness-of-fit test, using L-moment or L-moment ratio's.</li>
+<li>Non-parametric estimation of continuous distributions 
+  with <code>lmo.l_rv_nonparametric</code></li>
 <li>Exact (co)variance structure of the sample- and population L-moments.</li>
-<li>Complete <a href="https://jorenham.github.io/lmo/">docs</a>, including overly 
-  complex <span class="arithmatex">\(\TeX\)</span> spaghetti equations.</li>
+<li>Theoretical &amp; empirical influence functions of L-moments &amp; L-ratio's.</li>
+<li>Complete <a href="https://jorenham.github.io/lmo/">docs</a>, including detailed API 
+reference with usage examples and with mathematical <span class="arithmatex">\(\TeX\)</span> definitions.</li>
 <li>Clean Pythonic syntax for ease of use.</li>
 <li>Vectorized functions for very fast fitting.</li>
 <li>Fully typed, tested, and tickled.</li>
@@ -488,29 +491,25 @@ So Lmo is as fast as sorting your samples (in terms of time-complexity).</p>
 <h2 id="quick-example">Quick example</h2>
 <p>Even if your data is pathological like 
 <a href="https://wikipedia.org/wiki/Cauchy_distribution">Cauchy</a>, and the L-moments 
-are not defined, the trimmed L-moments (TL-moments) can be used instead:</p>
+are not defined, the trimmed L-moments (TL-moments) can be used instead.
+Let's calculate the TL-location and TL-scale of a small amount of samples:</p>
 <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">lmo</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">1980</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">standard_cauchy</span><span class="p">(</span><span class="mi">96</span><span class="p">)</span>  <span class="c1"># pickle me, Lmo</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">x</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>  <span class="c1"># don&#39;t try this at home</span>
-<span class="go">(-1.7113440959133905, 19.573507308373326)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">lmo</span><span class="o">.</span><span class="n">l_loc</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">lmo</span><span class="o">.</span><span class="n">l_scale</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> 
-<span class="go">(-0.17937038148581977, 0.6828766469913776)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lmo</span><span class="o">.</span><span class="n">l_moment</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span>
+<span class="go">array([-0.17937038,  0.68287665])</span>
 </code></pre></div>
-<p>For reference; the theoretical TL-location and TL-scale of the standard 
-Cauchy distribution are <span class="arithmatex">\(\lambda^{(1, 1)}_{1} = 0\)</span> and 
-<span class="arithmatex">\(\lambda^{(1, 1)}_2 \approx 0.7\)</span> 
-(<a href="https://doi.org/10.1016/S0167-9473(02)00250-5">Elamir &amp; Seheult, 2003</a>).</p>
+<p>Now compare with the theoretical standard Cauchy TL-moments:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">cauchy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cauchy</span><span class="o">.</span><span class="n">l_moment</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="go">array([0.        , 0.69782723])</span>
+</code></pre></div>
 <hr />
 <p>See the <a href="https://jorenham.github.io/lmo/">documentation</a> for more examples and
 the API reference.</p>
-<h2 id="roadmap">Roadmap:</h2>
+<h2 id="roadmap">Roadmap</h2>
 <ul>
-<li>Add methods to all <code>scipy.stats</code> univariate distributions, for finding 
-  the theoretical/population L-mo's.</li>
-<li>Robust distribution fitting, using the (generalized) method of L-moments.</li>
-<li>A generic goodness-of-fit test.</li>
 <li>Automatic trim-length selection.</li>
 <li>Plotting utilities (deps optional), e.g. for L-moment ratio diagrams.</li>
 <li>Extended multivariate support, e.g. theoretical L-comoments, and 
@@ -598,7 +597,7 @@ the API reference.</p>
     <script id="__config" type="application/json">{"base": ".", "features": [], "search": "assets/javascripts/workers/search.dfff1995.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="assets/javascripts/bundle.78eede0e.min.js"></script>
+      <script src="assets/javascripts/bundle.dff1b7c8.min.js"></script>
       
         <script src="scripts/mathjax.js"></script>
       
