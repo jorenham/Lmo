@@ -41,9 +41,9 @@ So Lmo is as fast as sorting your samples (in terms of time-complexity).
 - Non-parametric estimation of continuous distributions 
   with `lmo.l_rv_nonparametric`
 - Exact (co)variance structure of the sample- and population L-moments.
-- Theoretical influence functions of the L-moment (ratio's) of distributions.
-- Complete [docs](https://jorenham.github.io/lmo/), including overly 
-  complex $\TeX$ spaghetti equations.
+- Theoretical & empirical influence functions of L-moments & L-ratio's.
+- Complete [docs](https://jorenham.github.io/lmo/), including detailed API 
+reference with usage examples and with mathematical $\TeX$ definitions.
 - Clean Pythonic syntax for ease of use.
 - Vectorized functions for very fast fitting.
 - Fully typed, tested, and tickled.
