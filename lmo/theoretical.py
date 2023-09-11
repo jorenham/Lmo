@@ -51,6 +51,7 @@ from scipy.stats.distributions import (  # type: ignore
     rv_frozen,
 )
 
+from ._poly import eval_sh_jacobi
 from ._utils import (
     broadstack,
     clean_order,
@@ -105,82 +106,6 @@ def _l_moment_const(r: int, s: float, t: float, k: int = 0) -> float:
     else:
         v = exp(lgamma(r + s + t + 1) - lgamma(r + s) - lgamma(r + t))
     return factorial(r - 1 - k) / r * v
-
-
-@overload
-def _eval_sh_jacobi(n: int, a: float, b: float, x: float) -> float:
-    ...
-
-
-@overload
-def _eval_sh_jacobi(
-    n: int,
-    a: float,
-    b: float,
-    x: npt.NDArray[np.float_],
-) -> npt.NDArray[np.float_]:
-    ...
-
-
-def _eval_sh_jacobi(
-    n: int,
-    a: float,
-    b: float,
-    x: float | npt.NDArray[np.float_],
-) -> float | npt.NDArray[np.float_]:
-    """
-    Fast evaluation of the n-th shifted Jacobi polynomial.
-    Faster than pre-computing using np.Polynomial, and than
-    `scipy.special.eval_jacobi` for n < 4.
-
-    Todo:
-        move to _poly, vectorize, annotate, document, test
-
-    """
-    if n == 0:
-        return 1
-
-    u = 2 * x - 1
-
-    if a == b == 0:
-        if n == 1:
-            return u
-
-        v = x * (x - 1)
-
-        if n == 2:
-            return 1 + 6 * v
-        if n == 3:
-            return (1 + 10 * v) * u
-        if n == 4:
-            return 1 + 10 * v * (2 + 7 * v)
-
-        return scs.eval_sh_legendre(n, x)
-
-    if n == 1:
-        return (a + b + 2) * x - b - 1
-    if n == 2:
-        return (
-            b * (b + 3)
-            - (a + b + 3) * (
-                2 * b + 4
-                - (a + b + 4) * x
-            ) * x
-        ) / 2 + 1
-    if n == 3:
-        return (
-            (1 + a) * (2 + a) * (3 + a)
-            + (4 + a + b) * (
-                3 * (2 + a) * (3 + a)
-                + (5 + a + b) * (
-                    3 * (3 + a)
-                    + (6 + a + b) * (x - 1)
-                ) * (x - 1)
-            ) * (x - 1)
-        ) / 6
-
-    # don't use `eval_sh_jacobi`: https://github.com/scipy/scipy/issues/18988
-    return scs.eval_jacobi(n, a, b, u)
 
 
 def _tighten_cdf_support(
@@ -473,7 +398,7 @@ def l_moment_from_cdf(
         return (
             p ** (s + 1)
             * (1 - p) ** (t + 1)
-            * _eval_sh_jacobi(_r - 2, t + 1, s + 1, p)
+            * eval_sh_jacobi(_r - 2, t + 1, s + 1, p)
         )
 
     a, d = support or _tighten_cdf_support(cdf, support)
@@ -643,7 +568,7 @@ def l_moment_from_ppf(
     s, t = clean_trim(trim)
 
     def integrand(p: float, _r: int) -> float:
-        return p**s * (1 - p) ** t * _eval_sh_jacobi(_r - 1, t, s, p) * ppf(p)
+        return p**s * (1 - p) ** t * eval_sh_jacobi(_r - 1, t, s, p) * ppf(p)
 
     quad_kwds = quad_opts or {}
     quad_kwds.setdefault('limit', QUAD_LIMIT)
@@ -1353,10 +1278,10 @@ def l_moment_cov_from_cdf(
         u, v = _cdf(x), _cdf(y)
         return  c_n[k] * c_n[r] * (
             (
-                _eval_sh_jacobi(k, t, s, u)
-                * _eval_sh_jacobi(r, t, s, v)
-                + _eval_sh_jacobi(r, t, s, u)
-                * _eval_sh_jacobi(k, t, s, v)
+                eval_sh_jacobi(k, t, s, u)
+                * eval_sh_jacobi(r, t, s, v)
+                + eval_sh_jacobi(r, t, s, u)
+                * eval_sh_jacobi(k, t, s, v)
             )
             * u * (1 - v)
             * (u * v)**s * ((1 - u) * (1 - v))**t
@@ -1701,15 +1626,20 @@ def l_moment_influence_from_cdf(
     else:
         lm = l_moment
 
+    a, b = support or _tighten_cdf_support(cast(UnivariateCDF, cdf), support)
     c = _l_moment_const(_r, s, t)
 
     def influence(x: V, /) -> V:
         _x = np.asanyarray(x, np.float_)
-        q = cdf(_x)
+        q = np.piecewise(
+            _x,
+            [_x <= a, (_x > a) & (_x < b), _x >= b],
+            [0, cdf, 1],
+        )
         w = round0(c * q**s * (1 - q)**t, tol)
 
         # cheat a bit and replace 0 * inf by 0, ensuring convergence if s or t
-        alpha = w * _eval_sh_jacobi(_r - 1, t, s, q) * np.where(w, _x, 0)
+        alpha = w * eval_sh_jacobi(_r - 1, t, s, q) * np.where(w, _x, 0)
 
         return cast(V, round0(alpha - lm, tol)[()])
 
