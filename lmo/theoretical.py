@@ -554,7 +554,7 @@ def l_comoment_from_pdf(
     $$
     \lambda_{r [ij]}^{(s, t)}
         = c^{(s,t)}_r \mathrm{Cov} \left[
-            X_i ,\,
+            X_i ,\;
             F_j(X_j)^s
             \,\bar{F}_j(X_j)^t
             \,\tilde{P}^{(s, t)}_r \big(F_j(X_j) \big)
@@ -593,6 +593,39 @@ def l_comoment_from_pdf(
         by generizing the (untrimmed) L-comoment definition by Serfling &
         Xiao (2007), analogous to the generalization of L-moments
         into TL-moments by Elamir & Seheult (2003).
+
+    Examples:
+        Find the L-coscale and TL-coscale matrices of the multivariate
+        Student's t distribution with 4 degrees of freedom:
+
+        >>> from lmo.theoretical import l_comoment_from_pdf
+        >>> from scipy.stats import multivariate_t, t
+        >>> df = 4
+        >>> loc = np.array([0.5, -0.2])
+        >>> cov = np.array([[2.0, 0.3], [0.3, 0.5]])
+        >>> X = multivariate_t(loc, cov, df)
+        >>> cdfs = [t(df, loc[i], np.sqrt(cov[i, i])).cdf for i in range(2)]
+        >>> l_cov = l_comoment_from_pdf(X.pdf, cdfs, 2)
+        >>> l_cov.round(4)
+        array([[1.0413, 0.3124],
+               [0.1562, 0.5207]])
+        >>> tl_cov = l_comoment_from_pdf(X.pdf, cdfs, 2, trim=1)
+        >>> tl_cov.round(4)
+        array([[0.4893, 0.1468],
+               [0.0734, 0.2447]])
+
+        The correlation coefficient can be recovered in several ways:
+
+        >>> cov[0, 1] / np.sqrt(cov[0, 0] * cov[1, 1])  # "true" correlation
+        0.3
+        >>> np.round(l_cov[0, 1] / l_cov[0, 0], 4)
+        0.3
+        >>> np.round(l_cov[1, 0] / l_cov[1, 1], 4)
+        0.3
+        >>> np.round(tl_cov[0, 1] / tl_cov[0, 0], 4)
+        0.3
+        >>> np.round(tl_cov[1, 0] / tl_cov[1, 1], 4)
+        0.3
 
     Args:
         pdf:
