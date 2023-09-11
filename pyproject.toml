@@ -71,7 +71,6 @@ line-profiler = "^4.1"
 minversion = "7.0"
 addopts = [
     "-ra",
-    "-W error",
     "--showlocals",
     "--strict-markers",
     "--strict-config",
@@ -82,6 +81,10 @@ doctest_optionflags = [
     "IGNORE_EXCEPTION_DETAIL",
     "ELLIPSIS",
 ]
+xfail_strict = true
+filterwarnings = ["error"]
+log_cli_level = "info"
+testpaths = ["tests"]
 
 
 [tool.pyright]
