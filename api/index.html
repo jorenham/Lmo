@@ -22,7 +22,7 @@
       
       
       <link rel="icon" href="../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.2.8">
+      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.3.1">
     
     
       
@@ -841,6 +841,20 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#lmo.theoretical.l_comoment_from_pdf" class="md-nav__link">
+    l_comoment_from_pdf()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.theoretical.l_coratio_from_pdf" class="md-nav__link">
+    l_coratio_from_pdf()
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1563,6 +1577,20 @@
           <li class="md-nav__item">
   <a href="#lmo.theoretical.l_ratio_influence_from_cdf" class="md-nav__link">
     l_ratio_influence_from_cdf()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.theoretical.l_comoment_from_pdf" class="md-nav__link">
+    l_comoment_from_pdf()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.theoretical.l_coratio_from_pdf" class="md-nav__link">
+    l_coratio_from_pdf()
   </a>
   
 </li>
@@ -7212,7 +7240,7 @@ using its Cumulative Distribution Function (CDF) <span class="arithmatex">\(F_X(
         \left(H(x) - I_{F(x)}(s+1, \,t+1)\right)
         \,\mathrm{d} x
     &amp; r = 1 \\
-    \frac{c^{(r,s)}_r}{r}
+    \frac{c^{(s,t)}_r}{r}
     \int_{-\infty}^{\infty}
         F(x)^{s+1}
         \left(1 - F(x)\right)^{t+1}
@@ -7223,7 +7251,7 @@ using its Cumulative Distribution Function (CDF) <span class="arithmatex">\(F_X(
 \]</div>
 <p>where</p>
 <div class="arithmatex">\[
-c^{(r,s)}_r =
+c^{(s,t)}_r =
 \frac{r+s+t}{r}
 \frac{B(r,\,r+s+t)}{B(r+s,\,r+t)} \;,
 \]</div>
@@ -7504,7 +7532,7 @@ quantile function, which is the inverse of the Cumulative Distribution
 Function (CDF).</p>
 <div class="arithmatex">\[
 \lambda^{(s, t)}_r =
-c^{(r,s)}_r
+c^{(s,t)}_r
 \int_0^1
     F^s (1 - F)^t
     \,\tilde{P}^{(t, s)}_{r-1}(F)
@@ -7514,7 +7542,7 @@ c^{(r,s)}_r
 \]</div>
 <p>where</p>
 <div class="arithmatex">\[
-c^{(r,s)}_r =
+c^{(s,t)}_r =
 \frac{r+s+t}{r}
 \frac{B(r,\,r+s+t)}{B(r+s,\,r+t)} \;,
 \]</div>
@@ -8809,6 +8837,330 @@ are calculated from the CDF.</p>
   <ul>
 <li><a class="autorefs autorefs-internal" href="#lmo.theoretical.l_ratio_from_cdf"><code>l_ratio_from_cdf</code></a></li>
 <li><a class="autorefs autorefs-internal" href="#lmo.l_ratio"><code>lmo.l_ratio</code></a></li>
+</ul>
+</details>
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h4 id="lmo.theoretical.l_comoment_from_pdf" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">theoretical</span><span class="o">.</span><span class="n">l_comoment_from_pdf</span><span class="p">(</span><span class="n">pdf</span><span class="p">,</span> <span class="n">cdfs</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="o">*</span><span class="p">,</span> <span class="n">supports</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">quad_opts</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+</h4>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Evaluate the theoretical L-<em>co</em>moment matrix of a multivariate probability
+distribution, using the joint PDF <span class="arithmatex">\(f_{\vec{X}}(\vec{x})\)</span> and <span class="arithmatex">\(n\)</span> marginal
+CDFs <span class="arithmatex">\(F_X(x)\)</span> of random vector <span class="arithmatex">\(\vec{X}\)</span>.</p>
+<p>The L-<em>co</em>moment matrix is defined as</p>
+<div class="arithmatex">\[
+\Lambda_{r}^{(s, t)} =
+    \left[
+        \lambda_{r [ij]}^{(s, t)}
+    \right]_{n \times n}
+\;,
+\]</div>
+<p>with elements</p>
+<div class="arithmatex">\[
+\begin{align}
+\lambda_{r [ij]}^{(s, t)}
+    &amp;= c^{(s,t)}_r \int_{\mathbb{R^n}}
+        x_i
+        \,F_j(x_j)^s \,\bar{F}_j(x_j)^t
+        \,\tilde{P}^{(s, t)}_r \big(F_j(x_j) \big)
+        \,f(\vec{x})
+        \, d \vec{x} \\
+    &amp;= c^{(s,t)}_r \, \mathbb{E}_{\vec{X}} \left[
+        X_i
+        \,F_j(X_j)^s \,\bar{F}_j(X_j)^t
+        \,\tilde{P}^{(s, t)}_r \big(F_j(X_j) \big)
+        \,f(\vec{X})
+    \right]
+    \;,
+\end{align}
+\]</div>
+<p>with vector <span class="arithmatex">\(\vec{x} = \begin{bmatrix} x_1 &amp; \cdots &amp; x_n \end{bmatrix}^T\)</span>,
+<span class="arithmatex">\(f\)</span> the joint PDF, <span class="arithmatex">\(F_i\)</span> the marginal CDF of <span class="arithmatex">\(X_i\)</span> and <span class="arithmatex">\(\bar{F}_i\)</span> its
+complement (the <em>Survival Function</em>), <span class="arithmatex">\(\tilde{P}^{(s, t)}_n\)</span> the shifted
+Jacobi polynomial, and</p>
+<div class="arithmatex">\[
+c^{(s,t)}_r =
+\frac{r+s+t}{r}
+\frac{B(r,\,r+s+t)}{B(r+s,\,r+t)} \;,
+\]</div>
+<p>a positive constant.</p>
+<p>For <span class="arithmatex">\(r \ge 2\)</span>, it can also be expressed as</p>
+<div class="arithmatex">\[
+\lambda_{r [ij]}^{(s, t)}
+    = c^{(s,t)}_r \mathrm{Cov} \left[
+        X_i ,\;
+        F_j(X_j)^s
+        \,\bar{F}_j(X_j)^t
+        \,\tilde{P}^{(s, t)}_r \big(F_j(X_j) \big)
+        \,f(\vec{X})
+    \right]
+    \;,
+\]</div>
+<p>and without trim (<span class="arithmatex">\(s = t = 0\)</span>), this simplifies to</p>
+<div class="arithmatex">\[
+\lambda_{r [ij]}
+    = \mathrm{Cov} \left[
+        X_i ,\;
+        \,\tilde{P}_r \big(F_j(X_j) \big)
+        \,f(\vec{X})
+    \right]
+    \;,
+\]</div>
+<p>with <span class="arithmatex">\(\tilde{P}_n\)</span> the shifted Legendre polynomial. This last form is
+precisely the definition introduced by Serfling &amp; Xiao (2007).</p>
+<p>Note that the L-comoments along the diagonal, are equivalent to the
+(univariate) L-moments, i.e.</p>
+<div class="arithmatex">\[
+\lambda_{r [ii]}^{(s, t)}\big( \vec{X} \big)
+= \lambda_{r}^{(s, t)}\big( X_i \big) \;.
+\]</div>
+
+<details class="notes" open>
+  <summary>Notes</summary>
+  <p>At the time of writing, trimmed L-comoments have not been explicitly
+defined in the literature. Instead, the author
+(<a href="https://github.com/jorenham/">@jorenham</a>) derived it
+by generizing the (untrimmed) L-comoment definition by Serfling &amp;
+Xiao (2007), analogous to the generalization of L-moments
+into TL-moments by Elamir &amp; Seheult (2003).</p>
+</details>
+
+
+<p><strong>Examples:</strong></p>
+    <p>Find the L-coscale and TL-coscale matrices of the multivariate
+Student's t distribution with 4 degrees of freedom:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">lmo.theoretical</span> <span class="kn">import</span> <span class="n">l_comoment_from_pdf</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">multivariate_t</span><span class="p">,</span> <span class="n">t</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="n">multivariate_t</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">cov</span><span class="p">,</span> <span class="n">df</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cdfs</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">cov</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]))</span><span class="o">.</span><span class="n">cdf</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">l_cov</span> <span class="o">=</span> <span class="n">l_comoment_from_pdf</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">pdf</span><span class="p">,</span> <span class="n">cdfs</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">l_cov</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="go">array([[1.0413, 0.3124],</span>
+<span class="go">       [0.1562, 0.5207]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tl_cov</span> <span class="o">=</span> <span class="n">l_comoment_from_pdf</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">pdf</span><span class="p">,</span> <span class="n">cdfs</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tl_cov</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="go">array([[0.4893, 0.1468],</span>
+<span class="go">       [0.0734, 0.2447]])</span>
+</code></pre></div>
+    <p>The correlation coefficient can be recovered in several ways:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">cov</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">cov</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">cov</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>  <span class="c1"># &quot;true&quot; correlation</span>
+<span class="go">0.3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">l_cov</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">l_cov</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="mi">4</span><span class="p">)</span>
+<span class="go">0.3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">l_cov</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">l_cov</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="mi">4</span><span class="p">)</span>
+<span class="go">0.3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">tl_cov</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">tl_cov</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="mi">4</span><span class="p">)</span>
+<span class="go">0.3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">tl_cov</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">tl_cov</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="mi">4</span><span class="p">)</span>
+<span class="go">0.3</span>
+</code></pre></div>
+
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>PARAMETER</b></th>
+        <th><b> DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>pdf</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Joint Probability Distribution Function (PDF), that accepts a
+float vector of size <span class="arithmatex">\(n\)</span>, and returns a scalar in <span class="arithmatex">\([0, 1]\)</span>.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><span title="collections.abc.Callable">Callable</span>[[<a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">npt</a>.<span title="numpy.NDArray">NDArray</span>[<a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a class="autorefs autorefs-external" title="numpy.float_" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float_">float_</a>]], float]</code>
+                </span>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td><code>cdfs</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Sequence with <span class="arithmatex">\(n\)</span> marginal CDF's.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><span title="collections.abc.Sequence">Sequence</span>[<span title="collections.abc.Callable">Callable</span>[[float], float]]</code>
+                </span>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td><code>r</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Non-negative integer <span class="arithmatex">\(r\)</span> with the L-moment order.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><span title="lmo.typing.AnyInt">AnyInt</span></code>
+                </span>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td><code>trim</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Left- and right- trim, either as a <span class="arithmatex">\((s, t)\)</span> tuple with
+<span class="arithmatex">\(s, t &gt; -1/2\)</span>, or <span class="arithmatex">\(t\)</span> as alias for <span class="arithmatex">\((t, t)\)</span>.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><span title="lmo.typing.AnyTrim">AnyTrim</span></code>
+                </span>
+                <span class="doc-param-default">
+                  <b>DEFAULT:</b> 
+                    <code>(0, 0)</code>
+                </span>
+            </p>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>PARAMETER</b></th>
+        <th><b>DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>supports</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>A sequence with <span class="arithmatex">\(n\)</span> 2-tuples, corresponding to the marginal
+integration limits. Defaults to <span class="arithmatex">\([(-\infty, \infty), \dots]\)</span>.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><span title="collections.abc.Sequence">Sequence</span>[<span title="lmo.theoretical.Pair">Pair</span>[float]] | None</code>
+                </span>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td><code>quad_opts</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Optional dict of options to pass to
+<a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.quad.html#scipy.integrate.quad"><code>scipy.integrate.quad</code></a>.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><span title="lmo.typing.QuadOptions">QuadOptions</span> | None</code>
+                </span>
+            </p>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>RETURNS</b></th>
+        <th><b>DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+              <code>lmbda</code>
+          </td>
+          <td class="doc-returns-details">
+            <div class="doc-md-description">
+              <p>The population L-<em>co</em>moment matrix with shape <span class="arithmatex">\(n \times n\)</span>.</p>
+            </div>
+              <p>
+                <span class="doc-returns-annotation">
+                  <b>TYPE:</b>
+                    <code><a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">npt</a>.<span title="numpy.NDArray">NDArray</span>[<a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a class="autorefs autorefs-external" title="numpy.float_" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float_">float_</a>]</code>
+                </span>
+              </p>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+<details class="references" open>
+  <summary>References</summary>
+  <ul>
+<li><a href="https://doi.org/10.1016/S0167-9473(02)00250-5">E. Elamir &amp; A. Seheult (2003) - Trimmed L-moments</a></li>
+<li><a href="https://doi.org/10.1016/j.jmva.2007.01.008">R. Serfling &amp; P. Xiao (2007) - A Contribution to Multivariate
+  L-Moments: L-Comoment
+  Matrices</a></li>
+</ul>
+</details>
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h4 id="lmo.theoretical.l_coratio_from_pdf" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">theoretical</span><span class="o">.</span><span class="n">l_coratio_from_pdf</span><span class="p">(</span><span class="n">pdf</span><span class="p">,</span> <span class="n">cdfs</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">r0</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="o">*</span><span class="p">,</span> <span class="n">supports</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">quad_opts</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+</h4>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Evaluate the theoretical L-<em>co</em>moment ratio matrix of a multivariate
+probability distribution, using the joint PDF <span class="arithmatex">\(f_{\vec{X}}(\vec{x})\)</span> and
+<span class="arithmatex">\(n\)</span> marginal CDFs <span class="arithmatex">\(F_X(x)\)</span> of random vector <span class="arithmatex">\(\vec{X}\)</span>.</p>
+<div class="arithmatex">\[
+\tilde \Lambda_{r,r_0}^{(s, t)} =
+    \left[
+        \left. \lambda_{r [ij]}^{(s, t)} \right/
+        \lambda_{r_0 [jj]}^{(s, t)}
+    \right]_{n \times n}
+\]</div>
+
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <ul>
+<li><a class="autorefs autorefs-internal" href="#lmo.theoretical.l_comoment_from_pdf"><code>l_comoment_from_pdf</code></a></li>
+<li><a class="autorefs autorefs-internal" href="#lmo.l_coratio"><code>lmo.l_coratio</code></a></li>
 </ul>
 </details>
   </div>

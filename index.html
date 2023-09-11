@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.2.8">
+      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.3.1">
     
     
       
@@ -476,7 +476,8 @@ So Lmo is as fast as sorting your samples (in terms of time-complexity).</p>
 <li>Full support for trimmed L-moment (TL-moments), e.g.
   <code>lmo.l_moment(..., trim=(1/137, 3.1416))</code>.</li>
 <li>Method of L-moments for robust distribution fitting.</li>
-<li>Fast estimation of L-<em>co</em>moment matrices from your multidimensional data.</li>
+<li>Fast estimation of L-<em>co</em>moment matrices from your multidimensional data
+  or multivariate distribution.</li>
 <li>Goodness-of-fit test, using L-moment or L-moment ratio's.</li>
 <li>Non-parametric estimation of continuous distributions 
   with <code>lmo.l_rv_nonparametric</code></li>
@@ -512,8 +513,6 @@ the API reference.</p>
 <ul>
 <li>Automatic trim-length selection.</li>
 <li>Plotting utilities (deps optional), e.g. for L-moment ratio diagrams.</li>
-<li>Extended multivariate support, e.g. theoretical L-comoments, and 
-  L-regression.</li>
 </ul>
 <h2 id="installation">Installation</h2>
 <p>Lmo is on <a href="https://pypi.org/project/lmo/">PyPI</a>, so you can do something like:</p>
