@@ -357,7 +357,7 @@ def l_moment(
             - $(0, 0)$: The original **L**-moment, introduced by Hosking
                 in 1990.
             - $(0, t)$: **LL**-moment (**L**inear combination of **L**owest
-                order statistics), instroduced by Bayazit & Onoz in 2002.
+                order statistics), introduced by Bayazit & Onoz in 2002.
                 Assigns more weight to smaller observations.
             - $(s, 0)$: **LH**-moment (**L**inear combination of **H**igher
                 order statistics), as described by Wang in 1997.

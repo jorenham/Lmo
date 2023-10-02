@@ -85,7 +85,7 @@ def l_comoment(
                 (1990).  Useful for fitting the e.g. log-normal and generalized
                 extreme value (GEV) distributions.
             - $(0, m)$: **LL**-moment (**L**inear combination of **L**owest
-                order statistics), instroduced by Bayazit & Onoz (2002).
+                order statistics), introduced by Bayazit & Onoz (2002).
                 Assigns more weight to smaller observations.
             - $(s, 0)$: **LH**-moment (**L**inear combination of **H**igher
                 order statistics), by Wang (1997).
