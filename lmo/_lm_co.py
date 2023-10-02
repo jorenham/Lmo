@@ -191,7 +191,7 @@ def l_coratio(
     \tilde \Lambda_{rs}^{(t_1, t_2)} =
         \left[
             \left. \lambda_{r [ij]}^{(t_1, t_2)} \right/
-            \lambda_{s [jj]}^{(t_1, t_2)}
+            \lambda_{s [ii]}^{(t_1, t_2)}
         \right]_{m \times m}
     $$
 
