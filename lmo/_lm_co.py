@@ -16,7 +16,7 @@ import numpy as np
 from numpy import typing as npt
 
 from ._lm import l_weights
-from ._utils import clean_order, ordered
+from ._utils import broadstack, clean_order, ordered
 from .typing import AnyInt, AnyTrim, IntVector, LComomentOptions, SortKind
 
 if sys.version_info < (3, 11):
@@ -199,12 +199,8 @@ def l_coratio(
         - [`lmo.l_comoment`][lmo.l_comoment]
         - [`lmo.l_ratio`][lmo.l_ratio]
     """
-    rs = np.stack(np.broadcast_arrays(np.asarray(r), np.asarray(s)))
-    l_r, l_s = l_comoment(a, rs, trim, dtype=dtype, **kwargs)
-
-    l_s = np.diagonal(l_s, axis1=-2, axis2=-1)
-
-    return l_r / np.expand_dims(l_s, -1)
+    l_r, l_s = l_comoment(a, broadstack(r, s), trim, dtype=dtype, **kwargs)
+    return l_r / np.expand_dims(np.diagonal(l_s, axis1=-2, axis2=-1), -1)
 
 
 def l_costats(
