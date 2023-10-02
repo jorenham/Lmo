@@ -33,36 +33,27 @@ Documentation = "https://jorenham.github.io/lmo/"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
-numpy = [
-    { version = "^1.22", python = "<3.12" },
-    { version = ">=1.26", python = ">=3.12.0rc2" },
-]
-scipy = [
-    { version = "^1.9", python = "<3.12" },
-    { version = ">=1.11", python = ">=3.12.0rc2" },
-]
+numpy = "^1.22.4"
+scipy = "^1.9"
 typing_extensions = { version = "^4.1", python = "<3.11"}
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4"
-hypothesis = { extras = ["numpy"], version = "^6.82" }
+hypothesis = { extras = ["numpy"], version = "^6.87" }
 pyright = "^1.1"
-ruff = ">=0.0.286,<1.0"
+ruff = ">=0.0.292,<1.0"
 codespell = "^2.2"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.5"
-mkdocs-material = "^9.2"
+mkdocs-material = "^9.4"
 mkdocs-include-markdown-plugin = "^6.0"
-mkdocstrings = {extras = ["python"], version = ">=0.22,<1.0"}
+mkdocstrings = {extras = ["python"], version = ">=0.23,<1.0"}
 
 [tool.poetry.group.debug.dependencies]
-ipython = "^8.14"
+ipython = "^8.16"
 ipykernel = "^6.25"
-matplotlib = [
-    { version = "^3.7", python = "<3.12" },
-    { version = ">=3.8.0rc1", python = ">=3.12.0rc1" },
-]
+matplotlib = "^3.8"
 
 line-profiler = "^4.1"
 
