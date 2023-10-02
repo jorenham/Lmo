@@ -22,7 +22,7 @@
       
       
       <link rel="icon" href="../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.3.1">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.3">
     
     
       
@@ -30,10 +30,10 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.046329b4.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.79e020e9.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.85d0ee34.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.a5377069.min.css">
       
       
 
@@ -1833,7 +1833,7 @@ A single scalar <span class="arithmatex">\(t\)</span> can be proivided as well, 
 <li><span class="arithmatex">\((0, 0)\)</span>: The original <strong>L</strong>-moment, introduced by Hosking
     in 1990.</li>
 <li><span class="arithmatex">\((0, t)\)</span>: <strong>LL</strong>-moment (<strong>L</strong>inear combination of <strong>L</strong>owest
-    order statistics), instroduced by Bayazit &amp; Onoz in 2002.
+    order statistics), introduced by Bayazit &amp; Onoz in 2002.
     Assigns more weight to smaller observations.</li>
 <li><span class="arithmatex">\((s, 0)\)</span>: <strong>LH</strong>-moment (<strong>L</strong>inear combination of <strong>H</strong>igher
     order statistics), as described by Wang in 1997.
@@ -3034,7 +3034,7 @@ floats that are bound by <span class="arithmatex">\(t_1 + t_2 &lt; n - r\)</span
     (1990).  Useful for fitting the e.g. log-normal and generalized
     extreme value (GEV) distributions.</li>
 <li><span class="arithmatex">\((0, m)\)</span>: <strong>LL</strong>-moment (<strong>L</strong>inear combination of <strong>L</strong>owest
-    order statistics), instroduced by Bayazit &amp; Onoz (2002).
+    order statistics), introduced by Bayazit &amp; Onoz (2002).
     Assigns more weight to smaller observations.</li>
 <li><span class="arithmatex">\((s, 0)\)</span>: <strong>LH</strong>-moment (<strong>L</strong>inear combination of <strong>H</strong>igher
     order statistics), by Wang (1997).
@@ -3216,7 +3216,7 @@ normal samples:</p>
 \tilde \Lambda_{rs}^{(t_1, t_2)} =
     \left[
         \left. \lambda_{r [ij]}^{(t_1, t_2)} \right/
-        \lambda_{s [jj]}^{(t_1, t_2)}
+        \lambda_{s [ii]}^{(t_1, t_2)}
     \right]_{m \times m}
 \]</div>
 
@@ -9152,7 +9152,7 @@ probability distribution, using the joint PDF <span class="arithmatex">\(f_{\vec
 \tilde \Lambda_{r,r_0}^{(s, t)} =
     \left[
         \left. \lambda_{r [ij]}^{(s, t)} \right/
-        \lambda_{r_0 [jj]}^{(s, t)}
+        \lambda_{r_0 [ii]}^{(s, t)}
     \right]_{n \times n}
 \]</div>
 
@@ -9810,7 +9810,7 @@ for a good reason. It means that transforming order statistics to
 a bunch of L-moments, can be done using a single matrix multiplication
 (see <a class="autorefs autorefs-internal" href="#lmo.linalg.sh_legendre"><code>lmo.linalg.sh_legendre</code></a>).
 By exploiting liniarity, it can easily be chained with this trim matrix,
-to obtain a re-usable order-statistics -&gt; trimmed L-moments
+to obtain a reusable order-statistics -&gt; trimmed L-moments
 transformation (matrix).</p>
 <p>Note that these linear transformations can be used in exactly the same way
 to e.g. calculate several population TL-moments of some random varianble,
@@ -10554,10 +10554,11 @@ moment (PWM) point estimates <span class="arithmatex">\(\beta_k = M_{1,k,0}\)</s
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.dfff1995.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.a264c092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.dff1b7c8.min.js"></script>
+      <script src="../assets/javascripts/bundle.6eac0284.min.js"></script>
       
         <script src="../scripts/mathjax.js"></script>
       
