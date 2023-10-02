@@ -373,7 +373,7 @@ def trim_matrix(
     a bunch of L-moments, can be done using a single matrix multiplication
     (see [`lmo.linalg.sh_legendre`][lmo.linalg.sh_legendre]).
     By exploiting liniarity, it can easily be chained with this trim matrix,
-    to obtain a re-usable order-statistics -> trimmed L-moments
+    to obtain a reusable order-statistics -> trimmed L-moments
     transformation (matrix).
 
     Note that these linear transformations can be used in exactly the same way
