@@ -1491,7 +1491,7 @@ def l_coratio_from_pdf(
     \tilde \Lambda_{r,r_0}^{(s, t)} =
         \left[
             \left. \lambda_{r [ij]}^{(s, t)} \right/
-            \lambda_{r_0 [jj]}^{(s, t)}
+            \lambda_{r_0 [ii]}^{(s, t)}
         \right]_{n \times n}
     $$
 
