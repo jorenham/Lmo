@@ -10,6 +10,7 @@ from typing import (
     Any,
     ClassVar,
     Final,
+    NamedTuple,
     SupportsIndex,
     TypeVar,
     cast,
@@ -19,6 +20,7 @@ from typing import (
 import numpy as np
 import numpy.polynomial as npp
 import numpy.typing as npt
+from scipy.linalg import pinvh  # type: ignore
 from scipy.optimize import OptimizeResult, minimize  # type: ignore
 from scipy.stats.distributions import (  # type: ignore
     rv_continuous,
@@ -33,6 +35,7 @@ from ._utils import (
     clean_trim,
     l_stats_orders,
     moments_to_ratio,
+    plotting_positions,
 )
 from .diagnostic import l_ratio_bounds
 from .theoretical import (
@@ -405,6 +408,19 @@ class l_rv_nonparametric(rv_continuous):  # noqa: N801
         return cls(l_r, trim=_trim, a=a, b=b)
 
 
+class GMMResult(NamedTuple):
+    params: tuple[float, ...]
+    weights: npt.NDArray[np.float64]
+
+    err: float
+    nit: int
+    nfev: int
+    success: bool
+
+    l_moments: npt.NDArray[np.float64]
+    trim: tuple[int, int] | tuple[float, float]
+
+
 class PatchClass:
     patched: ClassVar[set[type[object]]] = set()
 
@@ -435,6 +451,18 @@ class l_rv_generic(PatchClass):  # noqa: N801
     [`scipy.stats.rv_discrete`][scipy.stats.rv_discrete].
     """
 
+    _ctor_param: Mapping[str, Any]
+    _parse_arg_template: str
+    _random_state: np.random.RandomState
+    _stats_has_moments: bool
+    a: float | None
+    b: float | None
+    badvalue: float | None
+    name: int
+    numargs: int
+    shapes: str
+
+    _logpxf: Callable[..., npt.NDArray[np.float64]]
     _cdf: Callable[..., float]
     _ppf: Callable[..., float]
     _argcheck: Callable[..., int]
@@ -447,9 +475,15 @@ class l_rv_generic(PatchClass):  # noqa: N801
     ]
     fit: Callable[..., tuple[float, ...]]
     mean: Callable[..., float]
-    numargs: int
 
-    def _get_xdf(self, *args: Any, loc: float = 0, scale: float = 1) -> tuple[
+    def _qdf(self, q: npt.NDArray[np.float64], *args: Any):
+        """Quantile distribution function (QDF); derivative of the PPF."""
+        return cast(
+            npt.NDArray[np.float64],
+            np.exp(-self._logpxf(self._ppf(q, *args), *args)),
+        )
+
+    def _get_xxf(self, *args: Any, loc: float = 0, scale: float = 1) -> tuple[
         Callable[[float], float],
         Callable[[float], float],
     ]:
@@ -571,7 +605,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
 
         args, loc, scale = self._parse_args(*args, **kwds)
         support = self._get_support(*args)
-        cdf, ppf = self._get_xdf(*args)
+        cdf, ppf = self._get_xxf(*args)
 
         lmda = np.asarray(l_moment_from_cdf(
             cdf,
@@ -942,7 +976,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
             self._parse_args(*args, **kwds),
         )
         support = self._get_support(*args)
-        cdf, _ = self._get_xdf(*args)
+        cdf, _ = self._get_xxf(*args)
 
         cov = l_moment_cov_from_cdf(
             cdf,
@@ -1052,7 +1086,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
         """
         args, _, scale = self._parse_args(*args, **kwds)
         support = self._get_support(*args)
-        cdf, ppf = self._get_xdf(*args)
+        cdf, ppf = self._get_xxf(*args)
 
         cov = l_stats_cov_from_cdf(
             cdf,
@@ -1143,7 +1177,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
         args, loc, scale = self._parse_args(*args, **kwds)
         cdf = cast(
             Callable[[npt.NDArray[np.float_]], npt.NDArray[np.float_]],
-            self._get_xdf(*args, loc=loc, scale=scale)[0],
+            self._get_xxf(*args, loc=loc, scale=scale)[0],
         )
 
         return l_moment_influence_from_cdf(
@@ -1238,7 +1272,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
         args, loc, scale = self._parse_args(*args, **kwds)
         cdf = cast(
             Callable[[npt.NDArray[np.float_]], npt.NDArray[np.float_]],
-            self._get_xdf(*args, loc=loc, scale=scale)[0],
+            self._get_xxf(*args, loc=loc, scale=scale)[0],
         )
 
         return l_ratio_influence_from_cdf(
@@ -1252,18 +1286,20 @@ class l_rv_generic(PatchClass):  # noqa: N801
             tol=tol,
         )
 
-    def _l_moment_error(
+    def _l_gmm_error(
         self,
         theta: npt.NDArray[np.float_],
         trim: tuple[float, float],
         l_data: npt.NDArray[np.float_],
+        weights: npt.NDArray[np.float_],
     ) -> float:
+        """L-GMM objective function."""
         loc, scale, args = self._unpack_loc_scale(theta)
         if scale <= 0 or not self._argcheck(*args):
             return np.inf
 
         l_dist = self.l_moment(
-            np.arange(1, len(l_data) + 1),
+            np.arange(1, weights.shape[0] + 1),
             *args,
             loc=loc,
             scale=scale,
@@ -1271,58 +1307,86 @@ class l_rv_generic(PatchClass):  # noqa: N801
         )
         if np.any(np.isnan(l_dist)):
             msg = (
-                'Method of L-moments encountered a non-finite distribution '
-                'L-moment and cannot continue.'
+                f'Method of L-moments encountered a non-finite  {self.name}'
+                f'L-moment and cannot continue.'
             )
             raise ValueError(msg)
 
+        # normalize by sample L-scale, to avoid numerical issues
+        err = (l_data - l_dist) / l_data[1]
+        return cast(float, err @ weights @ err)
 
-        return (
-            ((l_data - l_dist) / np.maximum(np.abs(l_data), 1e-8))**2
-        ).sum()
 
-
-    def fit_l(
+    def l_gmm(
         self,
-        data: npt.ArrayLike,
-        *args: float,
+        l_moments: npt.ArrayLike,
+        params0: npt.ArrayLike,
+        /,
         trim: AnyTrim = (0, 0),
-        optimizer: str | Callable[..., OptimizeResult] = 'Nelder-Mead',
-    ) -> tuple[float, ...]:
-        """
-        Return estimates of shape (if applicable), location, and scale
-        parameters from data, using Method of L-Moments (LMM).
 
-        Notes:
-            The implementation mimics that of
-            [`fit(method='MM')`][scipy.stats.rv_continuous.fit]
+        maxiter: int = 50,
+        tol: float = 1e-4,
+
+        resolution: int = 1_000,
+        alpha: float = .4,
+        beta: float | None = None,
+
+        optimizer: str | Callable[..., OptimizeResult] = 'Nelder-Mead',
+    ) -> GMMResult:
+        r"""
+        Return estimates of shape (if applicable), location, and scale
+        parameters from estimated sample L-moments.
+
+        This method is an implementation of the $k$-step
+        *Generalized Method of L-Moments* (L-GMM), which is a (novel)
+        improvement of the parametric $2$-step L-GMM by Alvarez et al. (2022).
+
+        Todo:
+            - Document differences between L-MM and L-GMM.
+            - Allow holding loc, scale, or any shape params fixed.
 
         Examples:
             Fitting of the generalized extreme value (GEV) distribution with
             MLE (maximum likelihood estimation, which is used by default in
             `.fit`) vs LMM with different degrees of trimming.
 
-            >>> from scipy.stats import genextreme
+            >>> from scipy.stats import genextreme as ge
             >>> c, loc, scale = -0.5, 0, 1
-            >>> data = genextreme(c, loc, scale).rvs(1000, random_state=12345)
-            >>> genextreme.fit(data)
+            >>> data = ge(c, loc, scale).rvs(1000, random_state=12345)
+            >>> r = [1, 2, 3]
+            >>> ge.fit(data)
             (-0.4670..., 0.0294..., 1.0241...)
-            >>> genextreme.fit_l(data)
+            >>> ge.fit_l(lmo.l_moment(data, r))
             (-0.447..., 0.085..., 1.036...)
-            >>> genextreme.fit_l(data, trim=(0, 1))
+            >>> ge.fit_l(lmo.l_moment(data, r, trim=(0, 1)), trim=(0, 1))
             (-0.483..., 0.022..., 1.017...)
-            >>> genextreme.fit_l(data, trim=(0, 2))
+            >>> ge.fit_l(lmo.l_moment(data, r, trim=(0, 2)), trim=(0, 2))
             (-0.486..., 0.016..., 1.016...)
 
-        Args:
-            data:
-                Data to fit.
-            *args:
-                The shape parameter(s) for the distribution (see docstring of
-                the instance object for more information).
+        Parameters:
+            l_moments:
+                Sample L-moments 1-d array-like. At least 2 + *number of
+                shape parameters* are required.
             trim:
                 Left- and right- trim. Can be scalar or 2-tuple of
                 non-negative int or float.
+
+        Extra parameters:
+            maxiter:
+                Maxmimum amount of optimization steps to use. Defaults to 50.
+                Only relevant for L-GMM.
+            tol:
+                Absolute maximum error of the change in the parameters.
+            resolution:
+                Amount of plotting positions (or *empirical percentile
+                points*) to use for weight matrix estimation. Defaults to 100.
+            alpha:
+                Plotting position parameter $\alpha \in (0, 1)$.
+                Defaults to `0.4`. See [`plotting_positions`
+                ][scipy.stats.mstats.plotting_positions] for details.
+            beta:
+                Plotting position parameter $\beta \in (0, 1)$. Defaults to
+                the value of `alpha`.
             optimizer:
                 See the `method` parameter in
                 [`scipy.optimize.minimize`][scipy.optimize.minimize]. Defaults
@@ -1333,37 +1397,154 @@ class l_rv_generic(PatchClass):  # noqa: N801
             Tuple of floats with estimates of the shape parameters (if
             applicable), followed by those for location and scale.
 
+        References:
+            - [Alvarez et al. (2023) - Inference in parametric models with
+            many L-moments](https://doi.org/10.48550/arXiv.2210.04146)
+
         """
-        _x = np.sort(data, kind='stable')
         _trim = clean_trim(trim)
+
+        n_par = self.numargs + 2
+        if n_par != np.size(params0):
+            msg = f'expected {n_par} initial params, got {np.size(n_par)}'
+            raise ValueError(msg)
+
+        l_r = np.asarray(l_moments)
+        if l_r.ndim > 1:
+            msg = 'l_moments must be one-dimensional'
+            raise TypeError(msg)
+        if (n_lmo := len(l_r)) < n_par:
+            msg = f'expected >={n_par} L-moments'
+            raise TypeError(msg)
+
+        pp = plotting_positions(resolution, alpha, beta)
+        pp_pow = np.vander(pp, n_lmo, increasing=True) / resolution
+        pp_mat = np.minimum(pp, pp[:, None]) - np.outer(pp, pp)
+
+        params = np.asarray(params0)
+        weights = np.eye(n_lmo)
+        fun = self._l_gmm_error(params, _trim, l_r, weights=weights)
+
+        nit = 0
+        nfev = 1
+        success = False
+
+        for nit in range(1, maxiter + 1):  # noqa: B007
+            # calculate the L-GMM weight matrix
+            if n_lmo > n_par:
+                _, _, shapes = self._unpack_loc_scale(params)
+
+                # QDF does not depend on loc, and the linear dependence scale
+                # is safe to ignore
+                qdf = self._qdf(pp, *shapes)
+
+                # faster thannp.outer(qdf, qdf)
+                prec = qdf[:, None] @ qdf[None, :]
+
+                # symmetric matrix (pseudo-)inverse
+                weights = cast(
+                    npt.NDArray[np.float64],
+                    pinvh(
+                        pp_pow.T @ (pp_mat * prec) @ pp_pow,
+                        check_finite=False,
+                    ),
+                )
+
+            # minimize the error, given the weight
+            res = cast(
+                OptimizeResult,
+                minimize(
+                    self._l_gmm_error,
+                    params,
+                    (_trim, l_r, weights),
+                    method=optimizer,
+                ),
+            )
+            nfev += cast(int, res.nfev)  # type: ignore
+            params0 = params
+            params = cast(npt.NDArray[np.float64], res.x)  # type: ignore
+            fun = cast(float, res.fun)  # type: ignore
+
+            if not res.success:  # type: ignore
+                break
+
+            # for L-GMM; keep going until convergence in the shape parameters
+            # (loc and scale don't influence the weights)
+            eps = max(
+                self._unpack_loc_scale(np.abs(params - params0))[-1],
+                default=0,
+            )
+            if n_lmo == n_par or np.max(eps) <= tol:
+                success = True
+                break
+
+
+        return GMMResult(
+            params=tuple(params),
+            weights=weights,
+            err=fun,
+
+            nit=nit,
+            nfev=nfev,
+            success=success,
+
+            l_moments=l_r,
+            trim=_trim,
+        )
+
+    def l_fit(
+        self,
+        data: npt.ArrayLike,
+        /,
+        trim: AnyTrim | None = None,
+        *,
+        extra: int = 1,
+        **kwds: Any,
+    ) -> tuple[float, ...]:
+        """
+        See [`l_gmm`][lmo.l_rv_generic.l_moments_cov].
+
+        Todo:
+            - Docstring
+            - Warn if no convergence (`success=False`).
+            - Allow parmeter initial/fixed values, i.e. make the kwargs
+              compatible with [fit][scipy.stats.rv_continuous.fit].
+            - Optimal trim-length selection; depending on `nan`/`inf`
+              mean and variance, boundedness (`a`, `b`), number of samples,
+              etc. See Elamir (2010).
+            - Optimal number of L-moments selection, see Alvarez et al. (2023).
+
+        References:
+            -[Elamir (2010) - Optimal choices for trimming in trimmed L-moment
+            method](https://researchgate.net/publication/265808725)
+            - [Alvarez et al. (2023) - Inference in parametric models with
+            many L-moments](https://doi.org/10.48550/arXiv.2210.04146)
+        """
+        n_par = self.numargs + 2
+        n_lmo = n_par + clean_order(extra, name='extra')
+
+        _trim = (0, 0) if trim is None else trim
 
         from ._lm import l_moment
 
-        l_data = l_moment(_x, np.arange(self.numargs + 2) + 1, trim=_trim)
+        r = np.arange(1, n_lmo + 1)
+        l_r = l_moment(data, r, trim=_trim)
 
-        theta0 = args or self._fitstart(_x)[:-2]
-        theta0 = theta0 + self.fit_l_loc_scale(_x, *theta0, trim=_trim)
+        params0 = self.fit(data)
 
-        theta = cast(
-            npt.NDArray[np.float_],
-            minimize(
-                self._l_moment_error,
-                theta0,
-                (_trim, l_data),
-                method=optimizer,
-            ).x,  # type: ignore
-        )
+        res = self.l_gmm(l_r, params0, trim=_trim, **kwds)
+        return res.params
 
-        return tuple(theta)
 
-    def fit_l_loc_scale(
+    def l_fit_loc_scale(
         self,
         data: npt.ArrayLike,
         *args: Any,
         trim: AnyTrim = (0, 0),
+        **kwds: Any,
     ) -> tuple[float, float]:
         """
-        Estimate loc and scale parameters from data using 1st and 2nd
+        Estimate loc and scale parameters from data using the first two
         L-moments.
 
         Notes:
@@ -1379,13 +1560,18 @@ class l_rv_generic(PatchClass):  # noqa: N801
             trim:
                 Left- and right- trim. Can be scalar or 2-tuple of
                 non-negative int or float.
+            **kwds:
+                Additional keyword arguments to pass to the distribution.
 
         Returns:
             loc_hat: Estimated location parameter for the data.
             scale_hat: Estimated scale parameter for the data.
 
+        Todo:
+            - Validate/correct the results using the support.
+
         """
-        l1, l2 = self.l_moment([1, 2], *args, trim=trim)
+        l1, l2 = self.l_moment([1, 2], *args, trim=trim, **kwds)
 
         from ._lm import l_moment
         l1_hat, l2_hat = l_moment(data, [1, 2], trim=clean_trim(trim))
