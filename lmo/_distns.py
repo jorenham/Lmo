@@ -5,12 +5,13 @@ __all__ = ('l_rv_nonparametric', 'l_rv_generic', 'l_rv_frozen')
 import functools
 import math
 import warnings
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from typing import (
     Any,
     ClassVar,
     Final,
     NamedTuple,
+    Protocol,
     SupportsIndex,
     TypeVar,
     cast,
@@ -471,6 +472,21 @@ class PatchClass:
         cls.patched.add(base)
 
 
+class _ShapeInfo(Protocol):
+    """Stub for `scipy.stats._distn_infrastructure._ShapeInfo`."""
+    name: str
+    integrality: bool
+    domain: Sequence[float]  # in practice a list of size 2
+
+    def __init__(
+        self, name: str,
+        integrality: bool = ...,
+        domain: tuple[float, float] = ...,
+        inclusive: tuple[bool, bool] = ...,
+    ) -> None:
+        ...
+
+
 class l_rv_generic(PatchClass):  # noqa: N801
     """
     Additional methods that are patched into
@@ -495,7 +511,9 @@ class l_rv_generic(PatchClass):  # noqa: N801
     _argcheck: Callable[..., int]
     _fitstart: Callable[..., tuple[float, ...]]
     _get_support: Callable[..., tuple[float, float]]
+    _param_info: Callable[[], list[_ShapeInfo]]
     _parse_args: Callable[..., tuple[tuple[Any, ...], float, float]]
+    _shape_info: Callable[[], list[_ShapeInfo]]
     _unpack_loc_scale: Callable[
         [npt.ArrayLike],
         tuple[float, float, tuple[float, ...]],
@@ -1313,6 +1331,49 @@ class l_rv_generic(PatchClass):  # noqa: N801
             tol=tol,
         )
 
+    def _reduce_param_bounds(
+        self,
+        **kwds: dict[str, Any],
+    ) -> tuple[dict[str, Any], list[tuple[float | None, float | None]]]:
+        """
+        Based on `scipy.stats.rv_continuous._reduce_func`.
+
+        Convert fixed shape parameters to the standard numeric form: e.g. for
+        stats.beta, shapes='a, b'. To fix `a`, the caller can give a value
+        for `f0`, `fa` or 'fix_a'.  The following converts the latter two
+        into the first (numeric) form.
+        """
+        kwds = kwds.copy()
+        bounds: list[tuple[float | None, float | None]] = []
+
+        for i, param in enumerate(self._param_info()):
+            name = param.name
+            if param.integrality:
+                msg = 'integral parameter ({name!r}) fitting is not supported'
+                raise NotImplementedError(msg)
+
+            a, b = param.domain
+
+            for key in (f'{i}', f'f{name}', f'fix_{name}'):
+                if key in kwds:
+                    if a == b:
+                        msg = f'multiple fixed args given for {name!r}#{i}'
+                        raise ValueError(msg)
+
+                    val = cast(float, kwds.pop(key))
+                    if not (a <= val <= b):
+                        msg = f'expected {a} <= {name} <= {b}, got {key}={val}'
+                        raise ValueError(msg)
+
+                    a = b = val
+
+            bounds.append((
+                None if np.isinf(a) else a,
+                None if np.isinf(b) else b,
+            ))
+
+        return kwds, bounds
+
     def _l_gmm_error(
         self,
         theta: npt.NDArray[np.float_],
@@ -1346,15 +1407,14 @@ class l_rv_generic(PatchClass):  # noqa: N801
     def l_gmm(
         self,
         l_moments: npt.ArrayLike,
-        params0: npt.ArrayLike,
         /,
+        *args: float,
         trim: AnyTrim = (0, 0),
-        *,
         maxiter: int = 50,
         tol: float = 1e-4,
         points: int = 1_000,
-        beta: float | None = None,
         optimizer: str | Callable[..., OptimizeResult] = 'Nelder-Mead',
+        **kwds: Any,
     ) -> GMMResult:
         r"""
         Return estimates of shape (if applicable), location, and scale
@@ -1365,8 +1425,10 @@ class l_rv_generic(PatchClass):  # noqa: N801
         improvement of the parametric $2$-step L-GMM by Alvarez et al. (2022).
 
         Todo:
+            - Fix this for rv_discrete
             - Document differences between L-MM and L-GMM.
             - Allow holding loc, scale, or any shape params fixed.
+            - Try using `np.linalg.inv(lmo.l_moment_cov)` as weights (1-step!)
 
         Examples:
             Fitting of the generalized extreme value (GEV) distribution with
@@ -1390,6 +1452,8 @@ class l_rv_generic(PatchClass):  # noqa: N801
             l_moments:
                 Sample L-moments 1-d array-like. At least 2 + *number of
                 shape parameters* are required.
+            *args:
+                Initial arguments (required).
             trim:
                 Left- and right- trim. Can be scalar or 2-tuple of
                 non-negative int or float.
@@ -1408,6 +1472,9 @@ class l_rv_generic(PatchClass):  # noqa: N801
                 [`scipy.optimize.minimize`][scipy.optimize.minimize]. Defaults
                 to `'Nelder-Mead'`. The optimizer must accept `bounds`.
 
+        Raises:
+            ValueError: Invalid arguments.
+
         Returns:
             Tuple of floats with estimates of the shape parameters (if
             applicable), followed by those for location and scale.
@@ -1417,31 +1484,33 @@ class l_rv_generic(PatchClass):  # noqa: N801
             many L-moments](https://doi.org/10.48550/arXiv.2210.04146)
 
         """
-        if (n_par := self.numargs + 2) != np.size(params0):
-            msg = f'expected {n_par} initial params, got {np.size(n_par)}'
-            raise ValueError(msg)
+        # param bounds, with potential fixed args (as a == b) embedded
+        kwds, bounds = self._reduce_param_bounds(**kwds)
 
-        l_r = np.asarray(l_moments)
+
+        shapes, loc, scale = self._parse_args(*args, **kwds)
+        params = np.asarray([*shapes, loc, scale])
+        n_par = len(params)
+
+        l_r = np.asanyarray(l_moments)
         if l_r.ndim > 1:
             msg = 'l_moments must be one-dimensional'
-            raise TypeError(msg)
+            raise ValueError(msg)
         if (n_lmo := len(l_r)) < n_par:
             msg = f'expected >={n_par} L-moments'
-            raise TypeError(msg)
+            raise ValueError(msg)
 
         _trim = clean_trim(trim)
 
         # initial state
-        params = np.asarray(params0)
-        _, scale, shapes = self._unpack_loc_scale(params)
         weights = np.eye(n_lmo)
         fun = self._l_gmm_error(params, _trim, l_r, weights=weights)
         k = 0
         nfev = 1
         success = False
 
-        # shift the plotting positions towards the skewness, with a "margin"
-        # corresponding to the kurtosis (relative to uniform).
+        # shift the plotting positions towards the skewness, with a
+        # "margin" corresponding to the kurtosis (relative to uniform).
         # For instance with `trim=0`:
         # - uniform:  `alpha = beta = 0.5`
         # - normal:   `alpha = beta = 0.406...`
@@ -1452,6 +1521,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
         pp_side, pp_margin = (np.clip(t34 / t34_max, -1, 1) + 1) / 2
         pp_span = 2 * (1 - pp_margin)
         pp_alpha, pp_beta = pp_side * pp_span, (1 - pp_side) * pp_span
+
         pp = plotting_positions(points, pp_alpha, pp_beta)
 
         # helper matrix for the estimation of the weight matrix
@@ -1485,6 +1555,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
                     params,
                     (_trim, l_r, weights),
                     method=optimizer,
+                    bounds=bounds,
                 ),
             )
             nfev += cast(int, res.nfev)  # type: ignore
@@ -1528,11 +1599,17 @@ class l_rv_generic(PatchClass):  # noqa: N801
     def l_fit(
         self,
         data: npt.ArrayLike,
-        /,
+        *args: Any,
+
         trim: AnyTrim | None = None,
-        *,
         extra: int = 0,
         full_output: bool = False,
+
+        maxiter: int = 50,
+        tol: float = 1e-4,
+        points: int = 1_000,
+        optimizer: str | Callable[..., OptimizeResult] = 'Nelder-Mead',
+
         **kwds: Any,
     ) -> tuple[float, ...] | GMMResult:
         """
@@ -1549,7 +1626,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
             - Optimal number of L-moments selection, see Alvarez et al. (2023).
 
         References:
-            -[Elamir (2010) - Optimal choices for trimming in trimmed L-moment
+            - [Elamir (2010) - Optimal choices for trimming in trimmed L-moment
             method](https://researchgate.net/publication/265808725)
             - [Alvarez et al. (2023) - Inference in parametric models with
             many L-moments](https://doi.org/10.48550/arXiv.2210.04146)
@@ -1562,9 +1639,18 @@ class l_rv_generic(PatchClass):  # noqa: N801
         from ._lm import l_moment
         l_r = l_moment(data, np.arange(1, n_lmo + 1), trim=_trim)
 
-        params0 = self.fit(data)
+        args0 = self.fit(data, *args, **kwds)
 
-        res = self.l_gmm(l_r, params0, trim=_trim, **kwds)
+        res = self.l_gmm(
+            l_r,
+            *args0,
+            trim=_trim,
+            maxiter=maxiter,
+            tol=tol,
+            points=points,
+            optimizer=optimizer,
+            **kwds,
+        )
         return res if full_output else res.params
 
 
