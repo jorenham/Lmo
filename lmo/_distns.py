@@ -22,6 +22,7 @@ import numpy.polynomial as npp
 import numpy.typing as npt
 from scipy.linalg import pinvh  # type: ignore
 from scipy.optimize import OptimizeResult, minimize  # type: ignore
+from scipy.stats import FitError  # type: ignore
 from scipy.stats.distributions import (  # type: ignore
     rv_continuous,
     rv_frozen,
@@ -419,6 +420,32 @@ class GMMResult(NamedTuple):
 
     l_moments: npt.NDArray[np.float64]
     trim: tuple[int, int] | tuple[float, float]
+
+    @property
+    def loc(self) -> float:
+        """Location estimate."""
+        return self.params[-2]
+
+    @property
+    def scale(self) -> float:
+        """Scale estimate."""
+        return self.params[-1]
+
+    @property
+    def shapes(self) -> tuple[float, ...]:
+        """Estimated shape parameter values."""
+        return self.params[:-2]
+
+    @property
+    def r(self) -> npt.NDArray[np.int64]:
+        """L-moment orders."""
+        return np.arange(1, len(self.l_moments) + 1)
+
+    @property
+    def l_stats(self) -> npt.NDArray[np.float64]:
+        """L-moment stats."""
+        l_r = self.l_moments
+        return np.r_[l_r[:2], l_r[2:] / l_r[1]]
 
 
 class PatchClass:
@@ -1299,7 +1326,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
             return np.inf
 
         l_dist = self.l_moment(
-            np.arange(1, weights.shape[0] + 1),
+            np.arange(1, len(weights) + 1),
             *args,
             loc=loc,
             scale=scale,
@@ -1312,8 +1339,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
             )
             raise ValueError(msg)
 
-        # normalize by sample L-scale, to avoid numerical issues
-        err = (l_data - l_dist) / l_data[1]
+        err = l_data - l_dist
         return cast(float, err @ weights @ err)
 
 
@@ -1323,14 +1349,11 @@ class l_rv_generic(PatchClass):  # noqa: N801
         params0: npt.ArrayLike,
         /,
         trim: AnyTrim = (0, 0),
-
+        *,
         maxiter: int = 50,
         tol: float = 1e-4,
-
-        resolution: int = 1_000,
-        alpha: float = .4,
+        points: int = 1_000,
         beta: float | None = None,
-
         optimizer: str | Callable[..., OptimizeResult] = 'Nelder-Mead',
     ) -> GMMResult:
         r"""
@@ -1373,25 +1396,17 @@ class l_rv_generic(PatchClass):  # noqa: N801
 
         Extra parameters:
             maxiter:
-                Maxmimum amount of optimization steps to use. Defaults to 50.
+                Maximum amount of optimization steps to use. Defaults to 50.
                 Only relevant for L-GMM.
             tol:
                 Absolute maximum error of the change in the parameters.
-            resolution:
-                Amount of plotting positions (or *empirical percentile
-                points*) to use for weight matrix estimation. Defaults to 100.
-            alpha:
-                Plotting position parameter $\alpha \in (0, 1)$.
-                Defaults to `0.4`. See [`plotting_positions`
-                ][scipy.stats.mstats.plotting_positions] for details.
-            beta:
-                Plotting position parameter $\beta \in (0, 1)$. Defaults to
-                the value of `alpha`.
+            points:
+                Amount of plotting positions (or empirical percentile
+                points) to use for weight matrix estimation. Defaults to 1000.
             optimizer:
                 See the `method` parameter in
                 [`scipy.optimize.minimize`][scipy.optimize.minimize]. Defaults
-                to `'Nelder-Mead'`. Note that other methods (e.g.`'BFGS'`
-                or `'SLSQP'`) can be a lot faster, but may not be as accurate.
+                to `'Nelder-Mead'`. The optimizer must accept `bounds`.
 
         Returns:
             Tuple of floats with estimates of the shape parameters (if
@@ -1402,10 +1417,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
             many L-moments](https://doi.org/10.48550/arXiv.2210.04146)
 
         """
-        _trim = clean_trim(trim)
-
-        n_par = self.numargs + 2
-        if n_par != np.size(params0):
+        if (n_par := self.numargs + 2) != np.size(params0):
             msg = f'expected {n_par} initial params, got {np.size(n_par)}'
             raise ValueError(msg)
 
@@ -1417,26 +1429,41 @@ class l_rv_generic(PatchClass):  # noqa: N801
             msg = f'expected >={n_par} L-moments'
             raise TypeError(msg)
 
-        pp = plotting_positions(resolution, alpha, beta)
-        pp_pow = np.vander(pp, n_lmo, increasing=True) / resolution
-        pp_mat = np.minimum(pp, pp[:, None]) - np.outer(pp, pp)
+        _trim = clean_trim(trim)
 
+        # initial state
         params = np.asarray(params0)
+        _, scale, shapes = self._unpack_loc_scale(params)
         weights = np.eye(n_lmo)
         fun = self._l_gmm_error(params, _trim, l_r, weights=weights)
-
-        nit = 0
+        k = 0
         nfev = 1
         success = False
 
-        for nit in range(1, maxiter + 1):  # noqa: B007
+        # shift the plotting positions towards the skewness, with a "margin"
+        # corresponding to the kurtosis (relative to uniform).
+        # For instance with `trim=0`:
+        # - uniform:  `alpha = beta = 0.5`
+        # - normal:   `alpha = beta = 0.406...`
+        # - gumbel_r: `alpha, beta = 0.470..., 0.301...`
+        # - expon:    `alpha, beta = 0.533..., 0.212...`
+        t34 = self.l_stats(*params, trim=_trim)[2:]
+        t34_max = l_ratio_bounds([3, 4], trim=_trim)
+        pp_side, pp_margin = (np.clip(t34 / t34_max, -1, 1) + 1) / 2
+        pp_span = 2 * (1 - pp_margin)
+        pp_alpha, pp_beta = pp_side * pp_span, (1 - pp_side) * pp_span
+        pp = plotting_positions(points, pp_alpha, pp_beta)
+
+        # helper matrix for the estimation of the weight matrix
+        pp_pow = np.vander(pp, n_lmo, increasing=True) / points
+        pp_mat = np.minimum(pp, pp[:, None]) - np.outer(pp, pp)
+
+        # the main k-step loop
+        for k in range(1, maxiter + 1):  # noqa: B007
             # calculate the L-GMM weight matrix
             if n_lmo > n_par:
-                _, _, shapes = self._unpack_loc_scale(params)
-
-                # QDF does not depend on loc, and the linear dependence scale
-                # is safe to ignore
-                qdf = self._qdf(pp, *shapes)
+                # QDF does not depend on loc, but linearly on the scale
+                qdf = self._qdf(pp, *shapes) * scale
 
                 # faster thannp.outer(qdf, qdf)
                 prec = qdf[:, None] @ qdf[None, :]
@@ -1465,29 +1492,35 @@ class l_rv_generic(PatchClass):  # noqa: N801
             params = cast(npt.NDArray[np.float64], res.x)  # type: ignore
             fun = cast(float, res.fun)  # type: ignore
 
+            _, scale, shapes = self._unpack_loc_scale(params)
+
             if not res.success:  # type: ignore
                 break
 
             # for L-GMM; keep going until convergence in the shape parameters
-            # (loc and scale don't influence the weights)
-            eps = max(
-                self._unpack_loc_scale(np.abs(params - params0))[-1],
-                default=0,
+            # (loc doesn't infuence the weight; ignore)
+            _, dscale, dshapes = self._unpack_loc_scale(
+                np.abs(params - params0),
             )
-            if n_lmo == n_par or np.max(eps) <= tol:
+            if n_lmo == n_par or max(dscale, *dshapes) <= tol:
                 success = True
                 break
 
+        # verify validity
+        if not scale > 0 and np.all(self._argcheck(*shapes)):
+            msg = (
+                f'Optimization converged to parameters that are outside the '
+                f'range allowed by the distribution:\n{tuple(params)}'
+            )
+            raise FitError(msg)
 
         return GMMResult(
             params=tuple(params),
             weights=weights,
             err=fun,
-
-            nit=nit,
+            nit=k,
             nfev=nfev,
             success=success,
-
             l_moments=l_r,
             trim=_trim,
         )
@@ -1498,16 +1531,17 @@ class l_rv_generic(PatchClass):  # noqa: N801
         /,
         trim: AnyTrim | None = None,
         *,
-        extra: int = 1,
+        extra: int = 0,
+        full_output: bool = False,
         **kwds: Any,
-    ) -> tuple[float, ...]:
+    ) -> tuple[float, ...] | GMMResult:
         """
         See [`l_gmm`][lmo.l_rv_generic.l_moments_cov].
 
         Todo:
             - Docstring
             - Warn if no convergence (`success=False`).
-            - Allow parmeter initial/fixed values, i.e. make the kwargs
+            - Allow parameter initial/fixed values, i.e. make the kwargs
               compatible with [fit][scipy.stats.rv_continuous.fit].
             - Optimal trim-length selection; depending on `nan`/`inf`
               mean and variance, boundedness (`a`, `b`), number of samples,
@@ -1526,14 +1560,12 @@ class l_rv_generic(PatchClass):  # noqa: N801
         _trim = (0, 0) if trim is None else trim
 
         from ._lm import l_moment
-
-        r = np.arange(1, n_lmo + 1)
-        l_r = l_moment(data, r, trim=_trim)
+        l_r = l_moment(data, np.arange(1, n_lmo + 1), trim=_trim)
 
         params0 = self.fit(data)
 
         res = self.l_gmm(l_r, params0, trim=_trim, **kwds)
-        return res.params
+        return res if full_output else res.params
 
 
     def l_fit_loc_scale(
