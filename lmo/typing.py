@@ -29,6 +29,7 @@ __all__ = (
     'LComomentOptions',
 
     'QuadOptions',
+    'OptimizeResult',
 
     'AnyTrim',
 )
@@ -356,6 +357,23 @@ class QuadOptions(TypedDict, total=False):
     ]
     wvar: float | tuple[float, float]
     wopts: tuple[int, npt.NDArray[np.float_]]
+
+
+class OptimizeResult(Protocol):
+    """
+    Type stub for the most generally available attributes of
+    [`scipy.optimize.OptimizeResult`][scipy.optimize.OptimizeResult].
+
+    Note that `OptimizeResult` is actually subclasses dict, whose attributes
+    are keys in disguise.
+    """
+    x: npt.NDArray[np.float64]
+    success: bool
+    status: int
+    message: int
+    fun: float
+    nfev: int
+    nit: int
 
 
 # Lmo specific aliases
