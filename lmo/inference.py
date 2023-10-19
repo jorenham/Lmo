@@ -96,7 +96,7 @@ class GMMResult(NamedTuple):
             raise ValueError(msg)
 
         stat = self.statistic
-        pvalue = special.chdtrc(df, stat)  # type: ignore
+        pvalue = special.chdtr(df, stat)  # type: ignore
         return HypothesisTestResult(stat, pvalue)
 
     @property
@@ -207,8 +207,8 @@ def fit(
 
     Todo:
         - Code examples (e.g. GEV)
-        - Allow custom theoretical L-moment function (e.g. for distributions
-            with known L-moments).
+        - Allow custom theoretical L-moment & -cov function (e.g. for
+            distributions with known L-moments).
         - Raise on minimization error, warn on failed k-step convergence
         - Implement CUE: Continuously Updating GMM (i.e. implement and
             use  `_loss_cue()`, then run `L-GMM-1`).
