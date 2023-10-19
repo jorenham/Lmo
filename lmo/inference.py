@@ -2,9 +2,7 @@
 
 __all__ = 'GMMResult', 'fit'
 
-import functools
-from collections.abc import Callable, Sequence
-from typing import Literal, NamedTuple, TypeAlias, cast
+from typing import Any, NamedTuple, cast
 
 import numpy as np
 import numpy.typing as npt
@@ -12,32 +10,15 @@ from scipy import optimize, special  # type: ignore
 
 from ._lm import l_moment, l_moment_cov
 from ._utils import clean_trim
-from .diagnostic import HypothesisTestResult
+from .diagnostic import HypothesisTestResult, l_moment_bounds
 from .theoretical import l_moment_from_ppf
-from .typing import AnyInt, AnyTrim, OptimizeResult
-
-GMMMethod: TypeAlias = Literal[
-    # 1-step GMM:
-    # minimize the objective using initial (nonparametric) weights
-    'L-GMM-1',
-
-    # 2-step GMM:
-    # start with `L-GMM-1`, then run again with new (parametric) weights
-    'L-GMM-2',
-
-    # $k$-step Iterative GMM:
-    # start with `L-GMM-2`, then iterate the 2nd step until convergence
-    'L-GMM-k',
-
-    # Continuously Updating GMM (TODO):
-    # similar to `L-GMM-1`, but estimate the weights within objective function
-    # 'L-GMM-CUE',
-]
+from .typing import AnyInt, AnyTrim, DistributionFunction, OptimizeResult
 
 
 class GMMResult(NamedTuple):
     """
     Represents the Generalized Method of L-Moments (L-GMM) results.
+    See [`lmo.inference.fit`][lmo.inference.fit] for details.
 
     Attributes:
         args:
@@ -45,7 +26,7 @@ class GMMResult(NamedTuple):
         success:
             Whether or not the optimizer exited successfully.
         eps:
-            Maxmimum absolute difference of the change in args.
+            Final relative difference in the (natural) L-moment conditions.
         statistic:
             The minimized objective value, corresponding to the `weights`.
         n_samp:
@@ -68,7 +49,7 @@ class GMMResult(NamedTuple):
     args: tuple[float | int, ...]
     success: bool
     statistic: float
-    eps: float
+    eps: npt.NDArray[np.float64]
 
     weights: npt.NDArray[np.float64]
 
@@ -132,8 +113,7 @@ class GMMResult(NamedTuple):
             identification](https://doi.org/10.1109%2FTAC.1974.1100705)
 
         """
-        pval_gof = special.chdtrc(self.n_con, self.statistic)  # type: ignore
-        return 2 * (self.n_arg - np.log(pval_gof))
+        return 2 * (self.n_arg - np.log(cast(float, self.j_test.pvalue)))
 
     @property
     def AICc(self) -> float:  # noqa: N802
@@ -153,16 +133,14 @@ class GMMResult(NamedTuple):
 
 def _loss_step(
     args: npt.NDArray[np.float64],
-    ppf: Callable[..., float],
+    ppf: DistributionFunction[...],
+    r: npt.NDArray[np.int64],
     l_r: npt.NDArray[np.float64],
     trim: AnyTrim,
     w_rr: npt.NDArray[np.float64],
 ) -> float:
-    lmbda_r = l_moment_from_ppf(
-        lambda q: ppf(q, *args),
-        np.arange(1, len(l_r) + 1),
-        trim=trim,
-    )
+    lmbda_r = l_moment_from_ppf(lambda q: ppf(q, *args), r, trim=trim)
+
     if not np.all(np.isfinite(lmbda_r)):
         msg = f'failed to find the L-moments of ppf{args} with {trim=}'
         raise ValueError(msg)
@@ -172,35 +150,69 @@ def _loss_step(
 
 
 def fit(
-    ppf: Callable[..., npt.NDArray[np.float64] | float],
+    ppf: DistributionFunction[...],
     args0: npt.ArrayLike,
     data: npt.ArrayLike,
+    n_extra: int = 0,
     trim: AnyTrim = (0, 0),
     *,
-    bounds: Sequence[tuple[float | None, float | None]] | None = None,
-    method: GMMMethod = 'L-GMM-1',
-    n_extra: int = 1,
+    k: int | None = None,
+    k_max: int = 50,
+    l_tol: float = 1e-4,
     n_mc_samples: int = 9999,
-    maxiter: int = 50,
-    tol: float = 1e-4,
-
-    optimizer: str | Callable[..., OptimizeResult] = 'Nelder-Mead',
     random_state: AnyInt | np.random.Generator | None = None,
+
+    **kwds: Any,
 ) -> GMMResult:
-    """
-    Fit the distribution parameters using the Generalized Method of L-Moments
-    (L-GMM).
+    r"""
+    Fit the distribution parameters using the (Generalized) Method of
+    L-Moments (L-(G)MM).
+
+    The goal is to find the "true" parameters $\theta_0$ of the distribution.
+    In practise, this is done using a reasonably close estimate, $\theta$.
+
+    In the (non-Generalized) Method of L-moments (L-MM), this is done by
+    solving the system of equations $l^{(s, t)}_r = \lambda^{(s, t)}_r$,
+    for $r = 1, \dots, k$, with $n = |\theta|$ the number of parameters.
+    Because the amount of parameters matches the amount of *L-moment
+    conditions*, the solution is *point-defined*, and can be found using
+    simple least squares.
+
+    L-GMM extends L-MM by allowing more L-moment conditions than there are
+    free parameters, $m > n$. This requires solving an *over-identified*
+    system of $m$ equations:
+
+    $$
+    \hat{\theta} =
+        \mathop{\arg \min} \limits_{\theta \in \Theta}
+        (\vec{\lambda}^{(s, t)}_r - \vec{l}^{(s, t)})^T
+        W_m
+        (\vec{\lambda}^{(s, t)}_r - \vec{l}^{(s, t)})
+        \, ,
+    $$
+
+    where $W_m$ is a $m \times m$ weight matrix.
+
+    The weight matrix is initially chosen as the matrix inverse of the
+    non-parametric L-moment covariance matrix, see
+    [`lmo.l_moment_cov`][lmo.l_moment_cov]. These weights are then plugged
+    into the the equation above, and fed into
+    [`scipy.optimize.minimize`][scipy.optimize.minimize], to obtain the
+    initial parameter estimates.
+
+    In the next step(s), Monte-Carlo sampling is used to draw samples from
+    the distribution (using the current parameter estimates), with sample
+    sizes matching that of the data. The L-moments of these samples are
+    consequently used to to calculate the new weight matrix.
 
     Todo:
-        - Short explanation of L-GMM, the GMM methods, and the "warm start"
         - Code examples (e.g. GEV)
-        - Implement L-MM (i.e. `L-GMM-1` but with `extra = 0` and
-            `w_rr = np.eye(n_lmo)`)
-        - Implement L-GMM-CUE: Continuously Updating GMM (i.e. implement and
+        - Allow custom theoretical L-moment function (e.g. for distributions
+            with known L-moments).
+        - Raise on minimization error, warn on failed k-step convergence
+        - Implement CUE: Continuously Updating GMM (i.e. implement and
             use  `_loss_cue()`, then run `L-GMM-1`).
         - Automatic `extra` selection (e.g. AICc, or Sargan's J test)
-        - consistent reporting of minimize errors / no L-GMM-k convergence
-        - `integrality` param, see `scipy.optimize.differential_evolution`
 
     Parameters:
         ppf:
@@ -217,32 +229,28 @@ def fit(
         trim:
             The L-moment trim-length(s) to use. Currently, only integral
             trimming is supported.
-        method:
-            The GMM method to use. Currently, 1-step (`L-GMM-1`), 2-step
-            (`L-GMM-2`), and k-step (`L-GMM-k`), are supported.
-        maxiter:
-            Maximum amount of optimization steps to use. Defaults to 50.
-            Only relevant for `method=L-GMM-k`.
-        tol:
-            Absolute maximum error in the maximum absolute change of the
-            parameter values. Only relevant for k-step GMM
-            (`method='L-GMM-k'`).
-        optimizer:
-            See the `method` parameter in
-            [`scipy.optimize.minimize`][scipy.optimize.minimize]. Defaults
-            to `'Nelder-Mead'`. The optimizer must accept `bounds`.
-        bounds:
-            See the `bounds` parameter in
-            [`scipy.optimize.minimize`][scipy.optimize.minimize].
+
+    Other Parameters:
+        k:
+            If set to a positive integer, exactly $k$ steps will be run.
+            Will be ignored if `n_extra=0`.
+        k_max:
+            Maximum amount of steps to run while not reaching convergence.
+            Will be ignored if $k$ is specified or if `n_extra=0`.
+        l_tol:
+            Error tolerance in the parametric L-moments (unit-standardized).
+            Will be ignored if $k$ is specified or if `n_extra=0`.
         n_mc_samples:
             The number of Monte-Carlo samples drawn from the distribution to
-            to form the weight matrix. Only relevant for 2-step and $k$-step
-            GMM (`method = 'L-GMM-2' | 'L-GMM-k'`).
+            to form the weight matrix in step $k > 1$.
+            Will be ignored if `n_extra=0`.
         random_state:
             A seed value or [`numpy.random.Generator`][numpy.random.Generator]
-            instance, used in Monte-Carlo weight matrix estimation.
-            Only relevant for 2-step and $k$-step GMM
-            (`method = 'L-GMM-2' | 'L-GMM-k'`).
+            instance, used for weight matrix estimation in step $k > 1$.
+            Will be ignored if `n_extra=0`.
+        **kwds:
+            Additional keyword arguments to be passed to
+            [`scipy.optimize.minimize`][scipy.optimize.minimize].
 
     Raises:
         ValueError: Invalid arguments.
@@ -253,8 +261,9 @@ def fit(
     References:
         - [Alvarez et al. (2023) - Inference in parametric models with
         many L-moments](https://doi.org/10.48550/arXiv.2210.04146)
+
     """
-    theta = np.asarray_chkfinite(args0)
+    theta = np.asarray_chkfinite(args0, np.float64)
     x = np.sort(np.asarray_chkfinite(data))
 
     n_obs = x.size
@@ -262,20 +271,38 @@ def fit(
     n_con = n_par + n_extra
 
     _trim = clean_trim(trim)
-    r = np.arange(1, n_con + 1)
-    l_r = l_moment(x, r, trim=_trim, sort='stable')
+    r = np.arange(1, n_con + 1, dtype=np.int64)
 
-    loss_fn = _loss_step
+    # Sample L-moment estimates
+    l_r = l_moment(x, r, trim=_trim, sort='stable', cache=True)
+    if not (np.all(np.isfinite(l_r))):
+        msg = f'failed to find valid sample L-moments: {l_r}'
+        raise ValueError(msg)
+    if n_con > 1 and l_r[1] <= 0:
+        msg = f'invalid sample L-scale: {l_r[1]}'
+        raise ValueError(msg)
 
-    if method == 'L-GMM-1':
-        k_min, k_max, eps_max = 1, 1, np.inf
-    elif method == 'L-GMM-2':
-        k_min, k_max, eps_max = 2, 2, np.inf
-    elif method == 'L-GMM-k':
-        k_min, k_max, eps_max = 2, maxiter, tol
+    # Individual L-moment "natural" scaling constants, making their magnitudes
+    # order- and trim- agnostic (used in convergence criterion)
+    if n_con > 1:
+        l_r_ub = np.r_[1, l_moment_bounds(r[1:], trim=_trim)]
+        l_2c = l_r[1] / l_r_ub[1]
+        scale_r = cast(npt.NDArray[np.float64], 1 / (l_2c * l_r_ub))
     else:
-        msg = f'unknown GMM method {method!r}'
-        raise TypeError(msg)
+        scale_r = np.ones(n_con)
+
+    # Initial parametric population L-moments
+    lmbda_r = l_moment_from_ppf(lambda q: ppf(q, *theta), r, trim=_trim)
+
+    if k:
+        k_min = k_max = k
+        epsmax = np.inf
+    elif n_extra == 0:
+        k_min = k_max = 1
+        epsmax = np.inf
+    else:
+        k_min = 2
+        epsmax = l_tol
 
     # random number generator
     rng = np.random.default_rng(random_state)
@@ -288,7 +315,7 @@ def fit(
     # initial state
     k = 0
     i = 0
-    eps = np.inf
+    eps = np.full(n_con, np.nan)
     stat = np.nan
     success = False
     qs = None
@@ -298,11 +325,10 @@ def fit(
         res = cast(
             OptimizeResult,
             optimize.minimize(  # type: ignore
-                loss_fn,
+                _loss_step,
                 theta,
-                args=(ppf, l_r, _trim, w_rr),
-                method=optimizer,
-                bounds=bounds,
+                args=(ppf, r, l_r, _trim, w_rr),
+                **kwds,
             ),
         )
         if not res.success:
@@ -310,19 +336,37 @@ def fit(
 
         i += res.nfev
         stat = res.fun
-        theta_k = res.x
+        theta = res.x
 
-        # check the exit/convergence criteria
-        eps = np.max(np.abs(theta_k - theta))
-        theta = theta_k
-        if k >= k_min and (eps <= eps_max or k == k_max):
-            success = eps <= eps_max
+        # re-evaluate the theoretical L-moments for the new params
+        lmbda_r0 = lmbda_r
+        lmbda_r = l_moment_from_ppf(lambda q: ppf(q, *theta), r, trim=_trim)
+
+        # convergence criterion
+        eps = (lmbda_r - lmbda_r0) * scale_r
+        if (
+            k >= k_min and (success := np.max(np.abs(eps)) <= epsmax)
+            or k == k_max
+        ):
             break
 
         # re-evaluate the cov- and weight matrices with a Monte-Carlo approach
-        qs = rng.uniform(0, 1, (n_obs, n_mc_samples)) if qs is None else qs
+        if qs is None:
+            qs = rng.uniform(0, 1, (n_obs, n_mc_samples))
+            qs.sort(axis=0)
+
         ys = ppf(qs, *theta)
-        l_rr = np.cov(l_moment(ys, r, trim=_trim, axis=0), ddof=n_par)
+        l_rr = np.cov(
+            l_moment(
+                ys,
+                r,
+                trim=_trim,
+                axis=0,
+                cache=True,
+                sort='stable',
+            ),
+            ddof=n_par - 1,  # assuming there's always a location parameter
+        )
         w_rr = np.linalg.inv(l_rr)
 
     return GMMResult(

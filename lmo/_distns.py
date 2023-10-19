@@ -51,6 +51,7 @@ from .theoretical import (
 from .typing import (
     AnyInt,
     AnyTrim,
+    DistributionFunction,
     FloatVector,
     IntVector,
     PolySeries,
@@ -466,29 +467,23 @@ class l_rv_generic(PatchClass):  # noqa: N801
     numargs: int
     shapes: str
 
-    _logpxf: Callable[..., npt.NDArray[np.float64]]
-    _cdf: Callable[..., float]
-    _ppf: Callable[..., float]
     _argcheck: Callable[..., int]
+    _cdf: DistributionFunction[...]
     _fitstart: Callable[..., tuple[float, ...]]
     _get_support: Callable[..., tuple[float, float]]
     _param_info: Callable[[], list[_ShapeInfo]]
     _parse_args: Callable[..., tuple[tuple[Any, ...], float, float]]
+    _ppf: DistributionFunction[...]
     _shape_info: Callable[[], list[_ShapeInfo]]
     _unpack_loc_scale: Callable[
         [npt.ArrayLike],
         tuple[float, float, tuple[float, ...]],
     ]
+    cdf: DistributionFunction[...]
     fit: Callable[..., tuple[float, ...]]
     mean: Callable[..., float]
-    ppf: Callable[..., float | npt.NDArray[np.float64]]
+    ppf: DistributionFunction[...]
 
-    def _qdf(self, q: npt.NDArray[np.float64], *args: Any):
-        """Quantile distribution function (QDF); derivative of the PPF."""
-        return cast(
-            npt.NDArray[np.float64],
-            np.exp(-self._logpxf(self._ppf(q, *args), *args)),
-        )
 
     def _get_xxf(self, *args: Any, loc: float = 0, scale: float = 1) -> tuple[
         Callable[[float], float],
@@ -1365,34 +1360,24 @@ class l_rv_generic(PatchClass):  # noqa: N801
         err = l_data - l_dist
         return cast(float, err @ weights @ err)
 
+
     def l_fit(
         self,
         data: npt.ArrayLike,
         *args: float,
-
-        trim: AnyTrim | None = None,
-        method: inference.GMMMethod = 'L-GMM-1',
-
         n_extra: int = 0,
-        n_mc_samples: int = 9999,
-        random_state: AnyInt | np.random.Generator | None = None,
-
-        maxiter: int = 50,
-        tol: float = 1e-4,
-
+        trim: AnyTrim = (0, 0),
         full_output: bool = False,
-
+        fit_kwargs: Mapping[str, Any] | None = None,
         **kwds: Any,
     ) -> tuple[float, ...] | inference.GMMResult:
         """
         Return estimates of shape (if applicable), location, and scale
         parameters from data. The default estimation method is Method of
         L-moments (L-MM), but the Generalized Method of L-Moments
-        (L-GMM) is also available (see the `extra` parameter).
+        (L-GMM) is also available (see the `n_extra` parameter).
 
-        This method is an implementation of the $k$-step
-        *Generalized Method of L-Moments* (L-GMM), which is a (novel)
-        extension to the parametric $2$-step L-GMM by Alvarez et al. (2022).
+        See ['lmo.inference.fit'][lmo.inference.fit] for details.
 
         Todo:
             - if initial args are passed for all params, skip the initial
@@ -1423,11 +1408,10 @@ class l_rv_generic(PatchClass):  # noqa: N801
             full_output:
                 If set to True, a `LGMMResult` instance will
                 be returned, instead of only a tuple with parameters.
-            maxiter:
-                Maximum amount of optimization steps to use. Defaults to 50.
-                Only relevant for L-GMM.
-            tol:
-                Absolute maximum error of the change in the parameters.
+            fit_kwargs:
+                Additional keyword arguments to be passed to
+                ['lmo.inference.fit'][lmo.inference.fit] or
+                ['scipy.optimize.minimize'][scipy.optimize.minimize].
             **kwds:
                 Special keyword arguments are recognized as holding certain
                 parameters fixed:
@@ -1448,6 +1432,9 @@ class l_rv_generic(PatchClass):  # noqa: N801
                 exceptions (e.g. ``norm``).
                 If `full_output=True`, an instance of `LGMMResult` will be
                 returned instead.
+
+        See Also:
+            - ['lmo.inference.fit'][lmo.inference.fit]
 
         References:
             - [Alvarez et al. (2023) - Inference in parametric models with
@@ -1471,26 +1458,14 @@ class l_rv_generic(PatchClass):  # noqa: N801
                 ).params,  # type: ignore
             )
 
-
-        (loc_a, loc_b), (scale_a, scale_b) = bounds[-2], bounds[-1]
-        if loc_a is not None and loc_a == loc_b and scale_a == scale_b:
-            ppf = self._ppf
-            args0, bounds = args0[:-2], bounds[:-2]
-        else:
-            ppf = self.ppf
-
+        _kwargs: dict[str, Any] = {'bounds': bounds} | dict(fit_kwargs or {})
         result = inference.fit(
-            ppf,
+            self.ppf,
             args0,
             data,
-            trim=trim or (0, 0),
             n_extra=n_extra,
-            method=method,
-            maxiter=maxiter,
-            tol=tol,
-            bounds=bounds,
-            n_mc_samples=n_mc_samples,
-            random_state=random_state,
+            trim=trim,
+            **_kwargs,
         )
         return result if full_output else result.args
 
