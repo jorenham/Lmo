@@ -16,6 +16,7 @@ from typing import (
     Final,
     Protocol,
     SupportsIndex,
+    TypeAlias,
     TypeVar,
     cast,
     overload,
@@ -58,12 +59,15 @@ from .typing import (
     QuadOptions,
 )
 
+T = TypeVar('T')
 X = TypeVar('X', bound='l_rv_nonparametric')
 F = TypeVar('F', bound=np.floating[Any])
 M = TypeVar('M', bound=Callable[..., Any])
 V = TypeVar('V', bound=float | npt.NDArray[np.float_])
 
 _F_EPS: Final[np.float_] = np.finfo(float).eps
+
+_Tuple4: TypeAlias = tuple[T, T, T, T]
 
 
 def _check_lmoments(l_r: npt.NDArray[np.floating[Any]], s: float, t: float):
@@ -475,6 +479,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
     _parse_args: Callable[..., tuple[tuple[Any, ...], float, float]]
     _ppf: DistributionFunction[...]
     _shape_info: Callable[[], list[_ShapeInfo]]
+    _stats: Callable[..., _Tuple4[float | None]]
     _unpack_loc_scale: Callable[
         [npt.ArrayLike],
         tuple[float, float, tuple[float, ...]],
@@ -503,10 +508,42 @@ class l_rv_generic(PatchClass):  # noqa: N801
 
         return cdf, ppf
 
+    def _l_moment(
+        self,
+        r: npt.NDArray[np.int64],
+        trim: tuple[int, int] | tuple[float, float],
+        *args: Any,
+        quad_opts: QuadOptions | None = None,
+    ) -> npt.NDArray[np.float64]:
+        """
+        Population L-moments of the standard distribution (i.e. assuming
+        `loc=0` and `scale=1`).
+
+        Todo:
+            - Sparse caching; key as `(self.name, args, r, trim)`, using a
+            priority queue. Prefer small `r` and `sum(trim)`, skip fractional
+            trim.
+            - Dispatch mechanism for providing known theoretical L-moments
+            of specific distributions, `r` and `trim`.
+
+        """
+        cdf, ppf = self._get_xxf(*args)
+        lmbda_r = l_moment_from_cdf(
+            cdf,
+            r,
+            trim=trim,
+            support=self._get_support(*args),
+            ppf=ppf,
+            quad_opts=quad_opts,
+        )
+
+        # re-wrap scalars in 0-d arrays (lmo.theoretical unpacks them)
+        return np.asarray(lmbda_r)
+
     @overload
     def l_moment(
         self,
-        order: AnyInt,
+        r: AnyInt,
         /,
         *args: Any,
         trim: AnyTrim = ...,
@@ -517,7 +554,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
     @overload
     def l_moment(
         self,
-        order: IntVector,
+        r: IntVector,
         /,
         *args: Any,
         trim: AnyTrim = ...,
@@ -603,23 +640,21 @@ class l_rv_generic(PatchClass):  # noqa: N801
         See Also:
             - [`lmo.l_moment`][lmo.l_moment]: sample L-moment
         """
-        rs = clean_orders(np.asanyarray(r))
+        _r = clean_orders(np.asanyarray(r))
+        _trim = clean_trim(trim)
 
         args, loc, scale = self._parse_args(*args, **kwds)
-        support = self._get_support(*args)
-        cdf, ppf = self._get_xxf(*args)
 
-        lmda = np.asarray(l_moment_from_cdf(
-            cdf,
-            rs,
-            trim=trim,
-            support=support,
-            ppf=ppf,
-            quad_opts=quad_opts,
-        ))
-        lmda[rs == 1] += loc
-        lmda[rs > 1] *= scale
-        return lmda[()]  # convert back to scalar if needed
+        if _trim[0] <= 0 and _trim[1] <= 0:
+            mu1 = self._stats(*args)[0]
+            if mu1 is not None and np.isnan(mu1):
+                # undefined mean -> distr is "pathological" (e.g. cauchy)
+                return np.full(_r.shape, np.nan)[()]
+
+        lmbda_r = self._l_moment(_r, *args, trim=_trim)
+        lmbda_r[_r == 1] += loc
+        lmbda_r[_r > 1] *= scale
+        return lmbda_r[()]  # convert back to scalar if needed
 
     @overload
     def l_ratio(
@@ -1458,17 +1493,19 @@ class l_rv_generic(PatchClass):  # noqa: N801
                 ).params,  # type: ignore
             )
 
-        _kwargs: dict[str, Any] = {'bounds': bounds} | dict(fit_kwargs or {})
+        _kwargs: dict[str, Any] = {
+            'bounds': bounds,
+        } | dict(fit_kwargs or {})
         result = inference.fit(
             self.ppf,
             args0,
             data,
             n_extra=n_extra,
             trim=trim,
+            l_moment_fn=self.l_moment,
             **_kwargs,
         )
         return result if full_output else result.args
-
 
 
     def l_fit_loc_scale(
