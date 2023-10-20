@@ -9,13 +9,13 @@ import numpy as np
 import numpy.typing as npt
 from matplotlib.pylab import LinAlgError
 from scipy import optimize, special  # type: ignore
+from scipy.stats import qmc  # type: ignore
 
 from ._lm import l_moment
 from ._utils import clean_trim
 from .diagnostic import HypothesisTestResult, l_moment_bounds
 from .theoretical import l_moment_from_ppf
 from .typing import (
-    AnyInt,
     AnyTrim,
     DistributionFunction,
     IntVector,
@@ -178,7 +178,7 @@ def _get_weights_mc(
             y,
             r,
             trim=trim,
-            axis=0,
+            axis=-1,
             cache=True,
             sort='stable',
         ),
@@ -205,8 +205,8 @@ def fit(
     l_tol: float = 1e-4,
 
     l_moment_fn: Callable[..., npt.NDArray[np.float64]] | None = None,
-    n_mc_samples: int = 9999,
-    random_state: AnyInt | np.random.Generator | None = None,
+    n_qmc_samples: int = 8192,
+    random_state: int | np.random.Generator | None = None,
     **kwds: Any,
 ) -> GMMResult:
     r"""
@@ -251,13 +251,9 @@ def fit(
     consequently used to to calculate the new weight matrix.
 
     Todo:
-        - Code examples (e.g. GEV)
-        - Allow custom theoretical L-moment & -cov function (e.g. for
-            distributions with known L-moments).
         - Raise on minimization error, warn on failed k-step convergence
         - Implement CUE: Continuously Updating GMM (i.e. implement and
             use  `_loss_cue()`, then run `L-GMM-1`).
-        - Automatic `extra` selection (e.g. AICc, or Sargan's J test)
 
     Parameters:
         ppf:
@@ -288,9 +284,9 @@ def fit(
         l_moment_fn:
             Function for parametric L-moment calculation, with signature:
             `(r: int64[], *args, trim: float[2] | int[2]) -> float64[]`.
-        n_mc_samples:
-            The number of Monte-Carlo samples drawn from the distribution to
-            to form the weight matrix in step $k > 1$.
+        n_qmc_samples:
+            The number of Quasi Monte-Carlo (QMC) samples drawn from the
+            distribution to to form the weight matrix in step $k > 1$.
             Will be ignored if `n_extra=0`.
         random_state:
             A seed value or [`numpy.random.Generator`][numpy.random.Generator]
@@ -354,9 +350,14 @@ def fit(
         epsmax = l_tol
 
     # random number generator
-    rng = np.random.default_rng(random_state)
-    qs = rng.uniform(0, 1, (n_obs, n_mc_samples))
-    qs.sort(axis=0)  # speeds up L-moment calculation if sort='stable'
+    # rng = np.random.default_rng(random_state)
+    # qs = rng.random((n_mc_samples, n_obs))
+    rng = cast(
+        np.random.Generator,
+        qmc.Sobol(n_obs, seed=random_state),
+    )
+    qs = np.maximum(rng.random(n_qmc_samples), (n_obs * n_qmc_samples)**-2)
+    qs.sort(axis=1)  # speeds up L-moment calculation if sort='stable'
 
     # initial state
     _k = 0
