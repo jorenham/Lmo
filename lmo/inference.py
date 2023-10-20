@@ -157,6 +157,42 @@ def _loss_step(
     return cast(float, g_r.T @ w_rr @ g_r)
 
 
+def _get_l_moment_fn(ppf: DistributionFunction[...]):
+    def l_moment_fn(
+        r: IntVector,
+        *args: Any,
+        trim: AnyTrim = (0, 0),
+    ) -> npt.NDArray[np.float64]:
+        return l_moment_from_ppf(lambda q: ppf(q, *args), r, trim=trim)
+
+    return l_moment_fn
+
+
+def _get_weights_mc(
+    y: npt.NDArray[np.float64],
+    r: npt.NDArray[np.int64],
+    trim: tuple[int, int] | tuple[float, float] = (0, 0),
+) -> npt.NDArray[np.float64]:
+    l_rr = np.cov(
+        l_moment(
+            y,
+            r,
+            trim=trim,
+            axis=0,
+            cache=True,
+            sort='stable',
+        ),
+    )
+
+    if len(r) == 1:
+        return 1 / l_rr
+
+    try:
+        return np.linalg.inv(l_rr)
+    except LinAlgError:
+        return np.linalg.pinv(l_rr, hermitian=True)
+
+
 def fit(
     ppf: DistributionFunction[...],
     args0: npt.ArrayLike,
@@ -304,7 +340,8 @@ def fit(
         scale_r = np.ones(n_con)
 
     # Initial parametric population L-moments
-    lmbda_r = l_moment_from_ppf(lambda q: ppf(q, *theta), r, trim=_trim)
+    _l_moment_fn = l_moment_fn or _get_l_moment_fn(ppf)
+    lmbda_r = _l_moment_fn(r, *theta, trim=_trim)
 
     if k:
         k_min = k_max = k
@@ -329,36 +366,9 @@ def fit(
     success = False
     w_rr = np.eye(n_con)
 
-    if l_moment_fn is None:
-        def _l_moment_fn(
-            r: IntVector,
-            *args: Any,
-            trim: AnyTrim = (0, 0),
-        ) -> npt.NDArray[np.float64]:
-            return l_moment_from_ppf(lambda q: ppf(q, *args), r, trim=trim)
-    else:
-        _l_moment_fn = l_moment_fn
-
     for _k in range(1, k_max + 1):
         # calculate the weight matrix
-        l_rr = np.cov(
-            l_moment(
-                ppf(qs, *theta),
-                r,
-                trim=_trim,
-                axis=0,
-                cache=True,
-                sort='stable',
-            ),
-            ddof=n_par - 1,  # assuming there's always a location parameter
-        )
-        if n_con == 1:
-            w_rr = 1 / l_rr
-        else:
-            try:
-                w_rr = np.linalg.inv(l_rr)
-            except LinAlgError:
-                w_rr = np.linalg.pinv(l_rr, hermitian=True)
+        w_rr = _get_weights_mc(ppf(qs, *theta), r, trim=_trim)
 
         # run the optimizer
         res = cast(
