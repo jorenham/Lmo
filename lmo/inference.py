@@ -2,17 +2,25 @@
 
 __all__ = 'GMMResult', 'fit'
 
+from collections.abc import Callable
 from typing import Any, NamedTuple, cast
 
 import numpy as np
 import numpy.typing as npt
+from matplotlib.pylab import LinAlgError
 from scipy import optimize, special  # type: ignore
 
-from ._lm import l_moment, l_moment_cov
+from ._lm import l_moment
 from ._utils import clean_trim
 from .diagnostic import HypothesisTestResult, l_moment_bounds
 from .theoretical import l_moment_from_ppf
-from .typing import AnyInt, AnyTrim, DistributionFunction, OptimizeResult
+from .typing import (
+    AnyInt,
+    AnyTrim,
+    DistributionFunction,
+    IntVector,
+    OptimizeResult,
+)
 
 
 class GMMResult(NamedTuple):
@@ -133,13 +141,13 @@ class GMMResult(NamedTuple):
 
 def _loss_step(
     args: npt.NDArray[np.float64],
-    ppf: DistributionFunction[...],
+    l_fn: Callable[..., npt.NDArray[np.float64]],
     r: npt.NDArray[np.int64],
     l_r: npt.NDArray[np.float64],
     trim: AnyTrim,
     w_rr: npt.NDArray[np.float64],
 ) -> float:
-    lmbda_r = l_moment_from_ppf(lambda q: ppf(q, *args), r, trim=trim)
+    lmbda_r = l_fn(r, *args, trim=trim)
 
     if not np.all(np.isfinite(lmbda_r)):
         msg = f'failed to find the L-moments of ppf{args} with {trim=}'
@@ -159,9 +167,10 @@ def fit(
     k: int | None = None,
     k_max: int = 50,
     l_tol: float = 1e-4,
+
+    l_moment_fn: Callable[..., npt.NDArray[np.float64]] | None = None,
     n_mc_samples: int = 9999,
     random_state: AnyInt | np.random.Generator | None = None,
-
     **kwds: Any,
 ) -> GMMResult:
     r"""
@@ -240,6 +249,9 @@ def fit(
         l_tol:
             Error tolerance in the parametric L-moments (unit-standardized).
             Will be ignored if $k$ is specified or if `n_extra=0`.
+        l_moment_fn:
+            Function for parametric L-moment calculation, with signature:
+            `(r: int64[], *args, trim: float[2] | int[2]) -> float64[]`.
         n_mc_samples:
             The number of Monte-Carlo samples drawn from the distribution to
             to form the weight matrix in step $k > 1$.
@@ -306,28 +318,55 @@ def fit(
 
     # random number generator
     rng = np.random.default_rng(random_state)
-
-    # initial nonparametric weight matrix
-    l_rr = l_moment_cov(x, n_con, trim=_trim, sort='stable')
-    l_rr = (l_rr + l_rr.T) / 2  # enforce symmetry; workaround numerical errors
-    w_rr = np.linalg.inv(l_rr)
+    qs = rng.uniform(0, 1, (n_obs, n_mc_samples))
+    qs.sort(axis=0)  # speeds up L-moment calculation if sort='stable'
 
     # initial state
-    k = 0
+    _k = 0
     i = 0
     eps = np.full(n_con, np.nan)
     stat = np.nan
     success = False
-    qs = None
+    w_rr = np.eye(n_con)
 
-    for k in range(1, k_max + 1):
+    if l_moment_fn is None:
+        def _l_moment_fn(
+            r: IntVector,
+            *args: Any,
+            trim: AnyTrim = (0, 0),
+        ) -> npt.NDArray[np.float64]:
+            return l_moment_from_ppf(lambda q: ppf(q, *args), r, trim=trim)
+    else:
+        _l_moment_fn = l_moment_fn
+
+    for _k in range(1, k_max + 1):
+        # calculate the weight matrix
+        l_rr = np.cov(
+            l_moment(
+                ppf(qs, *theta),
+                r,
+                trim=_trim,
+                axis=0,
+                cache=True,
+                sort='stable',
+            ),
+            ddof=n_par - 1,  # assuming there's always a location parameter
+        )
+        if n_con == 1:
+            w_rr = 1 / l_rr
+        else:
+            try:
+                w_rr = np.linalg.inv(l_rr)
+            except LinAlgError:
+                w_rr = np.linalg.pinv(l_rr, hermitian=True)
+
         # run the optimizer
         res = cast(
             OptimizeResult,
             optimize.minimize(  # type: ignore
                 _loss_step,
                 theta,
-                args=(ppf, r, l_r, _trim, w_rr),
+                args=(_l_moment_fn, r, l_r, _trim, w_rr),
                 **kwds,
             ),
         )
@@ -338,36 +377,16 @@ def fit(
         stat = res.fun
         theta = res.x
 
-        # re-evaluate the theoretical L-moments for the new params
-        lmbda_r0 = lmbda_r
-        lmbda_r = l_moment_from_ppf(lambda q: ppf(q, *theta), r, trim=_trim)
+        if _k >= k_min:
+            # re-evaluate the theoretical L-moments for the new params
+            lmbda_r0 = lmbda_r
+            lmbda_r = _l_moment_fn(r, *theta, trim=_trim)
 
-        # convergence criterion
-        eps = (lmbda_r - lmbda_r0) * scale_r
-        if (
-            k >= k_min and (success := np.max(np.abs(eps)) <= epsmax)
-            or k == k_max
-        ):
-            break
-
-        # re-evaluate the cov- and weight matrices with a Monte-Carlo approach
-        if qs is None:
-            qs = rng.uniform(0, 1, (n_obs, n_mc_samples))
-            qs.sort(axis=0)
-
-        ys = ppf(qs, *theta)
-        l_rr = np.cov(
-            l_moment(
-                ys,
-                r,
-                trim=_trim,
-                axis=0,
-                cache=True,
-                sort='stable',
-            ),
-            ddof=n_par - 1,  # assuming there's always a location parameter
-        )
-        w_rr = np.linalg.inv(l_rr)
+            # convergence criterion
+            eps = (lmbda_r - lmbda_r0) * scale_r
+            if np.max(np.abs(eps)) <= epsmax:
+                success = True
+                break
 
     return GMMResult(
         args=tuple(theta),
@@ -375,7 +394,7 @@ def fit(
         statistic=stat,
         eps=eps,
         n_samp=cast(int, n_obs - sum(_trim)),
-        n_step=k,
+        n_step=_k,
         n_iter=i,
         weights=w_rr,
     )
