@@ -1493,17 +1493,46 @@ class l_rv_generic(PatchClass):  # noqa: N801
                 ).params,  # type: ignore
             )
 
-        _kwargs: dict[str, Any] = {
-            'bounds': bounds,
-        } | dict(fit_kwargs or {})
+
+        _lmo_cache = {}
+        _lmo_fn = self._l_moment
+
+        # temporary cache to speed up L-moment calculations with the same
+        # shape args
+        def lmo_fn(
+            r: npt.NDArray[np.int64],
+            *args: float,
+            trim: tuple[int, int] | tuple[float, float] = (0, 0),
+        ) -> npt.NDArray[np.float64]:
+            shapes, loc, scale = args[:-2], args[-2], args[-1]
+
+            # r and trim will be the same within inference.fit; safe to ignore
+            if shapes in _lmo_cache:
+                lmbda_r = np.asarray(_lmo_cache[shapes], np.float64)
+            else:
+                lmbda_r = _lmo_fn(r, *shapes, trim=trim)
+                _lmo_cache[shapes] = tuple(lmbda_r)
+
+            if loc != 0:
+                lmbda_r[r == 1] += loc
+            if scale != 1:
+                lmbda_r[r > 1] *= scale
+            return lmbda_r
+
+        kwargs0: dict[str, Any] = {'bounds': bounds}
+        if not len(self._shape_info()):
+            # no shape params; weight matrix only depends linearly on scale
+            # => weight matrix is constant between steps, use 1 step by default
+            kwargs0['k'] = 1
+
         result = inference.fit(
             self.ppf,
             args0,
             data,
             n_extra=n_extra,
             trim=trim,
-            l_moment_fn=self.l_moment,
-            **_kwargs,
+            l_moment_fn=lmo_fn,
+            **(kwargs0 | dict(fit_kwargs or {})),
         )
         return result if full_output else result.args
 
