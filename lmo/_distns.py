@@ -511,8 +511,8 @@ class l_rv_generic(PatchClass):  # noqa: N801
     def _l_moment(
         self,
         r: npt.NDArray[np.int64],
-        trim: tuple[int, int] | tuple[float, float],
         *args: Any,
+        trim: tuple[int, int] | tuple[float, float] = (0, 0),
         quad_opts: QuadOptions | None = None,
     ) -> npt.NDArray[np.float64]:
         """
