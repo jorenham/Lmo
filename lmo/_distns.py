@@ -32,6 +32,7 @@ from scipy.stats.distributions import (  # type: ignore
 )
 
 from . import inference
+from ._lm import l_moment as l_moment_est
 from ._poly import jacobi_series, roots
 from ._utils import (
     broadstack,
@@ -462,13 +463,14 @@ class l_rv_generic(PatchClass):  # noqa: N801
 
     _ctor_param: Mapping[str, Any]
     _parse_arg_template: str
-    _random_state: np.random.RandomState
+    _random_state: np.random.RandomState | np.random.Generator
     _stats_has_moments: bool
     a: float | None
     b: float | None
     badvalue: float | None
     name: int
     numargs: int
+    random_state: np.random.RandomState | np.random.Generator
     shapes: str
 
     _argcheck: Callable[..., int]
@@ -1519,17 +1521,24 @@ class l_rv_generic(PatchClass):  # noqa: N801
                 lmbda_r[r > 1] *= scale
             return lmbda_r
 
-        kwargs0: dict[str, Any] = {'bounds': bounds}
+        kwargs0: dict[str, Any] = {
+            'bounds': bounds,
+            'random_state': self.random_state,
+        }
         if not len(self._shape_info()):
             # no shape params; weight matrix only depends linearly on scale
             # => weight matrix is constant between steps, use 1 step by default
             kwargs0['k'] = 1
 
+        x = np.asarray(data)
+        r = np.arange(1, len(args0) + n_extra + 1)
+
         result = inference.fit(
-            self.ppf,
-            args0,
-            data,
-            n_extra=n_extra,
+            ppf=self.ppf,
+            args0=args0,
+            n_obs=x.size,
+            l_moments=l_moment_est(x, r, trim=trim, sort='quicksort'),
+            r=r,
             trim=trim,
             l_moment_fn=lmo_fn,
             **(kwargs0 | dict(fit_kwargs or {})),

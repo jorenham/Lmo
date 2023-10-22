@@ -9,10 +9,10 @@ import numpy as np
 import numpy.typing as npt
 from matplotlib.pylab import LinAlgError
 from scipy import optimize, special  # type: ignore
-from scipy.stats import qmc  # type: ignore
 
-from ._lm import l_moment
-from ._utils import clean_trim
+from ._lm import l_moment as l_moment_est
+from ._lm_co import l_coscale as l_coscale_est
+from ._utils import clean_orders, clean_trim
 from .diagnostic import HypothesisTestResult, l_moment_bounds
 from .theoretical import l_moment_from_ppf
 from .typing import (
@@ -154,7 +154,7 @@ def _loss_step(
         raise ValueError(msg)
 
     g_r = lmbda_r - l_r
-    return cast(float, g_r.T @ w_rr @ g_r)
+    return special.chdtr(len(r), g_r.T @ w_rr @ g_r)  # type: ignore
 
 
 def _get_l_moment_fn(ppf: DistributionFunction[...]):
@@ -173,31 +173,39 @@ def _get_weights_mc(
     r: npt.NDArray[np.int64],
     trim: tuple[int, int] | tuple[float, float] = (0, 0),
 ) -> npt.NDArray[np.float64]:
-    l_rr = np.cov(
-        l_moment(
-            y,
-            r,
-            trim=trim,
-            axis=-1,
-            cache=True,
-            sort='stable',
-        ),
+    l_r = l_moment_est(
+        y,
+        r,
+        trim=trim,
+        axis=-1,
+        # cache=True,
+        # `y` is sorted -> stablesort is faster than quicksort
+        sort='stable',
     )
 
-    if len(r) == 1:
-        return 1 / l_rr
+    # l_rr = np.cov(l_r)
+
+    # Use L-coscale instead of np.cov (more efficient and robust)
+    # L-moment estimates follow a normal distribution.
+    # Note that the L-scale of standard normal is 1/sqrt(pi).
+    # l_r is fully unordered, so quicksort is likely to be faster than stable
+    l_rr = l_coscale_est(l_r, sort='quicksort')
+    # convert the L-coscale to an (asymmetric) quasi-covariance matrix
+    l_rr *= l_rr.diagonal() * np.pi
 
     try:
         return np.linalg.inv(l_rr)
     except LinAlgError:
-        return np.linalg.pinv(l_rr, hermitian=True)
+        # can occur for e.g. 1x1 or sub-rank cov matrices
+        return np.linalg.pinv(l_rr)
 
 
 def fit(
     ppf: DistributionFunction[...],
     args0: npt.ArrayLike,
-    data: npt.ArrayLike,
-    n_extra: int = 0,
+    n_obs: int,
+    l_moments: npt.ArrayLike,
+    r: IntVector | None = None,
     trim: AnyTrim = (0, 0),
     *,
     k: int | None = None,
@@ -205,8 +213,8 @@ def fit(
     l_tol: float = 1e-4,
 
     l_moment_fn: Callable[..., npt.NDArray[np.float64]] | None = None,
-    n_qmc_samples: int = 8192,
-    random_state: int | np.random.Generator | None = None,
+    n_mc_samples: int = 9999,
+    random_state: int | np.random.Generator | np.random.RandomState | None = None,
     **kwds: Any,
 ) -> GMMResult:
     r"""
@@ -261,12 +269,13 @@ def fit(
             with signature `(*args: float, q: T) -> T`.
         args0:
             Initial estimate of the distribution's parameter values.
-        data:
-            The sample data as 1-d array-like.
-        n_extra:
-            The amount of over-identifying L-moment conditions to use. E.g.
-            if `len(args0) == 3` and `extra == 1`, `4` L-moment conditions
-            will be used in total. Must be `>=0`.
+        n_obs:
+            Amount of observations.
+        l_moments:
+            Estimated sample L-moments. Must be a 1-d array-like s.t.
+            `len(l_moments) >= len(args0)`.
+        r:
+            The orders of `l_moments`. Defaults to `[1, ..., len(l_moments)]`.
         trim:
             The L-moment trim-length(s) to use. Currently, only integral
             trimming is supported.
@@ -284,8 +293,8 @@ def fit(
         l_moment_fn:
             Function for parametric L-moment calculation, with signature:
             `(r: int64[], *args, trim: float[2] | int[2]) -> float64[]`.
-        n_qmc_samples:
-            The number of Quasi Monte-Carlo (QMC) samples drawn from the
+        n_mc_samples:
+            The number of Monte-Carlo (MC) samples drawn from the
             distribution to to form the weight matrix in step $k > 1$.
             Will be ignored if `n_extra=0`.
         random_state:
@@ -307,69 +316,74 @@ def fit(
         many L-moments](https://doi.org/10.48550/arXiv.2210.04146)
 
     """
+    # Validate the input
     theta = np.asarray_chkfinite(args0, np.float64)
-    x = np.sort(np.asarray_chkfinite(data))
-
-    n_obs = x.size
     n_par = len(theta)
-    n_con = n_par + n_extra
+
+    l_r = np.asarray_chkfinite(l_moments)
+    if l_r.ndim != 1:
+        msg = 'l_moments must be a 1-d array-like'
+        raise ValueError(msg)
+
+    if r is None:
+        _r = np.arange(1, len(l_r) + 1)
+    else:
+        _r = clean_orders(np.asarray(r, np.int64))
+
+        _r_nonzero = _r != 0
+        l_r, _r = l_r[_r_nonzero], _r[_r_nonzero]
+
+    if (n_con := len(_r)) < n_par:
+        msg = f'under-determined L-moment conditions: {n_con} < {n_par}'
+        raise ValueError(msg)
 
     _trim = clean_trim(trim)
-    r = np.arange(1, n_con + 1, dtype=np.int64)
-
-    # Sample L-moment estimates
-    l_r = l_moment(x, r, trim=_trim, sort='stable', cache=True)
-    if not (np.all(np.isfinite(l_r))):
-        msg = f'failed to find valid sample L-moments: {l_r}'
-        raise ValueError(msg)
-    if n_con > 1 and l_r[1] <= 0:
-        msg = f'invalid sample L-scale: {l_r[1]}'
-        raise ValueError(msg)
+    _r = np.arange(1, n_con + 1, dtype=np.int64)
 
     # Individual L-moment "natural" scaling constants, making their magnitudes
     # order- and trim- agnostic (used in convergence criterion)
-    if n_con > 1:
-        l_r_ub = np.r_[1, l_moment_bounds(r[1:], trim=_trim)]
-        l_2c = l_r[1] / l_r_ub[1]
-        scale_r = cast(npt.NDArray[np.float64], 1 / (l_2c * l_r_ub))
-    else:
-        scale_r = np.ones(n_con)
+    l_r_ub = np.r_[1, l_moment_bounds(_r[1:], trim=_trim)]
+    l_2c = l_r[1] / l_r_ub[1]
+    scale_r = cast(npt.NDArray[np.float64], 1 / (l_2c * l_r_ub))
 
     # Initial parametric population L-moments
     _l_moment_fn = l_moment_fn or _get_l_moment_fn(ppf)
-    lmbda_r = _l_moment_fn(r, *theta, trim=_trim)
+    lmbda_r = _l_moment_fn(_r, *theta, trim=_trim)
 
+    # Prepare the converge criteria
     if k:
         k_min = k_max = k
         epsmax = np.inf
-    elif n_extra == 0:
+    elif n_par == n_con:
         k_min = k_max = 1
         epsmax = np.inf
     else:
-        k_min = 2
-        epsmax = l_tol
+        k_min, epsmax = 1, l_tol
 
-    # random number generator
-    # rng = np.random.default_rng(random_state)
-    # qs = rng.random((n_mc_samples, n_obs))
-    rng = cast(
-        np.random.Generator,
-        qmc.Sobol(n_obs, seed=random_state),
-    )
-    qs = np.maximum(rng.random(n_qmc_samples), (n_obs * n_qmc_samples)**-2)
-    qs.sort(axis=1)  # speeds up L-moment calculation if sort='stable'
+    # Random number generator
+    if isinstance(random_state, np.random.RandomState | np.random.Generator):
+        rng = random_state
+    else:
+        rng = np.random.default_rng(random_state)
 
-    # initial state
+    # Draw random quantiles, and pre-sort to improve L-moment estimation speed
+    qs = rng.random((n_mc_samples, n_obs))
+    qs.sort(axis=1)
+
+    # Set the default `scipy.optimize.minize` method
+    kwds.setdefault('method', 'Nelder-Mead')
+
+    # Initial state
     _k = 0
-    i = 0
+    i = 1
     eps = np.full(n_con, np.nan)
-    stat = np.nan
+    fun = np.nan
     success = False
     w_rr = np.eye(n_con)
 
     for _k in range(1, k_max + 1):
         # calculate the weight matrix
-        w_rr = _get_weights_mc(ppf(qs, *theta), r, trim=_trim)
+        w_rr = _get_weights_mc(ppf(qs, *theta), _r, trim=_trim)
 
         # run the optimizer
         res = cast(
@@ -377,28 +391,31 @@ def fit(
             optimize.minimize(  # type: ignore
                 _loss_step,
                 theta,
-                args=(_l_moment_fn, r, l_r, _trim, w_rr),
+                args=(_l_moment_fn, _r, l_r, _trim, w_rr),
                 **kwds,
             ),
         )
+        i += res.nfev
+        fun = res.fun
+        theta = res.x
+
         if not res.success:
             break
 
-        i += res.nfev
-        stat = res.fun
-        theta = res.x
+        if _k < k_min:
+            continue
 
-        if _k >= k_min:
-            # re-evaluate the theoretical L-moments for the new params
-            lmbda_r0 = lmbda_r
-            lmbda_r = _l_moment_fn(r, *theta, trim=_trim)
+        # re-evaluate the theoretical L-moments for the new params
+        lmbda_r0 = lmbda_r
+        lmbda_r = _l_moment_fn(_r, *theta, trim=_trim)
 
-            # convergence criterion
-            eps = (lmbda_r - lmbda_r0) * scale_r
-            if np.max(np.abs(eps)) <= epsmax:
-                success = True
-                break
+        # convergence criterion
+        eps = (lmbda_r - lmbda_r0) * scale_r
+        if np.max(np.abs(eps)) <= epsmax:
+            success = True
+            break
 
+    stat = cast(float, special.chdtri(len(_r), fun))  # type: ignore
     return GMMResult(
         args=tuple(theta),
         success=success,
