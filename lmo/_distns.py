@@ -1464,11 +1464,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
         See ['lmo.inference.fit'][lmo.inference.fit] for details.
 
         Todo:
-            - if initial args are passed for all params, skip the initial
-            fitting step.
-            - pass a boolean mask as `lmo.inference.fit(integrality=...)` if
-            are any `integrality=True` shape params, and to `scipy.stats.fit`.
-            - return a named tuple
+            - Support integral parameters.
 
         Parameters:
             data:
@@ -1523,7 +1519,9 @@ class l_rv_generic(PatchClass):  # noqa: N801
         """
         kwds, bounds = self._reduce_param_bounds(**kwds)
 
-        if isinstance(self, rv_continuous):
+        if len(args) == len(bounds):
+            args0 = args
+        elif isinstance(self, rv_continuous):
             args0 = self.fit(data, *args, **kwds)
         else:
             # almost never works without custom (finite and tight) bounds...

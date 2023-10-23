@@ -265,8 +265,9 @@ def fit(  # noqa: C901
 
     Todo:
         - Raise on minimization error, warn on failed k-step convergence
+        - Optional `integrality` kwarg with boolean mask for integral params.
         - Implement CUE: Continuously Updating GMM (i.e. implement and
-            use  `_loss_cue()`, then run `L-GMM-1`).
+            use  `_loss_cue()`, then run with `k=1`).
 
     Parameters:
         ppf:
