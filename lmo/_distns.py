@@ -1442,6 +1442,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
         trim: AnyTrim = (0, 0),
         full_output: bool = False,
         fit_kwargs: Mapping[str, Any] | None = None,
+        random_state: int | np.random.Generator | None = None,
         **kwds: Any,
     ) -> tuple[float, ...] | inference.GMMResult:
         """
@@ -1452,8 +1453,34 @@ class l_rv_generic(PatchClass):  # noqa: N801
 
         See ['lmo.inference.fit'][lmo.inference.fit] for details.
 
-        Todo:
-            - Support integral parameters.
+        Examples:
+            Fitting standard normal samples Using scipy's default MLE
+            (Maximum Likelihood Estimation) method:
+
+            >>> import lmo
+            >>> import numpy as np
+            >>> from scipy.stats import norm
+            >>> rng = np.random.default_rng(12345)
+            >>> x = rng.standard_normal(200)
+            >>> dists.norm.fit(x)
+            (0.0033..., 0.9555...)
+
+            Better results can be obtained different by using Lmo's L-MM
+            (Method of L-moment):
+
+            >>> norm.l_fit(x, random_state=rng)
+            FitArgs(loc=0.0033..., scale=0.9617...)
+            >>> norm.l_fit(x, trim=1, random_state=rng)
+            FitArgs(loc=0.0197..., scale=0.9674...)
+
+            To use more L-moments than the number of parameters, two in this
+            case, `n_extra` can be used. This will use the L-GMM (Generalized
+            Method of L-Moments), which results in slightly better estimates:
+
+            >>> norm.l_fit(x, n_extra=1, random_state=rng)
+            FitArgs(loc=0.0039..., scale=0.9623...)
+            >>> norm.l_fit(x, trim=1, n_extra=1, random_state=rng)
+            FitArgs(loc=-0.0012..., scale=0.9685...)
 
         Parameters:
             data:
@@ -1477,6 +1504,11 @@ class l_rv_generic(PatchClass):  # noqa: N801
                 Additional keyword arguments to be passed to
                 ['lmo.inference.fit'][lmo.inference.fit] or
                 ['scipy.optimize.minimize'][scipy.optimize.minimize].
+            random_state:
+                Integer or [`numpy.random.Generator`][numpy.random.Generator]
+                instance, used for Monte-Carlo simulation when `n_extra > 0`.
+                If `None` (default), the `random_state` of this distribution
+                will be used.
             **kwds:
                 Special keyword arguments are recognized as holding certain
                 parameters fixed:
@@ -1504,6 +1536,9 @@ class l_rv_generic(PatchClass):  # noqa: N801
         References:
             - [Alvarez et al. (2023) - Inference in parametric models with
             many L-moments](https://doi.org/10.48550/arXiv.2210.04146)
+
+        Todo:
+            - Support integral parameters.
 
         """
         _, bounds = self._reduce_param_bounds(**kwds)
@@ -1553,7 +1588,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
 
         kwargs0: dict[str, Any] = {
             'bounds': bounds,
-            'random_state': self.random_state,
+            'random_state': random_state or self.random_state,
         }
         if not len(self._shape_info()):
             # no shape params; weight matrix only depends linearly on scale
