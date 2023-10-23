@@ -370,7 +370,7 @@ def fit(
     qs = rng.random((n_mc_samples, n_obs))
     qs.sort(axis=1)
 
-    # Set the default `scipy.optimize.minize` method
+    # Set the default `scipy.optimize.minimize` method
     kwds.setdefault('method', 'Nelder-Mead')
 
     # Initial state
