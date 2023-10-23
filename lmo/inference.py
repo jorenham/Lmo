@@ -21,6 +21,7 @@ from .typing import (
     IntVector,
     OptimizeResult,
 )
+from lmo import diagnostic
 
 
 class GMMResult(NamedTuple):
@@ -154,7 +155,7 @@ def _loss_step(
         raise ValueError(msg)
 
     g_r = lmbda_r - l_r
-    return special.chdtr(len(r), g_r.T @ w_rr @ g_r)  # type: ignore
+    return np.log(g_r.T @ w_rr @ g_r)  # type: ignore
 
 
 def _get_l_moment_fn(ppf: DistributionFunction[...]):
@@ -372,9 +373,12 @@ def fit(  # noqa: C901
     else:
         rng = np.random.default_rng(random_state)
 
-    # Draw random quantiles, and pre-sort to improve L-moment estimation speed
-    qs = rng.random((n_mc_samples, n_obs))
-    qs.sort(axis=1)
+    if n_con > n_par:
+        # Draw random quantiles, and pre-sort for L-moment estimation speed
+        qs = rng.random((n_mc_samples, n_obs))
+        qs.sort(axis=1)
+    else:
+        qs = None
 
     # Set the default `scipy.optimize.minimize` method
     kwds.setdefault('method', 'Nelder-Mead')
@@ -385,11 +389,16 @@ def fit(  # noqa: C901
     eps = np.full(n_con, np.nan)
     fun = np.nan
     success = False
-    w_rr = np.eye(n_con)
+    w_rr = np.eye(n_con) * scale_r
 
     for _k in range(1, k_max + 1):
         # calculate the weight matrix
-        w_rr = _get_weights_mc(ppf(qs, *theta), _r, trim=_trim)
+        if n_con > n_par:
+            w_rr = _get_weights_mc(
+                ppf(cast(npt.NDArray[np.float64], qs), *theta),
+                _r,
+                trim=_trim,
+            )
 
         # run the optimizer
         res = cast(
@@ -421,11 +430,10 @@ def fit(  # noqa: C901
             success = True
             break
 
-    stat = cast(float, special.chdtri(len(_r), fun))  # type: ignore
     return GMMResult(
         args=tuple(theta),
         success=success,
-        statistic=stat,
+        statistic=np.exp(fun),
         eps=eps,
         n_samp=cast(int, n_obs - sum(_trim)),
         n_step=_k,
