@@ -14,6 +14,7 @@ from typing import (
     Any,
     ClassVar,
     Final,
+    Literal,
     Protocol,
     SupportsIndex,
     TypeAlias,
@@ -663,8 +664,6 @@ class l_rv_generic(PatchClass):  # noqa: N801
             if mu1 is not None and np.isnan(mu1):
                 # undefined mean -> distr is "pathological" (e.g. cauchy)
                 return np.full(_r.shape, np.nan)[()]
-
-        #
 
         # L-moments of the standard distribution (loc=0, scale=scale0)
         l0_r = self._l_moment(_r, *args, trim=_trim)
@@ -1419,6 +1418,31 @@ class l_rv_generic(PatchClass):  # noqa: N801
         err = l_data - l_dist
         return cast(float, err @ weights @ err)
 
+    @overload
+    def l_fit(
+        self,
+        data: npt.ArrayLike,
+        *args: float,
+        n_extra: int = 0,
+        trim: AnyTrim = (0, 0),
+        full_output: Literal[True],
+        fit_kwargs: Mapping[str, Any] | None = None,
+        **kwds: Any,
+    ) -> tuple[float, ...]:
+        ...
+
+    @overload
+    def l_fit(
+        self,
+        data: npt.ArrayLike,
+        *args: float,
+        n_extra: int = 0,
+        trim: AnyTrim = (0, 0),
+        full_output: bool = ...,
+        fit_kwargs: Mapping[str, Any] | None = None,
+        **kwds: Any,
+    ) -> tuple[float, ...]:
+        ...
 
     def l_fit(
         self,
