@@ -1,11 +1,15 @@
 __all__ = (
-    'ensure_axis_at',
     'as_float_array',
+    'broadstack',
+    'ensure_axis_at',
+    'plotting_positions',
     'round0',
     'ordered',
+
     'clean_order',
     'clean_orders',
     'clean_trim',
+
     'moments_to_ratio',
     'moments_to_stats_cov',
     'l_stats_orders',
@@ -20,24 +24,6 @@ from .typing import AnyInt, AnyTrim, IndexOrder, IntVector, SortKind
 
 T = TypeVar('T', bound=np.generic)
 FT = TypeVar('FT', bound=np.floating[Any])
-
-
-def ensure_axis_at(
-    a: npt.NDArray[T],
-    /,
-    source: int | None,
-    destination: int,
-    order: IndexOrder = 'C',
-) -> npt.NDArray[T]:
-    if a.ndim <= 1 or source == destination:
-        return a
-    if source is None:
-        return a.ravel(order)
-
-    source = source + a.ndim if source < 0 else source
-    destination = destination + a.ndim if destination < 0 else destination
-
-    return a if source == destination else np.moveaxis(a, source, destination)
 
 
 def as_float_array(
@@ -60,6 +46,49 @@ def as_float_array(
 
     # the `_[()]` ensures that 0-d arrays become scalars
     return (out.ravel() if flat and out.ndim != 1 else out)[()]
+
+
+def broadstack(
+    r: AnyInt | IntVector,
+    s: AnyInt | IntVector,
+) -> npt.NDArray[np.int_]:
+    return np.stack(np.broadcast_arrays(np.asarray(r), np.asarray(s)))
+
+
+def ensure_axis_at(
+    a: npt.NDArray[T],
+    /,
+    source: int | None,
+    destination: int,
+    order: IndexOrder = 'C',
+) -> npt.NDArray[T]:
+    if a.ndim <= 1 or source == destination:
+        return a
+    if source is None:
+        return a.ravel(order)
+
+    source = source + a.ndim if source < 0 else source
+    destination = destination + a.ndim if destination < 0 else destination
+
+    return a if source == destination else np.moveaxis(a, source, destination)
+
+
+def plotting_positions(
+    n: int,
+    /,
+    alpha: float = 0.4,
+    beta: float | None = None,
+    *,
+    dtype: npt.DTypeLike | None = None,
+) -> npt.NDArray[np.float64]:
+    """
+    A re-implementation of [`scipy.stats.mstats.plotting_positions`
+    ](scipy.stats.mstats.plotting_positions), but without the ridiculous
+    interface.
+    """
+    x0 = 1 - alpha
+    xn = x0 + n - (alpha if beta is None else beta)
+    return np.linspace(x0 / xn, (x0 + n - 1) / xn, n, dtype=dtype)
 
 
 def round0(a: npt.NDArray[T], /, tol: float = 1e-8) -> npt.NDArray[T]:
@@ -284,10 +313,3 @@ def l_stats_orders(
         np.arange(1, num + 1),
         np.array([0] * min(2, num) + [2] * (num - 2)),
     )
-
-
-def broadstack(
-    r: AnyInt | IntVector,
-    s: AnyInt | IntVector,
-) -> npt.NDArray[np.int_]:
-    return np.stack(np.broadcast_arrays(np.asarray(r), np.asarray(s)))

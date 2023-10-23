@@ -1,16 +1,24 @@
 # pyright: reportIncompatibleMethodOverride=false
 
-__all__ = ('l_rv_nonparametric', 'l_rv_generic', 'l_rv_frozen')
+__all__ = (
+    'l_rv_nonparametric',
+    'l_rv_generic',
+    'l_rv_frozen',
+)
 
 import functools
 import math
 import warnings
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from typing import (
     Any,
     ClassVar,
     Final,
+    Literal,
+    NamedTuple,
+    Protocol,
     SupportsIndex,
+    TypeAlias,
     TypeVar,
     cast,
     overload,
@@ -19,12 +27,14 @@ from typing import (
 import numpy as np
 import numpy.polynomial as npp
 import numpy.typing as npt
-from scipy.optimize import OptimizeResult, minimize  # type: ignore
+from scipy.stats import fit as scipy_fit  # type: ignore
 from scipy.stats.distributions import (  # type: ignore
     rv_continuous,
     rv_frozen,
 )
 
+from . import inference
+from ._lm import l_moment as l_moment_est
 from ._poly import jacobi_series, roots
 from ._utils import (
     broadstack,
@@ -33,6 +43,7 @@ from ._utils import (
     clean_trim,
     l_stats_orders,
     moments_to_ratio,
+    round0,
 )
 from .diagnostic import l_ratio_bounds
 from .theoretical import (
@@ -45,18 +56,22 @@ from .theoretical import (
 from .typing import (
     AnyInt,
     AnyTrim,
+    DistributionFunction,
     FloatVector,
     IntVector,
     PolySeries,
     QuadOptions,
 )
 
+T = TypeVar('T')
 X = TypeVar('X', bound='l_rv_nonparametric')
 F = TypeVar('F', bound=np.floating[Any])
 M = TypeVar('M', bound=Callable[..., Any])
 V = TypeVar('V', bound=float | npt.NDArray[np.float_])
 
 _F_EPS: Final[np.float_] = np.finfo(float).eps
+
+_Tuple4: TypeAlias = tuple[T, T, T, T]
 
 
 def _check_lmoments(l_r: npt.NDArray[np.floating[Any]], s: float, t: float):
@@ -404,7 +419,6 @@ class l_rv_nonparametric(rv_continuous):  # noqa: N801
 
         return cls(l_r, trim=_trim, a=a, b=b)
 
-
 class PatchClass:
     patched: ClassVar[set[type[object]]] = set()
 
@@ -428,6 +442,21 @@ class PatchClass:
         cls.patched.add(base)
 
 
+class _ShapeInfo(Protocol):
+    """Stub for `scipy.stats._distn_infrastructure._ShapeInfo`."""
+    name: str
+    integrality: bool
+    domain: Sequence[float]  # in practice a list of size 2
+
+    def __init__(
+        self, name: str,
+        integrality: bool = ...,
+        domain: tuple[float, float] = ...,
+        inclusive: tuple[bool, bool] = ...,
+    ) -> None:
+        ...
+
+
 class l_rv_generic(PatchClass):  # noqa: N801
     """
     Additional methods that are patched into
@@ -435,21 +464,38 @@ class l_rv_generic(PatchClass):  # noqa: N801
     [`scipy.stats.rv_discrete`][scipy.stats.rv_discrete].
     """
 
-    _cdf: Callable[..., float]
-    _ppf: Callable[..., float]
+    _ctor_param: Mapping[str, Any]
+    _parse_arg_template: str
+    _random_state: np.random.RandomState | np.random.Generator
+    _stats_has_moments: bool
+    a: float | None
+    b: float | None
+    badvalue: float | None
+    name: int
+    numargs: int
+    random_state: np.random.RandomState | np.random.Generator
+    shapes: str
+
     _argcheck: Callable[..., int]
+    _cdf: DistributionFunction[...]
     _fitstart: Callable[..., tuple[float, ...]]
     _get_support: Callable[..., tuple[float, float]]
+    _param_info: Callable[[], list[_ShapeInfo]]
     _parse_args: Callable[..., tuple[tuple[Any, ...], float, float]]
+    _ppf: DistributionFunction[...]
+    _shape_info: Callable[[], list[_ShapeInfo]]
+    _stats: Callable[..., _Tuple4[float | None]]
     _unpack_loc_scale: Callable[
         [npt.ArrayLike],
         tuple[float, float, tuple[float, ...]],
     ]
+    cdf: DistributionFunction[...]
     fit: Callable[..., tuple[float, ...]]
     mean: Callable[..., float]
-    numargs: int
+    ppf: DistributionFunction[...]
+    std: Callable[..., float]
 
-    def _get_xdf(self, *args: Any, loc: float = 0, scale: float = 1) -> tuple[
+    def _get_xxf(self, *args: Any, loc: float = 0, scale: float = 1) -> tuple[
         Callable[[float], float],
         Callable[[float], float],
     ]:
@@ -467,10 +513,42 @@ class l_rv_generic(PatchClass):  # noqa: N801
 
         return cdf, ppf
 
+    def _l_moment(
+        self,
+        r: npt.NDArray[np.int64],
+        *args: Any,
+        trim: tuple[int, int] | tuple[float, float] = (0, 0),
+        quad_opts: QuadOptions | None = None,
+    ) -> npt.NDArray[np.float64]:
+        """
+        Population L-moments of the standard distribution (i.e. assuming
+        `loc=0` and `scale=1`).
+
+        Todo:
+            - Sparse caching; key as `(self.name, args, r, trim)`, using a
+            priority queue. Prefer small `r` and `sum(trim)`, skip fractional
+            trim.
+            - Dispatch mechanism for providing known theoretical L-moments
+            of specific distributions, `r` and `trim`.
+
+        """
+        cdf, ppf = self._get_xxf(*args)
+        lmbda_r = l_moment_from_cdf(
+            cdf,
+            r,
+            trim=trim,
+            support=self._get_support(*args),
+            ppf=ppf,
+            quad_opts=quad_opts,
+        )
+
+        # re-wrap scalars in 0-d arrays (lmo.theoretical unpacks them)
+        return np.asarray(lmbda_r)
+
     @overload
     def l_moment(
         self,
-        order: AnyInt,
+        r: AnyInt,
         /,
         *args: Any,
         trim: AnyTrim = ...,
@@ -481,7 +559,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
     @overload
     def l_moment(
         self,
-        order: IntVector,
+        r: IntVector,
         /,
         *args: Any,
         trim: AnyTrim = ...,
@@ -567,23 +645,30 @@ class l_rv_generic(PatchClass):  # noqa: N801
         See Also:
             - [`lmo.l_moment`][lmo.l_moment]: sample L-moment
         """
-        rs = clean_orders(np.asanyarray(r))
+        _r = clean_orders(r)
+        _trim = clean_trim(trim)
 
         args, loc, scale = self._parse_args(*args, **kwds)
-        support = self._get_support(*args)
-        cdf, ppf = self._get_xdf(*args)
 
-        lmda = np.asarray(l_moment_from_cdf(
-            cdf,
-            rs,
-            trim=trim,
-            support=support,
-            ppf=ppf,
-            quad_opts=quad_opts,
-        ))
-        lmda[rs == 1] += loc
-        lmda[rs > 1] *= scale
-        return lmda[()]  # convert back to scalar if needed
+        if _trim[0] <= 0 and _trim[1] <= 0:
+            mu1 = self._stats(*args)[0]
+            if mu1 is not None and np.isnan(mu1):
+                # undefined mean -> distr is "pathological" (e.g. cauchy)
+                return np.full(_r.shape, np.nan)[()]
+
+        # L-moments of the standard distribution (loc=0, scale=scale0)
+        l0_r = self._l_moment(_r, *args, trim=_trim)
+
+        # shift (by loc) and scale
+        shift_r = loc * (_r == 1)
+        scale_r = scale * (_r > 0) + (_r == 0)
+        l_r = shift_r + scale_r * l0_r
+
+        # round near zero values to 0
+        l_r = round0(l_r, tol=1e-15)
+
+        # convert 0-d to scalar if needed
+        return l_r[()] if np.isscalar(r) else l_r
 
     @overload
     def l_ratio(
@@ -608,7 +693,6 @@ class l_rv_generic(PatchClass):  # noqa: N801
         quad_opts: QuadOptions | None = ...,
         **kwds: Any,
     ) -> npt.NDArray[np.float_]: ...
-
 
     def l_ratio(
         self,
@@ -942,7 +1026,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
             self._parse_args(*args, **kwds),
         )
         support = self._get_support(*args)
-        cdf, _ = self._get_xdf(*args)
+        cdf, _ = self._get_xxf(*args)
 
         cov = l_moment_cov_from_cdf(
             cdf,
@@ -1052,7 +1136,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
         """
         args, _, scale = self._parse_args(*args, **kwds)
         support = self._get_support(*args)
-        cdf, ppf = self._get_xdf(*args)
+        cdf, ppf = self._get_xxf(*args)
 
         cov = l_stats_cov_from_cdf(
             cdf,
@@ -1143,7 +1227,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
         args, loc, scale = self._parse_args(*args, **kwds)
         cdf = cast(
             Callable[[npt.NDArray[np.float_]], npt.NDArray[np.float_]],
-            self._get_xdf(*args, loc=loc, scale=scale)[0],
+            self._get_xxf(*args, loc=loc, scale=scale)[0],
         )
 
         return l_moment_influence_from_cdf(
@@ -1238,7 +1322,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
         args, loc, scale = self._parse_args(*args, **kwds)
         cdf = cast(
             Callable[[npt.NDArray[np.float_]], npt.NDArray[np.float_]],
-            self._get_xdf(*args, loc=loc, scale=scale)[0],
+            self._get_xxf(*args, loc=loc, scale=scale)[0],
         )
 
         return l_ratio_influence_from_cdf(
@@ -1252,18 +1336,63 @@ class l_rv_generic(PatchClass):  # noqa: N801
             tol=tol,
         )
 
-    def _l_moment_error(
+    def _reduce_param_bounds(
+        self,
+        **kwds: dict[str, Any],
+    ) -> tuple[dict[str, Any], list[tuple[float | None, float | None]]]:
+        """
+        Based on `scipy.stats.rv_continuous._reduce_func`.
+
+        Convert fixed shape parameters to the standard numeric form: e.g. for
+        stats.beta, shapes='a, b'. To fix `a`, the caller can give a value
+        for `f0`, `fa` or 'fix_a'.  The following converts the latter two
+        into the first (numeric) form.
+        """
+        kwds = kwds.copy()
+        bounds: list[tuple[float | None, float | None]] = []
+
+        for i, param in enumerate(self._param_info()):
+            name = param.name
+            if param.integrality:
+                msg = 'integral parameter ({name!r}) fitting is not supported'
+                raise NotImplementedError(msg)
+
+            a, b = param.domain
+
+            for key in (f'{i}', f'f{name}', f'fix_{name}'):
+                if key in kwds:
+                    if a == b:
+                        msg = f'multiple fixed args given for {name!r}#{i}'
+                        raise ValueError(msg)
+
+                    val = cast(float, kwds.pop(key))
+                    if not (a <= val <= b):
+                        msg = f'expected {a} <= {name} <= {b}, got {key}={val}'
+                        raise ValueError(msg)
+
+                    a = b = val
+
+            bounds.append((
+                None if np.isinf(a) else a,
+                None if np.isinf(b) else b,
+            ))
+
+        return kwds, bounds
+
+    def _l_gmm_error(
         self,
         theta: npt.NDArray[np.float_],
         trim: tuple[float, float],
         l_data: npt.NDArray[np.float_],
+        weights: npt.NDArray[np.float_],
     ) -> float:
+        """L-GMM objective function."""
         loc, scale, args = self._unpack_loc_scale(theta)
         if scale <= 0 or not self._argcheck(*args):
             return np.inf
 
         l_dist = self.l_moment(
-            np.arange(1, len(l_data) + 1),
+            np.arange(1, len(weights) + 1),
             *args,
             loc=loc,
             scale=scale,
@@ -1271,99 +1400,234 @@ class l_rv_generic(PatchClass):  # noqa: N801
         )
         if np.any(np.isnan(l_dist)):
             msg = (
-                'Method of L-moments encountered a non-finite distribution '
-                'L-moment and cannot continue.'
+                f'Method of L-moments encountered a non-finite  {self.name}'
+                f'L-moment and cannot continue.'
             )
             raise ValueError(msg)
 
+        err = l_data - l_dist
+        return cast(float, err @ weights @ err)
 
-        return (
-            ((l_data - l_dist) / np.maximum(np.abs(l_data), 1e-8))**2
-        ).sum()
-
-
-    def fit_l(
+    @overload
+    def l_fit(
         self,
         data: npt.ArrayLike,
         *args: float,
+        n_extra: int = 0,
         trim: AnyTrim = (0, 0),
-        optimizer: str | Callable[..., OptimizeResult] = 'Nelder-Mead',
+        full_output: Literal[True],
+        fit_kwargs: Mapping[str, Any] | None = None,
+        **kwds: Any,
     ) -> tuple[float, ...]:
+        ...
+
+    @overload
+    def l_fit(
+        self,
+        data: npt.ArrayLike,
+        *args: float,
+        n_extra: int = 0,
+        trim: AnyTrim = (0, 0),
+        full_output: bool = ...,
+        fit_kwargs: Mapping[str, Any] | None = None,
+        **kwds: Any,
+    ) -> tuple[float, ...]:
+        ...
+
+    def l_fit(
+        self,
+        data: npt.ArrayLike,
+        *args: float,
+        n_extra: int = 0,
+        trim: AnyTrim = (0, 0),
+        full_output: bool = False,
+        fit_kwargs: Mapping[str, Any] | None = None,
+        random_state: int | np.random.Generator | None = None,
+        **kwds: Any,
+    ) -> tuple[float, ...] | inference.GMMResult:
         """
         Return estimates of shape (if applicable), location, and scale
-        parameters from data, using Method of L-Moments (LMM).
+        parameters from data. The default estimation method is Method of
+        L-moments (L-MM), but the Generalized Method of L-Moments
+        (L-GMM) is also available (see the `n_extra` parameter).
 
-        Notes:
-            The implementation mimics that of
-            [`fit(method='MM')`][scipy.stats.rv_continuous.fit]
+        See ['lmo.inference.fit'][lmo.inference.fit] for details.
 
         Examples:
-            Fitting of the generalized extreme value (GEV) distribution with
-            MLE (maximum likelihood estimation, which is used by default in
-            `.fit`) vs LMM with different degrees of trimming.
+            Fitting standard normal samples Using scipy's default MLE
+            (Maximum Likelihood Estimation) method:
 
-            >>> from scipy.stats import genextreme
-            >>> c, loc, scale = -0.5, 0, 1
-            >>> data = genextreme(c, loc, scale).rvs(1000, random_state=12345)
-            >>> genextreme.fit(data)
-            (-0.4670..., 0.0294..., 1.0241...)
-            >>> genextreme.fit_l(data)
-            (-0.447..., 0.085..., 1.036...)
-            >>> genextreme.fit_l(data, trim=(0, 1))
-            (-0.483..., 0.022..., 1.017...)
-            >>> genextreme.fit_l(data, trim=(0, 2))
-            (-0.486..., 0.016..., 1.016...)
+            >>> import lmo
+            >>> import numpy as np
+            >>> from scipy.stats import norm
+            >>> rng = np.random.default_rng(12345)
+            >>> x = rng.standard_normal(200)
+            >>> dists.norm.fit(x)
+            (0.0033..., 0.9555...)
 
-        Args:
+            Better results can be obtained different by using Lmo's L-MM
+            (Method of L-moment):
+
+            >>> norm.l_fit(x, random_state=rng)
+            FitArgs(loc=0.0033..., scale=0.9617...)
+            >>> norm.l_fit(x, trim=1, random_state=rng)
+            FitArgs(loc=0.0197..., scale=0.9674...)
+
+            To use more L-moments than the number of parameters, two in this
+            case, `n_extra` can be used. This will use the L-GMM (Generalized
+            Method of L-Moments), which results in slightly better estimates:
+
+            >>> norm.l_fit(x, n_extra=1, random_state=rng)
+            FitArgs(loc=0.0039..., scale=0.9623...)
+            >>> norm.l_fit(x, trim=1, n_extra=1, random_state=rng)
+            FitArgs(loc=-0.0012..., scale=0.9685...)
+
+        Parameters:
             data:
-                Data to fit.
+                1-D array-like data to use in estimating the distribution
+                parameters.
             *args:
-                The shape parameter(s) for the distribution (see docstring of
-                the instance object for more information).
+                Starting value(s) for any shape-characterizing arguments (
+                those not provided will be determined by a call to
+                `fit(data)`).
             trim:
                 Left- and right- trim. Can be scalar or 2-tuple of
                 non-negative int or float.
-            optimizer:
-                See the `method` parameter in
-                [`scipy.optimize.minimize`][scipy.optimize.minimize]. Defaults
-                to `'Nelder-Mead'`. Note that other methods (e.g.`'BFGS'`
-                or `'SLSQP'`) can be a lot faster, but may not be as accurate.
+            n_extra:
+                The amount of extra L-moment conditions to use than the amount
+                of parameters. If 0 (default), L-MM will be used.
+                If >0, $k$-step L-GMM will be used.
+            full_output:
+                If set to True, a `LGMMResult` instance will
+                be returned, instead of only a tuple with parameters.
+            fit_kwargs:
+                Additional keyword arguments to be passed to
+                ['lmo.inference.fit'][lmo.inference.fit] or
+                ['scipy.optimize.minimize'][scipy.optimize.minimize].
+            random_state:
+                Integer or [`numpy.random.Generator`][numpy.random.Generator]
+                instance, used for Monte-Carlo simulation when `n_extra > 0`.
+                If `None` (default), the `random_state` of this distribution
+                will be used.
+            **kwds:
+                Special keyword arguments are recognized as holding certain
+                parameters fixed:
+
+                    - `f0...fn`: hold respective shape parameters fixed.
+                    Alternatively, shape parameters to fix can be specified by
+                    name. For example, if `self.shapes == "a, b"`, `fa` and
+                    `fix_a` are equivalent to `f0`, and `fb` and `fix_b` are
+                    equivalent to `f1`.
+                    - `floc`: hold location parameter fixed to specified value.
+                    - `fscale`: hold scale parameter fixed to specified value.
 
         Returns:
-            Tuple of floats with estimates of the shape parameters (if
-            applicable), followed by those for location and scale.
+            result:
+                Named tuple with estimates for any shape parameters (if
+                applicable), followed by those for location and scale.
+                For most random variables, shape statistics will be returned,
+                but there are exceptions (e.g. ``norm``).
+                If `full_output=True`, an instance of `LGMMResult` will be
+                returned instead.
+
+        See Also:
+            - ['lmo.inference.fit'][lmo.inference.fit]
+
+        References:
+            - [Alvarez et al. (2023) - Inference in parametric models with
+            many L-moments](https://doi.org/10.48550/arXiv.2210.04146)
+
+        Todo:
+            - Support integral parameters.
 
         """
-        _x = np.sort(data, kind='stable')
-        _trim = clean_trim(trim)
+        _, bounds = self._reduce_param_bounds(**kwds)
 
-        from ._lm import l_moment
+        if len(args) == len(bounds):
+            args0 = args
+        elif isinstance(self, rv_continuous):
+            args0 = self.fit(data, *args, **kwds)
+        else:
+            # almost never works without custom (finite and tight) bounds...
+            # ... and otherwise it'll runs for +-17 exa-eons
+            args0 = cast(
+                tuple[float | int, ...],
+                scipy_fit(
+                    self,
+                    data,
+                    bounds=bounds,
+                    guess=args or None,
+                ).params,  # type: ignore
+            )
 
-        l_data = l_moment(_x, np.arange(self.numargs + 2) + 1, trim=_trim)
 
-        theta0 = args or self._fitstart(_x)[:-2]
-        theta0 = theta0 + self.fit_l_loc_scale(_x, *theta0, trim=_trim)
+        _lmo_cache = {}
+        _lmo_fn = self._l_moment
 
-        theta = cast(
-            npt.NDArray[np.float_],
-            minimize(
-                self._l_moment_error,
-                theta0,
-                (_trim, l_data),
-                method=optimizer,
-            ).x,  # type: ignore
+        # temporary cache to speed up L-moment calculations with the same
+        # shape args
+        def lmo_fn(
+            r: npt.NDArray[np.int64],
+            *args: float,
+            trim: tuple[int, int] | tuple[float, float] = (0, 0),
+        ) -> npt.NDArray[np.float64]:
+            shapes, loc, scale = args[:-2], args[-2], args[-1]
+
+            # r and trim will be the same within inference.fit; safe to ignore
+            if shapes in _lmo_cache:
+                lmbda_r = np.asarray(_lmo_cache[shapes], np.float64)
+            else:
+                lmbda_r = _lmo_fn(r, *shapes, trim=trim)
+                _lmo_cache[shapes] = tuple(lmbda_r)
+
+            if loc != 0:
+                lmbda_r[r == 1] += loc
+            if scale != 1:
+                lmbda_r[r > 1] *= scale
+            return lmbda_r
+
+        kwargs0: dict[str, Any] = {
+            'bounds': bounds,
+            'random_state': random_state or self.random_state,
+        }
+        if not len(self._shape_info()):
+            # no shape params; weight matrix only depends linearly on scale
+            # => weight matrix is constant between steps, use 1 step by default
+            kwargs0['k'] = 1
+
+        x = np.asarray(data)
+        r = np.arange(1, len(args0) + n_extra + 1)
+
+        result = inference.fit(
+            ppf=self.ppf,
+            args0=args0,
+            n_obs=x.size,
+            l_moments=l_moment_est(x, r, trim=trim, sort='quicksort'),
+            r=r,
+            trim=trim,
+            l_moment_fn=lmo_fn,
+            **(kwargs0 | dict(fit_kwargs or {})),
         )
+        if full_output:
+            return result
 
-        return tuple(theta)
+        params_and_types = [
+            (param.name, int if param.integrality else float)
+            for param in self._param_info()
+        ]
+        FitArgs = NamedTuple('FitArgs', params_and_types)
+        return FitArgs(*result.args)
 
-    def fit_l_loc_scale(
+
+    def l_fit_loc_scale(
         self,
         data: npt.ArrayLike,
         *args: Any,
         trim: AnyTrim = (0, 0),
+        **kwds: Any,
     ) -> tuple[float, float]:
         """
-        Estimate loc and scale parameters from data using 1st and 2nd
+        Estimate loc and scale parameters from data using the first two
         L-moments.
 
         Notes:
@@ -1379,13 +1643,15 @@ class l_rv_generic(PatchClass):  # noqa: N801
             trim:
                 Left- and right- trim. Can be scalar or 2-tuple of
                 non-negative int or float.
+            **kwds:
+                Additional keyword arguments to pass to the distribution.
 
         Returns:
             loc_hat: Estimated location parameter for the data.
             scale_hat: Estimated scale parameter for the data.
 
         """
-        l1, l2 = self.l_moment([1, 2], *args, trim=trim)
+        l1, l2 = self.l_moment([1, 2], *args, trim=trim, **kwds)
 
         from ._lm import l_moment
         l1_hat, l2_hat = l_moment(data, [1, 2], trim=clean_trim(trim))

@@ -29,8 +29,11 @@ __all__ = (
     'LComomentOptions',
 
     'QuadOptions',
+    'OptimizeResult',
 
     'AnyTrim',
+
+    'DistributionFunction',
 )
 
 from collections.abc import Iterator, Sequence
@@ -38,6 +41,7 @@ from typing import (
     Any,
     ClassVar,
     Literal,
+    ParamSpec,
     Protocol,
     SupportsInt,
     TypeAlias,
@@ -358,6 +362,23 @@ class QuadOptions(TypedDict, total=False):
     wopts: tuple[int, npt.NDArray[np.float_]]
 
 
+class OptimizeResult(Protocol):
+    """
+    Type stub for the most generally available attributes of
+    [`scipy.optimize.OptimizeResult`][scipy.optimize.OptimizeResult].
+
+    Note that `OptimizeResult` is actually subclasses dict, whose attributes
+    are keys in disguise.
+    """
+    x: npt.NDArray[np.float64]
+    success: bool
+    status: int
+    message: int
+    fun: float
+    nfev: int
+    nit: int
+
+
 # Lmo specific aliases
 
 AnyTrim: TypeAlias = (
@@ -365,3 +386,31 @@ AnyTrim: TypeAlias = (
     | Sequence[AnyFloat]
     | SupportsArray[_NpInt | _NpFloat]
 )
+
+
+# Callable protocols for vectorized functions
+
+
+Theta = ParamSpec('Theta')
+
+class DistributionFunction(Protocol[Theta]):
+    """
+    Callable protocol for a vectorized distribution function. E.g. for
+    the `cdf` and `ppf` methods of `scipy,stats.rv_generic`. In practice,
+    the returned dtype is always `float64` (even `rv_discrete.ppf`).
+    """
+    @overload
+    def __call__(
+        self,
+        __arg: AnyFloat,
+        *__args: Theta.args,
+        **__kwds: Theta.kwargs,
+    ) -> float: ...
+
+    @overload
+    def __call__(
+        self,
+        __arg: _ArrayR,
+        *__args: Theta.args,
+        **__kwds: Theta.kwargs,
+    ) -> npt.NDArray[np.float64]: ...

@@ -44,6 +44,12 @@
       - l_weights
       heading_level: 3
 
+### `inference`
+
+::: lmo.inference
+    options:
+      heading_level: 4
+
 ### `theoretical`
 
 ::: lmo.theoretical

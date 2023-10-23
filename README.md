@@ -28,14 +28,13 @@ probability distribution, and are more robust and efficient.
 The "L" stands for Linear; it is a linear combination of order statistics.
 So Lmo is as fast as sorting your samples (in terms of time-complexity).
 
-
 ## Key Features
 
 - Calculates trimmed L-moments and L-*co*moments, from samples or any
   `scipy.stats` distribution.
 - Full support for trimmed L-moment (TL-moments), e.g.
   `lmo.l_moment(..., trim=(1/137, 3.1416))`.
-- Method of L-moments for robust distribution fitting.
+- Generalized Method of L-moments: robust distribution fitting that beats MLE.
 - Fast estimation of L-*co*moment matrices from your multidimensional data
   or multivariate distribution.
 - Goodness-of-fit test, using L-moment or L-moment ratio's.
@@ -49,9 +48,7 @@ reference with usage examples and with mathematical $\TeX$ definitions.
 - Vectorized functions for very fast fitting.
 - Fully typed, tested, and tickled.
 
-
 ## Quick example
-
 
 Even if your data is pathological like 
 [Cauchy](https://wikipedia.org/wiki/Cauchy_distribution), and the L-moments 
