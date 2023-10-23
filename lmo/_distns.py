@@ -491,6 +491,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
     fit: Callable[..., tuple[float, ...]]
     mean: Callable[..., float]
     ppf: DistributionFunction[...]
+    std: Callable[..., float]
 
 
     def _get_xxf(self, *args: Any, loc: float = 0, scale: float = 1) -> tuple[
@@ -530,7 +531,11 @@ class l_rv_generic(PatchClass):  # noqa: N801
             of specific distributions, `r` and `trim`.
 
         """
-        cdf, ppf = self._get_xxf(*args)
+        # avoid numerical issues for large or tiny standard deviations
+        if not np.isfinite(scale0 := self.std(*args)):
+            scale0 = 1
+
+        cdf, ppf = self._get_xxf(*args, scale=1 / scale0)
         lmbda_r = l_moment_from_cdf(
             cdf,
             r,
@@ -541,7 +546,12 @@ class l_rv_generic(PatchClass):  # noqa: N801
         )
 
         # re-wrap scalars in 0-d arrays (lmo.theoretical unpacks them)
-        return np.asarray(lmbda_r)
+        l_r = np.asarray(lmbda_r)
+
+        if scale0 != 1:
+            l_r[r > 0] *= scale0
+
+        return l_r
 
     @overload
     def l_moment(
@@ -654,13 +664,18 @@ class l_rv_generic(PatchClass):  # noqa: N801
                 # undefined mean -> distr is "pathological" (e.g. cauchy)
                 return np.full(_r.shape, np.nan)[()]
 
-        # L-moments of the standard distribution (loc=0, scale=1)
+        #
+
+        # L-moments of the standard distribution (loc=0, scale=scale0)
         l0_r = self._l_moment(_r, *args, trim=_trim)
 
         # shift (by loc) and scale
         shift_r = loc * (_r == 1)
         scale_r = scale * (_r > 0) + (_r == 0)
         l_r = shift_r + scale_r * l0_r
+
+        # round near zero values to 0
+        l_r = round0(l_r, tol=1e-15)
 
         # convert 0-d to scalar if needed
         return l_r[()] if np.isscalar(r) else l_r
