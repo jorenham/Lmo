@@ -1462,7 +1462,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
             >>> from scipy.stats import norm
             >>> rng = np.random.default_rng(12345)
             >>> x = rng.standard_normal(200)
-            >>> dists.norm.fit(x)
+            >>> norm.fit(x)
             (0.0033..., 0.9555...)
 
             Better results can be obtained different by using Lmo's L-MM
