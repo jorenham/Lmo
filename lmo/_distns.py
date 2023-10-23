@@ -495,7 +495,6 @@ class l_rv_generic(PatchClass):  # noqa: N801
     ppf: DistributionFunction[...]
     std: Callable[..., float]
 
-
     def _get_xxf(self, *args: Any, loc: float = 0, scale: float = 1) -> tuple[
         Callable[[float], float],
         Callable[[float], float],
@@ -533,11 +532,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
             of specific distributions, `r` and `trim`.
 
         """
-        # avoid numerical issues for large or tiny standard deviations
-        if not np.isfinite(scale0 := self.std(*args)):
-            scale0 = 1
-
-        cdf, ppf = self._get_xxf(*args, scale=1 / scale0)
+        cdf, ppf = self._get_xxf(*args)
         lmbda_r = l_moment_from_cdf(
             cdf,
             r,
@@ -548,12 +543,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
         )
 
         # re-wrap scalars in 0-d arrays (lmo.theoretical unpacks them)
-        l_r = np.asarray(lmbda_r)
-
-        if scale0 != 1:
-            l_r[r > 0] *= scale0
-
-        return l_r
+        return np.asarray(lmbda_r)
 
     @overload
     def l_moment(
@@ -703,7 +693,6 @@ class l_rv_generic(PatchClass):  # noqa: N801
         quad_opts: QuadOptions | None = ...,
         **kwds: Any,
     ) -> npt.NDArray[np.float_]: ...
-
 
     def l_ratio(
         self,
@@ -1517,7 +1506,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
             many L-moments](https://doi.org/10.48550/arXiv.2210.04146)
 
         """
-        kwds, bounds = self._reduce_param_bounds(**kwds)
+        _, bounds = self._reduce_param_bounds(**kwds)
 
         if len(args) == len(bounds):
             args0 = args
