@@ -15,6 +15,7 @@ from typing import (
     ClassVar,
     Final,
     Literal,
+    NamedTuple,
     Protocol,
     SupportsIndex,
     TypeAlias,
@@ -1465,12 +1466,8 @@ class l_rv_generic(PatchClass):  # noqa: N801
         Todo:
             - if initial args are passed for all params, skip the initial
             fitting step.
-            - use `@overload` for `full_output`
-            - use `functools.partial` for fixed args, not degenerate bounds
             - pass a boolean mask as `lmo.inference.fit(integrality=...)` if
             are any `integrality=True` shape params, and to `scipy.stats.fit`.
-            - allow custom (tighter) bounds: `scipy.stats.fit` can't handle
-            infinite bounds, regardless of the optimizer...
             - return a named tuple
 
         Parameters:
@@ -1509,10 +1506,10 @@ class l_rv_generic(PatchClass):  # noqa: N801
 
         Returns:
             result:
-                Estimates for any shape parameters (if applicable),
-                followed by those for location and scale. For most random
-                variables, shape statistics will be returned, but there are
-                exceptions (e.g. ``norm``).
+                Named tuple with estimates for any shape parameters (if
+                applicable), followed by those for location and scale.
+                For most random variables, shape statistics will be returned,
+                but there are exceptions (e.g. ``norm``).
                 If `full_output=True`, an instance of `LGMMResult` will be
                 returned instead.
 
@@ -1589,7 +1586,15 @@ class l_rv_generic(PatchClass):  # noqa: N801
             l_moment_fn=lmo_fn,
             **(kwargs0 | dict(fit_kwargs or {})),
         )
-        return result if full_output else result.args
+        if full_output:
+            return result
+
+        params_and_types = [
+            (param.name, int if param.integrality else float)
+            for param in self._param_info()
+        ]
+        FitArgs = NamedTuple('FitArgs', params_and_types)
+        return FitArgs(*result.args)
 
 
     def l_fit_loc_scale(
