@@ -7,7 +7,6 @@ from typing import Any, NamedTuple, cast
 
 import numpy as np
 import numpy.typing as npt
-from matplotlib.pylab import LinAlgError
 from scipy import optimize, special  # type: ignore
 
 from ._lm import l_moment as l_moment_est
@@ -21,7 +20,6 @@ from .typing import (
     IntVector,
     OptimizeResult,
 )
-from lmo import diagnostic
 
 
 class GMMResult(NamedTuple):
@@ -155,7 +153,7 @@ def _loss_step(
         raise ValueError(msg)
 
     g_r = lmbda_r - l_r
-    return np.log(g_r.T @ w_rr @ g_r)  # type: ignore
+    return np.sqrt(g_r.T @ w_rr @ g_r)  # type: ignore
 
 
 def _get_l_moment_fn(ppf: DistributionFunction[...]):
@@ -196,7 +194,7 @@ def _get_weights_mc(
 
     try:
         return np.linalg.inv(l_rr)
-    except LinAlgError:
+    except np.linalg.LinAlgError:
         # can occur for e.g. 1x1 or sub-rank cov matrices
         return np.linalg.pinv(l_rr)
 
@@ -433,7 +431,7 @@ def fit(  # noqa: C901
     return GMMResult(
         args=tuple(theta),
         success=success,
-        statistic=np.exp(fun),
+        statistic=fun**2,
         eps=eps,
         n_samp=cast(int, n_obs - sum(_trim)),
         n_step=_k,
