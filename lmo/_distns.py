@@ -41,6 +41,7 @@ from ._utils import (
     clean_trim,
     l_stats_orders,
     moments_to_ratio,
+    round0,
 )
 from .diagnostic import l_ratio_bounds
 from .theoretical import (
@@ -642,7 +643,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
         See Also:
             - [`lmo.l_moment`][lmo.l_moment]: sample L-moment
         """
-        _r = clean_orders(np.asanyarray(r))
+        _r = clean_orders(r)
         _trim = clean_trim(trim)
 
         args, loc, scale = self._parse_args(*args, **kwds)
@@ -653,10 +654,16 @@ class l_rv_generic(PatchClass):  # noqa: N801
                 # undefined mean -> distr is "pathological" (e.g. cauchy)
                 return np.full(_r.shape, np.nan)[()]
 
-        lmbda_r = self._l_moment(_r, *args, trim=_trim)
-        lmbda_r[_r == 1] += loc
-        lmbda_r[_r > 1] *= scale
-        return lmbda_r[()]  # convert back to scalar if needed
+        # L-moments of the standard distribution (loc=0, scale=1)
+        l0_r = self._l_moment(_r, *args, trim=_trim)
+
+        # shift (by loc) and scale
+        shift_r = loc * (_r == 1)
+        scale_r = scale * (_r > 0) + (_r == 0)
+        l_r = shift_r + scale_r * l0_r
+
+        # convert 0-d to scalar if needed
+        return l_r[()] if np.isscalar(r) else l_r
 
     @overload
     def l_ratio(
