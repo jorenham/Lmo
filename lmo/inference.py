@@ -200,7 +200,7 @@ def _get_weights_mc(
         return np.linalg.pinv(l_rr)
 
 
-def fit(
+def fit(  # noqa: C901
     ppf: DistributionFunction[...],
     args0: npt.ArrayLike,
     n_obs: int,
@@ -214,7 +214,12 @@ def fit(
 
     l_moment_fn: Callable[..., npt.NDArray[np.float64]] | None = None,
     n_mc_samples: int = 9999,
-    random_state: int | np.random.Generator | np.random.RandomState | None = None,
+    random_state: (
+        int
+        | np.random.Generator
+        | np.random.RandomState
+        | None
+    ) = None,
     **kwds: Any,
 ) -> GMMResult:
     r"""
