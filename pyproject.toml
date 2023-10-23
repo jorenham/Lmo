@@ -39,9 +39,9 @@ typing_extensions = { version = "^4.1", python = "<3.11"}
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4"
-hypothesis = { extras = ["numpy"], version = "^6.87" }
+hypothesis = { extras = ["numpy"], version = "^6.88" }
 pyright = "^1.1"
-ruff = ">=0.0.292,<1.0"
+ruff = ">=0.1.1,<1.0"
 codespell = "^2.2"
 
 [tool.poetry.group.docs.dependencies]
@@ -75,7 +75,7 @@ doctest_optionflags = [
 xfail_strict = true
 filterwarnings = ["error"]
 log_cli_level = "info"
-testpaths = ["tests"]
+testpaths = ["tests", "lmo"]
 
 
 [tool.pyright]
@@ -114,7 +114,6 @@ src = ["lmo"]
 extend-exclude = ["tests"]
 
 line-length = 79
-format = "grouped"
 select = [
     "F",    # pyflakes
     "E",    # pycodestyle error ("W" for warning)
