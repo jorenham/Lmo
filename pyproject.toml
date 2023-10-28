@@ -114,16 +114,20 @@ extend-exclude = ["tests"]
 line-length = 79
 select = [
     "F",    # pyflakes
-    "E",    # pycodestyle error ("W" for warning)
+    "E",    # pycodestyle error
+    "W",    # pycodestyle warning
     "C90",  # mccabe
     "I",    # isort
     "N",    # pep8-naming
     "D",    # pydocstyle
     "UP",   # pyupgrade
+    "YTT",  # flake8-2020
+    "BLE",  # flake8-blind-except
     "B",    # flake8-bugbear
     "A",    # flake8-builtins
     "COM",  # flake8-commas
     "C4",   # flake8-comprehensions
+    "T10",  # flake8-debugger
     "EM",   # flake8-errmsg
     "FA",   # flake8-future-annotations
     "ISC",  # flake8-implicit-str-concat
@@ -131,13 +135,24 @@ select = [
     "INP",  # flake8-no-pep420
     "PIE",  # flake8-pie
     "T20",  # flake8-print
+    "PYI",  # flake8-pyi
     "Q",    # flake8-quotes
+    "RSE",  # flake8-raise
     "RET",  # flake8-return
+    "SLF",  # flake8-self
+    "SLOT", # flake8-slots
     "SIM",  # flake8-simplify
+    "TID",  # flake8-tidy-imports
+    "TCH",  # flake8-type-checking
+    "ARG",  # flake8-unused-arguments
+    "PTH",  # flake8-use-pathlib
     "TD",   # flake8-todos
+    "PD",   # pandas-vet
     "TRY",  # tryceratops
+    "FLY",  # flynt
     "NPY",  # NumPy-specific rules
     "PERF", # perflint,
+    # "FURB", # refurb
     "RUF",  # Ruff-specific rules
 ]
 ignore = [
@@ -166,7 +181,6 @@ force-wrap-aliases = true
 
 [tool.ruff.flake8-quotes]
 inline-quotes = "single"
-
 
 [tool.codespell]
 skip = '*.lock,.venv,.vscode,dist,docs,site'
