@@ -109,10 +109,8 @@ reportDuplicateImport = true
 
 [tool.ruff]
 target-version = "py310"
-
 src = ["lmo"]
 extend-exclude = ["tests"]
-
 line-length = 79
 select = [
     "F",    # pyflakes
@@ -148,6 +146,13 @@ ignore = [
     "B023", # function-uses-loop-variable
 ]
 
+[tool.ruff.format]
+exclude = [
+    "lmo/__init__.py",
+    "lmo/typing.py",
+]
+quote-style = "single"
+
 [tool.ruff.pydocstyle]
 convention = "google"
 ignore-decorators = [
@@ -161,6 +166,7 @@ force-wrap-aliases = true
 
 [tool.ruff.flake8-quotes]
 inline-quotes = "single"
+
 
 [tool.codespell]
 skip = '*.lock,.venv,.vscode,dist,docs,site'
