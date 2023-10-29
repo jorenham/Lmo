@@ -657,7 +657,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
                 return np.full(_r.shape, np.nan)[()]
 
         # L-moments of the standard distribution (loc=0, scale=scale0)
-        l0_r = self._l_moment(_r, *args, trim=_trim)
+        l0_r = self._l_moment(_r, *args, trim=_trim, quad_opts=quad_opts)
 
         # shift (by loc) and scale
         shift_r = loc * (_r == 1)
