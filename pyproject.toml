@@ -54,9 +54,10 @@ mkdocstrings = {extras = ["python"], version = ">=0.23,<1.0"}
 ipython = "^8.16"
 ipykernel = "^6.25"
 matplotlib = "^3.8"
-
 line-profiler = "^4.1"
 
+[tool.poetry.group.contrib.dependencies]
+pandas = ">=1.4"
 
 [tool.pytest.ini_options]
 minversion = "7.0"
