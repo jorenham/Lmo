@@ -10,7 +10,6 @@ __all__ = (
     'install',
 )
 
-import functools
 import sys
 from collections.abc import Callable
 from typing import (
@@ -612,15 +611,15 @@ class DataFrame(pd.DataFrame):
 
 class _Registerable(Protocol):
     @staticmethod
-    def __lmo_register__(name: str, method: Callable[..., Any]) -> None: ...
+    def __lmo_register__(
+        name: str,
+        method: Callable[..., Any],
+    ) -> None: ...
 
 
 def _register_methods(cls: type[_Registerable]):
     for k, method in cls.__dict__.items():
-        if not k.startswith('_') and (
-            callable(method)
-            or isinstance(method, functools.partialmethod)
-        ):
+        if not k.startswith('_') and callable(method):
             cls.__lmo_register__(k, method)
 
 
