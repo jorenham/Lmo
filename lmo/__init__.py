@@ -34,7 +34,7 @@ __all__ = (
     'l_rv_nonparametric',
 )
 
-from typing import Final as _Final
+from typing import TYPE_CHECKING, Final
 
 from ._distns import (
     l_rv_nonparametric,
@@ -67,9 +67,10 @@ from ._lm_co import (
 )
 from ._meta import get_version as _get_version
 
+if not TYPE_CHECKING:
 # install contrib module extensions
-from .contrib import install as _install
+    from .contrib import install as _install
 
-_install()
+    _install()
 
-__version__: _Final[str] = _get_version()
+__version__: Final[str] = _get_version()
