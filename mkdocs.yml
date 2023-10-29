@@ -41,6 +41,7 @@ plugins:
           import:
             - url: https://numpy.org/doc/stable/objects.inv
             - url: https://docs.scipy.org/doc/scipy/objects.inv
+            - url: https://pandas.pydata.org/docs/objects.inv
           options:
             annotations_path: 'source'
             docstring_section_style: 'spacy'
