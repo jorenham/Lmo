@@ -12,7 +12,16 @@ __all__ = (
 import functools
 import sys
 from collections.abc import Callable
-from typing import Any, Concatenate, ParamSpec, TypeAlias, TypeVar, Union, cast
+from typing import (
+    Any,
+    Literal,
+    Protocol,
+    TypeAlias,
+    TypeVar,
+    Union,
+    cast,
+    final,
+)
 
 import numpy as np
 import numpy.typing as npt
@@ -28,6 +37,8 @@ else:
     from typing import Unpack
 
 _FloatOrSeries: TypeAlias = Union[float, 'pd.Series[float]']
+_SeriesOrFrame: TypeAlias = Union['pd.Series[float]', pd.DataFrame]
+_FloatOrFrame: TypeAlias = _FloatOrSeries | pd.DataFrame
 
 T = TypeVar(
     'T',
@@ -40,35 +51,29 @@ T = TypeVar(
         | np.dtype[np.floating[Any]]
     ),
 )
-Ps = ParamSpec('Ps')
-# R1 = TypeVar('R1', bound=pd.Series[float] | float)
-R1 = TypeVar('R1', bound=_FloatOrSeries)
-R2 = TypeVar('R2', bound=_FloatOrSeries | pd.DataFrame)
 
-
-_XSR_SERIES: dict[
-    str,
-    Callable[['pd.Series[Any]'], Callable[..., _FloatOrSeries]],
-] = {}
-
-
-def _xsr_series(
-    fn: Callable[Concatenate['pd.Series[Any]', Ps], R1],
-    /,
-) -> Callable[Concatenate['pd.Series[Any]', Ps], R1]:
-    def _xsr(obj: 'pd.Series[Any]') -> Callable[Ps, R1]:
-        return functools.partial(fn, obj)  # type: ignore
-
-    _XSR_SERIES[fn.__name__] = _xsr
-
-    return fn
-
-
+@final
 class Series(pd.Series):  # type: ignore [missingTypeArguments]
-    """Extension methods for [`pandas.Series`][pandas.Series]."""
-    @_xsr_series
+    """
+    Extension methods for [`pandas.Series`][pandas.Series].
+
+    This class is not meant to be used directly. These methods are curried
+    and registered as
+    [series accessors][pandas.api.extensions.register_series_accessor].
+    """
+    @staticmethod
+    def __lmo_register__(  # noqa: D105
+        name: str,
+        method: Callable[..., _FloatOrSeries | pd.DataFrame],
+    ) -> None:
+        def fn(obj: 'pd.Series[Any]') -> Callable[..., _FloatOrSeries]:
+            return functools.partial(method, obj)  # type: ignore
+
+        pd.api.extensions.register_series_accessor(name)(fn)  # type: ignore
+
+
     def l_moment(
-        self: 'pd.Series[Any]',
+        self,
         r: IntVector | AnyInt,
         /,
         trim: AnyTrim = (0, 0),
@@ -86,18 +91,80 @@ class Series(pd.Series):  # type: ignore [missingTypeArguments]
         if np.isscalar(res):
             return cast(float, res)
 
-        path = f'{self.name}.' if self.name else ''
-        opts = f'({trim=})' if all(_trim) else ''
         return pd.Series(
             cast(npt.NDArray[np.float64], res),
             index=pd.Index(np.asarray(r), name='r', dtype=int),
-            name=f'{path}l_moment{opts}',
             dtype=float,
             copy=False,
         )
 
 
+@final
+class DataFrame(pd.DataFrame):
+    """
+    Extension methods for [`pandas.DataFrame`][pandas.DataFrame].
+
+    This class is not meant to be used directly. These methods are curried
+    and registered as
+    [dataframe accessors][pandas.api.extensions.register_dataframe_accessor].
+    """
+    @staticmethod
+    def __lmo_register__(
+        name: str,
+        method: Callable[..., _FloatOrFrame],
+    ) -> None:
+        def fn(obj: pd.DataFrame) -> Callable[..., _FloatOrFrame]:
+            return functools.partial(method, obj)  # type: ignore
+
+        pd.api.extensions.register_dataframe_accessor(name)(fn)  # type: ignore
+
+    def l_moment(
+        self,
+        r: IntVector | AnyInt,
+        /,
+        trim: AnyTrim = (0, 0),
+        axis: Literal[0, 'index', 1, 'columns'] = 0,
+        **kwargs: Unpack[LMomentOptions],
+    ) -> _SeriesOrFrame:
+        """
+        Wrapper around [`lmo.l_moment`][lmo.l_moment].
+
+        Returns:
+            A [`pd.DataFrame`][pandas.DataFrame] or
+                [`pd.Series[float]`][pandas.Series] with `r` as index.
+        """
+        # .aggregate only works correctly with axis=0 for some dumb reason
+        transpose = axis == 1 or axis == 'columns'
+        obj = self.T if transpose else self
+
+        res = cast(
+            _SeriesOrFrame,
+            obj.aggregate(  # type: ignore
+                _l_moment,
+                0,
+                r,
+                trim=trim,
+                **kwargs,
+            ),
+        )
+        if isinstance(res, pd.DataFrame):
+            res.index = pd.Index(np.asarray(r), name='r', dtype=int)
+
+        return res.T if transpose else res
+
+
+class _Registerable(Protocol):
+    @staticmethod
+    def __lmo_register__(name: str, method: Callable[..., Any]) -> None: ...
+
+
+def _register_methods(cls: type[_Registerable]):
+    for k, method in cls.__dict__.items():
+        if not k.startswith('_') and callable(method):
+            cls.__lmo_register__(k, method)
+
+
 def install():
     """Register the accessor methods."""
-    for name, xsr in _XSR_SERIES.items():
-        pd.api.extensions.register_series_accessor(name)(xsr)  # type: ignore
+    _register_methods(Series)
+    _register_methods(DataFrame)

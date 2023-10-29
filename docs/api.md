@@ -35,6 +35,7 @@
       show_bases: false
       members:
       - Series
+      - DataFrame
       heading_level: 4
 
 ### Distributions
