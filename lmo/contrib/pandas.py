@@ -361,10 +361,9 @@ class DataFrame(pd.DataFrame):
         **kwargs: Unpack[LMomentOptions],
     ) -> 'pd.Series[float]':
         """
-        See [`lmo.l_loc`][lmo.l_loc].
-
-        Returns:
-            out: A [`Series[float]`][pandas.Series].
+        Alias for
+        [`l_moment(1, ...)`][lmo.contrib.pandas.DataFrame.l_moment].
+        See [`lmo.l_loc`][lmo.l_loc] for details.
         """
         return self.apply(  # type: ignore
             _l_moment,
@@ -380,10 +379,9 @@ class DataFrame(pd.DataFrame):
         **kwargs: Unpack[LMomentOptions],
     ) -> 'pd.Series[float]':
         """
-        See [`lmo.l_scale`][lmo.l_scale].
-
-        Returns:
-            out: A [`Series[float]`][pandas.Series].
+        Alias for
+        [`l_moment(2, ...)`][lmo.contrib.pandas.DataFrame.l_moment].
+        See [`lmo.l_scale`][lmo.l_scale] for details.
         """
         return self.apply(  # type: ignore
             _l_moment,
@@ -399,10 +397,9 @@ class DataFrame(pd.DataFrame):
         **kwargs: Unpack[LMomentOptions],
     ) -> 'pd.Series[float]':
         """
-        See [`lmo.l_variation`][lmo.l_variation].
-
-        Returns:
-            out: A [`Series[float]`][pandas.Series].
+        Alias for
+        [`l_ratio(2, 1, ...)`][lmo.contrib.pandas.DataFrame.l_ratio].
+        See [`lmo.l_variation`][lmo.l_variation] for details.
         """
         return self.apply(  # type: ignore
             _l_ratio,
@@ -418,10 +415,9 @@ class DataFrame(pd.DataFrame):
         **kwargs: Unpack[LMomentOptions],
     ) -> 'pd.Series[float]':
         """
-        See [`lmo.l_skew`][lmo.l_skew].
-
-        Returns:
-            out: A [`Series[float]`][pandas.Series].
+        Alias for
+        [`l_ratio(3, 2, ...)`][lmo.contrib.pandas.DataFrame.l_ratio].
+        See [`lmo.l_skew`][lmo.l_skew] for details.
         """
         return self.apply(  # type: ignore
             _l_ratio,
@@ -437,12 +433,9 @@ class DataFrame(pd.DataFrame):
         **kwargs: Unpack[LMomentOptions],
     ) -> 'pd.Series[float]':
         """
-        See [`lmo.l_kurtosis`][lmo.l_kurtosis].
-
-        The alias `l_kurt` is also available.
-
-        Returns:
-            out: A [`Series[float]`][pandas.Series].
+        Alias for
+        [`l_ratio(4, 2, ...)`][lmo.contrib.pandas.DataFrame.l_ratio].
+        See [`lmo.l_kurtosis`][lmo.l_kurtosis] for details.
         """
         return self.apply(  # type: ignore
             _l_ratio,
@@ -451,7 +444,17 @@ class DataFrame(pd.DataFrame):
             **kwargs,
         )
 
-    l_kurt = l_kurtosis
+    def l_kurt(
+        self,
+        trim: AnyTrim = (0, 0),
+        axis: AxisDF = 0,
+        **kwargs: Unpack[LMomentOptions],
+    ) -> 'pd.Series[float]':
+        """
+        Alias for
+        [`l_kurtosis`][lmo.contrib.pandas.DataFrame.l_kurtosis].
+        """
+        return self.l_kurtosis(trim=trim, axis=axis, **kwargs)
 
     def l_comoment(
         self,
@@ -535,11 +538,76 @@ class DataFrame(pd.DataFrame):
         out.attrs['l_trim'] = clean_trim(trim)
         return out
 
-    l_coloc = functools.partialmethod(l_comoment, 1)
-    l_coscale = functools.partialmethod(l_comoment, 2)
-    l_corr = functools.partialmethod(l_coratio, 2, 2)
-    l_coskew = functools.partialmethod(l_coratio, 3, 2)
-    l_cokurtosis = l_cokurt = functools.partialmethod(l_coratio, 4, 2)
+    def l_coloc(
+        self,
+        trim: AnyTrim = (0, 0),
+        **kwargs: Unpack[LComomentOptions],
+    ) -> pd.DataFrame:
+        """
+        Alias for [`l_comoment(1, trim, **kwargs)
+        `][lmo.contrib.pandas.DataFrame.l_comoment].
+        See [`lmo.l_coloc`][lmo.l_coloc] for details.
+        """
+        return self.l_comoment(1, trim=trim, **kwargs)
+
+    def l_coscale(
+        self,
+        trim: AnyTrim = (0, 0),
+        **kwargs: Unpack[LComomentOptions],
+    ) -> pd.DataFrame:
+        """
+        Alias for [`l_comoment(2, trim, **kwargs)
+        `][lmo.contrib.pandas.DataFrame.l_comoment].
+        See [`lmo.l_coscale`][lmo.l_coscale] for details.
+        """
+        return self.l_comoment(2, trim=trim, **kwargs)
+
+    def l_corr(
+        self,
+        trim: AnyTrim = (0, 0),
+        **kwargs: Unpack[LComomentOptions],
+    ) -> pd.DataFrame:
+        """
+        Alias for [`l_coratio(2, 2, trim, **kwargs)
+        `][lmo.contrib.pandas.DataFrame.l_coratio].
+        See [`lmo.l_corr`][lmo.l_corr] for details.
+        """
+        return self.l_coratio(2, trim=trim, **kwargs)
+
+    def l_coskew(
+        self,
+        trim: AnyTrim = (0, 0),
+        **kwargs: Unpack[LComomentOptions],
+    ) -> pd.DataFrame:
+        """
+        Alias for [`l_coratio(3, 2, trim, **kwargs)
+        `][lmo.contrib.pandas.DataFrame.l_coratio].
+        See [`lmo.l_coskew`][lmo.l_coskew] for details.
+        """
+        return self.l_coratio(3, trim=trim, **kwargs)
+
+    def l_cokurtosis(
+        self,
+        trim: AnyTrim = (0, 0),
+        **kwargs: Unpack[LComomentOptions],
+    ) -> pd.DataFrame:
+        """
+        Alias for [`l_coratio(4, 2, trim, **kwargs)
+        `][lmo.contrib.pandas.DataFrame.l_coratio].
+        See [`lmo.l_cokurtosis`][lmo.l_cokurtosis] for details.
+        """
+        return self.l_coratio(4, trim=trim, **kwargs)
+
+    def l_cokurt(
+        self,
+        trim: AnyTrim = (0, 0),
+        **kwargs: Unpack[LComomentOptions],
+    ) -> pd.DataFrame:
+        """
+        Alias for
+        [`l_cokurtosis`][lmo.contrib.pandas.DataFrame.l_cokurtosis].
+        """
+        return self.l_cokurtosis(trim=trim, **kwargs)
 
 
 class _Registerable(Protocol):
