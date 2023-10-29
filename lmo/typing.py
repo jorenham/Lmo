@@ -368,7 +368,7 @@ class QuadOptions(TypedDict, total=False):
         'cauchy',
     ]
     wvar: float | tuple[float, float]
-    wopts: tuple[int, npt.NDArray[np.float_]]
+    wopts: tuple[int, npt.NDArray[np.float64]]
 
 
 class OptimizeResult(Protocol):

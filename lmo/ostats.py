@@ -25,7 +25,7 @@ def _weights(
     n: float,
     N: int,  # noqa: N803
     /,
-) -> npt.NDArray[np.float_]:
+) -> npt.NDArray[np.float64]:
     assert 0 <= i < n <= N
 
     j = np.arange(floor(i), N)
@@ -54,7 +54,7 @@ def weights(
     /,
     *,
     cached: bool = False,
-) -> npt.NDArray[np.float_]:
+) -> npt.NDArray[np.float64]:
     r"""
     Compute the linear weights $w_{i:n|j:N}$ for $j = 0, \dots, N-1$.
 
@@ -122,7 +122,7 @@ def from_cdf(
     F: AnyNDArray[np.floating[Any]] | Sequence[float],  # noqa: N803
     i: float,
     n: float,
-) -> npt.NDArray[np.float_]:
+) -> npt.NDArray[np.float64]:
     ...
 
 
@@ -130,7 +130,7 @@ def from_cdf(
     F: npt.ArrayLike,  # noqa: N803
     i: float,
     n: float,
-) -> float | npt.NDArray[np.float_]:
+) -> float | npt.NDArray[np.float64]:
     r"""
     Transform $F(X)$ to $F_{i:n}(X)$, of the $i$th variate within subsamples
     of size, i.e. $0 \le i \le n - 1$.

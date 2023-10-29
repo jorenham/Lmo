@@ -42,7 +42,7 @@ def as_float_array(
     asarray = np.asarray_chkfinite if check_finite else np.asarray
 
     x = asarray(a, dtype=dtype, order=order)
-    out = x if isinstance(x.dtype.type, np.floating) else x.astype(np.float_)
+    out = x if isinstance(x.dtype.type, np.floating) else x.astype(np.float64)
 
     # the `_[()]` ensures that 0-d arrays become scalars
     return (out.ravel() if flat and out.ndim != 1 else out)[()]
@@ -100,7 +100,7 @@ def _apply_aweights(
     x: npt.NDArray[np.floating[Any]],
     v: npt.NDArray[np.floating[Any]],
     axis: int,
-) -> npt.NDArray[np.float_]:
+) -> npt.NDArray[np.float64]:
     # interpret the weights as horizontal coordinates using cumsum
     vv = np.cumsum(v, axis=axis)
     assert vv.shape == x.shape, (vv.shape, x.shape)
@@ -111,11 +111,11 @@ def _apply_aweights(
 
     # cannot use np.apply_along_axis here, since both x_k and w_k need to be
     # applied simultaneously
-    out = np.empty(x.shape, dtype=np.float_)
+    out = np.empty(x.shape, dtype=np.float64)
 
     x_jk: npt.NDArray[np.floating[Any]]
     w_jk: npt.NDArray[np.floating[Any]]
-    v_jk: npt.NDArray[np.float_]
+    v_jk: npt.NDArray[np.float64]
     for j in np.ndindex(out.shape[:-1]):
         x_jk, w_jk = x[j], vv[j]
         if w_jk[-1] <= 0:
@@ -124,7 +124,7 @@ def _apply_aweights(
 
         # linearly interpolate to effectively "stretch" samples with large
         # weight, and "compress" those with small weights
-        v_jk = np.linspace(w_jk[0], w_jk[-1], len(w_jk), dtype=np.float_)
+        v_jk = np.linspace(w_jk[0], w_jk[-1], len(w_jk), dtype=np.float64)
         out[j] = np.interp(v_jk, w_jk, x_jk)  # pyright: ignore
 
     # unswap the axes if previously swapped
@@ -276,9 +276,9 @@ def moments_to_ratio(
 
 
 def moments_to_stats_cov(
-    t_0r: npt.NDArray[np.float_],
-    ll_kr: npt.NDArray[np.float_],
-) -> npt.NDArray[np.float_]:
+    t_0r: npt.NDArray[np.float64],
+    ll_kr: npt.NDArray[np.float64],
+) -> npt.NDArray[np.float64]:
     # t_0r are L-ratio's for r = 0, 1, ..., R (t_0r[0] == 1 / L-scale)
     # t_0r[1] isn't used, and can be set to anything
     # ll_kr is the L-moment cov of size R**2 (orders start at 1 here)

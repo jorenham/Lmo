@@ -37,9 +37,9 @@ T = TypeVar('T')
 X = TypeVar('X', bound='l_rv_nonparametric')
 F = TypeVar('F', bound=np.floating[Any])
 M = TypeVar('M', bound=Callable[..., Any])
-V = TypeVar('V', bound=float | npt.NDArray[np.float_])
+V = TypeVar('V', bound=float | npt.NDArray[np.float64])
 
-_F_EPS: Final[np.float_] = np.finfo(float).eps
+_F_EPS: Final[np.float64] = np.finfo(float).eps
 
 
 def _check_lmoments(l_r: npt.NDArray[np.floating[Any]], s: float, t: float):
@@ -195,7 +195,7 @@ class l_rv_nonparametric(rv_continuous):  # noqa: N801
         )
 
     @property
-    def l_moments(self) -> npt.NDArray[np.float_]:
+    def l_moments(self) -> npt.NDArray[np.float64]:
         r"""Initial L-moments, for orders $r = 1, 2, \dots, R$."""
         return self._lm
 
@@ -238,7 +238,7 @@ class l_rv_nonparametric(rv_continuous):  # noqa: N801
 
         n = max(100, k0 * 10)
         x = np.linspace(self.a, self.b, n)
-        q = cast(npt.NDArray[np.float_], self.cdf(x))  # type: ignore
+        q = cast(npt.NDArray[np.float64], self.cdf(x))  # type: ignore
         y = ppf.deriv()(q)
         w = np.sqrt(self._weights(q) + 0.01)
 
@@ -278,8 +278,8 @@ class l_rv_nonparametric(rv_continuous):  # noqa: N801
         """
         return self.cdf_poly.deriv()
 
-    def _weights(self, q: npt.ArrayLike) -> npt.NDArray[np.float_]:
-        _q = np.asarray(q, np.float_)
+    def _weights(self, q: npt.ArrayLike) -> npt.NDArray[np.float64]:
+        _q = np.asarray(q, np.float64)
         s, t = self._trim
         return np.where(
             (_q >= 0) & (_q <= 1),
@@ -287,11 +287,11 @@ class l_rv_nonparametric(rv_continuous):  # noqa: N801
             cast(float, getattr(self, 'badvalue', np.nan)),  # type: ignore
         )
 
-    def _ppf(self, q: npt.NDArray[np.float_]) -> npt.NDArray[np.float_]:
-        return cast(npt.NDArray[np.float_], self._ppf_poly(q))
+    def _ppf(self, q: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
+        return cast(npt.NDArray[np.float64], self._ppf_poly(q))
 
-    def _isf(self, q: npt.NDArray[np.float_]) -> npt.NDArray[np.float_]:
-        return cast(npt.NDArray[np.float_], self._isf_poly(q))
+    def _isf(self, q: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
+        return cast(npt.NDArray[np.float64], self._isf_poly(q))
 
     def _cdf_single(self, x: float) -> float:
         # find all q where Q(q) == x
@@ -315,8 +315,8 @@ class l_rv_nonparametric(rv_continuous):  # noqa: N801
 
         return q0[0]
 
-    def _pdf(self, x: npt.NDArray[np.float_]) -> npt.NDArray[np.float_]:
-        return np.clip(cast(npt.NDArray[np.float_], self.pdf_poly(x)), 0, 1)
+    def _pdf(self, x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
+        return np.clip(cast(npt.NDArray[np.float64], self.pdf_poly(x)), 0, 1)
 
     def _munp(self, n: int):
         # non-central product-moment $E[X^n]$

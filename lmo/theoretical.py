@@ -59,7 +59,7 @@ from ._utils import (
 from .typing import AnyFloat, AnyInt, AnyTrim, IntVector, QuadOptions
 
 T = TypeVar('T')
-V = TypeVar('V', bound=float | npt.NDArray[np.float_])
+V = TypeVar('V', bound=float | npt.NDArray[np.float64])
 Theta = ParamSpec('Theta')
 
 Pair: TypeAlias = tuple[T, T]
@@ -140,7 +140,7 @@ def l_moment_from_cdf(
     quad_opts: QuadOptions | None = ...,
     alpha: float = ...,
     ppf: UnivariatePPF | None = ...,
-) -> np.float_:
+) -> np.float64:
     ...
 
 
@@ -155,7 +155,7 @@ def l_moment_from_cdf(
     quad_opts: QuadOptions | None = ...,
     alpha: float = ...,
     ppf: UnivariatePPF | None = ...,
-) -> npt.NDArray[np.float_]:
+) -> npt.NDArray[np.float64]:
     ...
 
 
@@ -169,7 +169,7 @@ def l_moment_from_cdf(
     quad_opts: QuadOptions | None = None,
     alpha: float = ALPHA,
     ppf: UnivariatePPF | None = None,
-) -> np.float_ | npt.NDArray[np.float_]:
+) -> np.float64 | npt.NDArray[np.float64]:
     r"""
     Evaluate the population L-moment of a continuous probability distribution,
     using its Cumulative Distribution Function (CDF) $F_X(x) = P(X \le x)$.
@@ -317,7 +317,7 @@ def l_moment_from_cdf(
         ) + loc0 * (_r == 1)
 
     l_r_cache: dict[int, float] = {}
-    l_r = np.empty_like(rs, dtype=np.float_)
+    l_r = np.empty_like(rs, dtype=np.float64)
     for i, _r in np.ndenumerate(rs):
         _k = int(_r)
         if _k in l_r_cache:
@@ -338,7 +338,7 @@ def l_moment_from_ppf(
     support: Pair[float] = ...,
     quad_opts: QuadOptions | None = ...,
     alpha: float = ...,
-) -> np.float_:
+) -> np.float64:
     ...
 
 
@@ -352,7 +352,7 @@ def l_moment_from_ppf(
     support: Pair[float] = ...,
     quad_opts: QuadOptions | None = ...,
     alpha: float = ...,
-) -> npt.NDArray[np.float_]:
+) -> npt.NDArray[np.float64]:
     ...
 
 
@@ -365,7 +365,7 @@ def l_moment_from_ppf(
     support: Pair[float] = (0, 1),
     quad_opts: QuadOptions | None = None,
     alpha: float = ALPHA,
-) -> np.float_ | npt.NDArray[np.float_]:
+) -> np.float64 | npt.NDArray[np.float64]:
     r"""
     Evaluate the population L-moment of a univariate probability distribution,
     using its Percentile Function (PPF) $x(F)$, also commonly known as the
@@ -481,7 +481,7 @@ def l_moment_from_ppf(
         )
 
     l_r_cache: dict[int, float] = {}
-    l_r = np.empty_like(rs, dtype=np.float_)
+    l_r = np.empty_like(rs, dtype=np.float64)
     for i, _r in np.ndenumerate(rs):
         _k = int(_r)
         if _k in l_r_cache:
@@ -503,7 +503,7 @@ def l_ratio_from_cdf(
     support: Pair[float] | None = ...,
     quad_opts: QuadOptions | None = ...,
     alpha: float = ...,
-) -> np.float_:
+) -> np.float64:
     ...
 
 
@@ -519,7 +519,7 @@ def l_ratio_from_cdf(
     quad_opts: QuadOptions | None = ...,
     alpha: float = ...,
     ppf: UnivariatePPF | None = ...,
-) -> npt.NDArray[np.float_]:
+) -> npt.NDArray[np.float64]:
     ...
 
 
@@ -535,7 +535,7 @@ def l_ratio_from_cdf(
     quad_opts: QuadOptions | None = ...,
     alpha: float = ...,
     ppf: UnivariatePPF | None = ...,
-) -> npt.NDArray[np.float_]:
+) -> npt.NDArray[np.float64]:
     ...
 
 
@@ -550,7 +550,7 @@ def l_ratio_from_cdf(
     quad_opts: QuadOptions | None = None,
     alpha: float = ALPHA,
     ppf: UnivariatePPF | None = None,
-) -> np.float_ | npt.NDArray[np.float_]:
+) -> np.float64 | npt.NDArray[np.float64]:
     """
     Population L-ratio's from a CDF.
 
@@ -582,7 +582,7 @@ def l_ratio_from_ppf(
     support: Pair[float] = ...,
     quad_opts: QuadOptions | None = ...,
     alpha: float = ...,
-) -> np.float_:
+) -> np.float64:
     ...
 
 
@@ -597,7 +597,7 @@ def l_ratio_from_ppf(
     support: Pair[float] = ...,
     quad_opts: QuadOptions | None = ...,
     alpha: float = ...,
-) -> npt.NDArray[np.float_]:
+) -> npt.NDArray[np.float64]:
     ...
 
 
@@ -612,7 +612,7 @@ def l_ratio_from_ppf(
     support: Pair[float] = ...,
     quad_opts: QuadOptions | None = ...,
     alpha: float = ...,
-) -> npt.NDArray[np.float_]:
+) -> npt.NDArray[np.float64]:
     ...
 
 
@@ -626,7 +626,7 @@ def l_ratio_from_ppf(
     support: Pair[float] = (0, 1),
     quad_opts: QuadOptions | None = None,
     alpha: float = ALPHA,
-) -> np.float_ | npt.NDArray[np.float_]:
+) -> np.float64 | npt.NDArray[np.float64]:
     """
     Population L-ratio's from a PPF.
 
@@ -656,7 +656,7 @@ def l_stats_from_cdf(
     quad_opts: QuadOptions | None = None,
     alpha: float = ALPHA,
     ppf: UnivariatePPF | None = None,
-) -> npt.NDArray[np.float_]:
+) -> npt.NDArray[np.float64]:
     r"""
     Calculates the theoretical- / population- L-moments (for $r \le 2$)
     and L-ratio's (for $r > 2$) of a distribution, from its CDF.
@@ -703,7 +703,7 @@ def l_stats_from_ppf(
     support: Pair[float] = (0, 1),
     quad_opts: QuadOptions | None = None,
     alpha: float = ALPHA,
-) -> npt.NDArray[np.float_]:
+) -> npt.NDArray[np.float64]:
     r"""
     Calculates the theoretical- / population- L-moments (for $r \le 2$)
     and L-ratio's (for $r > 2$) of a distribution, from its quantile function.
@@ -747,7 +747,7 @@ def l_moment_cov_from_cdf(
     *,
     support: Pair[float] | None = None,
     quad_opts: QuadOptions | None = None,
-) -> npt.NDArray[np.float_]:
+) -> npt.NDArray[np.float64]:
     r"""
     L-moments that are estimated from $n$ samples of a distribution with CDF
     $F$, converge to the multivariate normal distribution as the sample size
@@ -887,7 +887,7 @@ def l_moment_cov_from_cdf(
     def range_x(y: float, *_: int) -> tuple[float, float]:
         return (a, y)
 
-    cov = np.empty((rs, rs), dtype=np.float_)
+    cov = np.empty((rs, rs), dtype=np.float64)
     for k, r in zip(*np.triu_indices(rs), strict=True):
         cov_kr = _nquad(
             integrand,
@@ -926,7 +926,7 @@ def l_stats_cov_from_cdf(
     quad_opts: QuadOptions | None = None,
     alpha: float = ALPHA,
     ppf: UnivariatePPF | None = None,
-) -> npt.NDArray[np.float_]:
+) -> npt.NDArray[np.float64]:
     r"""
     Similar to [`l_moment_from_cdf`][lmo.theoretical.l_moment_from_cdf], but
     for the [`lmo.l_stats`][lmo.l_stats].
@@ -1021,13 +1021,13 @@ def l_stats_cov_from_cdf(
 
 
 def l_moment_influence_from_cdf(
-    cdf: Callable[[npt.NDArray[np.float_]], npt.NDArray[np.float_]],
+    cdf: Callable[[npt.NDArray[np.float64]], npt.NDArray[np.float64]],
     r: AnyInt,
     /,
     trim: AnyTrim = (0, 0),
     *,
     support: Pair[float] | None = None,
-    l_moment: float | np.float_ | None = None,
+    l_moment: float | np.float64 | None = None,
     quad_opts: QuadOptions | None = None,
     alpha: float = ALPHA,
     tol: float = 1e-8,
@@ -1101,7 +1101,7 @@ def l_moment_influence_from_cdf(
             Returns:
                 out
             """
-            _x = np.asanyarray(x, np.float_)[()]
+            _x = np.asanyarray(x, np.float64)[()]
             return cast(V, _x * 0. + .0)  # :+)
 
         return influence0
@@ -1124,7 +1124,7 @@ def l_moment_influence_from_cdf(
     c = _l_moment_const(_r, s, t)
 
     def influence(x: V, /) -> V:
-        _x = np.asanyarray(x, np.float_)
+        _x = np.asanyarray(x, np.float64)
         q = np.piecewise(
             _x,
             [_x <= a, (_x > a) & (_x < b), _x >= b],
@@ -1145,14 +1145,14 @@ def l_moment_influence_from_cdf(
 
 
 def l_ratio_influence_from_cdf(
-    cdf: Callable[[npt.NDArray[np.float_]], npt.NDArray[np.float_]],
+    cdf: Callable[[npt.NDArray[np.float64]], npt.NDArray[np.float64]],
     r: AnyInt,
     k: AnyInt = 2,
     /,
     trim: AnyTrim = (0, 0),
     *,
     support: Pair[float] | None = None,
-    l_moments: Pair[float] | Pair[np.float_] | None = None,
+    l_moments: Pair[float] | Pair[np.float64] | None = None,
     quad_opts: QuadOptions | None = None,
     alpha: float = ALPHA,
     tol: float = 1e-8,
@@ -1266,7 +1266,7 @@ def l_ratio_influence_from_cdf(
 # Multivariate
 
 def l_comoment_from_pdf(
-    pdf: Callable[[npt.NDArray[np.float_]], float],
+    pdf: Callable[[npt.NDArray[np.float64]], float],
     cdfs: Sequence[Callable[[float], float]],
     r: AnyInt,
     /,
@@ -1274,7 +1274,7 @@ def l_comoment_from_pdf(
     *,
     supports: Sequence[Pair[float]] | None = None,
     quad_opts: QuadOptions | None = None,
-) -> npt.NDArray[np.float_]:
+) -> npt.NDArray[np.float64]:
     r"""
     Evaluate the theoretical L-*co*moment matrix of a multivariate probability
     distribution, using the joint PDF $f_{\vec{X}}(\vec{x})$ and $n$ marginal
@@ -1472,7 +1472,7 @@ def l_comoment_from_pdf(
 
 
 def l_coratio_from_pdf(
-    pdf: Callable[[npt.NDArray[np.float_]], float],
+    pdf: Callable[[npt.NDArray[np.float64]], float],
     cdfs: Sequence[Callable[[float], float]],
     r: AnyInt,
     r0: AnyInt = 2,
@@ -1481,7 +1481,7 @@ def l_coratio_from_pdf(
     *,
     supports: Sequence[Pair[float]] | None = None,
     quad_opts: QuadOptions | None = None,
-) -> npt.NDArray[np.float_]:
+) -> npt.NDArray[np.float64]:
     r"""
     Evaluate the theoretical L-*co*moment ratio matrix of a multivariate
     probability distribution, using the joint PDF $f_{\vec{X}}(\vec{x})$ and

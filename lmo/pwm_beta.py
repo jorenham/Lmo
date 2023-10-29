@@ -19,7 +19,7 @@ def weights(
     r: int,
     n: int,
     /,
-    dtype: np.dtype[T] | type[T] = np.float_,
+    dtype: np.dtype[T] | type[T] = np.float64,
 ) -> npt.NDArray[T]:
     r"""
     Probability Weighted moment (PWM) projection matrix $B$ of the
@@ -69,7 +69,7 @@ def cov(
     r: int,
     /,
     axis: int | None = None,
-    dtype: np.dtype[T] | type[T] = np.float_,
+    dtype: np.dtype[T] | type[T] = np.float64,
     **kwargs: Any,
 ) -> npt.NDArray[T]:
     r"""
