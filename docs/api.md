@@ -1,13 +1,12 @@
 # Lmo reference
 
-
 ## High-level API
 
 ### Sample L-moments
 
 ::: lmo
     options:
-      filters: 
+      filters:
       - "!l_weights"
       - "!^l_co"
       - "!^l_rv"
@@ -20,17 +19,24 @@
       filters: ["^l_co"]
       heading_level: 4
 
+### Integration with `scipy.stats` distributions
+
+::: lmo.contrib.scipy_stats
+    options:
+      show_bases: false
+      members:
+      - l_rv_generic
+      heading_level: 4
 
 ### Distributions
 
 ::: lmo
     options:
       members:
-      - l_rv_generic
       - l_rv_nonparametric
       heading_level: 4
 
-### Statistical test and tools 
+### Statistical test and tools
 
 ::: lmo.diagnostic
     options:
