@@ -27,7 +27,10 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from lmo import l_moment as _l_moment
+from lmo import (
+    l_moment as _l_moment,
+    l_stats as _l_stats,
+)
 from lmo._utils import clean_trim
 from lmo.typing import AnyInt, AnyTrim, IntVector, LMomentOptions
 
@@ -40,6 +43,8 @@ _FloatOrSeries: TypeAlias = Union[float, 'pd.Series[float]']
 _SeriesOrFrame: TypeAlias = Union['pd.Series[float]', pd.DataFrame]
 _FloatOrFrame: TypeAlias = _FloatOrSeries | pd.DataFrame
 
+AxisDF: TypeAlias = Literal[0, 'index', 1, 'columns']
+
 T = TypeVar(
     'T',
     bound=(
@@ -51,6 +56,20 @@ T = TypeVar(
         | np.dtype[np.floating[Any]]
     ),
 )
+
+def _setindex(
+    df: pd.DataFrame,
+    axis: AxisDF,
+    index: 'pd.Index[Any]',
+) -> None:
+    if axis == 0 or axis == 'index':
+        df.index = index
+    elif axis == 1 or axis == 'columns':
+        df.columns = index
+    else:
+        msg = f"axis must be one of {{0, 'index', 1, 'columns'}}, got {axis}"
+        raise TypeError(msg)
+
 
 @final
 class Series(pd.Series):  # type: ignore [missingTypeArguments]
@@ -80,24 +99,41 @@ class Series(pd.Series):  # type: ignore [missingTypeArguments]
         **kwargs: Unpack[LMomentOptions],
     ) -> _FloatOrSeries:
         """
-        Wrapper around [`lmo.l_moment`][lmo.l_moment].
+        See [`lmo.l_moment`][lmo.l_moment].
 
         Returns:
             A scalar or [`pd.Series[float]`][pandas.Series] with `r` as index.
         """
-        _trim = clean_trim(trim)
-        res = _l_moment(self, r, trim=_trim, **kwargs)
+        res = _l_moment(self, r, trim=trim, **kwargs)
 
         if np.isscalar(res):
             return cast(float, res)
 
         return pd.Series(
             cast(npt.NDArray[np.float64], res),
-            index=pd.Index(np.asarray(r), name='r', dtype=int),
+            index=pd.Index(np.asarray(r), name='r'),
             dtype=float,
             copy=False,
         )
 
+    def l_stats(
+        self,
+        trim: AnyTrim = (0, 0),
+        num: int = 4,
+        **kwargs: Unpack[LMomentOptions],
+    ) -> 'pd.Series[float]':
+        """
+        See [`lmo.l_stats`][lmo.l_stats].
+
+        Returns:
+            A [`pd.Series[float]`][pandas.Series] with index `r = 1, ..., num`.
+        """
+        return pd.Series(
+            _l_stats(self, trim=trim, num=num, **kwargs),
+            index=pd.RangeIndex(1, num + 1, name='r'),
+            dtype=float,
+            copy=False,
+        )
 
 @final
 class DataFrame(pd.DataFrame):
@@ -123,34 +159,61 @@ class DataFrame(pd.DataFrame):
         r: IntVector | AnyInt,
         /,
         trim: AnyTrim = (0, 0),
-        axis: Literal[0, 'index', 1, 'columns'] = 0,
+        axis: AxisDF = 0,
         **kwargs: Unpack[LMomentOptions],
     ) -> _SeriesOrFrame:
         """
-        Wrapper around [`lmo.l_moment`][lmo.l_moment].
+        See [`lmo.l_moment`][lmo.l_moment].
 
         Returns:
-            A [`pd.DataFrame`][pandas.DataFrame] or
-                [`pd.Series[float]`][pandas.Series] with `r` as index.
+            out: A [`Series[float]`][pandas.Series]. or
+                a [`DataFrame`][pandas.DataFrame] with `r` as index along the
+                specified axis.
         """
-        # .aggregate only works correctly with axis=0 for some dumb reason
-        transpose = axis == 1 or axis == 'columns'
-        obj = self.T if transpose else self
-
-        res = cast(
+        out = cast(
             _SeriesOrFrame,
-            obj.aggregate(  # type: ignore
+            self.apply(  # type: ignore
                 _l_moment,
-                0,
-                r,
-                trim=trim,
+                axis=axis,
+                result_type='expand',
+                args=(r, trim),
                 **kwargs,
             ),
         )
-        if isinstance(res, pd.DataFrame):
-            res.index = pd.Index(np.asarray(r), name='r', dtype=int)
+        if isinstance(out, pd.DataFrame):
+            _setindex(out, axis, pd.Index(np.asarray(r), name='r'))
+            out.attrs['l_kind'] = 'moment'
+            out.attrs['l_trim'] = clean_trim(trim)
+        return out
 
-        return res.T if transpose else res
+    def l_stats(
+        self,
+        trim: AnyTrim = (0, 0),
+        num: int = 4,
+        axis: AxisDF = 0,
+        **kwargs: Unpack[LMomentOptions],
+    ) -> pd.DataFrame:
+        """
+        See [`lmo.l_stats`][lmo.l_stats].
+
+        Returns:
+            out: A [`DataFrame`][pandas.DataFrame] with `r = 1, ..., num` as
+                index along the specified axis.
+        """
+        out = cast(
+            pd.DataFrame,
+            self.apply(  # type: ignore
+                _l_stats,
+                axis=axis,
+                result_type='expand',
+                args=(trim, num),
+                **kwargs,
+            ),
+        )
+        _setindex(out, axis, pd.RangeIndex(1, num + 1, name='r'))
+        out.attrs['l_kind'] = 'stat'
+        out.attrs['l_trim'] = clean_trim(trim)
+        return out
 
 
 class _Registerable(Protocol):
