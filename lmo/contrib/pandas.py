@@ -123,7 +123,7 @@ class Series(pd.Series):  # type: ignore [missingTypeArguments]
 
         Returns:
             out: A scalar, or [`pd.Series[float]`][pandas.Series], with a
-            [`MultiIndex`][pandas.MultiIndex] of `r` and `k`.
+                [`MultiIndex`][pandas.MultiIndex] of `r` and `k`.
         """
         rk = broadstack(r, k)
         out = moments_to_ratio(rk, _l_moment(self, rk, trim=trim, **kwargs))
@@ -147,13 +147,82 @@ class Series(pd.Series):  # type: ignore [missingTypeArguments]
         See [`lmo.l_stats`][lmo.l_stats].
 
         Returns:
-            A [`pd.Series[float]`][pandas.Series] with index `r = 1, ..., num`.
+            out: A [`pd.Series[float]`][pandas.Series] with index
+                `r = 1, ..., num`.
         """
         return pd.Series(
             _l_stats(self, trim=trim, num=num, **kwargs),
             index=pd.RangeIndex(1, num + 1, name='r'),
             copy=False,
         )
+
+    def l_loc(
+        self,
+        trim: AnyTrim = (0, 0),
+        **kwargs: Unpack[LMomentOptions],
+    ) -> float:
+        """
+        See [`lmo.l_loc`][lmo.l_loc].
+
+        Returns:
+            out: A scalar.
+        """
+        return cast(float, _l_moment(self, 1, trim, **kwargs))
+
+    def l_scale(
+        self,
+        trim: AnyTrim = (0, 0),
+        **kwargs: Unpack[LMomentOptions],
+    ) -> float:
+        """
+        See [`lmo.l_scale`][lmo.l_scale].
+
+        Returns:
+            out: A scalar.
+        """
+        return cast(float, _l_moment(self, 2, trim, **kwargs))
+
+    def l_variation(
+        self,
+        trim: AnyTrim = (0, 0),
+        **kwargs: Unpack[LMomentOptions],
+    ) -> float:
+        """
+        See [`lmo.l_variation`][lmo.l_variation].
+
+        Returns:
+            out: A scalar.
+        """
+        return cast(float, _l_ratio(self, 2, 1, trim, **kwargs))
+
+    def l_skew(
+        self,
+        trim: AnyTrim = (0, 0),
+        **kwargs: Unpack[LMomentOptions],
+    ) -> float:
+        """
+        See [`lmo.l_skew`][lmo.l_skew].
+
+        Returns:
+            out: A scalar.
+        """
+        return cast(float, _l_ratio(self, 3, 2, trim, **kwargs))
+
+    def l_kurtosis(
+        self,
+        trim: AnyTrim = (0, 0),
+        **kwargs: Unpack[LMomentOptions],
+    ) -> float:
+        """
+        See [`lmo.l_kurtosis`][lmo.l_kurtosis].
+
+        Returns:
+            out: A scalar.
+        """
+        return cast(float, _l_ratio(self, 4, 2, trim, **kwargs))
+
+    l_kurt = l_kurtosis
+
 
 @final
 class DataFrame(pd.DataFrame):
@@ -273,6 +342,103 @@ class DataFrame(pd.DataFrame):
         out.attrs['l_kind'] = 'stat'
         out.attrs['l_trim'] = clean_trim(trim)
         return out
+
+    def l_loc(
+        self,
+        trim: AnyTrim = (0, 0),
+        axis: AxisDF = 0,
+        **kwargs: Unpack[LMomentOptions],
+    ) -> 'pd.Series[float]':
+        """
+        See [`lmo.l_loc`][lmo.l_loc].
+
+        Returns:
+            out: A [`Series[float]`][pandas.Series].
+        """
+        return self.apply(  # type: ignore
+            _l_moment,
+            axis=axis,
+            args=(1, trim),
+            **kwargs,
+        )
+
+    def l_scale(
+        self,
+        trim: AnyTrim = (0, 0),
+        axis: AxisDF = 0,
+        **kwargs: Unpack[LMomentOptions],
+    ) -> 'pd.Series[float]':
+        """
+        See [`lmo.l_scale`][lmo.l_scale].
+
+        Returns:
+            out: A [`Series[float]`][pandas.Series].
+        """
+        return self.apply(  # type: ignore
+            _l_moment,
+            axis=axis,
+            args=(2, trim),
+            **kwargs,
+        )
+
+    def l_variation(
+        self,
+        trim: AnyTrim = (0, 0),
+        axis: AxisDF = 0,
+        **kwargs: Unpack[LMomentOptions],
+    ) -> 'pd.Series[float]':
+        """
+        See [`lmo.l_variation`][lmo.l_variation].
+
+        Returns:
+            out: A [`Series[float]`][pandas.Series].
+        """
+        return self.apply(  # type: ignore
+            _l_ratio,
+            axis=axis,
+            args=(2, 1, trim),
+            **kwargs,
+        )
+
+    def l_skew(
+        self,
+        trim: AnyTrim = (0, 0),
+        axis: AxisDF = 0,
+        **kwargs: Unpack[LMomentOptions],
+    ) -> 'pd.Series[float]':
+        """
+        See [`lmo.l_skew`][lmo.l_skew].
+
+        Returns:
+            out: A [`Series[float]`][pandas.Series].
+        """
+        return self.apply(  # type: ignore
+            _l_ratio,
+            axis=axis,
+            args=(3, 2, trim),
+            **kwargs,
+        )
+
+    def l_kurtosis(
+        self,
+        trim: AnyTrim = (0, 0),
+        axis: AxisDF = 0,
+        **kwargs: Unpack[LMomentOptions],
+    ) -> 'pd.Series[float]':
+        """
+        See [`lmo.l_kurtosis`][lmo.l_kurtosis].
+
+        Returns:
+            out: A [`Series[float]`][pandas.Series].
+        """
+        return self.apply(  # type: ignore
+            _l_ratio,
+            axis=axis,
+            args=(4, 2, trim),
+            **kwargs,
+        )
+
+    l_kurt = l_kurtosis
 
 
 class _Registerable(Protocol):
