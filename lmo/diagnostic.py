@@ -51,7 +51,7 @@ if TYPE_CHECKING:
 
 T = TypeVar('T', bound=np.floating[Any])
 
-AnyRV: TypeAlias = rv_continuous | rv_discrete | rv_discrete
+AnyRV: TypeAlias = rv_continuous | rv_discrete
 
 
 class HypothesisTestResult(NamedTuple):
