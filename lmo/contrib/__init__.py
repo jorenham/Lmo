@@ -1,8 +1,7 @@
 """Integrations and extensions for 3rd party packages."""
+import contextlib
 
 __all__ = ('install',)
-
-from . import scipy_stats
 
 
 def install():
@@ -12,4 +11,9 @@ def install():
     There should be no need to call this manually: this is done automatically
     when `lmo` is imported.
     """
+    from . import scipy_stats
     scipy_stats.install()
+
+    with contextlib.suppress(ImportError):
+        from . import pandas
+        pandas.install()
