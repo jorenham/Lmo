@@ -28,12 +28,20 @@ import numpy.typing as npt
 import pandas as pd
 
 from lmo import (
+    l_comoment as _l_comoment,
+    l_coratio as _l_coratio,
     l_moment as _l_moment,
     l_ratio as _l_ratio,
     l_stats as _l_stats,
 )
 from lmo._utils import broadstack, clean_trim, moments_to_ratio
-from lmo.typing import AnyInt, AnyTrim, IntVector, LMomentOptions
+from lmo.typing import (
+    AnyInt,
+    AnyTrim,
+    IntVector,
+    LComomentOptions,
+    LMomentOptions,
+)
 
 if sys.version_info < (3, 11):
     from typing_extensions import Unpack
@@ -74,13 +82,14 @@ class Series(pd.Series):  # type: ignore [missingTypeArguments]
     and registered as
     [series accessors][pandas.api.extensions.register_series_accessor].
     """
-    @staticmethod
+    @classmethod
     def __lmo_register__(  # noqa: D105
+        cls,
         name: str,
         method: Callable[..., _FloatOrSeries | pd.DataFrame],
     ) -> None:
         def fn(obj: 'pd.Series[Any]') -> Callable[..., _FloatOrSeries]:
-            return functools.partial(method, obj)  # type: ignore
+            return method.__get__(obj, Series)
 
         pd.api.extensions.register_series_accessor(name)(fn)  # type: ignore
 
@@ -233,13 +242,15 @@ class DataFrame(pd.DataFrame):
     and registered as
     [dataframe accessors][pandas.api.extensions.register_dataframe_accessor].
     """
-    @staticmethod
+    @classmethod
     def __lmo_register__(  # noqa: D105
+        cls,
         name: str,
         method: Callable[..., _FloatOrFrame],
     ) -> None:
         def fn(obj: pd.DataFrame) -> Callable[..., _FloatOrFrame]:
-            return functools.partial(method, obj)  # type: ignore
+            # return functools.partial(method, obj)  # type: ignore
+            return method.__get__(obj, cls)
 
         pd.api.extensions.register_dataframe_accessor(name)(fn)  # type: ignore
 
@@ -428,6 +439,8 @@ class DataFrame(pd.DataFrame):
         """
         See [`lmo.l_kurtosis`][lmo.l_kurtosis].
 
+        The alias `l_kurt` is also available.
+
         Returns:
             out: A [`Series[float]`][pandas.Series].
         """
@@ -440,6 +453,94 @@ class DataFrame(pd.DataFrame):
 
     l_kurt = l_kurtosis
 
+    def l_comoment(
+        self,
+        r: AnyInt,
+        /,
+        trim: AnyTrim = (0, 0),
+        **kwargs: Unpack[LComomentOptions],
+    ) -> pd.DataFrame:
+        """
+        See [`lmo.l_comoment`][lmo.l_comoment].
+
+        Args:
+            r: The L-moment order, as a non-negative scalar.
+            trim: Left- and right-trim orders.
+            **kwargs: Additional options to pass to
+                [`lmo.l_comoment`][lmo.l_comoment].
+
+        Returns:
+            out: A [`DataFrame`][pandas.DataFrame] of the column-to-column
+                L-comoment matrix.
+
+        Raises:
+            TypeError: If `rowvar=True`, use `df.T.l_comoment` instead.
+        """
+        if kwargs.pop('rowvar', False):
+            msg = 'rowvar=True is not supported; use df.T instead'
+            raise TypeError(msg)
+
+        kwargs = kwargs | {'rowvar': False}
+        out = pd.DataFrame(
+            _l_comoment(self, _r := int(r), trim=trim, **kwargs),
+            index=self.columns,
+            columns=self.columns,
+            copy=False,
+        )
+        out.attrs['l_kind'] = 'comoment'
+        out.attrs['l_r'] = _r
+        out.attrs['l_trim'] = clean_trim(trim)
+        return out
+
+    def l_coratio(
+        self,
+        r: AnyInt,
+        k: AnyInt = 2,
+        /,
+        trim: AnyTrim = (0, 0),
+        **kwargs: Unpack[LComomentOptions],
+    ) -> pd.DataFrame:
+        """
+        See [`lmo.l_coratio`][lmo.l_coratio].
+
+        Args:
+            r: The L-moment order of the numerator, a non-negative scalar.
+            k: The L-moment order of the denominator, a non-negative scalar.
+                Defaults to 2. If set to 0, this is equivalent to `l_comoment`.
+            trim: Left- and right-trim orders.
+            **kwargs: Additional options to pass to
+                [`lmo.l_comoment`][lmo.l_comoment].
+
+        Returns:
+            out: A [`DataFrame`][pandas.DataFrame] of the column-to-column
+                matrix of L-comoment ratio's.
+
+        Raises:
+            TypeError: If `rowvar=True`, use `df.T.l_comoment` instead.
+        """
+        if kwargs.pop('rowvar', False):
+            msg = 'rowvar=True is not supported; use df.T instead'
+            raise TypeError(msg)
+
+        kwargs = kwargs | {'rowvar': False}
+        out = pd.DataFrame(
+            _l_coratio(self, _r := int(r), _k := int(k), trim=trim, **kwargs),
+            index=self.columns,
+            columns=self.columns,
+            copy=False,
+        )
+        out.attrs['l_kind'] = 'coratio'
+        out.attrs['l_r'] = _r
+        out.attrs['l_k'] = _k
+        out.attrs['l_trim'] = clean_trim(trim)
+        return out
+
+    l_coloc = functools.partialmethod(l_comoment, 1)
+    l_coscale = functools.partialmethod(l_comoment, 2)
+    l_corr = functools.partialmethod(l_coratio, 2, 2)
+    l_coskew = functools.partialmethod(l_coratio, 3, 2)
+    l_cokurtosis = l_cokurt = functools.partialmethod(l_coratio, 4, 2)
+
 
 class _Registerable(Protocol):
     @staticmethod
@@ -448,7 +549,10 @@ class _Registerable(Protocol):
 
 def _register_methods(cls: type[_Registerable]):
     for k, method in cls.__dict__.items():
-        if not k.startswith('_') and callable(method):
+        if not k.startswith('_') and (
+            callable(method)
+            or isinstance(method, functools.partialmethod)
+        ):
             cls.__lmo_register__(k, method)
 
 
