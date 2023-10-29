@@ -22,6 +22,7 @@ Examples:
     std   1.140175  0.447214
     skew  0.404796 -2.236068
     kurt -0.177515  5.000000
+
     ```
 
     Comparison of L-correlation, and Pearson correlation matrices:
@@ -36,6 +37,7 @@ Examples:
               dogs      cats
     dogs  1.000000 -0.756889
     cats -0.756889  1.000000
+
     ```
 """
 __all__ = (
