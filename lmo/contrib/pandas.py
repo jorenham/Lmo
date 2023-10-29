@@ -3,6 +3,40 @@ Extension methods for `pandas.Series` and `pandas.DataFrame`.
 
 Pandas is an optional dependency, and can be installed using
 `pip install lmo[pandas]`.
+
+Examples:
+    Univariate summary statistics:
+
+    ```pycon
+    >>> df = pd.DataFrame({'a': [1, 2, 2, 3, 4], 'b': [3, 4, 4, 4, 4]})
+    >>> df.l_stats()
+            a    b
+    r
+    1  2.400000  3.8
+    2  0.700000  0.2
+    3  0.142857 -1.0
+    4  0.285714  1.0
+    >>> df.aggregate(['mean', 'std', 'skew', 'kurt'])
+                a         b
+    mean  2.400000  3.800000
+    std   1.140175  0.447214
+    skew  0.404796 -2.236068
+    kurt -0.177515  5.000000
+    ```
+
+    Comparison of L-correlation, and Pearson correlation matrices:
+
+    ```pycon
+    >>> df = pd.DataFrame({'dogs': [.2, .0, .5, .4], 'cats': [.3, .2, .0, .1]})
+    >>> df.l_corr()
+        dogs      cats
+    dogs   1.0 -0.764706
+    cats  -0.8  1.000000
+    >>> df.corr()
+            dogs      cats
+    dogs  1.000000 -0.756889
+    cats -0.756889  1.000000
+    ```
 """
 __all__ = (
     'Series',
