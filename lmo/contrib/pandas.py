@@ -1,26 +1,33 @@
-"""Extension methods for `pandas.Series` and `pandas.DataFrame`."""
-from __future__ import annotations
+"""
+Extension methods for `pandas.Series` and `pandas.DataFrame`.
 
+Pandas is an optional dependency, and can be installed using
+`pip install lmo[pandas]`.
+"""
 __all__ = (
-    'l_moment',
+    'Series',
     'install',
 )
 
+import functools
 import sys
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from collections.abc import Callable
+from typing import Any, Concatenate, ParamSpec, TypeAlias, TypeVar, Union, cast
 
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 
 from lmo import l_moment as _l_moment
-
-if TYPE_CHECKING:
-    from lmo.typing import AnyInt, AnyTrim, IntVector, LMomentOptions
+from lmo._utils import clean_trim
+from lmo.typing import AnyInt, AnyTrim, IntVector, LMomentOptions
 
 if sys.version_info < (3, 11):
     from typing_extensions import Unpack
 else:
     from typing import Unpack
+
+_FloatOrSeries: TypeAlias = Union[float, 'pd.Series[float]']
 
 T = TypeVar(
     'T',
@@ -33,55 +40,64 @@ T = TypeVar(
         | np.dtype[np.floating[Any]]
     ),
 )
+Ps = ParamSpec('Ps')
+# R1 = TypeVar('R1', bound=pd.Series[float] | float)
+R1 = TypeVar('R1', bound=_FloatOrSeries)
+R2 = TypeVar('R2', bound=_FloatOrSeries | pd.DataFrame)
 
-class l_moment(Generic[T]):  # noqa: N801
-    """Extension method for `pandas.Series`."""
-    __slots__ = ('_obj',)
 
-    _obj: pd.Series[T]
+_XSR_SERIES: dict[
+    str,
+    Callable[['pd.Series[Any]'], Callable[..., _FloatOrSeries]],
+] = {}
 
-    def __init__(self, obj: pd.Series[T]) -> None:  # noqa: D107
-        self._validate(obj)
-        self._obj = obj
 
-    @classmethod
-    def _validate(cls, obj: pd.Series[T]) -> None:
-        if not pd.api.types.is_any_real_numeric_dtype(obj):  # type: ignore
-            msg = f'Can only use .{cls.__name__} accessor with numeric values'
-            raise AttributeError(msg)
+def _xsr_series(
+    fn: Callable[Concatenate['pd.Series[Any]', Ps], R1],
+    /,
+) -> Callable[Concatenate['pd.Series[Any]', Ps], R1]:
+    def _xsr(obj: 'pd.Series[Any]') -> Callable[Ps, R1]:
+        return functools.partial(fn, obj)  # type: ignore
 
-    def __call__(  # noqa: D102
-        self,
+    _XSR_SERIES[fn.__name__] = _xsr
+
+    return fn
+
+
+class Series(pd.Series):  # type: ignore [missingTypeArguments]
+    """Extension methods for [`pandas.Series`][pandas.Series]."""
+    @_xsr_series
+    def l_moment(
+        self: 'pd.Series[Any]',
         r: IntVector | AnyInt,
         /,
         trim: AnyTrim = (0, 0),
         **kwargs: Unpack[LMomentOptions],
-    ) -> pd.Series[float] | float:
-        _r = np.asarray(r).ravel()
+    ) -> _FloatOrSeries:
+        """
+        Wrapper around [`lmo.l_moment`][lmo.l_moment].
 
-        res = _l_moment(
-            np.asarray(self._obj, float),
-            _r,
-            trim=trim,
-            **kwargs,
-        )
+        Returns:
+            A scalar or [`pd.Series[float]`][pandas.Series] with `r` as index.
+        """
+        _trim = clean_trim(trim)
+        res = _l_moment(self, r, trim=_trim, **kwargs)
 
-        if len(res) == 1:
-            return res[0]
+        if np.isscalar(res):
+            return cast(float, res)
 
+        path = f'{self.name}.' if self.name else ''
+        opts = f'({trim=})' if all(_trim) else ''
         return pd.Series(
-            res,
-            index=_r,
-            name='l_moment',
+            cast(npt.NDArray[np.float64], res),
+            index=pd.Index(np.asarray(r), name='r', dtype=int),
+            name=f'{path}l_moment{opts}',
             dtype=float,
+            copy=False,
         )
 
 
 def install():
     """Register the accessor methods."""
-    for method in [  # type: ignore
-        l_moment,
-    ]:
-        pd.api.extensions.register_series_accessor(  # type: ignore
-            method.__name__,
-        )(method)
+    for name, xsr in _XSR_SERIES.items():
+        pd.api.extensions.register_series_accessor(name)(xsr)  # type: ignore
