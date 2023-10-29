@@ -51,7 +51,7 @@ from lmo.typing import (
 )
 
 T = TypeVar('T')
-V = TypeVar('V', bound=float | npt.NDArray[np.float_])
+V = TypeVar('V', bound=float | npt.NDArray[np.float64])
 
 _Tuple4: TypeAlias = tuple[T, T, T, T]
 
@@ -190,7 +190,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
         trim: AnyTrim = ...,
         quad_opts: QuadOptions | None = ...,
         **kwds: Any,
-    ) -> np.float_: ...
+    ) -> np.float64: ...
 
     @overload
     def l_moment(
@@ -201,7 +201,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
         trim: AnyTrim = ...,
         quad_opts: QuadOptions | None = ...,
         **kwds: Any,
-    ) -> npt.NDArray[np.float_]: ...
+    ) -> npt.NDArray[np.float64]: ...
 
     def l_moment(
         self,
@@ -211,7 +211,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
         trim: AnyTrim = (0, 0),
         quad_opts: QuadOptions | None = None,
         **kwds: Any,
-    ) -> np.float_ | npt.NDArray[np.float_]:
+    ) -> np.float64 | npt.NDArray[np.float64]:
         r"""
         Population L-moment(s) $\lambda^{(s,t)}_r$.
 
@@ -316,7 +316,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
         trim: AnyTrim = ...,
         quad_opts: QuadOptions | None = ...,
         **kwds: Any,
-    ) -> np.float_: ...
+    ) -> np.float64: ...
 
     @overload
     def l_ratio(
@@ -328,7 +328,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
         trim: AnyTrim = ...,
         quad_opts: QuadOptions | None = ...,
         **kwds: Any,
-    ) -> npt.NDArray[np.float_]: ...
+    ) -> npt.NDArray[np.float64]: ...
 
     def l_ratio(
         self,
@@ -339,7 +339,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
         trim: AnyTrim = (0, 0),
         quad_opts: QuadOptions | None = None,
         **kwds: Any,
-    ) -> np.float_ | npt.NDArray[np.float_]:
+    ) -> np.float64 | npt.NDArray[np.float64]:
         r"""
         L-moment ratio('s) $\tau^{(s,t)}_{r,k}$.
 
@@ -424,7 +424,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
         moments: int = 4,
         quad_opts: QuadOptions | None = None,
         **kwds: Any,
-    ) -> npt.NDArray[np.float_]:
+    ) -> npt.NDArray[np.float64]:
         r"""
         The L-moments (for $r \le 2$) and L-ratio's (for $r > 2$).
 
@@ -551,7 +551,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
         trim: AnyTrim = (0, 0),
         quad_opts: QuadOptions | None = None,
         **kwds: Any,
-    ) -> npt.NDArray[np.float_]:
+    ) -> npt.NDArray[np.float64]:
         r"""
         Variance/covariance matrix of the L-moment estimators.
 
@@ -682,7 +682,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
         trim: AnyTrim = (0, 0),
         quad_opts: QuadOptions | None = None,
         **kwds: Any,
-    ) -> npt.NDArray[np.float_]:
+    ) -> npt.NDArray[np.float64]:
         r"""
         Similar to [`l_moments_cov`
         ][lmo.contrib.scipy_stats.l_rv_generic.l_moments_cov], but for the
@@ -866,7 +866,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
 
         args, loc, scale = self._parse_args(*args, **kwds)
         cdf = cast(
-            Callable[[npt.NDArray[np.float_]], npt.NDArray[np.float_]],
+            Callable[[npt.NDArray[np.float64]], npt.NDArray[np.float64]],
             self._get_xxf(*args, loc=loc, scale=scale)[0],
         )
 
@@ -962,7 +962,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
 
         args, loc, scale = self._parse_args(*args, **kwds)
         cdf = cast(
-            Callable[[npt.NDArray[np.float_]], npt.NDArray[np.float_]],
+            Callable[[npt.NDArray[np.float64]], npt.NDArray[np.float64]],
             self._get_xxf(*args, loc=loc, scale=scale)[0],
         )
 
@@ -1022,10 +1022,10 @@ class l_rv_generic(PatchClass):  # noqa: N801
 
     def _l_gmm_error(
         self,
-        theta: npt.NDArray[np.float_],
+        theta: npt.NDArray[np.float64],
         trim: tuple[float, float],
-        l_data: npt.NDArray[np.float_],
-        weights: npt.NDArray[np.float_],
+        l_data: npt.NDArray[np.float64],
+        weights: npt.NDArray[np.float64],
     ) -> float:
         """L-GMM objective function."""
         loc, scale, args = self._unpack_loc_scale(theta)
@@ -1319,7 +1319,7 @@ class l_rv_frozen(PatchClass):  # noqa: N801, D101
         /,
         trim: AnyTrim = ...,
         quad_opts: QuadOptions | None = ...,
-    ) -> np.float_: ...
+    ) -> np.float64: ...
 
     @overload
     def l_moment(
@@ -1328,7 +1328,7 @@ class l_rv_frozen(PatchClass):  # noqa: N801, D101
         /,
         trim: AnyTrim = ...,
         quad_opts: QuadOptions | None = ...,
-    ) -> npt.NDArray[np.float_]: ...
+    ) -> npt.NDArray[np.float64]: ...
 
     def l_moment(  # noqa: D102
         self,
@@ -1336,7 +1336,7 @@ class l_rv_frozen(PatchClass):  # noqa: N801, D101
         /,
         trim: AnyTrim = (0, 0),
         quad_opts: QuadOptions | None = None,
-    ) -> np.float_ | npt.NDArray[np.float_]:
+    ) -> np.float64 | npt.NDArray[np.float64]:
         return self.dist.l_moment(
             order,
             *self.args,
@@ -1353,7 +1353,7 @@ class l_rv_frozen(PatchClass):  # noqa: N801, D101
         /,
         trim: AnyTrim = ...,
         quad_opts: QuadOptions | None = ...,
-    ) -> np.float_: ...
+    ) -> np.float64: ...
 
     @overload
     def l_ratio(
@@ -1363,7 +1363,7 @@ class l_rv_frozen(PatchClass):  # noqa: N801, D101
         /,
         trim: AnyTrim = ...,
         quad_opts: QuadOptions | None = ...,
-    ) -> npt.NDArray[np.float_]: ...
+    ) -> npt.NDArray[np.float64]: ...
 
     def l_ratio(  # noqa: D102
         self,
@@ -1372,7 +1372,7 @@ class l_rv_frozen(PatchClass):  # noqa: N801, D101
         /,
         trim: AnyTrim = (0, 0),
         quad_opts: QuadOptions | None = None,
-    ) -> np.float_ | npt.NDArray[np.float_]:
+    ) -> np.float64 | npt.NDArray[np.float64]:
         return self.dist.l_ratio(
             order,
             order_denom,
@@ -1387,7 +1387,7 @@ class l_rv_frozen(PatchClass):  # noqa: N801, D101
         trim: AnyTrim = (0, 0),
         moments: int = 4,
         quad_opts: QuadOptions | None = None,
-    ) -> np.float_ | npt.NDArray[np.float_]:
+    ) -> np.float64 | npt.NDArray[np.float64]:
         return self.dist.l_stats(
             *self.args,
             trim=trim,
@@ -1417,7 +1417,7 @@ class l_rv_frozen(PatchClass):  # noqa: N801, D101
         /,
         trim: AnyTrim = (0, 0),
         quad_opts: QuadOptions | None = None,
-    ) -> npt.NDArray[np.float_]:
+    ) -> npt.NDArray[np.float64]:
         return self.dist.l_moments_cov(
             r_max,
             *self.args,
@@ -1431,7 +1431,7 @@ class l_rv_frozen(PatchClass):  # noqa: N801, D101
         moments: int = 4,
         trim: AnyTrim = (0, 0),
         quad_opts: QuadOptions | None = None,
-    ) -> npt.NDArray[np.float_]:
+    ) -> npt.NDArray[np.float64]:
         return self.dist.l_stats_cov(
             *self.args,
             moments=moments,

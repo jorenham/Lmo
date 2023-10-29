@@ -67,8 +67,8 @@ class HypothesisTestResult(NamedTuple):
             hypothesis, $H_0$.
     """
 
-    statistic: float | npt.NDArray[np.float_]
-    pvalue: float | npt.NDArray[np.float_]
+    statistic: float | npt.NDArray[np.float64]
+    pvalue: float | npt.NDArray[np.float64]
 
     @property
     def is_valid(self) -> bool | npt.NDArray[np.bool_]:
@@ -167,9 +167,9 @@ def normaltest(
 
 
 def _gof_stat_single(
-    l_obs: npt.NDArray[np.float_],
-    l_exp: npt.NDArray[np.float_],
-    cov: npt.NDArray[np.float_],
+    l_obs: npt.NDArray[np.float64],
+    l_exp: npt.NDArray[np.float64],
+    cov: npt.NDArray[np.float64],
 ) -> float:
     err = l_obs - l_exp
     prec = np.linalg.inv(cov)  # precision matrix
@@ -178,10 +178,10 @@ def _gof_stat_single(
 
 _gof_stat = cast(
     Callable[[
-        npt.NDArray[np.float_],
-        npt.NDArray[np.float_],
-        npt.NDArray[np.float_],
-    ], npt.NDArray[np.float_]],
+        npt.NDArray[np.float64],
+        npt.NDArray[np.float64],
+        npt.NDArray[np.float64],
+    ], npt.NDArray[np.float64]],
     np.vectorize(
         _gof_stat_single,
         otypes=[float],
@@ -193,7 +193,7 @@ _gof_stat = cast(
 
 def l_moment_gof(
     rv_or_cdf: AnyRV | Callable[[float], float],
-    l_moments: npt.NDArray[np.float_],
+    l_moments: npt.NDArray[np.float64],
     n_obs: int,
     /,
     trim: AnyTrim = (0, 0),
@@ -281,13 +281,13 @@ def l_moment_gof(
         lambda_rr = _theo.l_moment_cov_from_cdf(cdf, n, trim, **kwargs)
 
     stat = n_obs * _gof_stat(l_r.T, lambda_r, lambda_rr).T[()]
-    pval = cast(float | npt.NDArray[np.float_], chdtrc(n, stat))
+    pval = cast(float | npt.NDArray[np.float64], chdtrc(n, stat))
     return HypothesisTestResult(stat, pval)
 
 
 def l_stats_gof(
     rv_or_cdf: AnyRV | Callable[[float], float],
-    l_stats: npt.NDArray[np.float_],
+    l_stats: npt.NDArray[np.float64],
     n_obs: int,
     /,
     trim: AnyTrim = (0, 0),
@@ -313,7 +313,7 @@ def l_stats_gof(
         tau_rr = _theo.l_stats_cov_from_cdf(cdf, n, trim, **kwargs)
 
     stat = n_obs * _gof_stat(t_r.T, tau_r, tau_rr).T[()]
-    pval = cast(float | npt.NDArray[np.float_], chdtrc(n, stat))
+    pval = cast(float | npt.NDArray[np.float64], chdtrc(n, stat))
     return HypothesisTestResult(stat, pval)
 
 
@@ -345,7 +345,7 @@ def _lm2_bounds_single(r: int, trim: tuple[float, float]) -> float:
             ) / (np.pi * 2 * r**2)
 
 _lm2_bounds = cast(
-    Callable[[IntVector, tuple[float, float]], npt.NDArray[np.float_]],
+    Callable[[IntVector, tuple[float, float]], npt.NDArray[np.float64]],
     np.vectorize(
         _lm2_bounds_single,
         otypes=[float],
@@ -361,7 +361,7 @@ def l_moment_bounds(
     /,
     trim: AnyTrim = ...,
     scale: float = ...,
-) -> npt.NDArray[np.float_]:
+) -> npt.NDArray[np.float64]:
     ...
 
 
@@ -380,7 +380,7 @@ def l_moment_bounds(
     /,
     trim: AnyTrim = (0, 0),
     scale: float = 1.0,
-) -> float | npt.NDArray[np.float_]:
+) -> float | npt.NDArray[np.float64]:
     r"""
     Returns the absolute upper bounds $L^{(s,t)}_r$ on L-moments
     $\lambda^{(s,t)}_r$, proportional to the scale $\sigma_X$ (standard
@@ -485,7 +485,7 @@ def l_ratio_bounds(
     trim: AnyTrim = ...,
     *,
     has_variance: bool = ...,
-) -> npt.NDArray[np.float_]:
+) -> npt.NDArray[np.float64]:
     ...
 
 
@@ -506,7 +506,7 @@ def l_ratio_bounds(
     trim: AnyTrim = (0, 0),
     *,
     has_variance: bool = True,
-) -> float | npt.NDArray[np.float_]:
+) -> float | npt.NDArray[np.float64]:
     r"""
     Returns the absolute upper bounds $T^{(s,t)}_r$ on L-moment ratio's
     $\tau^{(s,t)}_r = \lambda^{(s,t)}_r / \lambda^{(s,t)}_r$, for $r \ge 2$.
@@ -665,7 +665,7 @@ def rejection_point(
     def integrand(x: float) -> float:
         return max(abs(influence_fn(-x)), abs(influence_fn(x)))
 
-    def obj(r: npt.NDArray[np.float_]) -> float:
+    def obj(r: npt.NDArray[np.float64]) -> float:
         return quad(integrand, r[0], np.inf)[0]  # type: ignore
 
     res = cast(
@@ -731,7 +731,7 @@ def error_sensitivity(
     if np.isinf(influence_fn(a)) or np.isinf(influence_fn(b)):
         return np.inf
 
-    def obj(xs: npt.NDArray[np.float_]) -> float:
+    def obj(xs: npt.NDArray[np.float64]) -> float:
         return -abs(influence_fn(xs[0]))
 
     bounds = None if np.isneginf(a) and np.isposinf(b) else [(a, b)]
@@ -814,7 +814,7 @@ def shift_sensitivity(
 
     """
 
-    def obj(xs: npt.NDArray[np.float_]) -> float:
+    def obj(xs: npt.NDArray[np.float64]) -> float:
         x, y = xs
         if y == x:
             return 0

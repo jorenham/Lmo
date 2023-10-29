@@ -32,7 +32,7 @@ def sandwich(
     A: npt.NDArray[np.number[Any]],
     X: npt.NDArray[T | np.number[Any]],
     /,
-    dtype: np.dtype[T] | type[T] = np.float_,
+    dtype: np.dtype[T] | type[T] = np.float64,
 ) -> npt.NDArray[T]:
     """
     Calculates the "sandwich" matrix product (`A @ X @ A.T`) along the
@@ -137,8 +137,8 @@ def pascal(
 def ir_pascal(
     k: int,
     /,
-    dtype: np.dtype[T] | type[T] = np.float_,
-) -> npt.NDArray[np.float_]:
+    dtype: np.dtype[T] | type[T] = np.float64,
+) -> npt.NDArray[np.float64]:
     r"""
     Inverse regulatized lower-diagonal Pascal matrix,
     $\bar{L}_{ij} = L^{-1}_ij / i$.
@@ -354,7 +354,7 @@ def trim_matrix(
     r: int,
     /,
     trim: tuple[int, int],
-    dtype: np.dtype[T] | type[T] = np.float_,
+    dtype: np.dtype[T] | type[T] = np.float64,
 ) -> npt.NDArray[T]:
     r"""
     Linearization of the trimmed L-moment recurrence relations, following

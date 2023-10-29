@@ -33,7 +33,7 @@ def l_comoment(
     /,
     trim: AnyTrim = (0, 0),
     *,
-    dtype: np.dtype[T] | type[T] = np.float_,
+    dtype: np.dtype[T] | type[T] = np.float64,
     rowvar: bool = True,
     sort: SortKind | None = 'stable',
     cache: bool = False,
@@ -181,7 +181,7 @@ def l_coratio(
     /,
     trim: AnyTrim = (0, 0),
     *,
-    dtype: np.dtype[T] | type[T] = np.float_,
+    dtype: np.dtype[T] | type[T] = np.float64,
     **kwargs: Unpack[LComomentOptions],
 ) -> npt.NDArray[T]:
     r"""
@@ -208,7 +208,7 @@ def l_costats(
     /,
     trim: AnyTrim = (0, 0),
     *,
-    dtype: np.dtype[T] | type[T] = np.float_,
+    dtype: np.dtype[T] | type[T] = np.float64,
     **kwargs: Unpack[LComomentOptions],
 ) -> npt.NDArray[T]:
     """
@@ -230,7 +230,7 @@ def l_coloc(
     /,
     trim: AnyTrim = (0, 0),
     *,
-    dtype: np.dtype[T] | type[T] = np.float_,
+    dtype: np.dtype[T] | type[T] = np.float64,
     **kwargs: Unpack[LComomentOptions],
 ) -> npt.NDArray[T]:
     r"""
@@ -279,7 +279,7 @@ def l_coscale(
     /,
     trim: AnyTrim = (0, 0),
     *,
-    dtype: np.dtype[T] | type[T] = np.float_,
+    dtype: np.dtype[T] | type[T] = np.float64,
     **kwargs: Unpack[LComomentOptions],
 ) -> npt.NDArray[T]:
     r"""
@@ -315,7 +315,7 @@ def l_corr(
     /,
     trim: AnyTrim = (0, 0),
     *,
-    dtype: np.dtype[T] | type[T] = np.float_,
+    dtype: np.dtype[T] | type[T] = np.float64,
     **kwargs: Unpack[LComomentOptions],
 ) -> npt.NDArray[T]:
     r"""
@@ -361,7 +361,7 @@ def l_coskew(
     /,
     trim: AnyTrim = (0, 0),
     *,
-    dtype: np.dtype[T] | type[T] = np.float_,
+    dtype: np.dtype[T] | type[T] = np.float64,
     **kwargs: Unpack[LComomentOptions],
 ) -> npt.NDArray[T]:
     r"""
@@ -381,7 +381,7 @@ def l_cokurtosis(
     /,
     trim: AnyTrim = (0, 0),
     *,
-    dtype: np.dtype[T] | type[T] = np.float_,
+    dtype: np.dtype[T] | type[T] = np.float64,
     **kwargs: Unpack[LComomentOptions],
 ) -> npt.NDArray[T]:
     r"""

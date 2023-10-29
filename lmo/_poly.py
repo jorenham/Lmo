@@ -39,8 +39,8 @@ def eval_sh_jacobi(
     n: int,
     a: float,
     b: float,
-    x: npt.NDArray[np.float_],
-) -> npt.NDArray[np.float_]:
+    x: npt.NDArray[np.float64],
+) -> npt.NDArray[np.float64]:
     ...
 
 
@@ -48,8 +48,8 @@ def eval_sh_jacobi(
     n: int,
     a: float,
     b: float,
-    x: float | npt.NDArray[np.float_],
-) -> float | npt.NDArray[np.float_]:
+    x: float | npt.NDArray[np.float64],
+) -> float | npt.NDArray[np.float64]:
     """
     Fast evaluation of the n-th shifted Jacobi polynomial.
     Faster than pre-computing using np.Polynomial, and than
@@ -101,7 +101,7 @@ def eval_sh_jacobi(
     return scs.eval_jacobi(n, a, b, u)  # type: ignore
 
 
-def _jacobi_coefs(n: int, a: float, b: float) -> npt.NDArray[np.float_]:
+def _jacobi_coefs(n: int, a: float, b: float) -> npt.NDArray[np.float64]:
     p_n: np.poly1d
     p_n = scs.jacobi(n, a, b)  # type: ignore [reportUnknownMemberType]
     return p_n.coef[::-1]
