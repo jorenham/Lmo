@@ -32,13 +32,11 @@ __all__ = (
     'l_costats',
 
     'l_rv_nonparametric',
-    'l_rv_generic',
 )
 
 from typing import Final as _Final
 
 from ._distns import (
-    l_rv_generic,
     l_rv_nonparametric,
 )
 from ._lm import (
@@ -68,5 +66,10 @@ from ._lm_co import (
     l_costats,
 )
 from ._meta import get_version as _get_version
+
+# install contrib module extensions
+from .contrib import install as _install
+
+_install()
 
 __version__: _Final[str] = _get_version()

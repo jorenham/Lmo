@@ -47,7 +47,7 @@ from ._utils import clean_orders, clean_trim
 from .typing import AnyInt, AnyTrim, IntVector
 
 if TYPE_CHECKING:
-    from ._distns import l_rv_generic
+    from .contrib.scipy_stats import l_rv_generic
 
 T = TypeVar('T', bound=np.floating[Any])
 
@@ -600,7 +600,9 @@ def rejection_point(
     $$
 
     with a $\epsilon$ a small positive number, corresponding to the `tol` param
-    of e.g. `lmo.l_rv_generic.l_moment_influence`, which defaults to `1e-8`.
+    of e.g. [l_moment_influence
+    ][lmo.contrib.scipy_stats.l_rv_generic.l_moment_influence], which defaults
+    to `1e-8`.
 
     Examples:
         The untrimmed L-location isn't robust, e.g. with the standard normal
@@ -648,7 +650,8 @@ def rejection_point(
         A finite or infinite scalar.
 
     See Also:
-        - [`l_moment_influence`][lmo.l_rv_generic.l_moment_influence]
+        - [`lmo.contrib.scipy_stats.l_rv_generic.l_moment_influence`
+        ][lmo.contrib.scipy_stats.l_rv_generic.l_moment_influence]
         - [`error_sensitivity`][lmo.diagnostic.error_sensitivity]
 
     """
@@ -718,7 +721,8 @@ def error_sensitivity(
         Gross-error sensitivity $\gamma^*_{T|F}$ .
 
     See Also:
-        - [`l_moment_influence`][lmo.l_rv_generic.l_moment_influence]
+        - [`lmo.contrib.scipy_stats.l_rv_generic.l_moment_influence`
+        ][lmo.contrib.scipy_stats.l_rv_generic.l_moment_influence]
         - [`rejection_point`][lmo.diagnostic.rejection_point]
 
     """
@@ -800,7 +804,8 @@ def shift_sensitivity(
         Local-shift sensitivity $\lambda^*_{T|F}$ .
 
     See Also:
-        - [`l_moment_influence`][lmo.l_rv_generic.l_moment_influence]
+        - [`lmo.contrib.scipy_stats.l_rv_generic.l_moment_influence`
+        ][lmo.contrib.scipy_stats.l_rv_generic.l_moment_influence]
         - [`error_sensitivity`][lmo.diagnostic.error_sensitivity]
 
     References:
