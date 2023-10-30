@@ -19,8 +19,8 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        python-version: ['3.10', '3.11', '3.12']
-        pandas: [false, true]
+        python-version: ['3.10', '3.12']
+        pandas: ['without', 'with']
 
     runs-on: ${{ matrix.os }}
 
@@ -41,12 +41,12 @@ jobs:
         run: poetry check
 
       - name: install
-        run: poetry install --sync --without docs --without debug --without pandas
-        if: ${{ ! matrix.pandas }}
-
-      - name: install (with pandas)
-        run: poetry install --sync --without docs --without debug
-        if: ${{ matrix.pandas }}
+        run: >
+          poetry install
+          --sync
+          --without docs
+          --without debug
+          --${{ matrix.pandas }} pandas
 
       - name: codespell
         run: poetry run codespell .
