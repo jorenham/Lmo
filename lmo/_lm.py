@@ -332,7 +332,7 @@ def l_moment(
     dtype: np.dtype[T] | type[T] = np.float64,
     fweights: IntVector | None = None,
     aweights: npt.ArrayLike | None = None,
-    sort: SortKind | None = 'stable',
+    sort: SortKind | None = None,
     cache: bool = False,
 ) -> npt.NDArray[T] | T:
     r"""
@@ -1058,7 +1058,7 @@ def l_moment_influence(
     /,
     trim: AnyTrim = (0, 0),
     *,
-    sort: SortKind | None = 'stable',
+    sort: SortKind | None = None,
     tol: float = 1e-8,
 ) -> Callable[[V], V]:
     r"""
@@ -1124,7 +1124,7 @@ def l_ratio_influence(
     /,
     trim: AnyTrim = (0, 0),
     *,
-    sort: SortKind | None = 'stable',
+    sort: SortKind | None = None,
     tol: float = 1e-8,
 ) -> Callable[[V], V]:
     r"""
@@ -1151,7 +1151,7 @@ def l_ratio_influence(
             The (vectorized) empirical influence function.
 
     """
-    _x = np.sort(a, kind=sort)
+    _x = np.sort(a, kind=sort)  # type: ignore
     _r, _k = clean_order(r), clean_order(k)
     n = len(_x)
 

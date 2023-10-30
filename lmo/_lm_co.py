@@ -35,7 +35,7 @@ def l_comoment(
     *,
     dtype: np.dtype[T] | type[T] = np.float64,
     rowvar: bool = True,
-    sort: SortKind | None = 'stable',
+    sort: SortKind | None = None,
     cache: bool = False,
 ) -> npt.NDArray[T]:
     r"""

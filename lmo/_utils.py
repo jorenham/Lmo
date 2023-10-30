@@ -140,7 +140,7 @@ def ordered(
     *,
     fweights: IntVector | None = None,
     aweights: npt.ArrayLike | None = None,
-    sort: SortKind | None = 'stable',
+    sort: SortKind | None = None,
 ) -> npt.NDArray[np.floating[Any]]:
     """
     Calculate `n = len(x)` order stats of `x`, optionally weighted.
@@ -165,12 +165,12 @@ def ordered(
     _x = _clean_array(x)
 
     if aweights is None and y is None:
-        return np.sort(_x, axis=axis, kind=sort)
+        return np.sort(_x, axis=axis, kind=sort)  # type: ignore
     if y is not None:
         _y = _clean_array(y)
         i_k = np.argsort(_y, axis=axis if _y.ndim > 1 else -1, kind=sort)
     else:
-        i_k = np.argsort(_x, axis=axis, kind=sort)
+        i_k = np.argsort(_x, axis=axis, kind=sort)  # type: ignore
 
     def _sort_like(a: npt.NDArray[T]) -> npt.NDArray[T]:
         return (
