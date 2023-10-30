@@ -6,13 +6,13 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Robust statistics with generalized trimmed L-Moments.">
+        <meta name="description" content="Robust stats and fitting using (trimmed) L-Moments">
       
       
         <meta name="author" content="Joren Hammudoglu">
       
       
-        <link rel="canonical" href="https://jorenham.github.io/lmo/">
+        <link rel="canonical" href="https://jorenham.github.io/Lmo/">
       
       
       
@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.4">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.7">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.bd3936ea.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.4b4a2bd9.min.css">
       
         
         <link rel="stylesheet" href="assets/stylesheets/palette.356b1318.min.css">
@@ -164,13 +164,13 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/jorenham/lmo" title="Go to repository" class="md-source" data-md-component="source">
+        <a href="https://github.com/jorenham/Lmo/" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
   </div>
   <div class="md-source__repository">
-    jorenham/lmo
+    jorenham/Lmo
   </div>
 </a>
       </div>
@@ -209,13 +209,13 @@
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/jorenham/lmo" title="Go to repository" class="md-source" data-md-component="source">
+      <a href="https://github.com/jorenham/Lmo/" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
   </div>
   <div class="md-source__repository">
-    jorenham/lmo
+    jorenham/Lmo
   </div>
 </a>
     </div>
@@ -299,12 +299,25 @@
     Installation
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#dependencies" class="md-nav__link">
-    Dependencies
+    <nav class="md-nav" aria-label="Installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#required-dependencies" class="md-nav__link">
+    Required dependencies
   </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optional-dependencies" class="md-nav__link">
+    Optional dependencies
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -413,12 +426,25 @@
     Installation
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#dependencies" class="md-nav__link">
-    Dependencies
+    <nav class="md-nav" aria-label="Installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#required-dependencies" class="md-nav__link">
+    Required dependencies
   </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optional-dependencies" class="md-nav__link">
+    Optional dependencies
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -465,7 +491,7 @@ The distribution pathological?
 Uniform or multi-dimensional, Lmo can summarize it all with one quick glance!
 </code></pre></div>
 <p>Unlike the legacy <a href="https://wikipedia.org/wiki/Moment_(mathematics)">moments</a>,
-<a href="https://wikipedia.org/wiki/L-moment">L-moments</a> <strong>uniquely describe</strong> a 
+<a href="https://wikipedia.org/wiki/L-moment">L-moments</a> <strong>uniquely describe</strong> a
 probability distribution, and are more robust and efficient.
 The "L" stands for Linear; it is a linear combination of order statistics.
 So Lmo is as fast as sorting your samples (in terms of time-complexity).</p>
@@ -475,23 +501,24 @@ So Lmo is as fast as sorting your samples (in terms of time-complexity).</p>
   <code>scipy.stats</code> distribution.</li>
 <li>Full support for trimmed L-moment (TL-moments), e.g.
   <code>lmo.l_moment(..., trim=(1/137, 3.1416))</code>.</li>
-<li>Method of L-moments for robust distribution fitting.</li>
+<li>Generalized Method of L-moments: robust distribution fitting that beats MLE.</li>
 <li>Fast estimation of L-<em>co</em>moment matrices from your multidimensional data
   or multivariate distribution.</li>
 <li>Goodness-of-fit test, using L-moment or L-moment ratio's.</li>
-<li>Non-parametric estimation of continuous distributions 
+<li>Non-parametric estimation of continuous distributions
   with <code>lmo.l_rv_nonparametric</code></li>
 <li>Exact (co)variance structure of the sample- and population L-moments.</li>
 <li>Theoretical &amp; empirical influence functions of L-moments &amp; L-ratio's.</li>
-<li>Complete <a href="https://jorenham.github.io/lmo/">docs</a>, including detailed API 
+<li>Complete <a href="https://jorenham.github.io/lmo/">docs</a>, including detailed API
 reference with usage examples and with mathematical <span class="arithmatex">\(\TeX\)</span> definitions.</li>
 <li>Clean Pythonic syntax for ease of use.</li>
 <li>Vectorized functions for very fast fitting.</li>
 <li>Fully typed, tested, and tickled.</li>
+<li>Optional Pandas integration.</li>
 </ul>
 <h2 id="quick-example">Quick example</h2>
-<p>Even if your data is pathological like 
-<a href="https://wikipedia.org/wiki/Cauchy_distribution">Cauchy</a>, and the L-moments 
+<p>Even if your data is pathological like
+<a href="https://wikipedia.org/wiki/Cauchy_distribution">Cauchy</a>, and the L-moments
 are not defined, the trimmed L-moments (TL-moments) can be used instead.
 Let's calculate the TL-location and TL-scale of a small amount of samples:</p>
 <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -518,26 +545,61 @@ the API reference.</p>
 <p>Lmo is on <a href="https://pypi.org/project/lmo/">PyPI</a>, so you can do something like:</p>
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>lmo
 </code></pre></div>
-<h2 id="dependencies">Dependencies</h2>
-<ul>
-<li><code>python &gt;= 3.10</code></li>
-<li><code>numpy &gt;= 1.22</code></li>
-<li><code>scipy &gt;= 1.9</code></li>
-</ul>
+<h3 id="required-dependencies">Required dependencies</h3>
+<p>These are automatically installed by your package manager, alongside <code>lmo</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Package</th>
+<th>Minimum version</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://github.com/python/cpython">Python</a></td>
+<td><code>3.10</code></td>
+</tr>
+<tr>
+<td><a href="https://github.com/numpy/numpy">NumPy</a></td>
+<td><code>1.22</code></td>
+</tr>
+<tr>
+<td><a href="https://github.com/scipy/scipy">SciPy</a></td>
+<td><code>1.9</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="optional-dependencies">Optional dependencies</h3>
+<table>
+<thead>
+<tr>
+<th>Package</th>
+<th>Minimum version</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://github.com/pandas-dev/pandas">Pandas</a></td>
+<td><code>1.4</code></td>
+<td>Lmo extends <code>pd.Series</code> and <code>pd.DataFrame</code> with convenient methods, e.g. <code>df.l_scale(trim=1)</code>. Install as <code>pip install lmo[pandas]</code> to ensure compatibility.</td>
+</tr>
+</tbody>
+</table>
 <h2 id="foundational-literature">Foundational Literature</h2>
 <ul>
-<li><a href="https://doi.org/10.1111/j.2517-6161.1990.tb01775.x"><em>J.R.M. Hosking</em> (1990) &ndash; L-moments: Analysis and Estimation of 
+<li><a href="https://doi.org/10.1111/j.2517-6161.1990.tb01775.x"><em>J.R.M. Hosking</em> (1990) &ndash; L-moments: Analysis and Estimation of
   Distributions using Linear Combinations of Order Statistics
   </a></li>
 <li><a href="https://doi.org/10.1016/S0167-9473(02)00250-5"><em>E.A.H. Elamir &amp; A.H. Seheult</em> (2003) &ndash; Trimmed L-moments
   </a></li>
-<li><a href="https://doi.org/10.1016/S0378-3758(03)00213-1"><em>E.A.H. Elamir &amp; A.H. Seheult</em> (2004) &ndash; Exact variance structure of 
+<li><a href="https://doi.org/10.1016/S0378-3758(03)00213-1"><em>E.A.H. Elamir &amp; A.H. Seheult</em> (2004) &ndash; Exact variance structure of
   sample L-moments</a></li>
-<li><a href="https://doi.org/10.1016/j.jspi.2006.12.002"><em>J.R.M. Hosking</em> (2007) &ndash; Some theory and practical uses of trimmed 
+<li><a href="https://doi.org/10.1016/j.jspi.2006.12.002"><em>J.R.M. Hosking</em> (2007) &ndash; Some theory and practical uses of trimmed
   L-moments</a></li>
-<li><a href="https://doi.org/10.1016/j.jmva.2007.01.008"><em>R. Serﬂing &amp; P. Xiao</em> (2007) &ndash; A contribution to multivariate 
+<li><a href="https://doi.org/10.1016/j.jmva.2007.01.008"><em>R. Serﬂing &amp; P. Xiao</em> (2007) &ndash; A contribution to multivariate
   L-moments: L-comoment matrices</a></li>
-<li><a href="https://hdl.handle.net/2346/ETD-TTU-2011-05-1319"><em>W.H. Asquith</em> (2011) &ndash; Univariate Distributional Analysis with 
+<li><a href="https://hdl.handle.net/2346/ETD-TTU-2011-05-1319"><em>W.H. Asquith</em> (2011) &ndash; Univariate Distributional Analysis with
   L-moment Statistics</a></li>
 </ul>
 <!-- END INCLUDE -->
@@ -597,7 +659,7 @@ the API reference.</p>
     <script id="__config" type="application/json">{"base": ".", "features": [], "search": "assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="assets/javascripts/bundle.94c44541.min.js"></script>
+      <script src="assets/javascripts/bundle.aecac24b.min.js"></script>
       
         <script src="scripts/mathjax.js"></script>
       

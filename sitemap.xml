@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-         <loc>https://jorenham.github.io/lmo/</loc>
-         <lastmod>2023-10-08</lastmod>
+         <loc>https://jorenham.github.io/Lmo/</loc>
+         <lastmod>2023-10-30</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://jorenham.github.io/lmo/api/</loc>
-         <lastmod>2023-10-08</lastmod>
+         <loc>https://jorenham.github.io/Lmo/api/</loc>
+         <lastmod>2023-10-30</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://jorenham.github.io/lmo/contributing/</loc>
-         <lastmod>2023-10-08</lastmod>
+         <loc>https://jorenham.github.io/Lmo/contributing/</loc>
+         <lastmod>2023-10-30</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>
