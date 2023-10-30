@@ -13,13 +13,17 @@ concurrency:
 
 jobs:
   ci:
-    runs-on: ubuntu-latest
     timeout-minutes: 5
 
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.10', '3.11', '3.12']
+        # os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
+        python-version: ['3.10', '3.12']
+        pandas: ['without', 'with']
+
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: checkout
@@ -38,7 +42,12 @@ jobs:
         run: poetry check
 
       - name: install
-        run: poetry install --sync --without docs --without debug
+        run: >
+          poetry install
+          --sync
+          --without docs
+          --without debug
+          --${{ matrix.pandas }} pandas
 
       - name: codespell
         run: poetry run codespell .

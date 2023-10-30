@@ -1,10 +1,10 @@
 site_name: Lmo
-site_description: Robust statistics with generalized trimmed L-Moments.
+site_description: Robust stats and fitting using (trimmed) L-Moments
 site_author: Joren Hammudoglu
-site_url: https://jorenham.github.io/lmo
+site_url: https://jorenham.github.io/Lmo/
 
-repo_name: jorenham/lmo
-repo_url: https://github.com/jorenham/lmo
+repo_name: jorenham/Lmo
+repo_url: https://github.com/jorenham/Lmo/
 
 strict: true
 
@@ -41,10 +41,11 @@ plugins:
           import:
             - url: https://numpy.org/doc/stable/objects.inv
             - url: https://docs.scipy.org/doc/scipy/objects.inv
+            - url: https://pandas.pydata.org/docs/objects.inv
           options:
             annotations_path: 'source'
             docstring_section_style: 'spacy'
-            line_length: 80
+            line_length: 79
             load_external_modules: true
             members_order: source
             merge_init_into_class: true

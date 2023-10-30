@@ -23,7 +23,7 @@ Uniform or multi-dimensional, Lmo can summarize it all with one quick glance!
 ~~~
 
 Unlike the legacy [moments](https://wikipedia.org/wiki/Moment_(mathematics)),
-[L-moments](https://wikipedia.org/wiki/L-moment) **uniquely describe** a 
+[L-moments](https://wikipedia.org/wiki/L-moment) **uniquely describe** a
 probability distribution, and are more robust and efficient.
 The "L" stands for Linear; it is a linear combination of order statistics.
 So Lmo is as fast as sorting your samples (in terms of time-complexity).
@@ -38,20 +38,21 @@ So Lmo is as fast as sorting your samples (in terms of time-complexity).
 - Fast estimation of L-*co*moment matrices from your multidimensional data
   or multivariate distribution.
 - Goodness-of-fit test, using L-moment or L-moment ratio's.
-- Non-parametric estimation of continuous distributions 
+- Non-parametric estimation of continuous distributions
   with `lmo.l_rv_nonparametric`
 - Exact (co)variance structure of the sample- and population L-moments.
 - Theoretical & empirical influence functions of L-moments & L-ratio's.
-- Complete [docs](https://jorenham.github.io/lmo/), including detailed API 
+- Complete [docs](https://jorenham.github.io/lmo/), including detailed API
 reference with usage examples and with mathematical $\TeX$ definitions.
 - Clean Pythonic syntax for ease of use.
 - Vectorized functions for very fast fitting.
 - Fully typed, tested, and tickled.
+- Optional Pandas integration.
 
 ## Quick example
 
-Even if your data is pathological like 
-[Cauchy](https://wikipedia.org/wiki/Cauchy_distribution), and the L-moments 
+Even if your data is pathological like
+[Cauchy](https://wikipedia.org/wiki/Cauchy_distribution), and the L-moments
 are not defined, the trimmed L-moments (TL-moments) can be used instead.
 Let's calculate the TL-location and TL-scale of a small amount of samples:
 
@@ -77,12 +78,10 @@ array([0.        , 0.69782723])
 See the [documentation](https://jorenham.github.io/lmo/) for more examples and
 the API reference.
 
-
 ## Roadmap
 
 - Automatic trim-length selection.
 - Plotting utilities (deps optional), e.g. for L-moment ratio diagrams.
-
 
 ## Installation
 
@@ -92,28 +91,36 @@ Lmo is on [PyPI](https://pypi.org/project/lmo/), so you can do something like:
 pip install lmo
 ```
 
-## Dependencies
+### Required dependencies
 
-- `python >= 3.10`
-- `numpy >= 1.22`
-- `scipy >= 1.9`
+These are automatically installed by your package manager, alongside `lmo`.
 
+| Package | Minimum version |
+| --- | --- |
+| [Python](https://github.com/python/cpython) | `3.10` |
+| [NumPy](https://github.com/numpy/numpy) | `1.22` |
+| [SciPy](https://github.com/scipy/scipy) | `1.9` |
+
+### Optional dependencies
+
+| Package | Minimum version | Notes
+| --- | --- | --- |
+| [Pandas](https://github.com/pandas-dev/pandas) | `1.4` | Lmo extends `pd.Series` and `pd.DataFrame` with convenient methods, e.g. `df.l_scale(trim=1)`. Install as `pip install lmo[pandas]` to ensure compatibility. |
 
 ## Foundational Literature
 
-- [*J.R.M. Hosking* (1990) &ndash; L-moments: Analysis and Estimation of 
+- [*J.R.M. Hosking* (1990) &ndash; L-moments: Analysis and Estimation of
   Distributions using Linear Combinations of Order Statistics
   ](https://doi.org/10.1111/j.2517-6161.1990.tb01775.x)
 - [*E.A.H. Elamir & A.H. Seheult* (2003) &ndash; Trimmed L-moments
   ](https://doi.org/10.1016/S0167-9473(02)00250-5)
-- [*E.A.H. Elamir & A.H. Seheult* (2004) &ndash; Exact variance structure of 
+- [*E.A.H. Elamir & A.H. Seheult* (2004) &ndash; Exact variance structure of
   sample L-moments](https://doi.org/10.1016/S0378-3758(03)00213-1)
-- [*J.R.M. Hosking* (2007) &ndash; Some theory and practical uses of trimmed 
+- [*J.R.M. Hosking* (2007) &ndash; Some theory and practical uses of trimmed
   L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
-- [*R. Serﬂing & P. Xiao* (2007) &ndash; A contribution to multivariate 
+- [*R. Serﬂing & P. Xiao* (2007) &ndash; A contribution to multivariate
   L-moments: L-comoment matrices](https://doi.org/10.1016/j.jmva.2007.01.008)
-- [*W.H. Asquith* (2011) &ndash; Univariate Distributional Analysis with 
+- [*W.H. Asquith* (2011) &ndash; Univariate Distributional Analysis with
   L-moment Statistics](https://hdl.handle.net/2346/ETD-TTU-2011-05-1319)
-
 
 <!--overview-end-->

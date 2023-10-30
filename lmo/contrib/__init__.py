@@ -2,7 +2,10 @@
 
 __all__ = ('install',)
 
-from . import scipy_stats
+try:
+    import pandas as pd  # type: ignore
+except ImportError:
+    pd = None
 
 
 def install():
@@ -12,4 +15,9 @@ def install():
     There should be no need to call this manually: this is done automatically
     when `lmo` is imported.
     """
-    scipy_stats.install()
+    from .scipy_stats import install as install_scipy_stats
+    install_scipy_stats()
+
+    if pd is not None:
+        from .pandas import install as install_pandas
+        install_pandas()

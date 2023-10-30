@@ -19,13 +19,23 @@
       filters: ["^l_co"]
       heading_level: 4
 
-### Integration with `scipy.stats` distributions
+### `scipy.stats` extensions
 
 ::: lmo.contrib.scipy_stats
     options:
       show_bases: false
       members:
       - l_rv_generic
+      heading_level: 4
+
+### `pandas` extensions (optional)
+
+::: lmo.contrib.pandas
+    options:
+      show_bases: false
+      members:
+      - Series
+      - DataFrame
       heading_level: 4
 
 ### Distributions
