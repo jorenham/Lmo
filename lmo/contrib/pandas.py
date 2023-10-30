@@ -62,12 +62,14 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from lmo import (
-    l_comoment as _l_comoment,
-    l_coratio as _l_coratio,
+from lmo._lm import (
     l_moment as _l_moment,
     l_ratio as _l_ratio,
     l_stats as _l_stats,
+)
+from lmo._lm_co import (
+    l_comoment as _l_comoment,
+    l_coratio as _l_coratio,
 )
 from lmo._utils import broadstack, clean_trim, moments_to_ratio
 from lmo.typing import (
