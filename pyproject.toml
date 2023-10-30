@@ -68,10 +68,13 @@ pandas = ["pandas"]
 minversion = "7.0"
 addopts = [
     "-ra",
+    "--exitfirst",
+    "--import-mode=importlib",
     "--showlocals",
     "--strict-markers",
     "--strict-config",
     "--doctest-modules",
+    "--doctest-ignore-import-errors",
 ]
 doctest_optionflags = [
     "NORMALIZE_WHITESPACE",
@@ -79,7 +82,11 @@ doctest_optionflags = [
     "ELLIPSIS",
 ]
 xfail_strict = true
-filterwarnings = ["error"]
+filterwarnings = [
+    "error",
+    # https://github.com/dateutil/dateutil/issues/1314
+    "ignore::DeprecationWarning:dateutil",
+]
 log_cli_level = "info"
 testpaths = ["tests", "lmo"]
 
@@ -99,6 +106,10 @@ exclude = [
     "docs",
     "site",
     "tests",
+]
+ignore = [
+    # TODO: figure out how to do this conditionally
+    "lmo/contrib/pandas.py",
 ]
 venv = ".venv"
 pythonVersion = "3.10"
