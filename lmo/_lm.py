@@ -70,7 +70,7 @@ def _l_weights_pwm(
     s, t = trim
     r0 = r + s + t
 
-    p0 = sh_legendre(r0, dtype=np.int_ if r0 < 29 else dtype)
+    p0 = sh_legendre(r0, dtype=np.int64 if r0 < 29 else dtype)
     w0 = p0 @ pwm_beta.weights(r0, n, dtype=dtype)  # type: ignore
     out = trim_matrix(r, trim, dtype=dtype) @ w0 if s or t else w0
     return cast(npt.NDArray[T], out)

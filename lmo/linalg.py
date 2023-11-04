@@ -15,10 +15,10 @@ import sys
 from math import comb, lgamma
 from typing import Any, TypeVar, cast
 
-if sys.version_info >= (3, 11):
-    from typing import assert_never
-else:
+if sys.version_info < (3, 11):
     from typing_extensions import assert_never
+else:
+    from typing import assert_never
 
 import numpy as np
 import numpy.typing as npt
@@ -57,7 +57,7 @@ def sandwich(
 def pascal(
     k: int,
     /,
-    dtype: np.dtype[T] | type[T] = np.int_,
+    dtype: np.dtype[T] | type[T] = np.int64,
     *,
     inv: bool = False,
 ) -> npt.NDArray[T]:
@@ -102,7 +102,7 @@ def pascal(
                [-1,  1,  0,  0],
                [ 1, -2,  1,  0],
                [-1,  3, -3,  1]])
-        >>> np.rint(np.linalg.inv(pascal(4))).astype(np.int_)
+        >>> np.rint(np.linalg.inv(pascal(4))).astype(int)
         array([[ 1,  0,  0,  0],
                [-1,  1,  0,  0],
                [ 1, -2,  1,  0],
@@ -127,7 +127,7 @@ def pascal(
         # 1337 matrix inversion
         out[1::2, 0] = -1
 
-    jj = np.arange(1, k, dtype=np.int_)
+    jj = np.arange(1, k)
     for i in jj:
         out[i, 1 : i + 1] = i * out[i - 1, :i] // jj[:i]
 
@@ -147,57 +147,12 @@ def ir_pascal(
     """
     # use native ints to reduce the effect of over-/underflows
     dtype_native = k > 62
-    _dtype = np.object_ if dtype_native else np.int_
+    _dtype = np.object_ if dtype_native else np.int64
 
     p = pascal(k, dtype=_dtype, inv=True)
     out = p / np.arange(1, k + 1, dtype=_dtype)[:, None]  # type: ignore
 
     return np.asarray(out, dtype)
-
-
-def sh_legendre(
-    k: int,
-    /,
-    dtype: np.dtype[T] | type[T] = np.int_,
-) -> npt.NDArray[T]:
-    r"""
-    Shifted Legendre polynomial coefficient matrix $\widetilde{P}$ of
-    shape `(k, k)`.
-
-    The $j$-th coefficient of the shifted Legendre polynomial of degree $k$ is
-    at $(k, j)$:
-
-    $$
-    \widetilde{p}_{k, j} = (-1)^{k - j} \binom{k}{j} \binom{k + j}{j}
-    $$
-
-    Useful for transforming probability-weighted moments into L-moments.
-
-    Args:
-        k: The size of the matrix, and the max degree of the shifted Legendre
-            polynomial.
-        dtype:
-            Desired output data type, e.g, `numpy.float64`. Default is
-            `numpy.int64`.
-
-    Returns:
-        P: 2-D array of the lower-triangular square matrix of size $k^2$`.
-
-    Examples:
-        Calculate $\widetilde{P}_{4 \times 4}$:
-
-        >>> from lmo.linalg import sh_legendre
-        >>> sh_legendre(4)
-        array([[  1,   0,   0,   0],
-               [ -1,   2,   0,   0],
-               [  1,  -6,   6,   0],
-               [ -1,  12, -30,  20]])
-
-    See Also:
-        - https://wikipedia.org/wiki/Legendre_polynomials
-        - https://wikipedia.org/wiki/Pascal_matrix
-    """
-    return _sh_jacobi_i(k, 0, 0, dtype=dtype)
 
 
 def _sh_jacobi_i(
@@ -245,13 +200,73 @@ def _sh_jacobi_f(
     return out
 
 
+def sh_legendre(
+    k: int,
+    /,
+    dtype: np.dtype[T] | type[T] = np.int64,
+) -> npt.NDArray[T]:
+    r"""
+    Shifted Legendre polynomial coefficient matrix $\widetilde{P}$ of
+    shape `(k, k)`.
+
+    The $j$-th coefficient of the shifted Legendre polynomial of degree $k$ is
+    at $(k, j)$:
+
+    $$
+    \widetilde{p}_{k, j} = (-1)^{k - j} \binom{k}{j} \binom{k + j}{j}
+    $$
+
+    Useful for transforming probability-weighted moments into L-moments.
+
+    Danger:
+        For $k \ge 29$, **all** 64-bits dtypes (default is int64) will
+        overflow, which results in either an `OverflowError` (if you're
+        lucky), or will give incorrect results.
+        Similarly, all 32-bits dtypes (e.g. `np.int_` on Windows) already
+        overflow when $k \ge 16$.
+
+        **This is not explicitly checked** -- so be sure to select the right
+        `dtype` depending on `k`.
+
+        One option is to use `dtype=np.object_`, which will use
+        Python-native `int`. However, this is a lot slower, and is likely to
+        fail. For instance, when multiplied together with some `float64`
+        array, a `TypeError` is raised.
+
+    Args:
+        k: The size of the matrix, and the max degree of the shifted Legendre
+            polynomial.
+        dtype:
+            Desired output data type, e.g, `numpy.float64`. Must be signed.
+            The default is [`numpy.int64`][numpy.int64].
+
+    Returns:
+        P: 2-D array of the lower-triangular square matrix of size $k^2$`.
+
+    Examples:
+        Calculate $\widetilde{P}_{4 \times 4}$:
+
+        >>> from lmo.linalg import sh_legendre
+        >>> sh_legendre(4)
+        array([[  1,   0,   0,   0],
+               [ -1,   2,   0,   0],
+               [  1,  -6,   6,   0],
+               [ -1,  12, -30,  20]])
+
+    See Also:
+        - https://wikipedia.org/wiki/Legendre_polynomials
+        - https://wikipedia.org/wiki/Pascal_matrix
+    """
+    return _sh_jacobi_i(k, 0, 0, dtype=dtype)
+
+
 def sh_jacobi(
     k: AnyInt,
     a: AnyFloat,
     b: AnyFloat,
     /,
     dtype: np.dtype[T] | type[T] | None = None,
-) -> npt.NDArray[T | np.int_]:
+) -> npt.NDArray[T | np.int64]:
     r"""
     Shifted Jacobi polynomial coefficient matrix $\widetilde{P}^{(a,b)}$ of
     shape `(k, k)`.
@@ -409,7 +424,7 @@ def trim_matrix(
     if r == 0:
         return np.empty((0, 0), dtype=dtype)
 
-    rr = np.arange(1, r + 1, dtype=np.int_)
+    rr = np.arange(1, r + 1)
 
     t1, t2 = trim
     nc = t1 + t2 - 1 + 2 * rr

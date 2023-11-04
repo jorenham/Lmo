@@ -127,7 +127,7 @@ def cov(
     #     for j in range(i + 1, n)
     # ) / n^(k+l+2)
     for k in range(r):
-        j_k = np.arange(-k, n - k - 1)  # pyright: ignore
+        j_k = np.arange(-k, n - k - 1)
         v_ki = np.empty(x.shape, dtype=dtype)
         for i in range(n):
             # sum(
@@ -148,8 +148,8 @@ def cov(
     #     for j in range(i + 1, n)
     # ) / n^(k+l+2)
     for k, m in zip(*np.tril_indices(r, -1), strict=True):
-        j_k: npt.NDArray[np.int_] = np.arange(-k, n - k - 1)  # pyright: ignore
-        j_l: npt.NDArray[np.int_] = np.arange(-m, n - m - 1)  # pyright: ignore
+        j_k = np.arange(-k, n - k - 1, dtype=int)
+        j_l = np.arange(-m, n - m - 1, dtype=int)
 
         v_ki = np.empty(x.shape, dtype=dtype)
         for i in range(n):

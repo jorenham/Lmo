@@ -51,7 +51,7 @@ def as_float_array(
 def broadstack(
     r: AnyInt | IntVector,
     s: AnyInt | IntVector,
-) -> npt.NDArray[np.int_]:
+) -> npt.NDArray[np.int64]:
     return np.stack(np.broadcast_arrays(np.asarray(r), np.asarray(s)))
 
 
@@ -210,8 +210,8 @@ def clean_orders(
     /,
     name: str = 'r',
     rmin: int = 0,
-) -> npt.NDArray[np.int_]:
-    _r = np.asarray_chkfinite(r, np.int_)
+) -> npt.NDArray[np.int64]:
+    _r = np.asarray_chkfinite(r, np.int64)
 
     if np.any(invalid := _r < rmin):
         i = np.argmax(invalid)
@@ -308,7 +308,7 @@ def moments_to_stats_cov(
 def l_stats_orders(
     num: int,
     /,
-) -> tuple[npt.NDArray[np.int_], npt.NDArray[np.int_]]:
+) -> tuple[npt.NDArray[np.int64], npt.NDArray[np.int64]]:
     return (
         np.arange(1, num + 1),
         np.array([0] * min(2, num) + [2] * (num - 2)),
