@@ -28,7 +28,7 @@ theme:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/jorenham
+      link: https://github.com/jorenham/
 
 plugins:
   - include-markdown
@@ -58,13 +58,18 @@ plugins:
             signature_crossrefs: true
 
 markdown_extensions:
+  # https://python-markdown.github.io/extensions/
   - admonition
-  - footnotes
-  - pymdownx.highlight
-  - pymdownx.superfences
-  - pymdownx.betterem
+  - extra
+  - sane_lists
+  - smarty
+
+  # https://facelessuser.github.io/pymdown-extensions/
   - pymdownx.arithmatex:
       generic: true
+  - pymdownx.betterem
+  - pymdownx.highlight
+  - pymdownx.superfences
   - pymdownx.tasklist:
       custom_checkbox: true
 
