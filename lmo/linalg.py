@@ -247,7 +247,7 @@ def sh_legendre(
         Calculate $\widetilde{P}_{4 \times 4}$:
 
         >>> from lmo.linalg import sh_legendre
-        >>> sh_legendre(4)
+        >>> sh_legendre(4, dtype=int)
         array([[  1,   0,   0,   0],
                [ -1,   2,   0,   0],
                [  1,  -6,   6,   0],
@@ -296,7 +296,7 @@ def sh_jacobi(
         Calculate $\widetilde{P}^{(1, 1)}_{4 \times 4}$:
 
         >>> from lmo.linalg import sh_jacobi
-        >>> sh_jacobi(4, 1, 1)
+        >>> sh_jacobi(4, 1, 1, dtype=int)
         array([[  1,   0,   0,   0],
                [ -2,   4,   0,   0],
                [  3, -15,  15,   0],
@@ -349,19 +349,26 @@ def succession_matrix(c: npt.NDArray[T], /) -> npt.NDArray[T]:
 
     Examples:
         >>> from lmo.linalg import succession_matrix
-        >>> succession_matrix(np.arange(1, 9).reshape(4, 2))
+        >>> c = np.arange(1, 9).reshape(4, 2)
+        >>> c
+        array([[1, 2],
+               [3, 4],
+               [5, 6],
+               [7, 8]])
+        >>> succession_matrix(c)
         array([[1, 2, 0, 0, 0],
                [0, 3, 4, 0, 0],
                [0, 0, 5, 6, 0],
                [0, 0, 0, 7, 8]])
     """
-    n, k = np.atleast_1d(c).shape
-    i = np.linspace(0, n - 1, n, dtype=np.int64)
+    _c = np.atleast_2d(c)
 
-    out = np.zeros((n, n + k - 1), dtype=c.dtype)
+    n, k = _c.shape
+    i = np.arange(n)
+
+    out = np.zeros((n, n + k - 1), dtype=_c.dtype)
     for d in range(k):
-        out[i, i + d] = c[:, d]
-
+        out[i, i + d] = _c[:, d]
     return out
 
 
