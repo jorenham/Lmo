@@ -111,7 +111,7 @@ def pascal(
         Now, let's compare with scipy:
 
         >>> from scipy.linalg import invpascal
-        >>> invpascal(4, kind='lower')
+        >>> invpascal(4, kind='lower').astype(int)
         array([[ 1,  0,  0,  0],
                [-1,  1,  0,  0],
                [ 1, -2,  1,  0],
