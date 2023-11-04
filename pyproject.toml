@@ -218,5 +218,5 @@ known-third-party = ["numpy", "pandas", "scipy"]
 
 
 [tool.codespell]
-skip = '*.lock,.venv,.vscode,dist,docs,site'
+skip = './dist,./site,.*.lock,*.pyc,*.js,*.css,*.svg,*.png,*.ico,*.ipynb'
 context = 2
