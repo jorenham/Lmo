@@ -49,7 +49,7 @@ def _check_lmoments(l_r: npt.NDArray[np.floating[Any]], s: float, t: float):
     if n == 2:
         return
 
-    r = np.arange(1, n + 1, dtype=np.int_)
+    r = np.arange(1, n + 1)
     t_r = l_r[2:] / l_r[1]
     t_r_max = l_ratio_bounds(r[2:], (s, t))
     if np.any(rs0_oob := np.abs(t_r) > t_r_max):
