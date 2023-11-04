@@ -92,12 +92,12 @@ def pascal(
     Examples:
         >>> import numpy as np
         >>> from lmo.linalg import pascal
-        >>> pascal(4)
+        >>> pascal(4, dtype=np.int_)
         array([[1, 0, 0, 0],
                [1, 1, 0, 0],
                [1, 2, 1, 0],
                [1, 3, 3, 1]])
-        >>> pascal(4, inv=True)
+        >>> pascal(4, dtype=np.int_, inv=True)
         array([[ 1,  0,  0,  0],
                [-1,  1,  0,  0],
                [ 1, -2,  1,  0],
