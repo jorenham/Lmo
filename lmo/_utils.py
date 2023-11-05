@@ -15,7 +15,7 @@ __all__ = (
     'l_stats_orders',
 )
 
-from typing import Any, SupportsIndex, TypeVar
+from typing import Any, SupportsIndex, TypeVar, cast
 
 import numpy as np
 import numpy.typing as npt
@@ -45,7 +45,7 @@ def as_float_array(
     out = x if isinstance(x.dtype.type, np.floating) else x.astype(np.float64)
 
     # the `_[()]` ensures that 0-d arrays become scalars
-    return (out.ravel() if flat and out.ndim != 1 else out)[()]
+    return (out.reshape(-1) if flat and out.ndim != 1 else out)[()]
 
 
 def broadstack(
@@ -131,7 +131,20 @@ def _apply_aweights(
     return np.swapaxes(out, -1, axis) if swap_axes else out
 
 
-def ordered(
+def _sort_like(
+    a: npt.NDArray[T],
+    i: npt.NDArray[np.int_],
+    /,
+    axis: int | None,
+) -> npt.NDArray[T]:
+    return (
+        np.take(a, i, axis=None if a.ndim == i.ndim else axis)
+        if min(a.ndim, i.ndim) <= 1
+        else np.take_along_axis(a, i, axis)
+    )
+
+
+def ordered(  # noqa: C901
     x: npt.ArrayLike,
     y: npt.ArrayLike | None = None,
     /,
@@ -146,50 +159,60 @@ def ordered(
     Calculate `n = len(x)` order stats of `x`, optionally weighted.
     If `y` is provided, the order of `y` is used instead.
     """
+    _x = _z = np.asanyarray(x, dtype=dtype)
+
+    # ravel/flatten, without copying
+    if axis is None:
+        _x = _x.reshape(-1)
+
+    # figure out the ordering
+    if y is not None:
+        _y = np.asanyarray(y)
+        if axis is None:
+            _y = _y.reshape(-1)
+
+        #  sort first by y, then by x (faster than lexsort)
+        if _y.ndim == _x.ndim:
+            _z = _y + 1j * _x
+        else:
+            assert axis is not None
+            _z = cast(
+                npt.NDArray[Any],
+                np.apply_along_axis(np.add, axis, 1j * _x, _y),  # type: ignore
+            )
+
+    # apply the ordering
+    i_kk = np.argsort(_z, axis=axis, kind=sort)
+    x_kk = _sort_like(_x, i_kk, axis=axis)
+
+    # prepare observation weights
+    w_kk = None
+    if aweights is not None:
+        w = np.asanyarray(aweights)
+        w_kk = _sort_like(w, i_kk, axis=axis)
+
+    # apply the frequency weights to x, and (optionally) to aweights
     if fweights is not None:
+        r = np.asanyarray(fweights, np.int64)
+        r_kk = _sort_like(r, i_kk, axis=axis)
+
         # avoid unnecessary repeats by normalizing by the GCD
-        r = np.asarray(fweights)
-        # noinspection PyUnresolvedReferences
-        if (gcd := np.gcd.reduce(r)) <= 0:
+        if (gcd := np.gcd.reduce(r_kk)) <= 0:
             msg = 'fweights must be non-negative and have a positive sum'
             raise ValueError(msg)
+        if gcd > 1:
+            r_kk //= gcd
 
-        r = r // gcd if gcd > 1 else r
-    else:
-        r = None
+        if w_kk is not None:
+            w_kk = np.repeat(w_kk, r_kk, axis=axis)
 
-    def _clean_array(a: npt.ArrayLike) -> npt.NDArray[np.floating[Any]]:
-        out = as_float_array(a, dtype=dtype, flat=axis is None)
-        return out if r is None else np.repeat(out, r, axis=axis)
+        x_kk = np.repeat(x_kk, r_kk, axis=axis)
 
-    _x = _clean_array(x)
+    # optionally, apply the observation weights
+    if w_kk is not None:
+        x_kk = _apply_aweights(x_kk, w_kk, axis=axis or 0)
 
-    if aweights is None and y is None:
-        return np.sort(_x, axis=axis, kind=sort)  # type: ignore
-    if y is not None:
-        _y = _clean_array(y)
-        i_k = np.argsort(_y, axis=axis if _y.ndim > 1 else -1, kind=sort)
-    else:
-        i_k = np.argsort(_x, axis=axis, kind=sort)  # type: ignore
-
-    def _sort_like(a: npt.NDArray[T]) -> npt.NDArray[T]:
-        return (
-            np.take(  # pyright: ignore [reportUnknownMemberType]
-                a,
-                i_k,
-                axis=None if a.ndim == i_k.ndim else axis,
-            )
-            if min(a.ndim, i_k.ndim) <= 1
-            else np.take_along_axis(a, i_k, axis)
-        )
-
-    x_k = _sort_like(_x)
-
-    if aweights is None:
-        return x_k
-
-    w_k = _sort_like(_clean_array(aweights))
-    return _apply_aweights(x_k, w_k, axis=axis or 0)
+    return x_kk
 
 
 def clean_order(
