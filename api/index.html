@@ -22,7 +22,7 @@
       
       
       <link rel="icon" href="../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.7">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.8">
     
     
       
@@ -2354,6 +2354,8 @@
 
 
   <div class="doc doc-contents first">
+  
+      <p>Lmo: Robust statistics with trimmed L-moments and L-comoments.</p>
 
   
 
@@ -2814,7 +2816,7 @@ TL(1)-scale, see Elamir &amp; Seheult (2003).</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lmo</span><span class="o">.</span><span class="n">l_moment</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
 <span class="go">array([0.08142405, 0.68884917])</span>
 </code></pre></div>
-    <p>The L-moment estimates seem to make sense. Let's check their standard
+    <p>The L-moment estimates seem to make sense. Let&rsquo;s check their standard
 errors, by taking the square root of the variances (the diagonal of the
 covariance matrix):</p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">lmo</span><span class="o">.</span><span class="n">l_moment_cov</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
@@ -3438,7 +3440,7 @@ default.</p>
 
   <div class="doc doc-contents ">
   
-      <p>Calculates the standard errors (SE's) of the <a class="autorefs autorefs-internal" href="#lmo.l_stats"><code>L-stats</code></a>.</p>
+      <p>Calculates the standard errors (SE&rsquo;s) of the <a class="autorefs autorefs-internal" href="#lmo.l_stats"><code>L-stats</code></a>.</p>
 <p>Equivalent to <code>lmo.l_ratio_se(a, [1, 2, 3, 4], [0, 0, 2, 2], *, **)</code> by
 default.</p>
 
@@ -3537,6 +3539,8 @@ and lies within the interval <span class="arithmatex">\((0, 1)\)</span>.</p>
 
 
   <div class="doc doc-contents first">
+  
+      <p>Lmo: Robust statistics with trimmed L-moments and L-comoments.</p>
 
   
 
@@ -3613,7 +3617,7 @@ L-location <span class="arithmatex">\(\lambda_1\)</span> of <span class="arithma
 <span class="go">array([[-0.02678225, -0.02678225],</span>
 <span class="go">       [ 0.03008309,  0.03008309]])</span>
 </code></pre></div>
-    <p>But the trimmed L-locations are a different story...</p>
+    <p>But the trimmed L-locations are a different story&hellip;</p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">lmo</span><span class="o">.</span><span class="n">l_loc</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
 <span class="go">array([-0.10488868, -0.00625729])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lmo</span><span class="o">.</span><span class="n">l_coloc</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
@@ -3900,7 +3904,7 @@ normal samples:</p>
 
   <div class="doc doc-contents ">
   
-      <p>Estimate the generalized matrix of L-comoment ratio's.</p>
+      <p>Estimate the generalized matrix of L-comoment ratio&rsquo;s.</p>
 <div class="arithmatex">\[
 \tilde \Lambda_{rs}^{(t_1, t_2)} =
     \left[
@@ -3937,7 +3941,7 @@ normal samples:</p>
       <p>Sample L-correlation coefficient matrix <span class="arithmatex">\(\tilde\Lambda^{(t_1, t_2)}_2\)</span>;
 the ratio of the L-coscale matrix over the L-scale <strong>column</strong>-vectors.</p>
 <p>Alias for <a class="autorefs autorefs-internal" href="#lmo.l_coratio"><code>lmo.l_coratio(a, 2, 2, *, **)</code></a>.</p>
-<p>The diagonal consists of all 1's.</p>
+<p>The diagonal consists of all 1&rsquo;s.</p>
 <p>Where the pearson correlation coefficient measures linearity, the
 (T)L-correlation coefficient measures monotonicity.</p>
 
@@ -3952,7 +3956,7 @@ the ratio of the L-coscale matrix over the L-scale <strong>column</strong>-vecto
 <span class="go">array([[ 1.        , -0.65247355],</span>
 <span class="go">       [-0.67503962,  1.        ]])</span>
 </code></pre></div>
-    <p>Let's compare this with the theoretical correlation</p>
+    <p>Let&rsquo;s compare this with the theoretical correlation</p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">cov</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">cov</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">cov</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
 <span class="go">-0.6546536707079772</span>
 </code></pre></div>
@@ -3990,7 +3994,7 @@ the ratio of the L-coscale matrix over the L-scale <strong>column</strong>-vecto
       <p>L-coscale matrix of 2nd L-comoment estimates, <span class="arithmatex">\(\Lambda^{(t_1, t_2)}_2\)</span>.</p>
 <p>Alias for <a class="autorefs autorefs-internal" href="#lmo.l_comoment"><code>lmo.l_comoment(a, 2, *, **)</code></a>.</p>
 <p>Analogous to the (auto-) variance-covariance matrix, the L-coscale matrix
-is positive semi-definite, and its main diagonal contains the L-scale's.
+is positive semi-definite, and its main diagonal contains the L-scale&rsquo;s.
 conversely, the L-coscale matrix is inherently asymmetric, thus yielding
 more information.</p>
 
@@ -4386,7 +4390,7 @@ non-negative int or float.</p>
 
   <div class="doc doc-contents ">
   
-      <p>L-moment ratio('s) <span class="arithmatex">\(\tau^{(s,t)}_{r,k}\)</span>.</p>
+      <p>L-moment ratio(&rsquo;s) <span class="arithmatex">\(\tau^{(s,t)}_{r,k}\)</span>.</p>
 <div class="arithmatex">\[
 \tau^{(s,t)}_{r,k} = \frac{\lambda^{(s,t)}_r}{\lambda^{(s,t)}_k}
 \]</div>
@@ -4422,8 +4426,8 @@ parameter set to 2, the L-CF and LL-CV evaluate to:</p>
 <span class="go">0.4097538...</span>
 </code></pre></div>
     <p>Note that (untrimmed) L-CV requires a higher (subdivision) limit in
-the integration routine, otherwise it'll complain that it didn't
-converge (enough) yet. This is because it's effectively integrating
+the integration routine, otherwise it&rsquo;ll complain that it didn&rsquo;t
+converge (enough) yet. This is because it&rsquo;s effectively integrating
 a non-smooth function, which is mathematically iffy, but works fine
 in this numerical application.</p>
 
@@ -4570,7 +4574,7 @@ non-negative int or float.</p>
 
   <div class="doc doc-contents ">
   
-      <p>The L-moments (for <span class="arithmatex">\(r \le 2\)</span>) and L-ratio's (for <span class="arithmatex">\(r &gt; 2\)</span>).</p>
+      <p>The L-moments (for <span class="arithmatex">\(r \le 2\)</span>) and L-ratio&rsquo;s (for <span class="arithmatex">\(r &gt; 2\)</span>).</p>
 <p>By default, the first <code>moments = 4</code> population L-stats are calculated:</p>
 <ul>
 <li><span class="arithmatex">\(\lambda^{(s,t)}_1\)</span> - <em>L-loc</em>ation</li>
@@ -4837,7 +4841,7 @@ sample size <span class="arithmatex">\(n \rightarrow \infty\)</span>.</p>
 \]</div>
 <p>Here, <span class="arithmatex">\(\vec{l}^{(s, t)} = \left[l^{(s,t)}_r, \dots,
 l^{(s,t)}_{r_{max}}\right]^T\)</span> is a vector of estimated sample
-L-moments, and <span class="arithmatex">\(\vec{\lambda}^{(s, t)}\)</span> its theoretical ("true")
+L-moments, and <span class="arithmatex">\(\vec{\lambda}^{(s, t)}\)</span> its theoretical (&ldquo;true&rdquo;)
 counterpart.</p>
 <p>This function calculates the covariance matrix</p>
 <div class="arithmatex">\[
@@ -5081,7 +5085,7 @@ or floats.</p>
       <p>Similar to <span data-autorefs-identifier="lmo.contrib.scipy_stats.l_rv_generic.l_moments_cov"><code>l_moments_cov</code>
 </span>, but for the
 <a class="autorefs autorefs-internal" href="#lmo.contrib.scipy_stats.l_rv_generic.l_stats"><code>l_rv_generic.l_stats</code></a>.</p>
-<p>As the sample size <span class="arithmatex">\(n \rightarrow \infty\)</span>, the L-moment ratio's are
+<p>As the sample size <span class="arithmatex">\(n \rightarrow \infty\)</span>, the L-moment ratio&rsquo;s are
 also distributed (multivariate) normally. The L-stats are defined to
 be L-moments for <span class="arithmatex">\(r\le 2\)</span>, and L-ratio coefficients otherwise.</p>
 <p>The corresponding covariance matrix has been found to be</p>
@@ -5504,7 +5508,7 @@ to zero.</p>
     \lambda^{(s, t)}_k
 } \;.
 \]</div>
-<p>Because IF's are a special case of the general Gâteuax derivative, the
+<p>Because IF&rsquo;s are a special case of the general Gâteuax derivative, the
 L-ratio IF is derived by applying the chain rule to the
 <a class="autorefs autorefs-internal" href="#lmo.theoretical.l_moment_influence_from_cdf">L-moment IF</a>.</p>
 
@@ -5710,12 +5714,12 @@ to zero.</p>
 parameters from data. The default estimation method is Method of
 L-moments (L-MM), but the Generalized Method of L-Moments
 (L-GMM) is also available (see the <code>n_extra</code> parameter).</p>
-<p>See <a class="autorefs autorefs-internal" href="#lmo.inference.fit">'lmo.inference.fit'</a> for details.</p>
+<p>See <a class="autorefs autorefs-internal" href="#lmo.inference.fit">&lsquo;lmo.inference.fit&rsquo;</a> for details.</p>
 
 
 
 <p><strong>Examples:</strong></p>
-    <p>Fitting standard normal samples Using scipy's default MLE
+    <p>Fitting standard normal samples Using scipy&rsquo;s default MLE
 (Maximum Likelihood Estimation) method:</p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">lmo</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -5725,7 +5729,7 @@ L-moments (L-MM), but the Generalized Method of L-Moments
 <span class="gp">&gt;&gt;&gt; </span><span class="n">norm</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 <span class="go">(0.0033..., 0.9555...)</span>
 </code></pre></div>
-    <p>Better results can be obtained different by using Lmo's L-MM
+    <p>Better results can be obtained different by using Lmo&rsquo;s L-MM
 (Method of L-moment):</p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">norm</span><span class="o">.</span><span class="n">l_fit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span>
 <span class="go">FitArgs(loc=0.0033..., scale=0.9617...)</span>
@@ -5849,8 +5853,8 @@ be returned, instead of only a tuple with parameters.</p>
           <td class="doc-param-details">
             <div class="doc-md-description">
               <p>Additional keyword arguments to be passed to
-<a class="autorefs autorefs-internal" href="#lmo.inference.fit">'lmo.inference.fit'</a> or
-<a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize">'scipy.optimize.minimize'</a>.</p>
+<a class="autorefs autorefs-internal" href="#lmo.inference.fit">&lsquo;lmo.inference.fit&rsquo;</a> or
+<a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize">&lsquo;scipy.optimize.minimize&rsquo;</a>.</p>
             </div>
             <p>
                 <span class="doc-param-annotation">
@@ -5952,7 +5956,7 @@ returned instead.</p>
 <details class="see-also" open>
   <summary>See Also</summary>
   <ul>
-<li><a class="autorefs autorefs-internal" href="#lmo.inference.fit">'lmo.inference.fit'</a></li>
+<li><a class="autorefs autorefs-internal" href="#lmo.inference.fit">&lsquo;lmo.inference.fit&rsquo;</a></li>
 </ul>
 </details>
 <details class="references" open>
@@ -7205,7 +7209,7 @@ Defaults to 2. If set to 0, this is equivalent to <code>l_comoment</code>.</p>
           <td class="doc-returns-details">
             <div class="doc-md-description">
               <p>A <a class="autorefs autorefs-external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame"><code>DataFrame</code></a> of the column-to-column
-matrix of L-comoment ratio's.</p>
+matrix of L-comoment ratio&rsquo;s.</p>
             </div>
               <p>
                 <span class="doc-returns-annotation">
@@ -7397,6 +7401,8 @@ See <a class="autorefs autorefs-internal" href="#lmo.l_cokurtosis"><code>lmo.l_c
 
 
   <div class="doc doc-contents first">
+  
+      <p>Lmo: Robust statistics with trimmed L-moments and L-comoments.</p>
 
   
 
@@ -7672,7 +7678,7 @@ function (ICDF).</p>
 
 <details class="note" open>
   <summary>Note</summary>
-  <p>Converges to the "true" PPF in the mean-squared sense, with
+  <p>Converges to the &ldquo;true&rdquo; PPF in the mean-squared sense, with
 weight function <span class="arithmatex">\(q^s (1 - q)^t\)</span> of quantile <span class="arithmatex">\(q \in \[0, 1\]\)</span>,
 and trim-lengths <span class="arithmatex">\((t_1, t_2) \in \mathbb{R^+} \times \mathbb{R^+}\)</span>.</p>
 </details>
@@ -8110,7 +8116,7 @@ confidence level (5% by default).</p>
   
       <p>Statistical hypothesis test for <strong>non</strong>-normality, using the L-skewness
 and L-kurtosis coefficients on the sample data..</p>
-<p>Adapted from Harri &amp; Coble (2011), and includes Hosking's correction.</p>
+<p>Adapted from Harri &amp; Coble (2011), and includes Hosking&rsquo;s correction.</p>
 
 <details class="definition" open>
   <summary>Definition</summary>
@@ -8136,8 +8142,8 @@ from a contaminated normal distribution.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">normaltest_scipy</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
 <span class="go">0.08435627...</span>
 </code></pre></div>
-    <p>At a 5% significance level, Lmo's test is significant (i.e. indicating
-non-normality), whereas scipy's test isn't (i.e. inconclusive).</p>
+    <p>At a 5% significance level, Lmo&rsquo;s test is significant (i.e. indicating
+non-normality), whereas scipy&rsquo;s test isn&rsquo;t (i.e. inconclusive).</p>
 
 
 
@@ -8297,7 +8303,7 @@ incorrect, and larger degrees of trimming should be used.</p>
   <summary>See Also</summary>
   <ul>
 <li><a class="autorefs autorefs-internal" href="#lmo.theoretical.l_moment_from_cdf"><code>l_moment_from_cdf</code></a></li>
-<li><a class="autorefs autorefs-internal" href="#lmo.theoretical.l_moment_cov_from_cdf">'l_moment_cov_from_cdf'</a></li>
+<li><a class="autorefs autorefs-internal" href="#lmo.theoretical.l_moment_cov_from_cdf">&lsquo;l_moment_cov_from_cdf&rsquo;</a></li>
 </ul>
 </details>
   </div>
@@ -8349,7 +8355,7 @@ given that standard deviation <span class="arithmatex">\(\sigma_X\)</span> of <s
   <summary>Warning</summary>
   <p>These bounds do not apply to distributions with undefined variance,
 e.g. the Cauchy distribution, even if trimmed L-moments are used.
-Distributions with infinite variance (e.g. Student's t with <span class="arithmatex">\(\nu=2\)</span>)
+Distributions with infinite variance (e.g. Student&rsquo;s t with <span class="arithmatex">\(\nu=2\)</span>)
 are a grey area:</p>
 <p>For the L-scale (<span class="arithmatex">\(r=2\)</span>), the corresponding bound will not be a valid
 one. However, it can still be used to find the L-ratio bounds, because
@@ -8522,7 +8528,7 @@ Defaults to 1.</p>
 
   <div class="doc doc-contents ">
   
-      <p>Returns the absolute upper bounds <span class="arithmatex">\(T^{(s,t)}_r\)</span> on L-moment ratio's
+      <p>Returns the absolute upper bounds <span class="arithmatex">\(T^{(s,t)}_r\)</span> on L-moment ratio&rsquo;s
 <span class="arithmatex">\(\tau^{(s,t)}_r = \lambda^{(s,t)}_r / \lambda^{(s,t)}_r\)</span>, for <span class="arithmatex">\(r \ge 2\)</span>.
 So <span class="arithmatex">\(\left| \tau^{(s,t)}_r(X) \right| \le T^{(s,t)}_r\)</span>, given that
 <span class="arithmatex">\(\mathrm{Var}[X] = \sigma^2_X\)</span> exists.</p>
@@ -8582,7 +8588,7 @@ array-like.</p>
           <td class="doc-param-details">
             <div class="doc-md-description">
               <p>Tuple of left- and right- trim-lengths, matching those of the
-relevant L-moment ratio's.</p>
+relevant L-moment ratio&rsquo;s.</p>
             </div>
             <p>
                 <span class="doc-param-annotation">
@@ -8691,7 +8697,7 @@ to <code>1e-8</code>.</p>
 
 
 <p><strong>Examples:</strong></p>
-    <p>The untrimmed L-location isn't robust, e.g. with the standard normal
+    <p>The untrimmed L-location isn&rsquo;t robust, e.g. with the standard normal
 distribution:</p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">distributions</span> <span class="k">as</span> <span class="n">dists</span>
@@ -8703,7 +8709,7 @@ distribution:</p>
 <span class="go">nan</span>
 </code></pre></div>
     <p>For the TL-location of the Gaussian distribution, and even for the
-Student's t distribution with 4 degrees of freedom (3 also works, but
+Student&rsquo;s t distribution with 4 degrees of freedom (3 also works, but
 is very slow), they exist.</p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">if_tl_loc_norm</span> <span class="o">=</span> <span class="n">dists</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">l_moment_influence</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">if_tl_loc_t4</span> <span class="o">=</span> <span class="n">dists</span><span class="o">.</span><span class="n">t</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">l_moment_influence</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -8716,7 +8722,7 @@ is very slow), they exist.</p>
 <details class="notes" open>
   <summary>Notes</summary>
   <p>Large rejection points (e.g. &gt;1000) are unlikely to be found.</p>
-<p>For instance, that of the TL-location of the Student's t distribution
+<p>For instance, that of the TL-location of the Student&rsquo;s t distribution
 with 2 degrees of freedom lies between somewhere <code>1e4</code> and <code>1e5</code>, but
 will not be found. In this case, using <code>trim=2</code> will return <code>166.0</code>.</p>
 </details>
@@ -8849,7 +8855,7 @@ and cumulative distribution function <span class="arithmatex">\(F(x)\)</span>.</
 
 <p><strong>Examples:</strong></p>
     <p>Evaluate the gross-error sensitivity of the standard exponential
-distribution's LL-skewness (<span class="arithmatex">\(\tau^{(0, 1)}_3\)</span>) and LL-kurtosis
+distribution&rsquo;s LL-skewness (<span class="arithmatex">\(\tau^{(0, 1)}_3\)</span>) and LL-kurtosis
 (<span class="arithmatex">\(\tau^{(0, 1)}_4\)</span>) coefficients:</p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">lmo.diagnostic</span> <span class="kn">import</span> <span class="n">error_sensitivity</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">expon</span>
@@ -8972,7 +8978,7 @@ For instance, adding an observation at <span class="arithmatex">\(y\)</span> and
 
 <p><strong>Examples:</strong></p>
     <p>Evaluate the local-shift sensitivity of the standard exponential
-distribution's LL-skewness (<span class="arithmatex">\(\tau^{(0, 1)}_3\)</span>) and LL-kurtosis
+distribution&rsquo;s LL-skewness (<span class="arithmatex">\(\tau^{(0, 1)}_3\)</span>) and LL-kurtosis
 (<span class="arithmatex">\(\tau^{(0, 1)}_4\)</span>) coefficients:</p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">lmo.diagnostic</span> <span class="kn">import</span> <span class="n">shift_sensitivity</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">expon</span>
@@ -8984,7 +8990,7 @@ distribution's LL-skewness (<span class="arithmatex">\(\tau^{(0, 1)}_3\)</span>)
 <span class="gp">&gt;&gt;&gt; </span><span class="n">shift_sensitivity</span><span class="p">(</span><span class="n">ll_kurt_if</span><span class="p">,</span> <span class="n">domain</span><span class="p">)</span>
 <span class="go">1.442062...</span>
 </code></pre></div>
-    <p>Let's compare these with the untrimmed ones:</p>
+    <p>Let&rsquo;s compare these with the untrimmed ones:</p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">shift_sensitivity</span><span class="p">(</span><span class="n">expon</span><span class="o">.</span><span class="n">l_ratio_influence</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">domain</span><span class="p">)</span>
 <span class="go">1.920317...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">shift_sensitivity</span><span class="p">(</span><span class="n">expon</span><span class="o">.</span><span class="n">l_ratio_influence</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">domain</span><span class="p">)</span>
@@ -9095,6 +9101,8 @@ distribution's LL-skewness (<span class="arithmatex">\(\tau^{(0, 1)}_3\)</span>)
 
 
   <div class="doc doc-contents first">
+  
+      <p>Lmo: Robust statistics with trimmed L-moments and L-comoments.</p>
 
   
 
@@ -9143,8 +9151,8 @@ as well.</p>
 <p>for <span class="arithmatex">\(t &gt; 0\)</span>.</p>
 <p>If the trim values are floats instead, the weights are calculated directly
 from the (generalized) order statistics. At the time of writing (07-2023),
-these "generalized trimmed L-moments" have not been discussed in the
-literature or the R-packages. It's probably a good idea to publish this...</p>
+these &ldquo;generalized trimmed L-moments&rdquo; have not been discussed in the
+literature or the R-packages. It&rsquo;s probably a good idea to publish this&hellip;</p>
 
 <details class="tldr" open>
   <summary>TLDR</summary>
@@ -9481,9 +9489,9 @@ test for the invalidity of the model.</p>
 <p>The test is defined through two hypotheses:</p>
 <ul>
 <li><span class="arithmatex">\(H_0\)</span>: The data satisfies the L-moment conditions, i.e. the model is
-    "valid".</li>
+    &ldquo;valid&rdquo;.</li>
 <li><span class="arithmatex">\(H_1\)</span>: The data does not satisfy the L-moment conditions, i.e. the
-    model is "invalid".</li>
+    model is &ldquo;invalid&rdquo;.</li>
 </ul>
 
 <details class="references" open>
@@ -9553,7 +9561,7 @@ sample sizes.</p>
 <details class="references" open>
   <summary>References</summary>
   <ul>
-<li><a href="https://doi.org/10.1080%2F03610927808827599">N. Sugiura (1978) - Further analysis of the data by Akaike's
+<li><a href="https://doi.org/10.1080%2F03610927808827599">N. Sugiura (1978) - Further analysis of the data by Akaike&rsquo;s
 information criterion and the finite
 corrections</a></li>
 </ul>
@@ -9588,7 +9596,7 @@ corrections</a></li>
   
       <p>Fit the distribution parameters using the (Generalized) Method of
 L-Moments (L-(G)MM).</p>
-<p>The goal is to find the "true" parameters <span class="arithmatex">\(\theta_0\)</span> of the distribution.
+<p>The goal is to find the &ldquo;true&rdquo; parameters <span class="arithmatex">\(\theta_0\)</span> of the distribution.
 In practise, this is done using a reasonably close estimate, <span class="arithmatex">\(\theta\)</span>.</p>
 <p>In the (non-Generalized) Method of L-moments (L-MM), this is done by
 solving the system of equations <span class="arithmatex">\(l^{(s, t)}_r = \lambda^{(s, t)}_r\)</span>,
@@ -9657,7 +9665,7 @@ with signature <code>(*args: float, q: T) -&gt; T</code>.</p>
           <td><code>args0</code></td>
           <td class="doc-param-details">
             <div class="doc-md-description">
-              <p>Initial estimate of the distribution's parameter values.</p>
+              <p>Initial estimate of the distribution&rsquo;s parameter values.</p>
             </div>
             <p>
                 <span class="doc-param-annotation">
@@ -10098,7 +10106,7 @@ signature <code>(float) -&gt; float</code>, whose return value lies in <span cla
           <td class="doc-param-details">
             <div class="doc-md-description">
               <p>The subinterval of the nonzero domain of <code>cdf</code>.
-Generally it's not needed to provide this, as it will be guessed
+Generally it&rsquo;s not needed to provide this, as it will be guessed
 automatically.</p>
             </div>
             <p>
@@ -10531,7 +10539,7 @@ If <code>nan</code>, consult the related <code>IntegrationWarning</code> message
 
   <div class="doc doc-contents ">
   
-      <p>Population L-ratio's from a CDF.</p>
+      <p>Population L-ratio&rsquo;s from a CDF.</p>
 
 <details class="see-also" open>
   <summary>See Also</summary>
@@ -10558,7 +10566,7 @@ If <code>nan</code>, consult the related <code>IntegrationWarning</code> message
 
   <div class="doc doc-contents ">
   
-      <p>Population L-ratio's from a PPF.</p>
+      <p>Population L-ratio&rsquo;s from a PPF.</p>
 
 <details class="see-also" open>
   <summary>See Also</summary>
@@ -10586,7 +10594,7 @@ If <code>nan</code>, consult the related <code>IntegrationWarning</code> message
   <div class="doc doc-contents ">
   
       <p>Calculates the theoretical- / population- L-moments (for <span class="arithmatex">\(r \le 2\)</span>)
-and L-ratio's (for <span class="arithmatex">\(r &gt; 2\)</span>) of a distribution, from its CDF.</p>
+and L-ratio&rsquo;s (for <span class="arithmatex">\(r &gt; 2\)</span>) of a distribution, from its CDF.</p>
 <p>By default, the first <code>num = 4</code> population L-stats are calculated:</p>
 <ul>
 <li><span class="arithmatex">\(\lambda^{(s,t)}_1\)</span> - <em>L-loc</em>ation</li>
@@ -10608,7 +10616,7 @@ sometimes used to describe any linear combination of order statistics.</p>
 <li><a class="autorefs autorefs-internal" href="#lmo.theoretical.l_stats_from_ppf"><code>l_stats_from_ppf</code></a> - Population
     L-stats from the quantile function.</li>
 <li><a class="autorefs autorefs-internal" href="#lmo.theoretical.l_ratio_from_cdf"><code>l_ratio_from_cdf</code></a> - Generalized
-    population L-ratio's from the CDF.</li>
+    population L-ratio&rsquo;s from the CDF.</li>
 <li><a class="autorefs autorefs-internal" href="#lmo.l_stats"><code>lmo.l_stats</code></a> - Unbiased sample estimation of L-stats.</li>
 </ul>
 </details>
@@ -10631,7 +10639,7 @@ sometimes used to describe any linear combination of order statistics.</p>
   <div class="doc doc-contents ">
   
       <p>Calculates the theoretical- / population- L-moments (for <span class="arithmatex">\(r \le 2\)</span>)
-and L-ratio's (for <span class="arithmatex">\(r &gt; 2\)</span>) of a distribution, from its quantile function.</p>
+and L-ratio&rsquo;s (for <span class="arithmatex">\(r &gt; 2\)</span>) of a distribution, from its quantile function.</p>
 <p>By default, the first <code>num = 4</code> population L-stats are calculated:</p>
 <ul>
 <li><span class="arithmatex">\(\lambda^{(s,t)}_1\)</span> - <em>L-loc</em>ation</li>
@@ -10653,7 +10661,7 @@ sometimes used to describe any linear combination of order statistics.</p>
 <li><a class="autorefs autorefs-internal" href="#lmo.theoretical.l_stats_from_cdf"><code>l_stats_from_cdf</code></a> - Population
     L-stats from the CDF.</li>
 <li><a class="autorefs autorefs-internal" href="#lmo.theoretical.l_ratio_from_ppf"><code>l_ratio_from_ppf</code></a> - Generalized
-    population L-ratio's from the quantile function.</li>
+    population L-ratio&rsquo;s from the quantile function.</li>
 <li><a class="autorefs autorefs-internal" href="#lmo.l_stats"><code>lmo.l_stats</code></a> - Unbiased sample estimation of L-stats.</li>
 </ul>
 </details>
@@ -10690,7 +10698,7 @@ sometimes used to describe any linear combination of order statistics.</p>
 \]</div>
 <p>Here, <span class="arithmatex">\(\vec{l}^{(s, t)} = \left[l^{(s, t)}_r, \dots, l^{(s, t)}_{r_{max}}
 \right]^T\)</span> is a vector of estimated sample L-moments,
-and <span class="arithmatex">\(\vec{\lambda}^{(s, t)}\)</span> its theoretical ("true") counterpart.</p>
+and <span class="arithmatex">\(\vec{\lambda}^{(s, t)}\)</span> its theoretical (&ldquo;true&rdquo;) counterpart.</p>
 <p>This function calculates the covariance matrix</p>
 <div class="arithmatex">\[
 \begin{align}
@@ -10808,7 +10816,7 @@ or floats.</p>
           <td class="doc-param-details">
             <div class="doc-md-description">
               <p>The subinterval of the nonzero domain of <code>cdf</code>.
-Generally it's not needed to provide this, as it will be guessed
+Generally it&rsquo;s not needed to provide this, as it will be guessed
 automatically.</p>
             </div>
             <p>
@@ -10934,7 +10942,7 @@ automatically.</p>
   
       <p>Similar to <a class="autorefs autorefs-internal" href="#lmo.theoretical.l_moment_from_cdf"><code>l_moment_from_cdf</code></a>, but
 for the <a class="autorefs autorefs-internal" href="#lmo.l_stats"><code>lmo.l_stats</code></a>.</p>
-<p>As the sample size <span class="arithmatex">\(n \rightarrow \infty\)</span>, the L-moment ratio's are also
+<p>As the sample size <span class="arithmatex">\(n \rightarrow \infty\)</span>, the L-moment ratio&rsquo;s are also
 distributed (multivariate) normally. The L-stats are defined to be
 L-moments for <span class="arithmatex">\(r\le 2\)</span>, and L-ratio coefficients otherwise.</p>
 <p>The corresponding covariance matrix has been found to be</p>
@@ -11047,7 +11055,7 @@ or floats.</p>
           <td class="doc-param-details">
             <div class="doc-md-description">
               <p>The subinterval of the nonzero domain of <code>cdf</code>.
-Generally it's not needed to provide this, as it will be guessed
+Generally it&rsquo;s not needed to provide this, as it will be guessed
 automatically.</p>
             </div>
             <p>
@@ -11373,7 +11381,7 @@ from the CDF.</p>
     \lambda^{(s, t)}_k
 } \;.
 \]</div>
-<p>Because IF's are a special case of the general Gâteuax derivative, the
+<p>Because IF&rsquo;s are a special case of the general Gâteuax derivative, the
 L-ratio IF is derived by applying the chain rule to the
 <a class="autorefs autorefs-internal" href="#lmo.theoretical.l_moment_influence_from_cdf">L-moment IF</a>.</p>
 
@@ -11677,7 +11685,7 @@ into TL-moments by Elamir &amp; Seheult (2003).</p>
 
 <p><strong>Examples:</strong></p>
     <p>Find the L-coscale and TL-coscale matrices of the multivariate
-Student's t distribution with 4 degrees of freedom:</p>
+Student&rsquo;s t distribution with 4 degrees of freedom:</p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">lmo.theoretical</span> <span class="kn">import</span> <span class="n">l_comoment_from_pdf</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">multivariate_t</span><span class="p">,</span> <span class="n">t</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="mi">4</span>
@@ -11736,7 +11744,7 @@ float vector of size <span class="arithmatex">\(n\)</span>, and returns a scalar
           <td><code>cdfs</code></td>
           <td class="doc-param-details">
             <div class="doc-md-description">
-              <p>Sequence with <span class="arithmatex">\(n\)</span> marginal CDF's.</p>
+              <p>Sequence with <span class="arithmatex">\(n\)</span> marginal CDF&rsquo;s.</p>
             </div>
             <p>
                 <span class="doc-param-annotation">
@@ -11947,7 +11955,7 @@ probability distribution, using the joint PDF <span class="arithmatex">\(f_{\vec
 
   <div class="doc doc-contents ">
   
-      <p>Calculates the "sandwich" matrix product (<code>A @ X @ A.T</code>) along the
+      <p>Calculates the &ldquo;sandwich&rdquo; matrix product (<code>A @ X @ A.T</code>) along the
 specified <code>X</code> axis.</p>
 
 
@@ -11964,7 +11972,7 @@ specified <code>X</code> axis.</p>
           <td><code>A</code></td>
           <td class="doc-param-details">
             <div class="doc-md-description">
-              <p>2-D array of shape <code>(s, r)</code>, the "bread".</p>
+              <p>2-D array of shape <code>(s, r)</code>, the &ldquo;bread&rdquo;.</p>
             </div>
             <p>
                 <span class="doc-param-annotation">
@@ -12055,7 +12063,7 @@ specified <code>X</code> axis.</p>
 
 
 <h4 id="lmo.linalg.pascal" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pascal</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int_</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">inv</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
+          <code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pascal</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">inv</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
 
 </h4>
 
@@ -12091,25 +12099,25 @@ L_{ij} =
 <p><strong>Examples:</strong></p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">lmo.linalg</span> <span class="kn">import</span> <span class="n">pascal</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">pascal</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pascal</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int_</span><span class="p">)</span>
 <span class="go">array([[1, 0, 0, 0],</span>
 <span class="go">       [1, 1, 0, 0],</span>
 <span class="go">       [1, 2, 1, 0],</span>
 <span class="go">       [1, 3, 3, 1]])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">pascal</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">inv</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pascal</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int_</span><span class="p">,</span> <span class="n">inv</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="go">array([[ 1,  0,  0,  0],</span>
 <span class="go">       [-1,  1,  0,  0],</span>
 <span class="go">       [ 1, -2,  1,  0],</span>
 <span class="go">       [-1,  3, -3,  1]])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">rint</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">pascal</span><span class="p">(</span><span class="mi">4</span><span class="p">)))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int_</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">rint</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">pascal</span><span class="p">(</span><span class="mi">4</span><span class="p">)))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 <span class="go">array([[ 1,  0,  0,  0],</span>
 <span class="go">       [-1,  1,  0,  0],</span>
 <span class="go">       [ 1, -2,  1,  0],</span>
 <span class="go">       [-1,  3, -3,  1]])</span>
 </code></pre></div>
-    <p>Now, let's compare with scipy:</p>
+    <p>Now, let&rsquo;s compare with scipy:</p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.linalg</span> <span class="kn">import</span> <span class="n">invpascal</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">invpascal</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">invpascal</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 <span class="go">array([[ 1,  0,  0,  0],</span>
 <span class="go">       [-1,  1,  0,  0],</span>
 <span class="go">       [ 1, -2,  1,  0],</span>
@@ -12149,7 +12157,7 @@ L_{ij} =
 
 
 <h4 id="lmo.linalg.sh_legendre" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">sh_legendre</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int_</span><span class="p">)</span></code>
+          <code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">sh_legendre</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span></code>
 
 </h4>
 
@@ -12165,6 +12173,20 @@ at <span class="arithmatex">\((k, j)\)</span>:</p>
 \]</div>
 <p>Useful for transforming probability-weighted moments into L-moments.</p>
 
+<details class="danger" open>
+  <summary>Danger</summary>
+  <p>For <span class="arithmatex">\(k \ge 29\)</span>, <strong>all</strong> 64-bits dtypes (default is int64) will
+overflow, which results in either an <code>OverflowError</code> (if you&rsquo;re
+lucky), or will give incorrect results.
+Similarly, all 32-bits dtypes (e.g. <code>np.int_</code> on Windows) already
+overflow when <span class="arithmatex">\(k \ge 16\)</span>.</p>
+<p><strong>This is not explicitly checked</strong> &ndash; so be sure to select the right
+<code>dtype</code> depending on <code>k</code>.</p>
+<p>One option is to use <code>dtype=np.object_</code>, which will use
+Python-native <code>int</code>. However, this is a lot slower, and is likely to
+fail. For instance, when multiplied together with some <code>float64</code>
+array, a <code>TypeError</code> is raised.</p>
+</details>
 
 
   <table>
@@ -12194,8 +12216,8 @@ polynomial.</p>
           <td><code>dtype</code></td>
           <td class="doc-param-details">
             <div class="doc-md-description">
-              <p>Desired output data type, e.g, <code>numpy.float64</code>. Default is
-<code>numpy.int64</code>.</p>
+              <p>Desired output data type, e.g, <code>numpy.float64</code>. Must be signed.
+The default is <a class="autorefs autorefs-external" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.int64"><code>numpy.int64</code></a>.</p>
             </div>
             <p>
                 <span class="doc-param-annotation">
@@ -12204,7 +12226,7 @@ polynomial.</p>
                 </span>
                 <span class="doc-param-default">
                   <b>DEFAULT:</b> 
-                    <code><a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a class="autorefs autorefs-external" title="numpy.int_" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.int_">int_</a></code>
+                    <code><a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a class="autorefs autorefs-external" title="numpy.int64" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.int64">int64</a></code>
                 </span>
             </p>
           </td>
@@ -12246,7 +12268,7 @@ polynomial.</p>
 <p><strong>Examples:</strong></p>
     <p>Calculate <span class="arithmatex">\(\widetilde{P}_{4 \times 4}\)</span>:</p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">lmo.linalg</span> <span class="kn">import</span> <span class="n">sh_legendre</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">sh_legendre</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sh_legendre</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
 <span class="go">array([[  1,   0,   0,   0],</span>
 <span class="go">       [ -1,   2,   0,   0],</span>
 <span class="go">       [  1,  -6,   6,   0],</span>
@@ -12282,7 +12304,7 @@ polynomial.</p>
 shape <code>(k, k)</code>.</p>
 <p>The <span class="arithmatex">\(j\)</span>-th coefficient of the shifted Jacobi polynomial of degree <span class="arithmatex">\(k\)</span> is
 at <span class="arithmatex">\((k, j)\)</span>:</p>
-<p>The "shift" refers to the change of variables <span class="arithmatex">\(x \mapsto 2x - 1\)</span> in the
+<p>The &ldquo;shift&rdquo; refers to the change of variables <span class="arithmatex">\(x \mapsto 2x - 1\)</span> in the
 (unshifted) Jacobi (or hypergeometric) polynomials.</p>
 <p>The (shifted) Jacobi polynomials <span class="arithmatex">\(\widetilde{P}^{(a,b)}\)</span> generalize  the
 (shifted) Legendre polynomials <span class="arithmatex">\(\widetilde{P}\)</span>:
@@ -12383,7 +12405,7 @@ at <span class="arithmatex">\((k, j)\)</span>:</p>
               <p>
                 <span class="doc-returns-annotation">
                   <b>TYPE:</b>
-                    <code><a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">npt</a>.<span title="numpy.NDArray">NDArray</span>[<span title="lmo.linalg.T">T</span> | <a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a class="autorefs autorefs-external" title="numpy.int_" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.int_">int_</a>]</code>
+                    <code><a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">npt</a>.<span title="numpy.NDArray">NDArray</span>[<span title="lmo.linalg.T">T</span> | <a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a class="autorefs autorefs-external" title="numpy.int64" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.int64">int64</a>]</code>
                 </span>
               </p>
           </td>
@@ -12396,13 +12418,13 @@ at <span class="arithmatex">\((k, j)\)</span>:</p>
 <p><strong>Examples:</strong></p>
     <p>Calculate <span class="arithmatex">\(\widetilde{P}^{(1, 1)}_{4 \times 4}\)</span>:</p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">lmo.linalg</span> <span class="kn">import</span> <span class="n">sh_jacobi</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">sh_jacobi</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sh_jacobi</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
 <span class="go">array([[  1,   0,   0,   0],</span>
 <span class="go">       [ -2,   4,   0,   0],</span>
 <span class="go">       [  3, -15,  15,   0],</span>
 <span class="go">       [ -4,  36, -84,  56]])</span>
 </code></pre></div>
-    <p>Let's compare <span class="arithmatex">\(\widetilde{P}^(1, \pi)_3\)</span> with the scipy Jacobi
+    <p>Let&rsquo;s compare <span class="arithmatex">\(\widetilde{P}^(1, \pi)_3\)</span> with the scipy Jacobi
 poly1d. This requires manual shifting <span class="arithmatex">\(x \mapsto f(x)\)</span>,
 with <span class="arithmatex">\(f(x) = 2x - 1\)</span>:</p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -12414,7 +12436,7 @@ with <span class="arithmatex">\(f(x) = 2x - 1\)</span>:</p>
 <span class="go">array([ -21.79690371,  128.54584648, -228.55053774,  125.80159497])</span>
 </code></pre></div>
     <p>Apart from the reversed coefficients of <a class="autorefs autorefs-external" href="https://numpy.org/doc/stable/reference/generated/numpy.poly1d.html#numpy.poly1d"><code>numpy.poly1d</code></a>
-(an awkward design choice, but it's fixed in the new
+(an awkward design choice, but it&rsquo;s fixed in the new
 <a class="autorefs autorefs-external" href="https://numpy.org/doc/stable/reference/routines.polynomials.package.html#module-numpy.polynomial"><code>numpy.polynomial</code></a> module.)</p>
 
 <details class="see-also" open>
@@ -12507,7 +12529,13 @@ to <code>(n, k + n)</code>.</p>
 
 <p><strong>Examples:</strong></p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">lmo.linalg</span> <span class="kn">import</span> <span class="n">succession_matrix</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">succession_matrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">9</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">9</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c</span>
+<span class="go">array([[1, 2],</span>
+<span class="go">       [3, 4],</span>
+<span class="go">       [5, 6],</span>
+<span class="go">       [7, 8]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">succession_matrix</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
 <span class="go">array([[1, 2, 0, 0, 0],</span>
 <span class="go">       [0, 3, 4, 0, 0],</span>
 <span class="go">       [0, 0, 5, 6, 0],</span>
@@ -12536,11 +12564,11 @@ to <code>(n, k + n)</code>.</p>
 the (corrected) derivation by Hosking (2007) from the (shifted) Jacobi
 Polynomials.</p>
 <p>This constructs a <span class="arithmatex">\(r \times r + t_1 + t_2\)</span> matrix <span class="arithmatex">\(T^{(t_1, t_2)}\)</span> that
-"trims" conventional L-moments. E.g. the first 3 <span class="arithmatex">\((1, 1)\)</span> trimmed
+&ldquo;trims&rdquo; conventional L-moments. E.g. the first 3 <span class="arithmatex">\((1, 1)\)</span> trimmed
 L-moments can be obtained from the first <span class="arithmatex">\(3+1+1=5\)</span> (untrimmed) L-moments
 (assuming they exist) with
 <code>trim_matrix(3, (1, 1)) @ l_moment(x, np.ogrid[:5] + 1)</code>.</p>
-<p>The big "L" in "L-moment", referring to it being a <em>Linear</em> combination of
+<p>The big &ldquo;L&rdquo; in &ldquo;L-moment&rdquo;, referring to it being a <em>Linear</em> combination of
 order statistics, has been prominently put in the name by Hosking (1990)
 for a good reason. It means that transforming order statistics to
 a bunch of L-moments, can be done using a single matrix multiplication
@@ -12735,7 +12763,7 @@ w_{i:n|j:N}
 
 <details class="notes" open>
   <summary>Notes</summary>
-  <p>This function uses "Python-style" 0-based indexing for <span class="arithmatex">\(i\)</span>, instead
+  <p>This function uses &ldquo;Python-style&rdquo; 0-based indexing for <span class="arithmatex">\(i\)</span>, instead
 of the conventional 1-based indexing that is generally used in the
 literature.</p>
 </details>
@@ -12966,7 +12994,7 @@ of size, i.e. <span class="arithmatex">\(0 \le i \le n - 1\)</span>.</p>
   
       <p>Probability Weighted moment (PWM) projection matrix <span class="arithmatex">\(B\)</span> of the
 unbiased estimator for <span class="arithmatex">\(\beta_k = M_{1,k,0}\)</span> for <span class="arithmatex">\(k = 0, \dots, r - 1\)</span>.</p>
-<p>The PWM's are estimated by linear projection of the sample of order
+<p>The PWM&rsquo;s are estimated by linear projection of the sample of order
 statistics, i.e. <span class="arithmatex">\(b = B x_{i:n}\)</span></p>
 
 
@@ -13275,7 +13303,7 @@ moment (PWM) point estimates <span class="arithmatex">\(\beta_k = M_{1,k,0}\)</s
       
       
     
-    <a href="https://github.com/jorenham" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+    <a href="https://github.com/jorenham/" target="_blank" rel="noopener" title="github.com" class="md-social__link">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
     </a>
   
@@ -13294,7 +13322,7 @@ moment (PWM) point estimates <span class="arithmatex">\(\beta_k = M_{1,k,0}\)</s
     <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.aecac24b.min.js"></script>
+      <script src="../assets/javascripts/bundle.81fa17fe.min.js"></script>
       
         <script src="../scripts/mathjax.js"></script>
       
