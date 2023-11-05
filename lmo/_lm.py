@@ -267,13 +267,13 @@ def l_moment(
     /,
     trim: AnyTrim = ...,
     *,
-    axis: int,
+    axis: int | None = ...,
     dtype: type[np.float64] = ...,
     fweights: IntVector | None = ...,
     aweights: npt.ArrayLike | None = ...,
     sort: SortKind | None = ...,
     cache: bool = ...,
-) -> np.float64 | npt.NDArray[np.float64]:
+) -> npt.NDArray[np.float64] | np.float64:
     ...
 
 
@@ -284,7 +284,7 @@ def l_moment(
     /,
     trim: AnyTrim = ...,
     *,
-    axis: int,
+    axis: int | None = ...,
     dtype: np.dtype[T] | type[T],
     fweights: IntVector | None = ...,
     aweights: npt.ArrayLike | None = ...,
@@ -507,7 +507,7 @@ def l_ratio(
     /,
     trim: AnyTrim = ...,
     *,
-    axis: int,
+    axis: int | None = ...,
     dtype: type[np.float64] = ...,
     **kwargs: Unpack[LMomentOptions],
 ) -> np.float64 | npt.NDArray[np.float64]:
@@ -522,7 +522,7 @@ def l_ratio(
     /,
     trim: AnyTrim = ...,
     *,
-    axis: int,
+    axis: int | None = ...,
     dtype: np.dtype[T] | type[T],
     **kwargs: Unpack[LMomentOptions],
 ) -> npt.NDArray[T] | T:
@@ -770,7 +770,7 @@ def l_loc(
         - [`lmo.l_moment`][lmo.l_moment]
         - [`numpy.average`][numpy.average]
     """
-    return l_moment(a, 1, trim, axis=axis, dtype=dtype, **kwargs)
+    return l_moment(a, 1, trim=trim, axis=axis, dtype=dtype, **kwargs)
 
 
 @overload
