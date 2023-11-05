@@ -207,6 +207,12 @@ def l_weights(
 
     if isinstance(s, int | np.integer) and isinstance(t, int | np.integer):
         w = _l_weights_pwm(r, n, trim=(int(s), int(t)), dtype=dtype)
+
+        # ensure that the trimmed ends are 0
+        if s:
+            w[:, :s] = 0
+        if t:
+            w[:, -t:] = 0
     else:
         w = _l_weights_ostat(r, n, trim=(float(s), float(t)), dtype=dtype)
 
