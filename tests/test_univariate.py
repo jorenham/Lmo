@@ -201,3 +201,69 @@ def test_l_scale_linear_scale(
 
     l2_mul = lmo.l_scale(x * dscale, itrim)
     assert l2_mul == approx(np.abs(l2 * dscale), abs=1e-8)
+
+
+def test_ll_trim_ev():
+    a = np.array([0., 1., 2., 3., 4., 5., 6.])
+    a_ev = np.r_[a[:-1], 1e9]
+
+    r = np.arange(6)
+    l4 = lmo.l_moment(a, r, trim=(0, 1))
+    l4_ev = lmo.l_moment(a_ev, r, trim=(0, 1))
+
+    assert_equal(l4_ev, l4)
+
+
+def test_lh_trim_ev():
+    a = np.array([-6., -5., -4., -3., -2., -1., 0.])
+    a_ev = np.r_[-1e9, a[1:]]
+
+    r = np.arange(6)
+    l4 = lmo.l_moment(a, r, trim=(1, 0))
+    l4_ev = lmo.l_moment(a_ev, r, trim=(1, 0))
+
+    assert_equal(l4_ev, l4)
+
+
+def test_tl_trim_ev():
+    a = np.array([-3., -2., -1., 0., 1., 2., 3.])
+    a_ev = np.r_[-1e9, a[1:-1], 1e9]
+
+    r = np.arange(5)
+    l4 = lmo.l_moment(a, r, trim=(1, 1))
+    l4_ev = lmo.l_moment(a_ev, r, trim=(1, 1))
+
+    assert_equal(l4_ev, l4)
+
+
+def test_ll_trim_inf():
+    a = np.array([0., 1., 2., 3., 4., 5., 6.])
+    a_inf = np.r_[a[:-1], np.inf]
+
+    r = np.arange(6)
+    l4 = lmo.l_moment(a, r, trim=(0, 1))
+    l4_ev = lmo.l_moment(a_inf, r, trim=(0, 1))
+
+    assert_equal(l4_ev, l4)
+
+
+def test_lh_trim_inf():
+    a = np.array([-6., -5., -4., -3., -2., -1., 0.])
+    a_inf = np.r_[-np.inf, a[1:]]
+
+    r = np.arange(6)
+    l4 = lmo.l_moment(a, r, trim=(1, 0))
+    l4_ev = lmo.l_moment(a_inf, r, trim=(1, 0))
+
+    assert_equal(l4_ev, l4)
+
+
+def test_tl_trim_inf():
+    a = np.array([-3., -2., -1., 0., 1., 2., 3.])
+    a_inf = np.r_[-np.inf, a[1:-1], np.inf]
+
+    r = np.arange(5)
+    l4 = lmo.l_moment(a, r, trim=(1, 1))
+    l4_ev = lmo.l_moment(a_inf, r, trim=(1, 1))
+
+    assert_equal(l4_ev, l4)
