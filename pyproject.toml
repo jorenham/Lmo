@@ -52,10 +52,10 @@ mkdocs-include-markdown-plugin = "^6.0"
 mkdocstrings = {extras = ["python"], version = ">=0.23,<1.0"}
 
 [tool.poetry.group.debug.dependencies]
-ipython = "^8.16"
-ipykernel = "^6.25"
-matplotlib = "^3.8"
-line-profiler = "^4.1"
+ipython = ">=8.17"
+ipykernel = ">=6.26"
+matplotlib = ">=3.8"
+line-profiler = ">=4.1"
 
 [tool.poetry.group.pandas.dependencies]
 pandas = ">=1.4"
