@@ -205,7 +205,9 @@ def test_l_scale_linear_scale(
 
 def test_ll_trim_ev():
     a = np.array([0., 1., 2., 3., 4., 5., 6.])
+    a.setflags(write=False)
     a_ev = np.r_[a[:-1], 1e9]
+    a_ev.setflags(write=False)
 
     r = np.arange(6)
     l4 = lmo.l_moment(a, r, trim=(0, 1))
@@ -216,7 +218,9 @@ def test_ll_trim_ev():
 
 def test_lh_trim_ev():
     a = np.array([-6., -5., -4., -3., -2., -1., 0.])
+    a.setflags(write=False)
     a_ev = np.r_[-1e9, a[1:]]
+    a_ev.setflags(write=False)
 
     r = np.arange(6)
     l4 = lmo.l_moment(a, r, trim=(1, 0))
@@ -227,7 +231,9 @@ def test_lh_trim_ev():
 
 def test_tl_trim_ev():
     a = np.array([-3., -2., -1., 0., 1., 2., 3.])
+    a.setflags(write=False)
     a_ev = np.r_[-1e9, a[1:-1], 1e9]
+    a_ev.setflags(write=False)
 
     r = np.arange(5)
     l4 = lmo.l_moment(a, r, trim=(1, 1))
@@ -238,7 +244,9 @@ def test_tl_trim_ev():
 
 def test_ll_trim_inf():
     a = np.array([0., 1., 2., 3., 4., 5., 6.])
+    a.setflags(write=False)
     a_inf = np.r_[a[:-1], np.inf]
+    a_inf.setflags(write=False)
 
     r = np.arange(6)
     l4 = lmo.l_moment(a, r, trim=(0, 1))
@@ -249,7 +257,9 @@ def test_ll_trim_inf():
 
 def test_lh_trim_inf():
     a = np.array([-6., -5., -4., -3., -2., -1., 0.])
+    a.setflags(write=False)
     a_inf = np.r_[-np.inf, a[1:]]
+    a_inf.setflags(write=False)
 
     r = np.arange(6)
     l4 = lmo.l_moment(a, r, trim=(1, 0))
@@ -260,7 +270,9 @@ def test_lh_trim_inf():
 
 def test_tl_trim_inf():
     a = np.array([-3., -2., -1., 0., 1., 2., 3.])
+    a.setflags(write=False)
     a_inf = np.r_[-np.inf, a[1:-1], np.inf]
+    a_inf.setflags(write=False)
 
     r = np.arange(5)
     l4 = lmo.l_moment(a, r, trim=(1, 1))
