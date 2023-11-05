@@ -207,6 +207,12 @@ def l_weights(
 
     if isinstance(s, int | np.integer) and isinstance(t, int | np.integer):
         w = _l_weights_pwm(r, n, trim=(int(s), int(t)), dtype=dtype)
+
+        # ensure that the trimmed ends are 0
+        if s:
+            w[:, :s] = 0
+        if t:
+            w[:, -t:] = 0
     else:
         w = _l_weights_ostat(r, n, trim=(float(s), float(t)), dtype=dtype)
 
@@ -443,7 +449,17 @@ def l_moment(
     _r = np.asarray(r)
     r_max = clean_order(np.max(_r))
 
-    l_r = np.inner(l_weights(r_max, n, trim, cache=cache, dtype=dtype), x_k)
+    # TODO @jorenham: nan handling, see:
+    # https://github.com/jorenham/Lmo/issues/70
+
+    # ensure that any inf's (not nan's) are properly trimmed
+    s, t = clean_trim(trim)
+    if s and isinstance(s, int | np.integer):
+        x_k[..., :s] = np.nan_to_num(x_k[..., :s], nan=np.nan)
+    if t and isinstance(t, int | np.integer):
+        x_k[..., -t:] = np.nan_to_num(x_k[..., -t:], nan=np.nan)
+
+    l_r = np.inner(l_weights(r_max, n, (s, t), cache=cache, dtype=dtype), x_k)
 
     # we like 0-based indexing; so if P_r starts at r=1, prepend all 1's
     # for r=0 (any zeroth moment is defined to be 1)
