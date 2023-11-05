@@ -4,10 +4,13 @@
 
 # Lmo - Trimmed L-moments and L-comoments
 
-![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/jorenham/lmo/CI.yml?branch=master&style=flat-square)
-[![PyPI](https://img.shields.io/pypi/v/lmo?style=flat-square)](https://pypi.org/project/lmo/)
-[![versions](https://img.shields.io/pypi/pyversions/lmo?style=flat-square)](https://github.com/jorenham/lmo)
 [![license](https://img.shields.io/github/license/jorenham/lmo?style=flat-square)](https://github.com/jorenham/lmo/blob/master/LICENSE?)
+[![PyPI](https://img.shields.io/pypi/v/lmo?style=flat-square)](https://pypi.org/project/lmo/)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/Lmo?style=flat-square)](https://pypi.org/project/lmo/)
+[![versions](https://img.shields.io/pypi/pyversions/lmo?style=flat-square)](https://github.com/jorenham/lmo)
+![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/jorenham/lmo/CI.yml?branch=master&style=flat-square)
+![GitHub commit activity (branch)](https://img.shields.io/github/commit-activity/m/jorenham/Lmo?style=flat-square)
+
 
 ~~~
 
