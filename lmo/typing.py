@@ -394,6 +394,7 @@ AnyTrim: TypeAlias = (
     tuple[AnyFloat, AnyFloat]
     | Sequence[AnyFloat]
     | SupportsArray[_NpInt | _NpFloat]
+    | AnyFloat
 )
 
 
