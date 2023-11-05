@@ -682,6 +682,58 @@ def l_stats(
     return l_ratio(a, r, s, trim=trim, axis=axis, dtype=dtype, **kwargs)
 
 
+@overload
+def l_loc(
+    a: npt.ArrayLike,
+    /,
+    trim: AnyTrim = ...,
+    *,
+    axis: None = ...,
+    dtype: type[np.float64] = ...,
+    **kwargs: Unpack[LMomentOptions],
+) -> np.float64:
+    ...
+
+
+@overload
+def l_loc(
+    a: npt.ArrayLike,
+    /,
+    trim: AnyTrim = ...,
+    *,
+    axis: None = ...,
+    dtype: np.dtype[T] | type[T],
+    **kwargs: Unpack[LMomentOptions],
+) -> T:
+    ...
+
+
+@overload
+def l_loc(
+    a: npt.ArrayLike,
+    /,
+    trim: AnyTrim = ...,
+    *,
+    axis: int,
+    dtype: type[np.float64] = ...,
+    **kwargs: Unpack[LMomentOptions],
+) -> npt.NDArray[np.float64] | np.float64:
+    ...
+
+
+@overload
+def l_loc(
+    a: npt.ArrayLike,
+    /,
+    trim: AnyTrim = ...,
+    *,
+    axis: int,
+    dtype: np.dtype[T] | type[T],
+    **kwargs: Unpack[LMomentOptions],
+) -> npt.NDArray[T] | T:
+    ...
+
+
 def l_loc(
     a: npt.ArrayLike,
     /,
@@ -721,6 +773,58 @@ def l_loc(
     return l_moment(a, 1, trim, axis=axis, dtype=dtype, **kwargs)
 
 
+@overload
+def l_scale(
+    a: npt.ArrayLike,
+    /,
+    trim: AnyTrim = ...,
+    *,
+    axis: None = ...,
+    dtype: type[np.float64] = ...,
+    **kwargs: Unpack[LMomentOptions],
+) -> np.float64:
+    ...
+
+
+@overload
+def l_scale(
+    a: npt.ArrayLike,
+    /,
+    trim: AnyTrim = ...,
+    *,
+    axis: None = ...,
+    dtype: np.dtype[T] | type[T],
+    **kwargs: Unpack[LMomentOptions],
+) -> T:
+    ...
+
+
+@overload
+def l_scale(
+    a: npt.ArrayLike,
+    /,
+    trim: AnyTrim = ...,
+    *,
+    axis: int,
+    dtype: type[np.float64] = ...,
+    **kwargs: Unpack[LMomentOptions],
+) -> npt.NDArray[np.float64] | np.float64:
+    ...
+
+
+@overload
+def l_scale(
+    a: npt.ArrayLike,
+    /,
+    trim: AnyTrim = ...,
+    *,
+    axis: int,
+    dtype: np.dtype[T] | type[T],
+    **kwargs: Unpack[LMomentOptions],
+) -> npt.NDArray[T] | T:
+    ...
+
+
 def l_scale(
     a: npt.ArrayLike,
     /,
@@ -756,6 +860,58 @@ def l_scale(
         - [`numpy.std`][numpy.std]
     """
     return l_moment(a, 2, trim, axis=axis, dtype=dtype, **kwargs)
+
+
+@overload
+def l_variation(
+    a: npt.ArrayLike,
+    /,
+    trim: AnyTrim = ...,
+    *,
+    axis: None = ...,
+    dtype: type[np.float64] = ...,
+    **kwargs: Unpack[LMomentOptions],
+) -> np.float64:
+    ...
+
+
+@overload
+def l_variation(
+    a: npt.ArrayLike,
+    /,
+    trim: AnyTrim = ...,
+    *,
+    axis: None = ...,
+    dtype: np.dtype[T] | type[T],
+    **kwargs: Unpack[LMomentOptions],
+) -> T:
+    ...
+
+
+@overload
+def l_variation(
+    a: npt.ArrayLike,
+    /,
+    trim: AnyTrim = ...,
+    *,
+    axis: int,
+    dtype: type[np.float64] = ...,
+    **kwargs: Unpack[LMomentOptions],
+) -> npt.NDArray[np.float64] | np.float64:
+    ...
+
+
+@overload
+def l_variation(
+    a: npt.ArrayLike,
+    /,
+    trim: AnyTrim = ...,
+    *,
+    axis: int,
+    dtype: np.dtype[T] | type[T],
+    **kwargs: Unpack[LMomentOptions],
+) -> npt.NDArray[T] | T:
+    ...
 
 
 def l_variation(
@@ -804,6 +960,58 @@ def l_variation(
     return l_ratio(a, 2, 1, trim, axis=axis, dtype=dtype, **kwargs)
 
 
+@overload
+def l_skew(
+    a: npt.ArrayLike,
+    /,
+    trim: AnyTrim = ...,
+    *,
+    axis: None = ...,
+    dtype: type[np.float64] = ...,
+    **kwargs: Unpack[LMomentOptions],
+) -> np.float64:
+    ...
+
+
+@overload
+def l_skew(
+    a: npt.ArrayLike,
+    /,
+    trim: AnyTrim = ...,
+    *,
+    axis: None = ...,
+    dtype: np.dtype[T] | type[T],
+    **kwargs: Unpack[LMomentOptions],
+) -> T:
+    ...
+
+
+@overload
+def l_skew(
+    a: npt.ArrayLike,
+    /,
+    trim: AnyTrim = ...,
+    *,
+    axis: int,
+    dtype: type[np.float64] = ...,
+    **kwargs: Unpack[LMomentOptions],
+) -> npt.NDArray[np.float64] | np.float64:
+    ...
+
+
+@overload
+def l_skew(
+    a: npt.ArrayLike,
+    /,
+    trim: AnyTrim = ...,
+    *,
+    axis: int,
+    dtype: np.dtype[T] | type[T],
+    **kwargs: Unpack[LMomentOptions],
+) -> npt.NDArray[T] | T:
+    ...
+
+
 def l_skew(
     a: npt.ArrayLike,
     /,
@@ -841,6 +1049,58 @@ def l_skew(
         - [`scipy.stats.skew`][scipy.stats.skew]
     """  # noqa: D415
     return l_ratio(a, 3, 2, trim, axis=axis, dtype=dtype, **kwargs)
+
+
+@overload
+def l_kurtosis(
+    a: npt.ArrayLike,
+    /,
+    trim: AnyTrim = ...,
+    *,
+    axis: None = ...,
+    dtype: type[np.float64] = ...,
+    **kwargs: Unpack[LMomentOptions],
+) -> np.float64:
+    ...
+
+
+@overload
+def l_kurtosis(
+    a: npt.ArrayLike,
+    /,
+    trim: AnyTrim = ...,
+    *,
+    axis: None = ...,
+    dtype: np.dtype[T] | type[T],
+    **kwargs: Unpack[LMomentOptions],
+) -> T:
+    ...
+
+
+@overload
+def l_kurtosis(
+    a: npt.ArrayLike,
+    /,
+    trim: AnyTrim = ...,
+    *,
+    axis: int,
+    dtype: type[np.float64] = ...,
+    **kwargs: Unpack[LMomentOptions],
+) -> npt.NDArray[np.float64] | np.float64:
+    ...
+
+
+@overload
+def l_kurtosis(
+    a: npt.ArrayLike,
+    /,
+    trim: AnyTrim = ...,
+    *,
+    axis: int,
+    dtype: np.dtype[T] | type[T],
+    **kwargs: Unpack[LMomentOptions],
+) -> npt.NDArray[T] | T:
+    ...
 
 
 def l_kurtosis(
