@@ -10,6 +10,7 @@ strict: true
 
 nav:
   - Overview: index.md
+  - Distribution L-moments: distributions.md
   - API Docs: api.md
   - Contributing: contributing.md
 
@@ -17,6 +18,9 @@ theme:
   name: material
   logo: img/logo.png
   favicon: img/favicon.ico
+  features:
+    - toc.follow
+    - toc.integrate
   palette:
     scheme: slate
     primary: nose
@@ -61,6 +65,7 @@ markdown_extensions:
   # https://python-markdown.github.io/extensions/
   - admonition
   - extra
+  - md_in_html
   - sane_lists
   - smarty
 
