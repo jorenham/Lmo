@@ -1,17 +1,17 @@
 # L-moments of common probability distributions
 
-## Univariate
+## Continuous univariate
 
-### Continuous
+### L-moments
 
 <table style="overflow: hidden">
 <tr>
     <th>Name / <code>scipy.stats</code></th>
     <th>Params</th>
-    <th>\( \lmoment 1 \)</th>
-    <th>\( \lmoment 2 \)</th>
-    <th>\( \lratio 3 \)</th>
-    <th>\( \lratio 4 \)</th>
+    <th>\( \lmoment{1} \)</th>
+    <th>\( \lmoment{2} \)</th>
+    <th>\( \lratio{3} = \lmoment{3}/\lmoment{2} \)</th>
+    <th>\( \lratio{4} = \lmoment{4}/\lmoment{2} \)</th>
 </tr>
 <tr>
     <td>
@@ -43,15 +43,18 @@
         <br>
         <code>norm</code>
     </td>
-    <td>\( \mu \)<br>\( \sigma>0 \)</td>
-    <td>\[ \mu \vphantom{1 / \sqrt \pi} \]</td>
     <td>
-        \[ \sigma / \sqrt \pi \]
+        \( \mu \)<br>
+        \( \sigma>0 \)
+    </td>
+    <td>\( \mu \)</td>
+    <td>
+        \[ \frac{\sigma}{\sqrt \pi} \]
         \( \approx 0.5642 \ \sigma \)
     </td>
-    <td>\[ 0 \vphantom{1/\sqrt \pi}\]</td>
+    <td>\( 0 \)</td>
     <td>
-        \[ 30 \ \theta_m / \pi \vphantom{\sqrt \pi} - 9 \]
+        \[ 30 \ \frac{\arctan{\sqrt 2}}{\pi} - 9 \]
         \( \approx 0.1226 \)
     </td>
 </tr>
@@ -68,9 +71,9 @@
         <code>logistic(μ, s)</code>
     </td>
     <td>\( \mu \)<br>\( s>0 \)</td>
-    <td>\[ \vphantom{1/6}\mu \]</td>
-    <td>\[ \vphantom{1/6}s \]</td>
-    <td>\[ \vphantom{1/6}0 \]</td>
+    <td>\( \mu \)</td>
+    <td>\( s \)</td>
+    <td>\( 0 \)</td>
     <td>
         \[ 1 / 6 \]
         \( \approx 0.1667 \)
@@ -88,11 +91,14 @@
         <br>
         <code>laplace</code>
     </td>
-    <td>\( \mu \)<br>\( b > 0 \)</td>
-    <td>\[ \mu \]</td>
     <td>
-      \[ 3b / 4 \]
-      \( = 0.75 \ b\)
+        \( \mu \)<br>
+        \( b > 0 \)
+    </td>
+    <td>\( \mu \)</td>
+    <td>
+        \[ 3b / 4 \]
+        \( = 0.75 \ b\)
     </td>
     <td>\( 0 \)</td>
     <td>
@@ -112,7 +118,7 @@
         <br>
         <code>t(2)</code>
     </td>
-    <td>\( \nu=2 \)</td>
+    <td>\( \nu := 2 \)</td>
     <td>\( 0 \)</td>
     <td>
         \[ \frac{\pi}{2 \sqrt{2}} \]
@@ -136,7 +142,7 @@
         <br>
         <code>t(3)</code>
     </td>
-    <td>\( \nu=3 \)</td>
+    <td>\( \nu := 3 \)</td>
     <td>\( 0 \)</td>
     <td>
         \[ \frac{3 \sqrt 3}{\vphantom{\pi^2}2 \pi} \]
@@ -160,11 +166,11 @@
         <br>
         <code>t(4)</code>
     </td>
-    <td>\( \nu=4 \)</td>
+    <td>\( \nu := 4 \)</td>
     <td>\( 0 \)</td>
     <td>
-      \[ 15 \pi / 64 \]
-      \( \approx 0.7363 \)
+        \[ 15 \pi / 64 \]
+        \( \approx 0.7363 \)
     </td>
     <td>\( 0 \)</td>
     <td>
@@ -205,32 +211,30 @@
     <td>\( \sigma > 0 \)</td>
     <td>
         \[ 
-          \frac{\vphantom{3 / \sqrt 2}\sqrt \pi}{\vphantom{1 / \sqrt 2}\sqrt 2}
-          \sigma 
+            \frac{\vphantom{3 / \sqrt 2}\sqrt \pi}{\vphantom{1 / \sqrt 2}\sqrt 2}
+            \sigma 
         \]
         \( \approx 1.2533 \ \sigma \)
     </td>
     <td>
         \[ 
-          \frac{\vphantom{3 / \sqrt 2}\sqrt{\pi}}{\vphantom{1 / \sqrt 2}2} 
-          \left(\sqrt 2 - 1\right) 
-          \sigma
+            \frac{\vphantom{3 / \sqrt 2}\sqrt{\pi}}{\vphantom{1 / \sqrt 2}2} 
+            \left(\sqrt 2 - 1\right) 
+            \sigma
         \]
         \( \approx 0.3671 \ \sigma \)
     </td>
     <td>
         \[ 
-          \frac{1 - 3 / \sqrt 2 + 2 / \sqrt 3}{1 - 1 / \sqrt 2}
+            \frac{1 - 3 / \sqrt 2 + 2 / \sqrt 3}{1 - 1 / \sqrt 2}
         \]
         \( \approx 0.1140 \)
     </td>
     <td>
         \[ 
-          \frac{
-            1 - 6 / \sqrt 2 + 10 / \sqrt 3 - 5 / \sqrt 4
-          }{
-            1 - 1 / \sqrt 2
-          }
+            \frac
+                {1 - 6 / \sqrt 2 + 10 / \sqrt 3 - 5 / \sqrt 4}
+                {1 - 1 / \sqrt 2}
         \]
         \( \approx 0.1054 \)
     </td>
@@ -275,9 +279,12 @@
             GEV
         </a>
         <br>
-        <code style="white-space: nowrap;">genextreme</code>
+        <code>genextreme</code>
     </td>
-    <td>\( \kappa > -1 \)<br>\( \beta > 0 \)</td>
+    <td>
+        \( \kappa > -1 \)<br>
+        \( \beta > 0 \)
+    </td>
     <td>
         \[ \frac{1 - \Gamma(1 + \kappa)}{\kappa} \ \beta \]
     </td>
@@ -285,17 +292,13 @@
         \[\Gamma(1 + \kappa) \ \boxcox{2}{-\kappa} \ \beta \]
     </td>
     <td>
-        <!-- \( 2 (1 - 3^{-\kappa}) / (1 - 2^{-\kappa}) - 3 \) -->
-        <!-- \[ \frac{2 \ \boxcox{3}{-\kappa} - 3 \ \boxcox{2}{-\kappa}}{\boxcox{2}{-\kappa}} \] -->
         \[ 2 \frac{\boxcox{3}{-\kappa}}{\boxcox{2}{-\kappa}} - 3 \]
     </td>
     <td>
-        <!-- \( 6 + 5 ((1 - 4^{-\kappa}) - 2 (1 - 3^{-\kappa})) / (1 - 2^{-\kappa}) \) -->
-        <!-- \[ \frac{5 \ \boxcox{4}{-\kappa} - 10 \ \boxcox{3}{-\kappa} + 6 \ \boxcox{2}{-\kappa}}{\boxcox{2}{-\kappa}} \] -->
         \[ 
-          6 
-          + 5 \frac{\boxcox{4}{-\kappa}}{\boxcox{2}{-\kappa}} 
-          - 10 \frac{\boxcox{3}{-\kappa}}{\boxcox{2}{-\kappa}} 
+            6 
+            + 5 \frac{\boxcox{4}{-\kappa}}{\boxcox{2}{-\kappa}} 
+            - 10 \frac{\boxcox{3}{-\kappa}}{\boxcox{2}{-\kappa}} 
         \]
     </td>
 </tr>
@@ -311,11 +314,22 @@
         <br>
         <code>pareto</code>
     </td>
-    <td>\( b \)<br>\( \sigma > 1 \)</td>
-    <td>\[ \frac{b}{b - 1} \ \sigma \]</td>
-    <td>\[ \frac{b}{b - 1} \frac{1}{2b - 1} \ \sigma \]</td>
-    <td>\[ \frac{b + 1}{3b - 1} \]</td>
-    <td>\[ \frac{b + 1}{3b - 1} \frac{2b + 1}{4b - 1}  \]</td>
+    <td>
+        \( b \)<br>
+        \( \sigma > 1 \)
+    </td>
+    <td>
+        \[ \frac{b}{b - 1} \ \sigma \]
+    </td>
+    <td>
+        \[ \frac{b}{b - 1} \frac{1}{2b - 1} \ \sigma \]
+    </td>
+    <td>
+        \[ \frac{b + 1}{3b - 1} \]
+    </td>
+    <td>
+        \[ \frac{b + 1}{3b - 1} \frac{2b + 1}{4b - 1} \]
+    </td>
 </tr>
 <tr>
     <td>
@@ -329,11 +343,22 @@
         <br>
         <code>lomax</code>
     </td>
-    <td>\( b, \ \mu \)<br>\( \sigma > 1 \)</td>
-    <td>\[ \frac{1}{b - 1} \ \sigma + \mu \]</td>
-    <td>\[ \frac{b}{b - 1} \frac{1}{2b - 1} \ \sigma \]</td>
-    <td>\[ \frac{b + 1}{3b - 1} \]</td>
-    <td>\[ \frac{b + 1}{3b - 1} \frac{2b + 1}{4b - 1}  \]</td>
+    <td>
+        \( b, \ \mu \)<br>
+        \( \sigma > 1 \)
+    </td>
+    <td>
+        \[ \frac{1}{b - 1} \ \sigma + \mu \]
+    </td>
+    <td>
+        \[ \frac{b}{b - 1} \frac{1}{2b - 1} \ \sigma \]
+    </td>
+    <td>
+        \[ \frac{b + 1}{3b - 1} \]
+    </td>
+    <td>
+        \[ \frac{b + 1}{3b - 1} \frac{2b + 1}{4b - 1} \]
+    </td>
 </tr>
 <tr>
     <td>
@@ -345,15 +370,25 @@
             Pareto III
         </a>
         <br>
-        <code>...</code>
     </td>
-    <td>\( c, \ \mu \)<br>\( \sigma > 1 \)</td>
-    <td>\[ \Gamma(1 + c) \ \Gamma(1 - c) \ \sigma + \mu \]</td>
-    <td>\[ c \ \Gamma(1 + c) \ \Gamma(1 - c) \ \sigma \]</td>
-    <td>\[ c \vphantom{c^2 \Gamma(c)} \]</td>
-    <td>\[ \frac{1 + 5 c^2}{6} \]</td>
+    <td>
+        \( c, \ \mu \)<br>
+        \( \sigma > 1 \)
+    </td>
+    <td>
+        \[ c \ \Gamma(c) \ \Gamma(1 - c) \ \sigma + \mu \]
+    </td>
+    <td>
+        \[ c^2 \ \Gamma(c) \ \Gamma(1 - c) \ \sigma \]
+    </td>
+    <td>
+        \[ c \vphantom{c^2 \Gamma(c)} \]
+    </td>
+    <td>
+        \[ \frac{1 + 5 c^2}{6} \]
+    </td>
 </tr>
-<!-- 
+
 <tr>
     <td>
         <a
@@ -364,15 +399,46 @@
             Kumaraswamy
         </a>
         <br>
-        <code>...</code>
     </td>
-    <td>\( a > 0,\, b > 0\)<br> \(\, \eta = 1 + 1/a \)</td>
-    <td>\( b B(\eta, b) \)</td>
-    <td>\( b B(\eta, b) - 2b B(\eta, 2b) \)</td>
-    <td>\( \frac{B(\eta, b) - 6 B(\eta, 2b) + 6 B(\eta, 3b)}{B(\eta, b) - 2 B(\eta, 2b)} \)</td>
-    <td>\( \frac{B(\eta, b) - 12 B(\eta, 2b) + 30 B(\eta, 3b) - 40 B(\eta, 4b)}{B(\eta, b) - 2 B(\eta, 2b)} \)</td>
+    <td>
+        \( \alpha > 0, \ \beta > 0 \)<br>
+        <!-- \( \eta \stackrel{\text{def}}{=} 1 + 1 / a \) -->
+        \( 
+            \omega_n := \B \bigl( \frac{1 + \alpha}{\alpha}, n \beta \bigr) 
+        \)
+    </td>
+    <td>
+        \[ \omega_1 \beta \]
+    </td>
+    <td>
+        \[ \left( \omega_1 - 2 \omega_2 \right) \beta \]
+    </td>
+    <td>
+        \[ 
+            \frac
+                {\omega_1 - 6 \omega_2 + 6 \omega_3}
+                {\omega_1 - 2 \omega_2} 
+        \]
+        <!-- \[
+            1 - \frac
+                {4 \B(\eta, 2b) - 6 \B(\eta, 3b)}
+                {\B(\eta, b) - 2 \B(\eta, 2b)} 
+        \] -->
+    </td>
+    <td>
+        \[
+            \frac
+                {\omega_1 - 12 \omega_2 + 30 \omega_3 - 20 \omega_4}
+                {\omega_1 - 2 \omega_2}
+        \]
+        <!-- \[
+            1 - 10 \frac
+                {\B(\eta, 2b) - 3 \B(\eta, 3b) + 2 \B(\eta, 4b)}
+                {\B(\eta, b) - 2 \B(\eta, 2b)}
+        \] -->
+    </td>
 </tr>
--->
+
 </table>
 
 
@@ -397,24 +463,9 @@ Constants
         </a>
     </td>
     <td>\( \pi \)</td>
-    <td>\( = \int_{-1}^1 1/\sqrt{1-x^2} \, \mathrm{d} x \)</td>
+    <td>\[ \int_{-1}^1 \frac{\mathrm{d} x}{\sqrt{1 - x^2}} \]</td>
     <td>\( \approx 3.1416 \)</td>
     <td><code>numpy.pi</code></td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Magic_angle"
-            target="_blank"
-            title="Magic angle - Wikipedia"
-        >
-            Magic Angle
-        </a>
-    </td>
-    <td>\( \theta_m \)</td>
-    <td>\[ = \tan^{-1}(\sqrt{2}) = \sec^{-1}(\sqrt{3}) \]</td>
-    <td>\( \approx 0.9553 \)</td>
-    <td><code>numpy.arctan(numpy.sqrt(2))</code></td>
 </tr>
 <tr>
     <td>
@@ -427,7 +478,15 @@ Constants
         </a>
     </td>
     <td>\( \gamma_e \)</td>
-    <td>\[ = \int_1^\infty (1/\lfloor x \rfloor - 1/x) \, \mathrm{d} x \]</td>
+    <td>
+        \[
+            \int_1^\infty 
+            \left( 
+                \frac{1}{\lfloor x \rfloor} - \frac 1 x 
+            \right) \ 
+            \mathrm{d} x 
+        \]
+    </td>
     <td>\( \approx 0.5772 \)</td>
     <td><code>numpy.euler_gamma</code></td>
 </tr>
@@ -454,7 +513,7 @@ Special functions
         </a>
     </td>
     <td>\( \Gamma(z) \)</td>
-    <td>\[ = \int_0^\infty t^{z-1} e^{-t} \, \mathrm{d} t \]</td>
+    <td>\[ \int_0^\infty t^{z-1} e^{-t} \, \mathrm{d} t \]</td>
     <td><code>scipy.special.gamma</code></td>
 </tr>
 <tr id="def-beta">
@@ -467,8 +526,12 @@ Special functions
             Beta function
         </a>
     </td>
-    <td>\( \mathrm{B}(z_1, z_2) \)</td>
-    <td>\[ = \Gamma(z_1) \Gamma(z_2) / \Gamma(z_1 + z_2) \]</td>
+    <td>\( \B(z_1, z_2) \)</td>
+    <td>
+        \[ 
+            \frac{\Gamma(z_1) \Gamma(z_2)}{\Gamma(z_1 + z_2)}
+        \]
+    </td>
     <td><code>scipy.special.beta</code></td>
 </tr>
 <tr id="def-bcox">
@@ -484,7 +547,6 @@ Special functions
     <td>\( \boxcox{y}{\lambda} \)</td>
     <td>
         \[
-            =
             \begin{cases}
                 (y^\lambda - 1) / \lambda & \text{if } \lambda \neq 0 \\
                 \ln(y) & \text{if } \lambda = 0
