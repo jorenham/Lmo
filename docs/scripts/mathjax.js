@@ -13,8 +13,12 @@ window.MathJax = {
             boxcox: ["\\rm \\mathcal{T}_{#2}\\left( #1 \\right)", 2],
             // L-moment (untrimmed)
             lmoment: ["\\lambda_{#1}", 1],
+            // L-moment (trimmed)
+            tlmoment: ["\\lambda^{(#1)}_{#2}", 2],
             // L-moment ratio (untrimmed)
-            lratio: ["\\tau_{#1}", 1]
+            lratio: ["\\tau_{#1}", 1],
+            // L-moment ratio (trimmed)
+            tlratio: ["\\tau^{(#1)}_{#2}", 2]
         }
     },
     options: {
