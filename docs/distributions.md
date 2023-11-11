@@ -494,6 +494,7 @@ exist (in closed form).
             Kumaraswamy
         </a>
         <br>
+        See \( \eqref{eq:lr_kum} \)
     </td>
     <td>
         \( \alpha > 0, \ \beta > 0 \)<br>
@@ -534,6 +535,24 @@ exist (in closed form).
     </td>
 </tr>
 </table>
+
+
+For Kumaraswamy's distribution with parameters \( \alpha \) and \( \beta \), 
+the general solution for the \( r \)th L-moment has been derived by 
+[Jones (2009)](https://doi.org/10.1016/j.stamet.2008.04.001):
+
+\[
+    \begin{equation}
+    \lmoment{r} = 
+        \beta 
+        \sum_{k=0}^{r-1} 
+            (-1)^k
+            \binom{r - 1}{k}
+            \binom{r + k - 1}{k}
+            \B(1 + 1 / \alpha, \beta + k \beta)
+        \label{eq:lr_kum}
+    \end{equation}
+\]
 
 
 ## TL-moments

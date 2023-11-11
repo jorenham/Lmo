@@ -4,6 +4,7 @@ window.MathJax = {
         displayMath: [["\\[", "\\]"]],
         processEscapes: true,
         processEnvironments: true,
+        tags: "ams",
         macros: {
             // Expectation operator
             E: "\\mathop{\\mathbb{E}}",
