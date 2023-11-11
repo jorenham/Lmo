@@ -1,8 +1,39 @@
 # L-moments of common probability distributions
 
-## Continuous univariate
+This page lists L-moment statistics 
+(L -location, scale, skewness, and kurtosis) of common univariate 
+probability distributions, most of them continuous.
 
-### L-moments
+Each of the listed expressions have been validated, both numerically and 
+symbolically (with either Wolfram Alpha, SymPy, or pen and paper). 
+
+Most of the closed-form expressions that are listed here, have been 
+previously reported in the literature. But for the sake of interpretability, 
+several have been algebraically rearranged. 
+
+Due to the exploratory use of symbolic computation software, this listing is 
+likely to include some novel solutions. This is also the reason for the lack 
+of references. But this should pose no problems in practise, since Lmo makes 
+it trivial to check if they aren't incorrect.
+
+
+!!! tip
+
+    Numerical calculation of these L-statistics using `scipy.stats`
+    distributions, refer to 
+    [`rv_continuous.l_stats`][lmo.contrib.scipy_stats.l_rv_generic.l_stats].
+
+    For direct calculation of the L-stats from a CDF or PPF (quantile function, 
+    inverse CDF), see [`l_stats_from_cdf`][lmo.theoretical.l_stats_from_cdf] or 
+    [`l_stats_from_ppf`][lmo.theoretical.l_stats_from_ppf], respectively.
+
+
+## L-moments
+
+An overview of the untrimmed L-location, L-scale, L-skewness and L-kurtosis,
+of a bunch of pupular univariate probability distributions, for which they 
+exist (in closed form). 
+
 
 <table style="overflow: hidden">
 <tr>
@@ -318,6 +349,57 @@
 <tr>
     <td>
         <a
+            href="https://wikipedia.org/wiki/Fr%C3%A9chet_distribution"
+            target="_blank"
+            title="Fréchet distribution - Wikipedia"
+        >
+            Fréchet
+        </a>
+        <br>
+        <code>invweibull</code>
+    </td>
+    <td>
+        \( \alpha > 1, \beta > 0 \)
+        \( \omega := 1 / \alpha \)
+    </td>
+    <td>
+        \[ 
+            \Gamma(1 - \omega) \
+            \beta 
+        \]
+    </td>
+    <td>
+        \[ 
+            \left(2^\omega - 1\right) \
+            \Gamma(1 - \omega) \
+            \beta  
+        \]
+    </td>
+    <td>
+        \[ 
+            2 \frac
+                {3^\omega - 2^\omega}
+                {2^\omega - 1} 
+            - 1
+        \]
+    </td>
+    <td>
+        <!-- \[ 
+            \frac
+                {5 \cdot 4^\omega - 10 \cdot 3^\omega + 6 \cdot 2^\omega - 1}
+                {2^\omega - 1} 
+        \] -->
+        \[ 
+            5 \frac
+                {4^\omega - 2 \cdot 3^\omega + 2^\omega}
+                {2^\omega - 1} 
+            + 1
+        \]
+    </td>
+</tr>
+<tr>
+    <td>
+        <a
             href="https://wikipedia.org/wiki/Pareto_distribution"
             target="_blank"
             title="Pareto distribution - Wikipedia"
@@ -454,7 +536,10 @@
 </table>
 
 
-### TL-moments
+## TL-moments
+
+Collection of TL-location, -scale, -skewness, -kurtosis coefficients, with
+symmetric trimming of order 1. 
 
 <table style="overflow: hidden">
 <tr>
@@ -792,6 +877,60 @@
     </td>
 </tr>
 <!-- TODO: GEV -->
+<tr>
+    <td>
+        <a
+            href="https://wikipedia.org/wiki/Fr%C3%A9chet_distribution"
+            target="_blank"
+            title="Fréchet distribution - Wikipedia"
+        >
+            Fréchet
+        </a>
+        <br>
+        <code>invweibull</code>
+    </td>
+    <td>
+        \( \alpha > 0, \beta > 0 \)
+        \( \omega := 1 / \alpha \)
+    </td>
+    <td>
+        \[ 
+            (2 \cdot 3^\omega - 3 \cdot 2^\omega) \
+            \omega \
+            \Gamma(-\omega) \
+            \beta 
+        \]
+    </td>
+    <td>
+        \[ 
+            3
+            (4^\omega - 2 \cdot 3^\omega + 2^\omega) \
+            \omega \
+            \Gamma(-\omega) \
+            \beta  
+        \]
+    </td>
+    <td>
+        \[ 
+            \frac{10}{9} \left(
+                2 \frac
+                    {4^\omega - 2 \cdot 4^\omega + 3^\omega}
+                    {4^\omega - 2 \cdot 3^\omega + 2^\omega}
+                - 1
+            \right)
+        \]
+    </td>
+    <td>
+        \[
+            \frac{5}{12} \left(
+                14 \ \frac
+                    {6^\omega - 3 \cdot 5^\omega + 3 \cdot 4^\omega - 3^\omega}
+                    {4^\omega - 2 \cdot 3^\omega + 2^\omega}
+                + 3
+            \right)
+        \]
+    </td>
+</tr>
 <!-- TODO: Pareto I -->
 <!-- TODO: Pareto II -->
 <!-- TODO: Pareto III -->
@@ -799,7 +938,7 @@
 </table>
 
 
-### Special functions and constants
+## Special functions and constants
 
 
 <table style="overflow: hidden">
