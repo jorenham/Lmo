@@ -483,7 +483,6 @@ exist (in closed form).
         \[ \frac{1 + 5 c^2}{6} \]
     </td>
 </tr>
-
 <tr>
     <td>
         <a
@@ -500,7 +499,7 @@ exist (in closed form).
         \( \alpha > 0, \ \beta > 0 \)<br>
         <!-- \( \eta \stackrel{\text{def}}{=} 1 + 1 / a \) -->
         \( 
-            \omega_n := \B \bigl( \frac{1 + \alpha}{\alpha}, n \beta \bigr) 
+            \omega_k := \B \bigl( \frac{1 + \alpha}{\alpha}, k \beta \bigr) 
         \)
     </td>
     <td>
@@ -936,7 +935,47 @@ symmetric trimming of order 1.
 <!-- TODO: Pareto I -->
 <!-- TODO: Pareto II -->
 <!-- TODO: Pareto III -->
-<!-- TODO: Kumaraswamy -->
+<tr>
+    <td>
+        <a
+            href="https://wikipedia.org/wiki/Kumaraswamy_distribution"
+            target="_blank"
+            title="Kumaraswamy distribution - Wikipedia"
+        >
+            Kumaraswamy
+        </a>
+        <br>
+        See \( \eqref{eq:lr_kum} \)
+    </td>
+    <td>
+        \( \alpha > 0, \ \beta > 0 \)<br>
+        \( 
+            \omega_k := \B \bigl( \frac{1 + \alpha}{\alpha}, k \beta \bigr) 
+        \)
+    </td>
+    <td>
+        \[ 6 (\omega_2 - \omega_3) \ \beta \]
+    </td>
+    <td>
+        \[ 6 (\omega_2 - 3 \omega_3 + 2 \omega_4 ) \ \beta \]
+    </td>
+    <td>
+        \[
+            \frac{10}{9}
+            \frac
+                {\omega_2 - 6 \omega_3 + 10 \omega_4 - 5 \omega_5}
+                {\omega_2 - 3 \omega_3 + 2 \omega_4} 
+        \]
+    </td>
+    <td>
+        \[
+            \frac{5}{4}
+            \frac
+                {\omega_2 - 10 \omega_3 + 30 \omega_4 - 35 \omega_5 + 14 \omega_6}
+                {\omega_2 - 3 \omega_3 + 2 \omega_4} 
+        \]
+    </td>
+</tr>
 </table>
 
 ### Kumaraswamy's distribution
