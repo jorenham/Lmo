@@ -31,7 +31,7 @@ it trivial to check if they aren't incorrect.
 ## L-moments
 
 An overview of the untrimmed L-location, L-scale, L-skewness and L-kurtosis,
-of a bunch of pupular univariate probability distributions, for which they 
+of a bunch of popular univariate probability distributions, for which they 
 exist (in closed form). 
 
 
@@ -537,23 +537,6 @@ exist (in closed form).
 </table>
 
 
-For Kumaraswamy's distribution with parameters \( \alpha \) and \( \beta \), 
-the general solution for the \( r \)th L-moment has been derived by 
-[Jones (2009)](https://doi.org/10.1016/j.stamet.2008.04.001):
-
-\[
-    \begin{equation}
-    \lmoment{r} = 
-        \beta 
-        \sum_{k=0}^{r-1} 
-            (-1)^k
-            \binom{r - 1}{k}
-            \binom{r + k - 1}{k}
-            \B(1 + 1 / \alpha, \beta + k \beta)
-        \label{eq:lr_kum}
-    \end{equation}
-\]
-
 
 ## TL-moments
 
@@ -955,6 +938,42 @@ symmetric trimming of order 1.
 <!-- TODO: Pareto III -->
 <!-- TODO: Kumaraswamy -->
 </table>
+
+### Kumaraswamy's distribution
+
+For Kumaraswamy's distribution with parameters \( \alpha \) and \( \beta \), 
+the general solution for the \( r \)th L-moment has been derived by 
+[Jones (2009)](https://doi.org/10.1016/j.stamet.2008.04.001). This can be 
+extended for the general trimmed L-moments.
+
+The distribution functions are
+
+\[
+\begin{align}
+f(x) &= \alpha \beta x^{\alpha-1}(1-x^\alpha)^{\beta-1} \\
+F(x) &= 1 - (1 - x^\alpha)^\beta \\
+x(F) &= \left(1 - (1 - F)^{1/\beta} \right)^{1/\alpha}\, ,
+\end{align}
+\]
+
+for \( x \in [0, 1] \). 
+
+The trimmed L-moment is:
+
+\[
+    \begin{equation}
+        \tlmoment{s,t}{r+1} = 
+            \beta \
+            (r+s+t-1)
+            \frac{r!}{(r + t)!}
+            \sum_{k=s}^{r+s+t} 
+                (-1)^{k-s}
+                \binom{r+k}{k-s}
+                \binom{r+s+t}{k}
+                \B(1 + 1 / \alpha,\ \beta + k\beta)
+            \label{eq:lr_kum}
+    \end{equation}
+\]
 
 
 ## Special functions and constants
