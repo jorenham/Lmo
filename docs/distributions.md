@@ -980,36 +980,34 @@ symmetric trimming of order 1.
 
 ### Kumaraswamy's distribution
 
-For Kumaraswamy's distribution with parameters \( \alpha \) and \( \beta \), 
+For Kumaraswamy's distribution with parameters 
+\( \alpha \in \mathbb{R}_{>0} \) and \( \beta \in \mathbb{R}_{>0} \), 
 the general solution for the \( r \)th L-moment has been derived by 
 [Jones (2009)](https://doi.org/10.1016/j.stamet.2008.04.001). This can be 
 extended for the general trimmed L-moments.
 
-The distribution functions are
+The distribution functions are for \( x \in [0, 1] \) defined as:
 
 \[
 \begin{align}
 f(x) &= \alpha \beta x^{\alpha-1}(1-x^\alpha)^{\beta-1} \\
 F(x) &= 1 - (1 - x^\alpha)^\beta \\
-x(F) &= \left(1 - (1 - F)^{1/\beta} \right)^{1/\alpha}\, ,
+x(F) &= \left(1 - (1 - F)^{1/\beta} \right)^{1/\alpha}
 \end{align}
 \]
 
-for \( x \in [0, 1] \). 
-
-The trimmed L-moment is:
+Its general \( r \)-th trimmed L-moment are:
 
 \[
     \begin{equation}
-        \tlmoment{s,t}{r+1} = 
+        \tlmoment{s,t}{r} = 
             \beta \
-            (r+s+t-1)
-            \frac{r!}{(r + t)!}
-            \sum_{k=s}^{r+s+t} 
-                (-1)^{k-s}
-                \binom{r+k}{k-s}
-                \binom{r+s+t}{k}
-                \B(1 + 1 / \alpha,\ \beta + k\beta)
+            \frac{r + s + t}{r}
+            \sum_{k = 0}^{r + s - 1}
+                (-1)^k
+                \binom{k + r + t - 1}{k}
+                \binom{r + s + t - 1}{k + t}
+                \B\bigl(1 + 1 / \alpha,\ (k + t + 1) \ \beta \bigr)
             \label{eq:lr_kum}
     \end{equation}
 \]
@@ -1097,7 +1095,7 @@ The trimmed L-moment is:
             = \sum_{n = 1}^{\infty} n^{-z}
         \]
     </td>
-    <td><code>scipy.special.beta</code></td>
+    <td><code>scipy.special.zeta</code></td>
 </tr>
 </table>
 
