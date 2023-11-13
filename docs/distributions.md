@@ -483,56 +483,6 @@ exist (in closed form).
         \[ \frac{1 + 5 c^2}{6} \]
     </td>
 </tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Kumaraswamy_distribution"
-            target="_blank"
-            title="Kumaraswamy distribution - Wikipedia"
-        >
-            Kumaraswamy
-        </a>
-        <br>
-        See \( \eqref{eq:lr_kum} \)
-    </td>
-    <td>
-        \( \alpha > 0, \ \beta > 0 \)<br>
-        <!-- \( \eta \stackrel{\text{def}}{=} 1 + 1 / a \) -->
-        \( 
-            \omega_k := \B \bigl( \frac{1 + \alpha}{\alpha}, k \beta \bigr) 
-        \)
-    </td>
-    <td>
-        \[ \omega_1 \beta \]
-    </td>
-    <td>
-        \[ \left( \omega_1 - 2 \omega_2 \right) \beta \]
-    </td>
-    <td>
-        \[ 
-            \frac
-                {\omega_1 - 6 \omega_2 + 6 \omega_3}
-                {\omega_1 - 2 \omega_2} 
-        \]
-        <!-- \[
-            1 - \frac
-                {4 \B(\eta, 2b) - 6 \B(\eta, 3b)}
-                {\B(\eta, b) - 2 \B(\eta, 2b)} 
-        \] -->
-    </td>
-    <td>
-        \[
-            \frac
-                {\omega_1 - 12 \omega_2 + 30 \omega_3 - 20 \omega_4}
-                {\omega_1 - 2 \omega_2}
-        \]
-        <!-- \[
-            1 - 10 \frac
-                {\B(\eta, 2b) - 3 \B(\eta, 3b) + 2 \B(\eta, 4b)}
-                {\B(\eta, b) - 2 \B(\eta, 2b)}
-        \] -->
-    </td>
-</tr>
 </table>
 
 
@@ -544,7 +494,7 @@ symmetric trimming of order 1.
 
 <table style="overflow: hidden">
 <tr>
-    <th>Name / <code>scipy.stats</code></th>
+    <th>Name / <br><code>scipy.stats</code></th>
     <th>Params</th>
     <th>\( \tlmoment{1}{1} \)</th>
     <th>\( \tlmoment{1}{2} \)</th>
@@ -935,50 +885,17 @@ symmetric trimming of order 1.
 <!-- TODO: Pareto I -->
 <!-- TODO: Pareto II -->
 <!-- TODO: Pareto III -->
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Kumaraswamy_distribution"
-            target="_blank"
-            title="Kumaraswamy distribution - Wikipedia"
-        >
-            Kumaraswamy
-        </a>
-        <br>
-        See \( \eqref{eq:lr_kum} \)
-    </td>
-    <td>
-        \( \alpha > 0, \ \beta > 0 \)<br>
-        \( 
-            \omega_k := \B \bigl( \frac{1 + \alpha}{\alpha}, k \beta \bigr) 
-        \)
-    </td>
-    <td>
-        \[ 6 (\omega_2 - \omega_3) \ \beta \]
-    </td>
-    <td>
-        \[ 6 (\omega_2 - 3 \omega_3 + 2 \omega_4 ) \ \beta \]
-    </td>
-    <td>
-        \[
-            \frac{10}{9}
-            \frac
-                {\omega_2 - 6 \omega_3 + 10 \omega_4 - 5 \omega_5}
-                {\omega_2 - 3 \omega_3 + 2 \omega_4} 
-        \]
-    </td>
-    <td>
-        \[
-            \frac{5}{4}
-            \frac
-                {\omega_2 - 10 \omega_3 + 30 \omega_4 - 35 \omega_5 + 14 \omega_6}
-                {\omega_2 - 3 \omega_3 + 2 \omega_4} 
-        \]
-    </td>
-</tr>
 </table>
 
-### Kumaraswamy's distribution
+
+## General solutions
+
+Lmo derived a bunch of closed-form solutions for L-moments of several
+distributions. The proofs are not published, but it isn't difficult
+to validate their correctness, e.g. numerically, or symbolically with sympy or 
+wolfram alpha / mathematica.
+
+### Kumaraswamy
 
 For [Kumaraswamy's distribution
 ](https://wikipedia.org/wiki/Kumaraswamy_distribution) with parameters 
@@ -1013,7 +930,7 @@ Its general \( r \)-th trimmed L-moment are:
     \end{equation}
 \]
 
-### Burr Type XII / Singh-Maddala distribution
+### Burr Type XII
 
 Just like Kumaraswamy's distribution, the 
 [Burr distribution](https://wikipedia.org/wiki/Burr_distribution) has two 
@@ -1024,36 +941,81 @@ The distribution functions are for \( x > 0 \) defined as:
 
 \[
 \begin{align}
-f(x) &= \alpha \beta x^{\alpha-1} \left(1 + x^\alpha\right)^{-\beta-1} \\
-F(x) &= 1 - (1 - x^\alpha)^{-\beta} \\
-x(F) &= \bigl(1 - (1 - F)^{-1/\beta} \bigr)^{1/\alpha}
+    f(x) &= \alpha \beta x^{\alpha-1} \left(1 + x^\alpha\right)^{-\beta-1} \\
+    F(x) &= 1 - (1 - x^\alpha)^{-\beta} \\
+    x(F) &= \bigl(1 - (1 - F)^{-1/\beta} \bigr)^{1/\alpha}
 \end{align}
 \]
 
 When \( \beta > 1 / \alpha \), the general \( r \)-th trimmed L-moment is:
 
 \[
-    \begin{equation}
-        \tlmoment{s,t}{r} = 
-            \beta \
-            \frac{r + s + t}{r}
-            \sum_{k = t}^{r + s + t - 1}
-                (-1)^k
-                \binom{k + r - 1}{k - t}
-                \binom{r + s + t - 1}{k}
-                \B\bigl(1 + 1 / \alpha,\ \beta + k \beta - 1 / \alpha \bigr)
-            \label{eq:lr_burr}
-    \end{equation}
+\begin{equation}
+    \tlmoment{s,t}{r} = 
+        \beta \
+        \frac{r + s + t}{r}
+        \sum_{k = t}^{r + s + t - 1}
+            (-1)^k
+            \binom{k + r - 1}{k - t}
+            \binom{r + s + t - 1}{k}
+            \B\bigl(1 + 1 / \alpha,\ \beta + k \beta - 1 / \alpha \bigr)
+        \label{eq:lr_burr}
+\end{equation}
 \]
 
 Interestingly, this barely differs from that of Kumaraswamy's distribution 
 \( \eqref{eq:lr_kum} \), even though the bounds of the distribution functions
 differ greatly.
 
+### Wakeby
+
+The [Wakeby distribution](https://wikipedia.org/wiki/Wakeby_distribution) 
+is quantile-based, without closed-form expressions for the PDF and CDF, whose
+quantile function (PPF) is defined to be
+
+\[
+\begin{equation}
+    x(F) = 
+        \frac \alpha \beta \bigl(1 - (1 - F)^\beta\bigr)
+        - \frac \gamma \delta \bigl(1 - (1 - p)^{-\delta}\bigr)
+        + \mu
+\end{equation}
+\]
+
+Each of the scale- \( \alpha, \gamma \) and shape parameters 
+\( \beta, \delta \), are assumed to be positive real numbers.
+
+Lmo figured out that the L-moments with any order \( r \in \mathbb{N}_{\ge 1} \) 
+and trim \( s, t \in \mathbb{N}^2_{\ge 1} \) can be expressed as
+
+\[
+\begin{equation}
+    \tlmoment{s,t}{r} 
+    = \frac{1}{r} \left(
+        \frac \gamma \delta
+        \frac
+            {\B(\delta + r - 1 ,\ t - \delta)}
+            {\B(\delta,\ r + s + t - \delta)}
+        - 
+        \frac \alpha \beta 
+        \frac
+            {\B(-\beta + r - 1,\ t + \beta)}
+            {\B(-\beta,\ r + s + t + \beta)}
+    \right)
+    +
+    \begin{cases}
+         \mu + \frac \alpha \beta - \frac \gamma \delta
+            & \text{if } r = 1 \\
+        0
+            & \text{if } r > 1
+    \end{cases}
+\end{equation}
+\]
+
+
 
 
 ## Special functions and constants
-
 
 <table style="overflow: hidden">
 <tr>
