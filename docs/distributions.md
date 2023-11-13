@@ -980,19 +980,20 @@ symmetric trimming of order 1.
 
 ### Kumaraswamy's distribution
 
-For Kumaraswamy's distribution with parameters 
+For [Kumaraswamy's distribution
+](https://wikipedia.org/wiki/Kumaraswamy_distribution) with parameters 
 \( \alpha \in \mathbb{R}_{>0} \) and \( \beta \in \mathbb{R}_{>0} \), 
 the general solution for the \( r \)th L-moment has been derived by 
 [Jones (2009)](https://doi.org/10.1016/j.stamet.2008.04.001). This can be 
 extended for the general trimmed L-moments.
 
-The distribution functions are for \( x \in [0, 1] \) defined as:
+The distribution functions are for \( 0 \le x \le 1 \) defined as:
 
 \[
 \begin{align}
-f(x) &= \alpha \beta x^{\alpha-1}(1-x^\alpha)^{\beta-1} \\
+f(x) &= \alpha \beta x^{\alpha-1}\left(1-x^\alpha\right)^{\beta-1} \\
 F(x) &= 1 - (1 - x^\alpha)^\beta \\
-x(F) &= \left(1 - (1 - F)^{1/\beta} \right)^{1/\alpha}
+x(F) &= \bigl(1 - (1 - F)^{1/\beta} \bigr)^{1/\alpha}
 \end{align}
 \]
 
@@ -1003,14 +1004,52 @@ Its general \( r \)-th trimmed L-moment are:
         \tlmoment{s,t}{r} = 
             \beta \
             \frac{r + s + t}{r}
-            \sum_{k = 0}^{r + s - 1}
+            \sum_{k = t}^{r + s + t - 1}
                 (-1)^k
-                \binom{k + r + t - 1}{k}
-                \binom{r + s + t - 1}{k + t}
-                \B\bigl(1 + 1 / \alpha,\ (k + t + 1) \ \beta \bigr)
+                \binom{k + r - 1}{k - t}
+                \binom{r + s + t - 1}{k}
+                \B\bigl(1 + 1 / \alpha,\ \beta + k \beta \bigr)
             \label{eq:lr_kum}
     \end{equation}
 \]
+
+### Burr Type XII / Singh-Maddala distribution
+
+Just like Kumaraswamy's distribution, the 
+[Burr distribution](https://wikipedia.org/wiki/Burr_distribution) has two 
+shape parameters \( \alpha \) and \( \beta \), both restricted to the 
+positive reals.
+
+The distribution functions are for \( x > 0 \) defined as:
+
+\[
+\begin{align}
+f(x) &= \alpha \beta x^{\alpha-1} \left(1 + x^\alpha\right)^{-\beta-1} \\
+F(x) &= 1 - (1 - x^\alpha)^{-\beta} \\
+x(F) &= \bigl(1 - (1 - F)^{-1/\beta} \bigr)^{1/\alpha}
+\end{align}
+\]
+
+When \( \beta > 1 / \alpha \), the general \( r \)-th trimmed L-moment is:
+
+\[
+    \begin{equation}
+        \tlmoment{s,t}{r} = 
+            \beta \
+            \frac{r + s + t}{r}
+            \sum_{k = t}^{r + s + t - 1}
+                (-1)^k
+                \binom{k + r - 1}{k - t}
+                \binom{r + s + t - 1}{k}
+                \B\bigl(1 + 1 / \alpha,\ \beta + k \beta - 1 / \alpha \bigr)
+            \label{eq:lr_burr}
+    \end{equation}
+\]
+
+Interestingly, this barely differs from that of Kumaraswamy's distribution 
+\( \eqref{eq:lr_kum} \), even though the bounds of the distribution functions
+differ greatly.
+
 
 
 ## Special functions and constants
