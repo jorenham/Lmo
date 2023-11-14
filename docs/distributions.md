@@ -1,38 +1,38 @@
 # L-moments of common probability distributions
 
-This page lists L-moment statistics 
-(L -location, scale, skewness, and kurtosis) of common univariate 
+This page lists L-moment statistics
+(L -location, scale, skewness, and kurtosis) of common univariate
 probability distributions, most of them continuous.
 
-Each of the listed expressions have been validated, both numerically and 
-symbolically (with either Wolfram Alpha, SymPy, or pen and paper). 
+Each of the listed expressions have been validated, both numerically and
+symbolically (with either Wolfram Alpha, SymPy, or pen and paper).
 
-Most of the closed-form expressions that are listed here, have been 
-previously reported in the literature. But for the sake of interpretability, 
-several have been algebraically rearranged. 
+Most of the closed-form expressions that are listed here, have been
+previously reported in the literature. But for the sake of interpretability,
+several have been algebraically rearranged.
 
-Due to the exploratory use of symbolic computation software, this listing is 
-likely to include some novel solutions. This is also the reason for the lack 
-of references. But this should pose no problems in practise, since Lmo makes 
+Due to the exploratory use of symbolic computation software, this listing is
+likely to include some novel solutions. This is also the reason for the lack
+of references. But this should pose no problems in practise, since Lmo makes
 it trivial to check if they aren't incorrect.
 
 
 !!! tip
 
     Numerical calculation of these L-statistics using `scipy.stats`
-    distributions, refer to 
+    distributions, refer to
     [`rv_continuous.l_stats`][lmo.contrib.scipy_stats.l_rv_generic.l_stats].
 
-    For direct calculation of the L-stats from a CDF or PPF (quantile function, 
-    inverse CDF), see [`l_stats_from_cdf`][lmo.theoretical.l_stats_from_cdf] or 
+    For direct calculation of the L-stats from a CDF or PPF (quantile function,
+    inverse CDF), see [`l_stats_from_cdf`][lmo.theoretical.l_stats_from_cdf] or
     [`l_stats_from_ppf`][lmo.theoretical.l_stats_from_ppf], respectively.
 
 
-## L-moments
+## L-stats
 
 An overview of the untrimmed L-location, L-scale, L-skewness and L-kurtosis,
-of a bunch of popular univariate probability distributions, for which they 
-exist (in closed form). 
+of a bunch of popular univariate probability distributions, for which they
+exist (in closed form).
 
 
 <table style="overflow: hidden">
@@ -250,15 +250,15 @@ exist (in closed form).
     </td>
     <td>\( \sigma > 0 \)</td>
     <td>
-        \[ 
-            \frac 1 2 
-            \sqrt{2 \pi} \ 
-            \sigma 
+        \[
+            \frac 1 2
+            \sqrt{2 \pi} \
+            \sigma
         \]
         \( \approx 1.253 \ \sigma \)
     </td>
     <td>
-        \[ 
+        \[
             \frac {\sqrt 2 - 1}{2}
             \sqrt{\pi} \
             \sigma
@@ -266,14 +266,14 @@ exist (in closed form).
         \( \approx 0.3671 \ \sigma \)
     </td>
     <td>
-        \[ 
+        \[
             \frac {\sqrt 2 - 1}{3}
             \left(9 - 2 \sqrt 6 - 3 \sqrt 2\right)
         \]
         \( \approx 0.1140 \)
     </td>
     <td>
-        \[ 
+        \[
             \frac {\sqrt 2 - 1}{6}
             \left(36 - 20 \sqrt 6 + 9 \sqrt 2\right)
         \]
@@ -339,10 +339,10 @@ exist (in closed form).
         \[ 2 \frac{\boxcox{3}{-\kappa}}{\boxcox{2}{-\kappa}} - 3 \]
     </td>
     <td>
-        \[ 
-            6 
-            + 5 \frac{\boxcox{4}{-\kappa}}{\boxcox{2}{-\kappa}} 
-            - 10 \frac{\boxcox{3}{-\kappa}}{\boxcox{2}{-\kappa}} 
+        \[
+            6
+            + 5 \frac{\boxcox{4}{-\kappa}}{\boxcox{2}{-\kappa}}
+            - 10 \frac{\boxcox{3}{-\kappa}}{\boxcox{2}{-\kappa}}
         \]
     </td>
 </tr>
@@ -363,36 +363,36 @@ exist (in closed form).
         \( \omega := 1 / \alpha \)
     </td>
     <td>
-        \[ 
+        \[
             \Gamma(1 - \omega) \
-            \beta 
+            \beta
         \]
     </td>
     <td>
-        \[ 
+        \[
             \left(2^\omega - 1\right) \
             \Gamma(1 - \omega) \
-            \beta  
+            \beta
         \]
     </td>
     <td>
-        \[ 
+        \[
             2 \frac
                 {3^\omega - 2^\omega}
-                {2^\omega - 1} 
+                {2^\omega - 1}
             - 1
         \]
     </td>
     <td>
-        <!-- \[ 
+        <!-- \[
             \frac
                 {5 \cdot 4^\omega - 10 \cdot 3^\omega + 6 \cdot 2^\omega - 1}
-                {2^\omega - 1} 
+                {2^\omega - 1}
         \] -->
-        \[ 
+        \[
             5 \frac
                 {4^\omega - 2 \cdot 3^\omega + 2^\omega}
-                {2^\omega - 1} 
+                {2^\omega - 1}
             + 1
         \]
     </td>
@@ -486,11 +486,10 @@ exist (in closed form).
 </table>
 
 
-
-## TL-moments
+## TL-stats
 
 Collection of TL-location, -scale, -skewness, -kurtosis coefficients, with
-symmetric trimming of order 1. 
+symmetric trimming of order 1, i.e. `trim=(1, 1)`.
 
 <table style="overflow: hidden">
 <tr>
@@ -538,9 +537,9 @@ symmetric trimming of order 1.
     </td>
     <td>\( \mu \)</td>
     <td>
-        \[ 
+        \[
             \left( 6 - 18 \ \frac{\arctan{\sqrt 2}}{\pi} \right)
-            \frac{\sigma}{\sqrt \pi} 
+            \frac{\sigma}{\sqrt \pi}
         \]
         \( \approx 0.2970 \ \sigma \)
     </td>
@@ -604,7 +603,7 @@ symmetric trimming of order 1.
             target="_blank"
             title="Cauchy distribution - Wikipedia"
         >
-            Cauchy 
+            Cauchy
         </a>
         /
         <br>
@@ -617,8 +616,8 @@ symmetric trimming of order 1.
         </a>
         (1 d.f.)
         <br>
-        <code>cauchy</code> 
-        / 
+        <code>cauchy</code>
+        /
         <code>t(2)</code>
     </td>
     <td>\( \nu = 1 \)</td>
@@ -747,20 +746,20 @@ symmetric trimming of order 1.
     <td>\( \sigma > 0 \)</td>
     <td>
         <!-- \[ \left( \frac 3 2 - \sqrt{\frac{2}{3}} \right) \sqrt \pi \ \sigma \] -->
-        \[ 
+        \[
             \frac 1 6
-            \bigl( 9 - 2 \sqrt 6 \bigr) 
-            \sqrt \pi \ 
-            \sigma 
+            \bigl( 9 - 2 \sqrt 6 \bigr)
+            \sqrt \pi \
+            \sigma
         \]
         \( \approx 1.211 \sigma \)
     </td>
     <td>
-        \[ 
-            \frac 1 4 
-            \bigl( 6 - 4 \sqrt 6 + 3 \sqrt 2 \bigr) 
-            \sqrt \pi \ 
-            \sigma 
+        \[
+            \frac 1 4
+            \bigl( 6 - 4 \sqrt 6 + 3 \sqrt 2 \bigr)
+            \sqrt \pi \
+            \sigma
         \]
         \( \approx 0.1970 \sigma \)
     </td>
@@ -772,8 +771,8 @@ symmetric trimming of order 1.
                 {6 - 4 \sqrt 6 + 3 \sqrt 2}
         \] -->
         \[
-            \frac{10}{9} 
-            - \frac{8}{9} 
+            \frac{10}{9}
+            - \frac{8}{9}
             \frac
                 {3 \sqrt{10} + 5 \sqrt 6 - 15 \sqrt 2}
                 {6 - 4 \sqrt 6 + 3 \sqrt 2}
@@ -782,7 +781,7 @@ symmetric trimming of order 1.
     </td>
     <td>
         \[
-            \frac 5 4 
+            \frac 5 4
             - \frac 7 6
             \frac
                 {18 \sqrt{10} + 10 \sqrt 6 - 10 \sqrt 3 - 45 \sqrt 2}
@@ -813,14 +812,14 @@ symmetric trimming of order 1.
         \( \approx 0.3533 \ \beta \)
     </td>
     <td>
-        \[ 
+        \[
             \frac{10}{9}
-            \frac{2 \ln{5} + 4 \ln{3} - 11 \ln{2}}{2 \ln{3} - 3 \ln{2}} 
+            \frac{2 \ln{5} + 4 \ln{3} - 11 \ln{2}}{2 \ln{3} - 3 \ln{2}}
         \]
         \( \approx -0.1065 \)
     </td>
     <td>
-        \[ 
+        \[
             \frac{5}{12}
             \frac{42 \ln{5} + 6 \ln{3} - 107 \ln{2}}{2 \ln{3} - 3 \ln{2}}
         \]
@@ -845,24 +844,24 @@ symmetric trimming of order 1.
         \( \omega := 1 / \alpha \)
     </td>
     <td>
-        \[ 
+        \[
             (2 \cdot 3^\omega - 3 \cdot 2^\omega) \
             \omega \
             \Gamma(-\omega) \
-            \beta 
+            \beta
         \]
     </td>
     <td>
-        \[ 
+        \[
             3
             (4^\omega - 2 \cdot 3^\omega + 2^\omega) \
             \omega \
             \Gamma(-\omega) \
-            \beta  
+            \beta
         \]
     </td>
     <td>
-        \[ 
+        \[
             \frac{10}{9} \left(
                 2 \frac
                     {4^\omega - 2 \cdot 4^\omega + 3^\omega}
@@ -883,25 +882,24 @@ symmetric trimming of order 1.
     </td>
 </tr>
 <!-- TODO: Pareto I -->
-<!-- TODO: Pareto II -->
 <!-- TODO: Pareto III -->
 </table>
 
 
-## General solutions
+## General L-moments
 
 Lmo derived a bunch of closed-form solutions for L-moments of several
 distributions. The proofs are not published, but it isn't difficult
-to validate their correctness, e.g. numerically, or symbolically with sympy or 
+to validate their correctness, e.g. numerically, or symbolically with sympy or
 wolfram alpha / mathematica.
 
 ### Kumaraswamy
 
 For [Kumaraswamy's distribution
-](https://wikipedia.org/wiki/Kumaraswamy_distribution) with parameters 
-\( \alpha \in \mathbb{R}_{>0} \) and \( \beta \in \mathbb{R}_{>0} \), 
-the general solution for the \( r \)th L-moment has been derived by 
-[Jones (2009)](https://doi.org/10.1016/j.stamet.2008.04.001). This can be 
+](https://wikipedia.org/wiki/Kumaraswamy_distribution) with parameters
+\( \alpha \in \mathbb{R}_{>0} \) and \( \beta \in \mathbb{R}_{>0} \),
+the general solution for the \( r \)th L-moment has been derived by
+[Jones (2009)](https://doi.org/10.1016/j.stamet.2008.04.001). This can be
 extended for the general trimmed L-moments.
 
 The distribution functions are for \( 0 \le x \le 1 \) defined as:
@@ -918,7 +916,7 @@ Its general \( r \)-th trimmed L-moment are:
 
 \[
     \begin{equation}
-        \tlmoment{s,t}{r} = 
+        \tlmoment{s,t}{r} =
             \beta \
             \frac{r + s + t}{r}
             \sum_{k = t}^{r + s + t - 1}
@@ -932,9 +930,9 @@ Its general \( r \)-th trimmed L-moment are:
 
 ### Burr Type XII
 
-Just like Kumaraswamy's distribution, the 
-[Burr distribution](https://wikipedia.org/wiki/Burr_distribution) has two 
-shape parameters \( \alpha \) and \( \beta \), both restricted to the 
+Just like Kumaraswamy's distribution, the
+[Burr distribution](https://wikipedia.org/wiki/Burr_distribution) has two
+shape parameters \( \alpha \) and \( \beta \), both restricted to the
 positive reals.
 
 The distribution functions are for \( x > 0 \) defined as:
@@ -951,7 +949,7 @@ When \( \beta > 1 / \alpha \), the general \( r \)-th trimmed L-moment is:
 
 \[
 \begin{equation}
-    \tlmoment{s,t}{r} = 
+    \tlmoment{s,t}{r} =
         \beta \
         \frac{r + s + t}{r}
         \sum_{k = t}^{r + s + t - 1}
@@ -963,41 +961,41 @@ When \( \beta > 1 / \alpha \), the general \( r \)-th trimmed L-moment is:
 \end{equation}
 \]
 
-Interestingly, this barely differs from that of Kumaraswamy's distribution 
+Interestingly, this barely differs from that of Kumaraswamy's distribution
 \( \eqref{eq:lr_kum} \), even though the bounds of the distribution functions
 differ greatly.
 
 ### Wakeby
 
-The [Wakeby distribution](https://wikipedia.org/wiki/Wakeby_distribution) 
+The [Wakeby distribution](https://wikipedia.org/wiki/Wakeby_distribution)
 is quantile-based, without closed-form expressions for the PDF and CDF, whose
 quantile function (PPF) is defined to be
 
 \[
 \begin{equation}
-    x(F) = 
+    x(F) =
         \frac \alpha \beta \bigl(1 - (1 - F)^\beta\bigr)
         - \frac \gamma \delta \bigl(1 - (1 - p)^{-\delta}\bigr)
         + \mu
 \end{equation}
 \]
 
-Each of the scale- \( \alpha, \gamma \) and shape parameters 
+Each of the scale- \( \alpha, \gamma \) and shape parameters
 \( \beta, \delta \), are assumed to be positive real numbers.
 
-Lmo figured out that the L-moments with any order \( r \in \mathbb{N}_{\ge 1} \) 
+Lmo figured out that the L-moments with any order \( r \in \mathbb{N}_{\ge 1} \)
 and trim \( s, t \in \mathbb{N}^2_{\ge 1} \) can be expressed as
 
 \[
 \begin{equation}
-    \tlmoment{s,t}{r} 
+    \tlmoment{s,t}{r}
     = \frac{1}{r} \left(
         \frac \gamma \delta
         \frac
             {\B(\delta + r - 1 ,\ t - \delta)}
             {\B(\delta,\ r + s + t - \delta)}
-        - 
-        \frac \alpha \beta 
+        -
+        \frac \alpha \beta
         \frac
             {\B(-\beta + r - 1,\ t + \beta)}
             {\B(-\beta,\ r + s + t + \beta)}
@@ -1017,7 +1015,11 @@ and trim \( s, t \in \mathbb{N}^2_{\ge 1} \) can be expressed as
 <!-- TODO: Generalized Logistic -->
 <!-- TODO: Generalized (Tukey-) Lambda -->
 
-## Special functions and constants
+## Constants and special functions
+
+An overview of the (non-obvious) mathematical notation of special functions 
+and constants.
+
 
 <table style="overflow: hidden">
 <tr>
@@ -1026,29 +1028,84 @@ and trim \( s, t \in \mathbb{N}^2_{\ge 1} \) can be expressed as
     <th>Definition</th>
     <th>Python</th>
 </tr>
-<tr id="def-bcox">
+<tr id="const-euler">
     <td>
         <a
-            href="https://wikipedia.org/wiki/Power_transform#Box%E2%80%93Cox_transformation"
+            href="https://wikipedia.org/wiki/Euler-Mascheroni_constant"
             target="_blank"
-            title="Box–Cox transformation - Power transform - Wikipedia"
+            title="Euler's constant"
         >
-            Box–Cox transform
+            Euler–Mascheroni constant
         </a>
     </td>
-    <td>\( \boxcox{z}{\lambda} \)</td>
+    <td>\[ \gamma_e \]</td>
     <td>
         \[
-            =
-            \begin{cases}
-                (z^\lambda - 1) / \lambda & \text{if } \lambda \neq 0 \\
-                \ln(z) & \text{if } \lambda = 0
-            \end{cases}
+            \begin{align*}
+                &= \int_1^\infty 
+                    \left(
+                        \frac{1}{\lfloor x \rfloor} - \frac 1 x
+                    \right) \
+                    \mathrm{d} x \\
+                &\approx 0.5772 \vphantom{\frac 1 1}
+            \end{align*}
         \]
     </td>
-    <td><code>scipy.special.boxcox</code></td>
+    <td>
+        <a 
+            href="https://numpy.org/doc/stable/reference/constants.html#numpy.euler_gamma"
+            target="_blank"
+        >
+            <code>numpy.euler_gamma</code>
+        </a>
+    </td>
 </tr>
-<tr id="def-gamma">
+
+<tr id="def-factorial" class="row-double-top">
+    <td>
+        <a
+            href="https://wikipedia.org/wiki/Factorial"
+            target="_blank"
+            title="Factorial - Wikipedia"
+        >
+            Factorial
+        </a>
+    </td>
+    <td>\[ n! \vphantom{\prod_{k=1}^n k} \]</td>
+    <td>\[ = \prod_{k=1}^n k \]</td>
+    <td>
+        <a 
+            href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.factorial.html"
+            target="_blank"
+        >
+            <code>scipy.special.factorial</code>
+        </a>
+    </td>
+</tr>
+<tr id="def-binom">
+    <td>
+        <a
+            href="https://wikipedia.org/wiki/Binomial_coefficient"
+            target="_blank"
+            title="Binomial coefficient - Wikipedia"
+        >
+            Binomial coefficient
+        </a>
+    </td>
+    <td>\[ \binom{n}{k} \]</td>
+    <td>\[ = \frac{n!}{k! \ (n - k)!} \]</td>
+    <td>
+        <a 
+            href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.comb.html"
+            target="_blank"
+        >
+            <code>scipy.special.comb</code>
+        </a>
+    </td>
+</tr>
+
+<tr id="def-gamma" class="row-double-top">
+    <!-- <td style="border-top-style: double;"> -->
     <td>
         <a
             href="https://wikipedia.org/wiki/Gamma_function"
@@ -1058,11 +1115,16 @@ and trim \( s, t \in \mathbb{N}^2_{\ge 1} \) can be expressed as
             Gamma function
         </a>
     </td>
-    <td>\( \Gamma(z) \)</td>
+    <td>\[ \Gamma(z) \]</td>
+    <td>\[ = \int_0^\infty t^{z-1} e^{-t} \, \mathrm{d} t \]</td>
     <td>
-        \[ = \int_0^\infty t^{z-1} e^{-t} \, \mathrm{d} t \]
+        <a 
+            href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.gamma.html"
+            target="_blank"
+        >
+            <code>scipy.special.gamma</code>
+        </a>
     </td>
-    <td><code>scipy.special.gamma</code></td>
 </tr>
 <tr id="def-beta">
     <td>
@@ -1074,13 +1136,16 @@ and trim \( s, t \in \mathbb{N}^2_{\ge 1} \) can be expressed as
             Beta function
         </a>
     </td>
-    <td>\( \B(z_1, z_2) \)</td>
+    <td>\[ \B(z_1,\ z_2) \]</td>
+    <td>\[ = \frac{\Gamma(z_1) \Gamma(z_2)}{\Gamma(z_1 + z_2)} \]</td>
     <td>
-        \[ 
-            = \frac{\Gamma(z_1) \Gamma(z_2)}{\Gamma(z_1 + z_2)}
-        \]
+        <a 
+            href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.beta.html"
+            target="_blank"
+        >
+            <code>scipy.special.beta</code>
+        </a>
     </td>
-    <td><code>scipy.special.beta</code></td>
 </tr>
 <tr id="def-zeta">
     <td>
@@ -1092,45 +1157,44 @@ and trim \( s, t \in \mathbb{N}^2_{\ge 1} \) can be expressed as
             Riemann zeta function
         </a>
     </td>
-    <td>\( \zeta(z) \)</td>
+    <td>\[ \zeta(z) \vphantom{\sum_{n = 1}^{\infty}} \]</td>
+    <td>\[ = \sum_{n = 1}^{\infty} n^{-z} \]</td>
     <td>
-        \[ 
-            = \sum_{n = 1}^{\infty} n^{-z}
-        \]
-    </td>
-    <td><code>scipy.special.zeta</code></td>
-</tr>
-</table>
-
-<table style="overflow: hidden">
-<tr>
-    <th>Name</th>
-    <th>Symbol</th>
-    <th>Definition</th>
-    <th>Value</th>
-    <th>Python</th>
-</tr>
-<tr id="const-euler">
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Euler%27s_constant"
+        <a 
+            href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.zeta.html"
             target="_blank"
-            title="Euler's constant"
         >
-            Euler–Mascheroni constant
+            <code>scipy.special.zeta</code>
         </a>
     </td>
-    <td>\( \gamma_e \)</td>
+</tr>
+<tr id="def-bcox">
+    <td>
+        <a
+            href="https://wikipedia.org/wiki/Power_transform#Box%E2%80%93Cox_transformation"
+            target="_blank"
+            title="Box–Cox transformation - Power transform - Wikipedia"
+        >
+            Box–Cox transform
+        </a>
+    </td>
+    <td>\[ \boxcox{z}{\lambda} \]</td>
     <td>
         \[
-            = \int_1^\infty 
-            \left( 
-                \frac{1}{\lfloor x \rfloor} - \frac 1 x 
-            \right) \ 
-            \mathrm{d} x 
+            =
+            \begin{cases}
+                (z^\lambda - 1) / \lambda & \text{if } \lambda \neq 0 \\
+                \ln(z) & \text{if } \lambda = 0
+            \end{cases}
         \]
     </td>
-    <td>\( \approx 0.5772 \)</td>
-    <td><code>numpy.euler_gamma</code></td>
+    <td>
+        <a 
+            href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.boxcox.html"
+            target="_blank"
+        >
+            <code>scipy.special.boxcox</code>
+        </a>
+    </td>
 </tr>
 </table>

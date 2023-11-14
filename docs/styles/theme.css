@@ -48,3 +48,7 @@ td,
 th {
   white-space: nowrap;
 }
+
+tr.row-double-top > td {
+  border-top: 0.15rem double var(--md-typeset-table-color) !important;
+}
