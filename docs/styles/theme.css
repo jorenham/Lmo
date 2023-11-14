@@ -43,3 +43,8 @@ a.autorefs-external::after {
 a.autorefs-external:hover::after {
   background-color: var(--md-accent-fg-color);
 }
+
+td,
+th {
+  white-space: nowrap;
+}

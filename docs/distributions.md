@@ -37,7 +37,7 @@ exist (in closed form).
 
 <table style="overflow: hidden">
 <tr>
-    <th>Name / <code>scipy.stats</code></th>
+    <th>Name /<br> <code>scipy.stats</code></th>
     <th>Params</th>
     <th>\( \lmoment{1} \)</th>
     <th>\( \lmoment{2} \)</th>
@@ -359,7 +359,7 @@ exist (in closed form).
         <code>invweibull</code>
     </td>
     <td>
-        \( \alpha > 1, \beta > 0 \)
+        \( \alpha > 1, \beta > 0 \)<br>
         \( \omega := 1 / \alpha \)
     </td>
     <td>
@@ -841,7 +841,7 @@ symmetric trimming of order 1.
         <code>invweibull</code>
     </td>
     <td>
-        \( \alpha > 0, \beta > 0 \)
+        \( \alpha > 0, \beta > 0 \)<br>
         \( \omega := 1 / \alpha \)
     </td>
     <td>
@@ -1012,8 +1012,10 @@ and trim \( s, t \in \mathbb{N}^2_{\ge 1} \) can be expressed as
 \end{equation}
 \]
 
-
-
+<!-- TODO: Generalized Pareto (GPD / Pareto-Pickands) -->
+<!-- TODO: Generalized Extreme Value (GEV) -->
+<!-- TODO: Generalized Logistic -->
+<!-- TODO: Generalized (Tukey-) Lambda -->
 
 ## Special functions and constants
 
