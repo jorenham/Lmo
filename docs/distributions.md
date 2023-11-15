@@ -989,17 +989,16 @@ and trim \( s, t \in \mathbb{N}^2_{\ge 1} \) can be expressed as
 \[
 \begin{equation}
     \tlmoment{s,t}{r}
-    = \frac{1}{r} \left(
-        \frac \gamma \delta
+        = 
+        \frac{\gamma}{r \delta}
         \frac
-            {\B(\delta + r - 1 ,\ t - \delta)}
-            {\B(\delta,\ r + s + t - \delta)}
+            {\B(\delta + r - 1,\ t - \delta + 1)}
+            {\B(\delta,\ r + s + t - \delta + 1)}
         -
-        \frac \alpha \beta
+        \frac{\alpha}{r \beta}
         \frac
-            {\B(-\beta + r - 1,\ t + \beta)}
-            {\B(-\beta,\ r + s + t + \beta)}
-    \right)
+            {\B(-\beta + r - 1,\ t + \beta + 1)}
+            {\B(-\beta,\ r + s + t + \beta + 1)}
     +
     \begin{cases}
          \mu + \frac \alpha \beta - \frac \gamma \delta
