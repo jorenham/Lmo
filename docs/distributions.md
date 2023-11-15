@@ -57,8 +57,8 @@ exist (in closed form).
         <code>uniform</code>
     </td>
     <td>\( a < b \)</td>
-    <td>\[ (a + b) / 2 \]</td>
-    <td>\[ (b - a) / 6 \]</td>
+    <td>\[ \frac{a + b}{2} \]</td>
+    <td>\[ \frac{b - a}{6} \]</td>
     <td>\( 0 \)</td>
     <td>\( 0 \)</td>
 </tr>
@@ -101,7 +101,10 @@ exist (in closed form).
         <br>
         <code>logistic(μ, s)</code>
     </td>
-    <td>\( \mu \)<br>\( s>0 \)</td>
+    <td>
+        \( \mu \)<br>
+        \( s>0 \)
+    </td>
     <td>\( \mu \)</td>
     <td>\( s \)</td>
     <td>\( 0 \)</td>
@@ -128,12 +131,12 @@ exist (in closed form).
     </td>
     <td>\( \mu \)</td>
     <td>
-        \[ 3b / 4 \]
+        \[ \frac 3 4 b \]
         \( = 0.75 \ b\)
     </td>
     <td>\( 0 \)</td>
     <td>
-        \[ 17 / 72 \]
+        \[ \frac{17}{72} \]
         \( \approx 0.2361 \)
     </td>
 </tr>
@@ -203,12 +206,12 @@ exist (in closed form).
     <td>\( \nu = 4 \)</td>
     <td>\( 0 \)</td>
     <td>
-        \[ 15 \pi / 64 \]
+        \[ \frac{15}{64} \pi \]
         \( \approx 0.7363 \)
     </td>
     <td>\( 0 \)</td>
     <td>
-        \[ 111 / 512 \]
+        \[ \frac{111}{512} \]
         \( \approx 0.2168 \)
     </td>
 </tr>
@@ -266,17 +269,11 @@ exist (in closed form).
         \( \approx 0.3671 \ \sigma \)
     </td>
     <td>
-        \[
-            \frac {\sqrt 2 - 1}{3}
-            \left(9 - 2 \sqrt 6 - 3 \sqrt 2\right)
-        \]
+        \[ 2 \frac{2 + \sqrt 2}{\sqrt 3} - \frac{4 + \sqrt{2}}{\sqrt 2} \]
         \( \approx 0.1140 \)
     </td>
     <td>
-        \[
-            \frac {\sqrt 2 - 1}{6}
-            \left(36 - 20 \sqrt 6 + 9 \sqrt 2\right)
-        \]
+        \[ 10 \frac{2 + \sqrt 2}{\sqrt 3} - 3 \frac{5 + 3 \sqrt 2}{\sqrt 2} \]
         \( \approx 0.1054 \)
     </td>
 </tr>
@@ -316,6 +313,47 @@ exist (in closed form).
 <tr>
     <td>
         <a
+            href="https://wikipedia.org/wiki/Weibull_distribution"
+            target="_blank"
+            title="Weibull distribution - Wikipedia"
+        >
+            Weibull
+        </a>
+        <br>
+        <code>invweibull</code>
+    </td>
+    <td>
+        \( \alpha > 0 \)<br>
+        \( \beta > 0 \)<br>
+        \( \kappa := 1 / \alpha \)
+    </td>
+    <td>\[ \Gamma(1 + \kappa) \ \beta \]</td>
+    <td>
+        \[ \Gamma(1 + \kappa) \ \boxcox{2}{-\kappa} \ \kappa \beta \]
+    </td>
+    <td>
+        \[ 
+            \hphantom{-}3 
+            - 2 \frac
+                {\boxcox{3}{-\kappa}} 
+                {\boxcox{2}{-\kappa}}
+        \]
+    </td>
+    <td>
+        \[
+            6
+            - 10 \frac
+                {\boxcox{3}{-\kappa}}
+                {\boxcox{2}{-\kappa}}
+            + 5 \frac
+                {\boxcox{4}{-\kappa}}
+                {\boxcox{2}{-\kappa}}
+        \]
+    </td>
+</tr>
+<tr>
+    <td>
+        <a
             href="https://wikipedia.org/wiki/Generalized_extreme_value_distribution"
             target="_blank"
             title="Generalized extreme value distribution - Wikipedia"
@@ -336,64 +374,22 @@ exist (in closed form).
         \[\Gamma(1 + \kappa) \ \boxcox{2}{-\kappa} \ \beta \]
     </td>
     <td>
-        \[ 2 \frac{\boxcox{3}{-\kappa}}{\boxcox{2}{-\kappa}} - 3 \]
+        \[ 
+            - 3
+            + 2 \frac
+                {\boxcox{3}{-\kappa}}
+                {\boxcox{2}{-\kappa}}
+        \]
     </td>
     <td>
         \[
             6
-            + 5 \frac{\boxcox{4}{-\kappa}}{\boxcox{2}{-\kappa}}
-            - 10 \frac{\boxcox{3}{-\kappa}}{\boxcox{2}{-\kappa}}
-        \]
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Fr%C3%A9chet_distribution"
-            target="_blank"
-            title="Fréchet distribution - Wikipedia"
-        >
-            Fréchet
-        </a>
-        <br>
-        <code>invweibull</code>
-    </td>
-    <td>
-        \( \alpha > 1, \beta > 0 \)<br>
-        \( \omega := 1 / \alpha \)
-    </td>
-    <td>
-        \[
-            \Gamma(1 - \omega) \
-            \beta
-        \]
-    </td>
-    <td>
-        \[
-            \left(2^\omega - 1\right) \
-            \Gamma(1 - \omega) \
-            \beta
-        \]
-    </td>
-    <td>
-        \[
-            2 \frac
-                {3^\omega - 2^\omega}
-                {2^\omega - 1}
-            - 1
-        \]
-    </td>
-    <td>
-        <!-- \[
-            \frac
-                {5 \cdot 4^\omega - 10 \cdot 3^\omega + 6 \cdot 2^\omega - 1}
-                {2^\omega - 1}
-        \] -->
-        \[
-            5 \frac
-                {4^\omega - 2 \cdot 3^\omega + 2^\omega}
-                {2^\omega - 1}
-            + 1
+            - 10 \frac
+                {\boxcox{3}{-\kappa}}
+                {\boxcox{2}{-\kappa}}
+            + 5 \frac
+                {\boxcox{4}{-\kappa}}
+                {\boxcox{2}{-\kappa}}
         \]
     </td>
 </tr>
@@ -830,54 +826,53 @@ symmetric trimming of order 1, i.e. `trim=(1, 1)`.
 <tr>
     <td>
         <a
-            href="https://wikipedia.org/wiki/Fr%C3%A9chet_distribution"
+            href="https://wikipedia.org/wiki/Weibull_distribution"
             target="_blank"
-            title="Fréchet distribution - Wikipedia"
+            title="Weibull distribution - Wikipedia"
         >
-            Fréchet
+            Weibull
         </a>
         <br>
-        <code>invweibull</code>
+        <code>weibull_min</code>
     </td>
     <td>
-        \( \alpha > 0, \beta > 0 \)<br>
-        \( \omega := 1 / \alpha \)
+        \( \alpha > 0 \)<br>
+        \( \beta > 0 \)<br>
+        \( \kappa := 1 / \alpha \)
     </td>
     <td>
         \[
-            (2 \cdot 3^\omega - 3 \cdot 2^\omega) \
-            \omega \
-            \Gamma(-\omega) \
-            \beta
+            \left(
+                \frac{3}{2^\kappa} 
+                - \frac{2}{3^\kappa}
+            \right) \
+            \Gamma(\kappa) \ \kappa \beta
         \]
     </td>
     <td>
         \[
-            3
-            (4^\omega - 2 \cdot 3^\omega + 2^\omega) \
-            \omega \
-            \Gamma(-\omega) \
-            \beta
+            \left(
+                \frac{3}{2^\kappa} 
+                - \frac{6}{3^\kappa}
+                + \frac{3}{4^\kappa}
+            \right) \
+            \Gamma(\kappa) \ \kappa \beta
         \]
     </td>
     <td>
         \[
-            \frac{10}{9} \left(
-                2 \frac
-                    {4^\omega - 2 \cdot 4^\omega + 3^\omega}
-                    {4^\omega - 2 \cdot 3^\omega + 2^\omega}
-                - 1
-            \right)
+            \frac{10}{9}
+            - \frac{20}{9} \frac
+                {2^{-\kappa} - 2 \cdot 4^{-\kappa} + 5^{-\kappa}}
+                {2^{-\kappa} - 2 \cdot 3^{-\kappa} + 4^{-\kappa}}
         \]
     </td>
     <td>
         \[
-            \frac{5}{12} \left(
-                14 \ \frac
-                    {6^\omega - 3 \cdot 5^\omega + 3 \cdot 4^\omega - 3^\omega}
-                    {4^\omega - 2 \cdot 3^\omega + 2^\omega}
-                + 3
-            \right)
+            \frac{5}{4}
+            - \frac{35}{6} \frac
+                {3^{-\kappa} - 3 \cdot 4^{-\kappa} + 3 \cdot 5^{-\kappa} - 6^{-\kappa}}
+                {2^{-\kappa} - 2 \cdot 3^{-\kappa} + 4^{-\kappa}}
         \]
     </td>
 </tr>
