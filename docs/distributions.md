@@ -1019,7 +1019,6 @@ or CDF. Instead, it is defined through its PPF:
     x(F) 
         = \alpha \boxcox{F}{\beta}
         - \gamma \boxcox{-F}{\delta}
-        + \mu
 \end{equation}
 \]
 
