@@ -1039,6 +1039,7 @@ and constants.
                         \frac{1}{\lfloor x \rfloor} - \frac 1 x
                     \right) \
                     \mathrm{d} x \\
+                &= \lim_{x \to 0} \left( \frac 1 x - \Gamma(x) \right) \\
                 &\approx 0.5772 \vphantom{\frac 1 1}
             \end{align*}
         \]
