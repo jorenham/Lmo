@@ -322,15 +322,16 @@ def sh_jacobi(
         - https://mathworld.wolfram.com/JacobiPolynomial.html
         - [`scipy.special.jacobi`][scipy.special.jacobi]
     """
-    if k < 0 or a < 0 or b < 0:
+    _k, _a, _b = int(k), float(a), float(b)
+    if _k < 0 or _a < 0 or _b < 0:
         msg = 'k, a, and b must be >= 0'
         raise ValueError(msg)
 
     _dtype = dtype or np.asarray([a, b]).dtype.type
     if np.issubdtype(_dtype, np.integer) or np.issubdtype(_dtype, np.bool_):
-        return _sh_jacobi_i(int(k), int(a), int(b), dtype=_dtype)
+        return _sh_jacobi_i(_k, int(a), int(b), dtype=_dtype)
 
-    return _sh_jacobi_f(int(k), float(a), float(b), dtype=_dtype)
+    return _sh_jacobi_f(_k, float(a), float(b), dtype=_dtype)
 
 
 def succession_matrix(c: npt.NDArray[T], /) -> npt.NDArray[T]:

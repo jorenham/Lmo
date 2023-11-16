@@ -1152,7 +1152,7 @@ def l_ratio_influence_from_cdf(
     trim: AnyTrim = (0, 0),
     *,
     support: Pair[float] | None = None,
-    l_moments: Pair[float] | Pair[np.float64] | None = None,
+    l_moments: Pair[float] | None = None,
     quad_opts: QuadOptions | None = None,
     alpha: float = ALPHA,
     tol: float = 1e-8,

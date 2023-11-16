@@ -164,16 +164,18 @@ def roots(
     p: PolySeries,
     /,
     outside: bool = False,
-) -> npt.NDArray[np.inexact[Any]]:
+) -> npt.NDArray[np.float64]:
     """
     Return the $x$ in the domain of $p$, where $p(x) = 0$.
 
     If outside=False (default), the values that fall outside of the domain
     interval will be not be included.
     """
-    x = p.roots()
-    if not np.isrealobj(x) and np.isrealobj(p.domain):
-        x = x[np.isreal(x)].real
+    z = p.roots()
+    if not np.isrealobj(z) and np.isrealobj(p.domain):
+        x = z[np.isreal(z)].real
+    else:
+        x = cast(npt.NDArray[np.float64], z)
 
     if not outside and len(x):
         a, b = np.sort(p.domain)

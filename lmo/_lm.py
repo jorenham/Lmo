@@ -1148,7 +1148,7 @@ def l_kurtosis(
 
 def l_moment_cov(
     a: npt.ArrayLike,
-    r_max: AnyInt,
+    r_max: SupportsIndex,
     /,
     trim: AnyTrim = (0, 0),
     *,
@@ -1198,19 +1198,21 @@ def l_moment_cov(
     Todo:
         - Use the direct (Jacobi) method from Hosking (2015).
     """
+    _r_max = clean_order(r_max, 'r_max')
     _trim = cast(tuple[int, int], clean_trim(trim))
+
     if any(int(t) != t for t in _trim):
         msg = 'l_moment_cov does not support fractional trimming (yet)'
         raise TypeError(msg)
 
-    ks = int(r_max + sum(_trim))
-    if ks < r_max:
+    ks = _r_max + sum(_trim)
+    if ks < _r_max:
         msg = 'trimmings must be positive'
         raise ValueError(msg)
 
     # projection matrix: PWMs -> generalized trimmed L-moments
     p_l: npt.NDArray[np.floating[Any]]
-    p_l = trim_matrix(int(r_max), trim=_trim, dtype=dtype) @ sh_legendre(ks)
+    p_l = trim_matrix(_r_max, trim=_trim, dtype=dtype) @ sh_legendre(ks)
     # clean some numerical noise
     # p_l = np.round(p_l, 12) + 0.
 
@@ -1264,7 +1266,7 @@ def l_ratio_se(
     """
     _r, _s = np.broadcast_arrays(np.asarray(r), np.asarray(s))
     _rs = np.stack((_r, _s))
-    r_max: AnyInt = np.amax(np.r_[_r, _s].ravel())
+    r_max = np.amax(np.r_[_r, _s].ravel())
 
     # L-moments
     l_rs = l_moment(a, _rs, trim, axis=axis, dtype=dtype, **kwargs)

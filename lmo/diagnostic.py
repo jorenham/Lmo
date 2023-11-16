@@ -564,7 +564,7 @@ def l_ratio_bounds(
 
     # otherwise, fall back to the (very) loose bounds from Hosking
     _r = clean_orders(r, rmin=1)
-    _n = np.max(_r) + 1
+    _n = cast(int, np.max(_r)) + 1
 
     s, t = clean_trim(trim)
 

@@ -306,7 +306,7 @@ class l_rv_nonparametric(rv_continuous):  # noqa: N801
                 stacklevel=3,
             )
 
-            if np.ptp(q0) <= 1 / 4:
+            if cast(float, np.ptp(q0)) <= 1 / 4:
                 # "close enough" if within the same quartile;
                 # probability-weighted interpolation
                 return np.average(q0, weights=q0 * (1 - q0))  # type: ignore
