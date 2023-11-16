@@ -970,7 +970,7 @@ quantile function (PPF) is defined to be
 \begin{equation}
     x(F) =
         \frac \alpha \beta \bigl(1 - (1 - F)^\beta\bigr)
-        - \frac \gamma \delta \bigl(1 - (1 - p)^{-\delta}\bigr)
+        - \frac \gamma \delta \bigl(1 - (1 - F)^{-\delta}\bigr)
         + \mu
 \end{equation}
 \]
@@ -981,7 +981,7 @@ Each of the scale- \( \alpha, \gamma \) and shape parameters
 Lmo figured out that the L-moments with any order \( r \in \mathbb{N}_{\ge 1} \)
 and trim \( s, t \in \mathbb{N}^2_{\ge 1} \) can be expressed as
 
-\[
+<!-- \[
 \begin{equation}
     \tlmoment{s,t}{r}
         = 
@@ -1002,9 +1002,27 @@ and trim \( s, t \in \mathbb{N}^2_{\ge 1} \) can be expressed as
             & \text{if } r > 1
     \end{cases}
 \end{equation}
+\] -->
+\[
+\begin{equation}
+    \tlmoment{s,t}{r}
+        = \frac{\rfact{r + t}{s + 1}}{r} \left[
+            \alpha \frac
+                {\rfact{1 - \beta}{r - 2}}
+                {\rfact{1 + \beta + t}{r + s}}
+            + \gamma \frac
+                {\rfact{1 + \delta}{r - 2}}
+                {\rfact{1 - \delta + t}{r + s}}
+        \right]
+        + \underbrace{
+            \ffact{1}{r} \left(
+                \frac \alpha \beta - \frac \gamma \delta
+            \right)
+        }_{\text{will be } 0 \text{ if } r>1}
+\end{equation}
 \]
 
-### Generalized lambda
+### Generalized Lambda
 
 The [Tukey lambda distribution
 ](https://wikipedia.org/wiki/Tukey_lambda_distribution) can be generalized
@@ -1023,17 +1041,19 @@ or CDF. Instead, it is defined through its PPF:
 \]
 
 Although its central product moments have no closed-form expression, the 
-L-moments can be compactly expressed as:
+general trimmed L-moments can be compactly expressed as:
 
 \[
 \begin{equation}
-    \lmoment{r}
-        = \alpha \frac
-            {\ffact{\beta}{r-1}}
-            {\rfact{\beta}{r+1}}
-        + (-1)^r \ \gamma \frac
-            {\ffact{\delta}{r-1}}
-            {\rfact{\delta}{r+1}}
+    \tlmoment{s,t}{r}
+        = \alpha
+        \frac
+            {\rfact{r + s}{t + 1} \ \ffact{\beta + s}{r + s - 1}}
+            {r \ \rfact{\beta}{r + s + t + 1}}
+        + (-1)^r \gamma \
+        \frac
+            {\rfact{r + t}{s + t} \ \ffact{\delta + t}{r + t - 1}}
+            {r \ \rfact{\delta}{r + s + t + 1}}
         - \underbrace{
             \ffact{1}{r} \left(
                 \frac \alpha \beta - \frac \gamma \delta
