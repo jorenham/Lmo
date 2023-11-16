@@ -1004,10 +1004,48 @@ and trim \( s, t \in \mathbb{N}^2_{\ge 1} \) can be expressed as
 \end{equation}
 \]
 
+### Generalized lambda
+
+The [Tukey lambda distribution
+](https://wikipedia.org/wiki/Tukey_lambda_distribution) can be generalized
+to two scale parameters \( \alpha, \gamma \), and two shape parameters 
+\( \beta, \delta \). 
+
+Like the Wakeby distirbution, the generalized lambda has no closed-form PDF
+or CDF. Instead, it is defined through its PPF:
+
+\[
+\begin{equation}
+    x(F) 
+        = \alpha \boxcox{F}{\beta}
+        - \gamma \boxcox{-F}{\delta}
+        + \mu
+\end{equation}
+\]
+
+Although its central product moments have no closed-form expression, the 
+L-moments can be compactly expressed as:
+
+\[
+\begin{equation}
+    \lmoment{r}
+        = \alpha \frac
+            {\ffact{\beta}{r-1}}
+            {\rfact{\beta}{r+1}}
+        + (-1)^r \ \gamma \frac
+            {\ffact{\delta}{r-1}}
+            {\rfact{\delta}{r+1}}
+        - \underbrace{
+            \ffact{1}{r} \left(
+                \frac \alpha \beta - \frac \gamma \delta
+            \right)
+        }_{\text{will be } 0 \text{ if } r>1}
+\end{equation}
+\]
+
 <!-- TODO: Generalized Pareto (GPD / Pareto-Pickands) -->
 <!-- TODO: Generalized Extreme Value (GEV) -->
 <!-- TODO: Generalized Logistic -->
-<!-- TODO: Generalized (Tukey-) Lambda -->
 
 ## Constants and special functions
 
@@ -1066,13 +1104,77 @@ and constants.
         </a>
     </td>
     <td>\[ n! \vphantom{\prod_{k=1}^n k} \]</td>
-    <td>\[ = \prod_{k=1}^n k \]</td>
+    <td>
+        \[ 
+            \begin{align*}
+                &= \prod_{k=1}^n k \\
+                &= \underbrace
+                    {1 \times 2 \times \ldots \times n}
+                    _{n{\text{ factors}}}
+            \end{align*}
+        \]
+    </td>
     <td>
         <a 
             href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.factorial.html"
             target="_blank"
         >
             <code>scipy.special.factorial</code>
+        </a>
+    </td>
+</tr>
+<tr id="def-falling">
+    <td>
+        <a
+            href="https://wikipedia.org/wiki/Falling_and_rising_factorials"
+            target="_blank"
+            title="Falling and rising factorials - Wikipedia"
+        >
+            Falling factorial
+        </a>
+    </td>
+    <!-- <td>\[ x^{\underline{n}} \]</td> -->
+    <td>\[ \ffact{x}{n} \]</td>
+    <td>
+        \[ 
+            \begin{align*}
+                &= \prod_{k=0}^{n-1} (x - k) \\
+                &= \underbrace
+                    {x \ (x - 1) \ldots (x - n + 1)}
+                    _{n{\text{ factors}}}
+            \end{align*}
+        \]
+    </td>
+    <td></td>
+</tr>
+<tr id="def-rising">
+    <td>
+        <a
+            href="https://wikipedia.org/wiki/Falling_and_rising_factorials"
+            target="_blank"
+            title="Falling and rising factorials - Wikipedia"
+        >
+            Rising factorial
+        </a>
+    </td>
+    <!-- <td>\[ x^{\overline{n}} \]</td> -->
+    <td>\[ \rfact{x}{n} \]</td>
+    <td>
+        \[ 
+            \begin{align*}
+                &= \prod_{k=0}^{n-1} (x + k) \\
+                &= \underbrace
+                    {x \ (x + 1) \ldots (x + n - 1)}
+                    _{n{\text{ factors}}}
+            \end{align*}
+        \]
+    </td>
+    <td>
+        <a 
+            href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.poch.html"
+            target="_blank"
+        >
+            <code>scipy.special.poch</code>
         </a>
     </td>
 </tr>
@@ -1087,7 +1189,14 @@ and constants.
         </a>
     </td>
     <td>\[ \binom{n}{k} \]</td>
-    <td>\[ = \frac{n!}{k! \ (n - k)!} \]</td>
+    <td>
+        \[ 
+            \begin{align*}
+                &= \frac{n!}{k! \ (n - k)!} \\
+                &= \frac{\ffact{n}{k}}{k!}
+            \end{align*}
+        \]
+    </td>
     <td>
         <a 
             href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.comb.html"
