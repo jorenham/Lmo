@@ -10,7 +10,7 @@ strict: true
 
 nav:
   - Overview: index.md
-  - Distribution L-moments: distributions.md
+  - Theoretical L-moments: distributions.md
   - API Docs: api.md
   - Contributing: contributing.md
 
