@@ -1029,7 +1029,7 @@ The [Tukey lambda distribution
 to two scale parameters \( \alpha, \gamma \), and two shape parameters 
 \( \beta, \delta \). 
 
-Like the Wakeby distirbution, the generalized lambda has no closed-form PDF
+Like the Wakeby distribution, the generalized lambda has no closed-form PDF
 or CDF. Instead, it is defined through its PPF:
 
 \[
