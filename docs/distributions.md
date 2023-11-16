@@ -900,11 +900,11 @@ extended for the general trimmed L-moments.
 The distribution functions are for \( 0 \le x \le 1 \) defined as:
 
 \[
-\begin{align}
+\begin{align*}
 f(x) &= \alpha \beta x^{\alpha-1}\left(1-x^\alpha\right)^{\beta-1} \\
 F(x) &= 1 - (1 - x^\alpha)^\beta \\
 x(F) &= \bigl(1 - (1 - F)^{1/\beta} \bigr)^{1/\alpha}
-\end{align}
+\end{align*}
 \]
 
 Its general \( r \)-th trimmed L-moment are:
@@ -923,21 +923,61 @@ Its general \( r \)-th trimmed L-moment are:
     \end{equation}
 \]
 
+### Burr Type III / Dagum
+
+The Burr type III distribution, also known as the 
+[Dagum distribution](https://wikipedia.org/wiki/Dagum_distribution), has two 
+shape parameters \( \alpha \) and \( \beta \), both restricted to the
+positive reals
+
+For \( x > 0 \), the distribution functions are:
+
+\[
+\begin{align*}
+    f(x) &=  
+        x^{\alpha \beta - 1} 
+        (1 + x^\alpha)^{-\beta-1} 
+        \alpha \beta \\
+    F(x) &= 
+        (1 + x^{-\alpha})^{-\beta} \\
+    x(F) &= 
+        (F^{-1 / \beta} - 1)^{-1 / \alpha}
+\end{align*}
+\]
+
+For \( \alpha > 1 \), the general L-moments are:
+
+\[
+\begin{equation}
+    \tlmoment{s,t}{r} = 
+        (-1)^{t - 1 / \alpha} \
+        \beta \
+        \frac{r + s + t}{r}
+        \sum_{k = s}^{r + s + t - 1}
+            (-1)^{k}
+            \binom{k + r - 1}{k - s}
+            \binom{r + s + t - 1}{k}
+            \B(1 - 1 / \alpha, -\beta - k \beta)
+    \label{eq:lr_burr3}
+\end{equation}
+\]
+
+
 ### Burr Type XII
 
 Just like Kumaraswamy's distribution, the
-[Burr distribution](https://wikipedia.org/wiki/Burr_distribution) has two
-shape parameters \( \alpha \) and \( \beta \), both restricted to the
+[Burr distribution](https://wikipedia.org/wiki/Burr_distribution) of type XII
+has two shape parameters \( \alpha \) and \( \beta \), both restricted to the
 positive reals.
 
 The distribution functions are for \( x > 0 \) defined as:
 
 \[
-\begin{align}
+\begin{align*}
     f(x) &= \alpha \beta x^{\alpha-1} \left(1 + x^\alpha\right)^{-\beta-1} \\
     F(x) &= 1 - (1 - x^\alpha)^{-\beta} \\
     x(F) &= \bigl(1 - (1 - F)^{-1/\beta} \bigr)^{1/\alpha}
-\end{align}
+\end{align*}
 \]
 
 When \( \beta > 1 / \alpha \), the general \( r \)-th trimmed L-moment is:
@@ -952,7 +992,7 @@ When \( \beta > 1 / \alpha \), the general \( r \)-th trimmed L-moment is:
             \binom{k + r - 1}{k - t}
             \binom{r + s + t - 1}{k}
             \B\bigl(1 + 1 / \alpha,\ \beta + k \beta - 1 / \alpha \bigr)
-        \label{eq:lr_burr}
+        \label{eq:lr_burr12}
 \end{equation}
 \]
 
@@ -967,12 +1007,10 @@ is quantile-based, without closed-form expressions for the PDF and CDF, whose
 quantile function (PPF) is defined to be
 
 \[
-\begin{equation}
-    x(F) =
-        \frac \alpha \beta \bigl(1 - (1 - F)^\beta\bigr)
-        - \frac \gamma \delta \bigl(1 - (1 - F)^{-\delta}\bigr)
-        + \mu
-\end{equation}
+x(F) =
+    \frac \alpha \beta \bigl(1 - (1 - F)^\beta\bigr)
+    - \frac \gamma \delta \bigl(1 - (1 - F)^{-\delta}\bigr)
+    + \mu
 \]
 
 Each of the scale- \( \alpha, \gamma \) and shape parameters
@@ -1033,11 +1071,9 @@ Like the Wakeby distribution, the generalized lambda has no closed-form PDF
 or CDF. Instead, it is defined through its PPF:
 
 \[
-\begin{equation}
-    x(F) 
-        = \alpha \boxcox{F}{\beta}
-        - \gamma \boxcox{-F}{\delta}
-\end{equation}
+x(F) 
+    = \alpha \boxcox{F}{\beta}
+    - \gamma \boxcox{-F}{\delta}
 \]
 
 Although its central product moments have no closed-form expression, the 
