@@ -291,15 +291,15 @@ exist (in closed form).
     </td>
     <td>
         \( \mu \)<br>
-        \( \beta > 0 \)
+        \( \sigma > 0 \)
     </td>
     <td>
-        \[ \mu - \gamma_e \beta \]
-        \( \approx \mu - 0.5772 \ \beta \)
+        \[ \mu - \gamma_e \sigma \]
+        \( \approx \mu - 0.5772 \ \sigma \)
     </td>
     <td>
-        \[ \ln{2} \ \beta \]
-        \( \approx 0.6931 \ \beta \)
+        \[ \ln{2} \ \sigma \]
+        \( \approx 0.6931 \ \sigma \)
     </td>
     <td>
         \[ 2 \log_2(3) - 3 \]
@@ -308,47 +308,6 @@ exist (in closed form).
     <td>
         \[ 16 - 10 \log_2(3) \]
         \( \approx 0.1504 \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Weibull_distribution"
-            target="_blank"
-            title="Weibull distribution - Wikipedia"
-        >
-            Weibull
-        </a>
-        <br>
-        <code>invweibull</code>
-    </td>
-    <td>
-        \( \alpha > 0 \)<br>
-        \( \beta > 0 \)<br>
-        \( \kappa := 1 / \alpha \)
-    </td>
-    <td>\[ \Gamma(1 + \kappa) \ \beta \]</td>
-    <td>
-        \[ \Gamma(1 + \kappa) \ \boxcox{2}{-\kappa} \ \kappa \beta \]
-    </td>
-    <td>
-        \[ 
-            \hphantom{-}3 
-            - 2 \frac
-                {\boxcox{3}{-\kappa}} 
-                {\boxcox{2}{-\kappa}}
-        \]
-    </td>
-    <td>
-        \[
-            6
-            - 10 \frac
-                {\boxcox{3}{-\kappa}}
-                {\boxcox{2}{-\kappa}}
-            + 5 \frac
-                {\boxcox{4}{-\kappa}}
-                {\boxcox{2}{-\kappa}}
-        \]
     </td>
 </tr>
 <tr>
@@ -364,14 +323,13 @@ exist (in closed form).
         <code>genextreme</code>
     </td>
     <td>
-        \( \kappa > -1 \)<br>
-        \( \beta > 0 \)
+        \( \kappa > -1 \)
     </td>
     <td>
-        \[ \frac{1 - \Gamma(1 + \kappa)}{\kappa} \ \beta \]
+        \[ \frac{1 - \Gamma(1 + \kappa)}{\kappa} \]
     </td>
     <td>
-        \[\Gamma(1 + \kappa) \ \boxcox{2}{-\kappa} \ \beta \]
+        \[\Gamma(1 + \kappa) \ \boxcox{2}{-\kappa} \]
     </td>
     <td>
         \[ 
@@ -400,83 +358,30 @@ exist (in closed form).
             target="_blank"
             title="Pareto distribution - Wikipedia"
         >
-            Pareto I
+            Pareto
         </a>
         <br>
         <code>pareto</code>
     </td>
     <td>
-        \( b \)<br>
-        \( \sigma > 1 \)
+        \[
+        \begin{align*}
+            \alpha &> 0 \quad \text{(shape)} \\
+            \beta  &> 0 \quad \text{(scale)}
+        \end{align*}
+        \]
     </td>
     <td>
-        \[ \frac{b}{b - 1} \ \sigma \]
+        \[ \frac{\alpha}{\alpha - 1} \ \beta \]
     </td>
     <td>
-        \[ \frac{b}{b - 1} \frac{1}{2b - 1} \ \sigma \]
+        \[ \frac{\alpha}{\alpha - 1} \frac{1}{2 \alpha - 1} \ \beta \]
     </td>
     <td>
-        \[ \frac{b + 1}{3b - 1} \]
+        \[ \frac{\alpha + 1}{3 \alpha - 1} \]
     </td>
     <td>
-        \[ \frac{b + 1}{3b - 1} \frac{2b + 1}{4b - 1} \]
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Pareto_distribution#Pareto_types_I%E2%80%93IV"
-            target="_blank"
-            title="Pareto distribution - Wikipedia"
-        >
-            Pareto II
-        </a>
-        <br>
-        <code>lomax</code>
-    </td>
-    <td>
-        \( b, \ \mu \)<br>
-        \( \sigma > 1 \)
-    </td>
-    <td>
-        \[ \frac{1}{b - 1} \ \sigma + \mu \]
-    </td>
-    <td>
-        \[ \frac{b}{b - 1} \frac{1}{2b - 1} \ \sigma \]
-    </td>
-    <td>
-        \[ \frac{b + 1}{3b - 1} \]
-    </td>
-    <td>
-        \[ \frac{b + 1}{3b - 1} \frac{2b + 1}{4b - 1} \]
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Pareto_distribution#Pareto_types_I%E2%80%93IV"
-            target="_blank"
-            title="Pareto distribution - Wikipedia"
-        >
-            Pareto III
-        </a>
-        <br>
-    </td>
-    <td>
-        \( c, \ \mu \)<br>
-        \( \sigma > 1 \)
-    </td>
-    <td>
-        \[ c \ \Gamma(c) \ \Gamma(1 - c) \ \sigma + \mu \]
-    </td>
-    <td>
-        \[ c^2 \ \Gamma(c) \ \Gamma(1 - c) \ \sigma \]
-    </td>
-    <td>
-        \[ c \vphantom{c^2 \Gamma(c)} \]
-    </td>
-    <td>
-        \[ \frac{1 + 5 c^2}{6} \]
+        \[ \frac{\alpha + 1}{3 \alpha - 1} \frac{2 \alpha + 1}{4 \alpha - 1} \]
     </td>
 </tr>
 </table>
