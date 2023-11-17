@@ -2,7 +2,7 @@
 
 This page lists L-moment statistics
 (L -location, scale, skewness, and kurtosis) of common univariate
-probability distributions, most of them continuous.
+probability distributions, most of them continuous. 
 
 Each of the listed expressions have been validated, both numerically and
 symbolically (with either Wolfram Alpha, SymPy, or pen and paper).
@@ -34,8 +34,8 @@ An overview of the untrimmed L-location, L-scale, L-skewness and L-kurtosis,
 of a bunch of popular univariate probability distributions, for which they
 exist (in closed form).
 
-
-<table style="overflow: hidden">
+<table>
+<thead>
 <tr>
     <th>Name /<br> <code>scipy.stats</code></th>
     <th>Params</th>
@@ -44,6 +44,7 @@ exist (in closed form).
     <th>\( \lratio{3} = \lmoment{3}/\lmoment{2} \)</th>
     <th>\( \lratio{4} = \lmoment{4}/\lmoment{2} \)</th>
 </tr>
+</thead>
 <tr>
     <td>
         <a
@@ -287,23 +288,22 @@ exist (in closed form).
             Gumbel
         </a>
         <br>
-        <code>gumbel_l</code>
+        <code>gumbel_r</code>
+        <br>
+        see eq. \( \eqref{eq:lr_gev} \) for \( \lmoment{r} \)
+    </td>
+    <td></td>
+    <td>
+        \[ \gamma_e \]
+        \( \approx 0.5772 \)
     </td>
     <td>
-        \( \mu \)<br>
-        \( \beta > 0 \)
-    </td>
-    <td>
-        \[ \mu - \gamma_e \beta \]
-        \( \approx \mu - 0.5772 \ \beta \)
-    </td>
-    <td>
-        \[ \ln{2} \ \beta \]
-        \( \approx 0.6931 \ \beta \)
+        \[ \ln{2} \]
+        \( \approx 0.6931 \)
     </td>
     <td>
         \[ 2 \log_2(3) - 3 \]
-        \( \approx -0.1699 \)
+        \( \approx 0.1699 \)
     </td>
     <td>
         \[ 16 - 10 \log_2(3) \]
@@ -313,170 +313,34 @@ exist (in closed form).
 <tr>
     <td>
         <a
-            href="https://wikipedia.org/wiki/Weibull_distribution"
-            target="_blank"
-            title="Weibull distribution - Wikipedia"
-        >
-            Weibull
-        </a>
-        <br>
-        <code>invweibull</code>
-    </td>
-    <td>
-        \( \alpha > 0 \)<br>
-        \( \beta > 0 \)<br>
-        \( \kappa := 1 / \alpha \)
-    </td>
-    <td>\[ \Gamma(1 + \kappa) \ \beta \]</td>
-    <td>
-        \[ \Gamma(1 + \kappa) \ \boxcox{2}{-\kappa} \ \kappa \beta \]
-    </td>
-    <td>
-        \[ 
-            \hphantom{-}3 
-            - 2 \frac
-                {\boxcox{3}{-\kappa}} 
-                {\boxcox{2}{-\kappa}}
-        \]
-    </td>
-    <td>
-        \[
-            6
-            - 10 \frac
-                {\boxcox{3}{-\kappa}}
-                {\boxcox{2}{-\kappa}}
-            + 5 \frac
-                {\boxcox{4}{-\kappa}}
-                {\boxcox{2}{-\kappa}}
-        \]
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Generalized_extreme_value_distribution"
-            target="_blank"
-            title="Generalized extreme value distribution - Wikipedia"
-        >
-            GEV
-        </a>
-        <br>
-        <code>genextreme</code>
-    </td>
-    <td>
-        \( \kappa > -1 \)<br>
-        \( \beta > 0 \)
-    </td>
-    <td>
-        \[ \frac{1 - \Gamma(1 + \kappa)}{\kappa} \ \beta \]
-    </td>
-    <td>
-        \[\Gamma(1 + \kappa) \ \boxcox{2}{-\kappa} \ \beta \]
-    </td>
-    <td>
-        \[ 
-            - 3
-            + 2 \frac
-                {\boxcox{3}{-\kappa}}
-                {\boxcox{2}{-\kappa}}
-        \]
-    </td>
-    <td>
-        \[
-            6
-            - 10 \frac
-                {\boxcox{3}{-\kappa}}
-                {\boxcox{2}{-\kappa}}
-            + 5 \frac
-                {\boxcox{4}{-\kappa}}
-                {\boxcox{2}{-\kappa}}
-        \]
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
             href="https://wikipedia.org/wiki/Pareto_distribution"
             target="_blank"
             title="Pareto distribution - Wikipedia"
         >
-            Pareto I
+            Pareto
         </a>
         <br>
         <code>pareto</code>
     </td>
     <td>
-        \( b \)<br>
-        \( \sigma > 1 \)
+        \[
+        \begin{align*}
+            \alpha &> 0 \quad \text{(shape)} \\
+            \beta  &> 0 \quad \text{(scale)}
+        \end{align*}
+        \]
     </td>
     <td>
-        \[ \frac{b}{b - 1} \ \sigma \]
+        \[ \frac{\alpha}{\alpha - 1} \ \beta \]
     </td>
     <td>
-        \[ \frac{b}{b - 1} \frac{1}{2b - 1} \ \sigma \]
+        \[ \frac{\alpha}{\alpha - 1} \frac{1}{2 \alpha - 1} \ \beta \]
     </td>
     <td>
-        \[ \frac{b + 1}{3b - 1} \]
+        \[ \frac{\alpha + 1}{3 \alpha - 1} \]
     </td>
     <td>
-        \[ \frac{b + 1}{3b - 1} \frac{2b + 1}{4b - 1} \]
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Pareto_distribution#Pareto_types_I%E2%80%93IV"
-            target="_blank"
-            title="Pareto distribution - Wikipedia"
-        >
-            Pareto II
-        </a>
-        <br>
-        <code>lomax</code>
-    </td>
-    <td>
-        \( b, \ \mu \)<br>
-        \( \sigma > 1 \)
-    </td>
-    <td>
-        \[ \frac{1}{b - 1} \ \sigma + \mu \]
-    </td>
-    <td>
-        \[ \frac{b}{b - 1} \frac{1}{2b - 1} \ \sigma \]
-    </td>
-    <td>
-        \[ \frac{b + 1}{3b - 1} \]
-    </td>
-    <td>
-        \[ \frac{b + 1}{3b - 1} \frac{2b + 1}{4b - 1} \]
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Pareto_distribution#Pareto_types_I%E2%80%93IV"
-            target="_blank"
-            title="Pareto distribution - Wikipedia"
-        >
-            Pareto III
-        </a>
-        <br>
-    </td>
-    <td>
-        \( c, \ \mu \)<br>
-        \( \sigma > 1 \)
-    </td>
-    <td>
-        \[ c \ \Gamma(c) \ \Gamma(1 - c) \ \sigma + \mu \]
-    </td>
-    <td>
-        \[ c^2 \ \Gamma(c) \ \Gamma(1 - c) \ \sigma \]
-    </td>
-    <td>
-        \[ c \vphantom{c^2 \Gamma(c)} \]
-    </td>
-    <td>
-        \[ \frac{1 + 5 c^2}{6} \]
+        \[ \frac{\alpha + 1}{3 \alpha - 1} \frac{2 \alpha + 1}{4 \alpha - 1} \]
     </td>
 </tr>
 </table>
@@ -487,15 +351,17 @@ exist (in closed form).
 Collection of TL-location, -scale, -skewness, -kurtosis coefficients, with
 symmetric trimming of order 1, i.e. `trim=(1, 1)`.
 
-<table style="overflow: hidden">
-<tr>
-    <th>Name / <br><code>scipy.stats</code></th>
-    <th>Params</th>
-    <th>\( \tlmoment{1}{1} \)</th>
-    <th>\( \tlmoment{1}{2} \)</th>
-    <th>\( \tlratio{1}{3} \)</th>
-    <th>\( \tlratio{1}{4} \)</th>
-</tr>
+<table>
+<thead>
+    <tr>
+        <th>Name / <br><code>scipy.stats</code></th>
+        <th>Params</th>
+        <th>\( \tlmoment{1}{1} \)</th>
+        <th>\( \tlmoment{1}{2} \)</th>
+        <th>\( \tlratio{1}{3} \)</th>
+        <th>\( \tlratio{1}{4} \)</th>
+    </tr>
+</thead>
 <tr>
     <td>
         <a
@@ -739,25 +605,23 @@ symmetric trimming of order 1, i.e. `trim=(1, 1)`.
         <br>
         <code>rayleigh</code>
     </td>
-    <td>\( \sigma > 0 \)</td>
+    <td></td>
     <td>
         <!-- \[ \left( \frac 3 2 - \sqrt{\frac{2}{3}} \right) \sqrt \pi \ \sigma \] -->
         \[
             \frac 1 6
             \bigl( 9 - 2 \sqrt 6 \bigr)
             \sqrt \pi \
-            \sigma
         \]
-        \( \approx 1.211 \sigma \)
+        \( \approx 1.211  \)
     </td>
     <td>
         \[
             \frac 1 4
             \bigl( 6 - 4 \sqrt 6 + 3 \sqrt 2 \bigr)
             \sqrt \pi \
-            \sigma
         \]
-        \( \approx 0.1970 \sigma \)
+        \( \approx 0.1970 \)
     </td>
     <td>
         <!-- \[
@@ -796,84 +660,40 @@ symmetric trimming of order 1, i.e. `trim=(1, 1)`.
             Gumbel
         </a>
         <br>
-        <code>gumbel_l</code>
+        <code>gumbel_r</code>
+        <br>
+        see eq. \( \eqref{eq:lr_gev} \) for \( \tlmoment{s,t}{r} \)
     </td>
-    <td>\( \beta > 0 \)</td>
+    <td></td>
     <td>
-        \[ \mu - \left( \gamma_e - 2 \ln{3} + 3 \ln{2} \right) \ \beta \]
-        \( \approx \mu -0.4594 \ \beta \)
+        \[ \gamma_e + 3 \ln{2} - 2 \ln{3} \]
+        \( \approx 0.4594 \)
     </td>
     <td>
-        \[ \left( 6 \ln{3} - 9 \ln{2} \right) \ \beta \]
-        \( \approx 0.3533 \ \beta \)
+        \[ 6 \ln{3} - 9 \ln{2} \]
+        \( \approx 0.3533 \)
     </td>
     <td>
         \[
-            \frac{10}{9}
-            \frac{2 \ln{5} + 4 \ln{3} - 11 \ln{2}}{2 \ln{3} - 3 \ln{2}}
+            -\frac{10}{9}
+            \frac
+                {2 \log_2(5) - 5}
+                {2 \log_2(3) - 3}
+            -
+            \frac{20}{9}
         \]
-        \( \approx -0.1065 \)
+        \( \approx 0.1065 \)
     </td>
     <td>
         \[
-            \frac{5}{12}
-            \frac{42 \ln{5} + 6 \ln{3} - 107 \ln{2}}{2 \ln{3} - 3 \ln{2}}
+            \frac{35}{6}
+            \frac
+                {3 \log_2(5) - 7}
+                {2 \log_2(3) - 3}
+            +
+            \frac{5}{4}
         \]
         \( \approx 0.07541 \)
-    </td>
-</tr>
-<!-- TODO: GEV -->
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Weibull_distribution"
-            target="_blank"
-            title="Weibull distribution - Wikipedia"
-        >
-            Weibull
-        </a>
-        <br>
-        <code>weibull_min</code>
-    </td>
-    <td>
-        \( \alpha > 0 \)<br>
-        \( \beta > 0 \)<br>
-        \( \kappa := 1 / \alpha \)
-    </td>
-    <td>
-        \[
-            \left(
-                \frac{3}{2^\kappa} 
-                - \frac{2}{3^\kappa}
-            \right) \
-            \Gamma(\kappa) \ \kappa \beta
-        \]
-    </td>
-    <td>
-        \[
-            \left(
-                \frac{3}{2^\kappa} 
-                - \frac{6}{3^\kappa}
-                + \frac{3}{4^\kappa}
-            \right) \
-            \Gamma(\kappa) \ \kappa \beta
-        \]
-    </td>
-    <td>
-        \[
-            \frac{10}{9}
-            - \frac{20}{9} \frac
-                {2^{-\kappa} - 2 \cdot 4^{-\kappa} + 5^{-\kappa}}
-                {2^{-\kappa} - 2 \cdot 3^{-\kappa} + 4^{-\kappa}}
-        \]
-    </td>
-    <td>
-        \[
-            \frac{5}{4}
-            - \frac{35}{6} \frac
-                {3^{-\kappa} - 3 \cdot 4^{-\kappa} + 3 \cdot 5^{-\kappa} - 6^{-\kappa}}
-                {2^{-\kappa} - 2 \cdot 3^{-\kappa} + 4^{-\kappa}}
-        \]
     </td>
 </tr>
 <!-- TODO: Pareto I -->
@@ -881,12 +701,65 @@ symmetric trimming of order 1, i.e. `trim=(1, 1)`.
 </table>
 
 
-## General L-moments
+## General distribution L-moments
 
 Lmo derived a bunch of closed-form solutions for L-moments of several
 distributions. The proofs are not published, but it isn't difficult
 to validate their correctness, e.g. numerically, or symbolically with sympy or
 wolfram alpha / mathematica.
+
+
+### Generalized Extreme Value
+
+The [generalized extreme value (GEV)
+](https://wikipedia.org/wiki/Generalized_extreme_value_distribution) 
+distribution unifies the 
+[Gumbel](https://wikipedia.org/wiki/Gumbel_distribution), 
+[Fréchet](https://wikipedia.org/wiki/Fr%C3%A9chet_distribution),
+and [Weibull](https://wikipedia.org/wiki/Weibull_distribution) distributions.
+It has one shape parameter \( \alpha \in \mathbb{R} \), and the following 
+distribution functions:
+
+\[
+    \begin{align*}
+        F(x) &= e^{-\coxbox{-x}{\alpha}} \\
+        x(F) &= -\boxcox{-\ln(F)}{\alpha}
+    \end{align*}
+\]
+
+Here, \( \boxcox{\cdot}{\alpha} \) is the 
+[Box-Cox transformation function](#def-boxcox).
+
+An alternative parametrization is sometimes used, e.g. on 
+[Wikipedia](https://wikipedia.org/wiki/Generalized_extreme_value_distribution),
+where \( \xi = -\alpha \).
+The convention that is used here, is the same as in
+[`scipy.stats.genextreme`][scipy.stats.genextreme], where `c` corresponds to
+\( \alpha \).
+
+The trimmed L-moments of the GEV are
+
+\[
+    \begin{equation}
+    \tlmoment{s, t}{r} = 
+        \frac{(-1)^{r}}{r}
+        \sum_{k = s + 1}^{r + s + t}
+            (-1)^{k - s}
+            \binom{r + k - 2}{r + s - 1}
+            \binom{r + s + t}{k}
+            \left(
+            \begin{cases}
+                \gamma_e + \ln(k)
+                    & \text{if } \alpha = 0 \\
+                1 / \alpha - \Gamma(\alpha) \ k^{-\alpha} 
+                    & \text{if } \alpha \neq 0
+            \end{cases}    
+            \right)
+    \label{eq:lr_gev}
+    \end{equation}
+\]
+
+
 
 ### Kumaraswamy
 
@@ -901,7 +774,6 @@ The distribution functions are for \( 0 \le x \le 1 \) defined as:
 
 \[
 \begin{align*}
-f(x) &= \alpha \beta x^{\alpha-1}\left(1-x^\alpha\right)^{\beta-1} \\
 F(x) &= 1 - (1 - x^\alpha)^\beta \\
 x(F) &= \bigl(1 - (1 - F)^{1/\beta} \bigr)^{1/\alpha}
 \end{align*}
@@ -923,6 +795,9 @@ Its general \( r \)-th trimmed L-moment are:
     \end{equation}
 \]
 
+Unfortunately, the Kumaraswamy distribution is not implemented in 
+`scipy.stats`.
+
 ### Burr Type III / Dagum
 
 The Burr type III distribution, also known as the 
@@ -934,10 +809,6 @@ For \( x > 0 \), the distribution functions are:
 
 \[
 \begin{align*}
-    f(x) &=  
-        x^{\alpha \beta - 1} 
-        (1 + x^\alpha)^{-\beta-1} 
-        \alpha \beta \\
     F(x) &= 
         (1 + x^{-\alpha})^{-\beta} \\
     x(F) &= 
@@ -962,11 +833,15 @@ For \( \alpha > 1 \), the general L-moments are:
 \end{equation}
 \]
 
+The Burr Type III distribution is implemented in
+[`scipy.stats.burr`][scipy.stats.burr], where the shape parameters `c` and `d`
+correspond to  \( \alpha \) and \( \beta \), respectively.
+
 
 ### Burr Type XII
 
 Just like Kumaraswamy's distribution, the
-[Burr distribution](https://wikipedia.org/wiki/Burr_distribution) of type XII
+[Burr (Type XII) distribution](https://wikipedia.org/wiki/Burr_distribution)
 has two shape parameters \( \alpha \) and \( \beta \), both restricted to the
 positive reals.
 
@@ -974,7 +849,6 @@ The distribution functions are for \( x > 0 \) defined as:
 
 \[
 \begin{align*}
-    f(x) &= \alpha \beta x^{\alpha-1} \left(1 + x^\alpha\right)^{-\beta-1} \\
     F(x) &= 1 - (1 - x^\alpha)^{-\beta} \\
     x(F) &= \bigl(1 - (1 - F)^{-1/\beta} \bigr)^{1/\alpha}
 \end{align*}
@@ -996,9 +870,10 @@ When \( \beta > 1 / \alpha \), the general \( r \)-th trimmed L-moment is:
 \end{equation}
 \]
 
-Interestingly, this barely differs from that of Kumaraswamy's distribution
-\( \eqref{eq:lr_kum} \), even though the bounds of the distribution functions
-differ greatly.
+
+The Burr Type XII distribution is implemented in
+[`scipy.stats.burr12`][scipy.stats.burr12], where the shape parameters `c` 
+and `d` correspond to  \( \alpha \) and \( \beta \), respectively.
 
 ### Wakeby
 
@@ -1060,6 +935,9 @@ and trim \( s, t \in \mathbb{N}^2_{\ge 1} \) can be expressed as
 \end{equation}
 \]
 
+Unfortunately, the Wakeby distribution has currently no 
+[`scipy.stats`][scipy.stats] implementation.
+
 ### Generalized Lambda
 
 The [Tukey lambda distribution
@@ -1098,8 +976,12 @@ general trimmed L-moments can be compactly expressed as:
 \end{equation}
 \]
 
+When \( \alpha = \gamma \) and \( \beta = \delta \), this is the 
+(non-generalized) Tukey-lambda distribution, which has been implemented as 
+[`scipy.stats.tukeylambda`][scipy.stats.tukeylambda]. Currently, this 
+4-parameter generalization has no [`scipy.stats`][scipy.stats] implementation.
+
 <!-- TODO: Generalized Pareto (GPD / Pareto-Pickands) -->
-<!-- TODO: Generalized Extreme Value (GEV) -->
 <!-- TODO: Generalized Logistic -->
 
 ## Constants and special functions
@@ -1108,13 +990,15 @@ An overview of the (non-obvious) mathematical notation of special functions
 and constants.
 
 
-<table style="overflow: hidden">
-<tr>
-    <th>Name</th>
-    <th>Notation</th>
-    <th>Definition</th>
-    <th>Python</th>
-</tr>
+<table>
+<thead>
+    <tr>
+        <th>Name</th>
+        <th>Notation</th>
+        <th>Definition</th>
+        <th>Python</th>
+    </tr>
+</thead>
 <tr id="const-euler">
     <td>
         <a
@@ -1134,6 +1018,7 @@ and constants.
                         \frac{1}{\lfloor x \rfloor} - \frac 1 x
                     \right) \
                     \mathrm{d} x \\
+                &= \lim_{x \to 0} \left( \frac 1 x - \Gamma(x) \right) \\
                 &\approx 0.5772 \vphantom{\frac 1 1}
             \end{align*}
         \]
@@ -1326,7 +1211,7 @@ and constants.
         </a>
     </td>
 </tr>
-<tr id="def-bcox">
+<tr id="def-boxcox" class="row-double-top">
     <td>
         <a
             href="https://wikipedia.org/wiki/Power_transform#Box%E2%80%93Cox_transformation"
@@ -1336,13 +1221,12 @@ and constants.
             Box–Cox transform
         </a>
     </td>
-    <td>\[ \boxcox{z}{\lambda} \]</td>
+    <td>\[ \boxcox{y}{\lambda} \]</td>
     <td>
         \[
-            =
-            \begin{cases}
-                (z^\lambda - 1) / \lambda & \text{if } \lambda \neq 0 \\
-                \ln(z) & \text{if } \lambda = 0
+            = \begin{cases}
+                (y^\lambda - 1) / \lambda & \text{if } \lambda \neq 0 \\
+                \ln(y) & \text{if } \lambda = 0
             \end{cases}
         \]
     </td>
@@ -1352,6 +1236,34 @@ and constants.
             target="_blank"
         >
             <code>scipy.special.boxcox</code>
+        </a>
+    </td>
+</tr>
+<tr id="def-coxbox">
+    <td>
+        <a
+            href="https://wikipedia.org/wiki/Power_transform#Box%E2%80%93Cox_transformation"
+            target="_blank"
+            title="Box–Cox transformation - Power transform - Wikipedia"
+        >
+            Inverse Box–Cox transform
+        </a>
+    </td>
+    <td>\[ \coxbox{x}{\lambda} \]</td>
+    <td>
+        \[
+            = \begin{cases}
+                (\lambda y + 1)^{1 / \lambda} & \text{if } \lambda \neq 0 \\
+                e^{x} & \text{if } \lambda = 0
+            \end{cases}
+        \]
+    </td>
+    <td>
+        <a 
+            href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.boxcox.html"
+            target="_blank"
+        >
+            <code>scipy.special.inv_boxcox</code>
         </a>
     </td>
 </tr>
