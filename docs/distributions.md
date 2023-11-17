@@ -807,10 +807,13 @@ distribution functions:
 
 \[
     \begin{align*}
-        F(x) &= e^{-\coxbox{-x}{\kappa}} \\
-        x(F) &= -\boxcox{-\ln(F)}{\kappa}
+        F(x) &= e^{-\coxbox{-x}{\alpha}} \\
+        x(F) &= -\boxcox{-\ln(F)}{\alpha}
     \end{align*}
 \]
+
+Here, \( \boxcox{\cdot}{\alpha} \) is the 
+[Box-Cox transformation function](#def-boxcox).
 
 An alternative parametrization is sometimes used, e.g. on 
 [Wikipedia](https://wikipedia.org/wiki/Generalized_extreme_value_distribution),
@@ -1291,7 +1294,7 @@ and constants.
         </a>
     </td>
 </tr>
-<tr id="def-bcox" class="row-double-top">
+<tr id="def-boxcox" class="row-double-top">
     <td>
         <a
             href="https://wikipedia.org/wiki/Power_transform#Box%E2%80%93Cox_transformation"
@@ -1319,7 +1322,7 @@ and constants.
         </a>
     </td>
 </tr>
-<tr id="def-bcox">
+<tr id="def-coxbox">
     <td>
         <a
             href="https://wikipedia.org/wiki/Power_transform#Box%E2%80%93Cox_transformation"
