@@ -2,7 +2,7 @@
 
 This page lists L-moment statistics
 (L -location, scale, skewness, and kurtosis) of common univariate
-probability distributions, most of them continuous.
+probability distributions, most of them continuous. 
 
 Each of the listed expressions have been validated, both numerically and
 symbolically (with either Wolfram Alpha, SymPy, or pen and paper).
@@ -288,68 +288,26 @@ exist (in closed form).
             Gumbel
         </a>
         <br>
-        <code>gumbel_l</code>
+        <code>gumbel_r</code>
+        <br>
+        see eq. \( \eqref{eq:lr_gev} \) for \( \lmoment{r} \)
+    </td>
+    <td></td>
+    <td>
+        \[ \gamma_e \]
+        \( \approx 0.5772 \)
     </td>
     <td>
-        \( \mu \)<br>
-        \( \sigma > 0 \)
-    </td>
-    <td>
-        \[ \mu - \gamma_e \sigma \]
-        \( \approx \mu - 0.5772 \ \sigma \)
-    </td>
-    <td>
-        \[ \ln{2} \ \sigma \]
-        \( \approx 0.6931 \ \sigma \)
+        \[ \ln{2} \]
+        \( \approx 0.6931 \)
     </td>
     <td>
         \[ 2 \log_2(3) - 3 \]
-        \( \approx -0.1699 \)
+        \( \approx 0.1699 \)
     </td>
     <td>
         \[ 16 - 10 \log_2(3) \]
         \( \approx 0.1504 \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Generalized_extreme_value_distribution"
-            target="_blank"
-            title="Generalized extreme value distribution - Wikipedia"
-        >
-            GEV
-        </a>
-        <br>
-        <code>genextreme</code>
-    </td>
-    <td>
-        \( \kappa > -1 \)
-    </td>
-    <td>
-        \[ \frac{1 - \Gamma(1 + \kappa)}{\kappa} \]
-    </td>
-    <td>
-        \[\Gamma(1 + \kappa) \ \boxcox{2}{-\kappa} \]
-    </td>
-    <td>
-        \[ 
-            - 3
-            + 2 \frac
-                {\boxcox{3}{-\kappa}}
-                {\boxcox{2}{-\kappa}}
-        \]
-    </td>
-    <td>
-        \[
-            6
-            - 10 \frac
-                {\boxcox{3}{-\kappa}}
-                {\boxcox{2}{-\kappa}}
-            + 5 \frac
-                {\boxcox{4}{-\kappa}}
-                {\boxcox{2}{-\kappa}}
-        \]
     </td>
 </tr>
 <tr>
@@ -647,25 +605,23 @@ symmetric trimming of order 1, i.e. `trim=(1, 1)`.
         <br>
         <code>rayleigh</code>
     </td>
-    <td>\( \sigma > 0 \)</td>
+    <td></td>
     <td>
         <!-- \[ \left( \frac 3 2 - \sqrt{\frac{2}{3}} \right) \sqrt \pi \ \sigma \] -->
         \[
             \frac 1 6
             \bigl( 9 - 2 \sqrt 6 \bigr)
             \sqrt \pi \
-            \sigma
         \]
-        \( \approx 1.211 \sigma \)
+        \( \approx 1.211  \)
     </td>
     <td>
         \[
             \frac 1 4
             \bigl( 6 - 4 \sqrt 6 + 3 \sqrt 2 \bigr)
             \sqrt \pi \
-            \sigma
         \]
-        \( \approx 0.1970 \sigma \)
+        \( \approx 0.1970 \)
     </td>
     <td>
         <!-- \[
@@ -704,84 +660,40 @@ symmetric trimming of order 1, i.e. `trim=(1, 1)`.
             Gumbel
         </a>
         <br>
-        <code>gumbel_l</code>
+        <code>gumbel_r</code>
+        <br>
+        see eq. \( \eqref{eq:lr_gev} \) for \( \tlmoment{s,t}{r} \)
     </td>
-    <td>\( \beta > 0 \)</td>
+    <td></td>
     <td>
-        \[ \mu - \left( \gamma_e - 2 \ln{3} + 3 \ln{2} \right) \ \beta \]
-        \( \approx \mu -0.4594 \ \beta \)
+        \[ \gamma_e + 3 \ln{2} - 2 \ln{3} \]
+        \( \approx 0.4594 \)
     </td>
     <td>
-        \[ \left( 6 \ln{3} - 9 \ln{2} \right) \ \beta \]
-        \( \approx 0.3533 \ \beta \)
+        \[ 6 \ln{3} - 9 \ln{2} \]
+        \( \approx 0.3533 \)
     </td>
     <td>
         \[
-            \frac{10}{9}
-            \frac{2 \ln{5} + 4 \ln{3} - 11 \ln{2}}{2 \ln{3} - 3 \ln{2}}
+            -\frac{10}{9}
+            \frac
+                {2 \log_2(5) - 5}
+                {2 \log_2(3) - 3}
+            -
+            \frac{20}{9}
         \]
-        \( \approx -0.1065 \)
+        \( \approx 0.1065 \)
     </td>
     <td>
         \[
-            \frac{5}{12}
-            \frac{42 \ln{5} + 6 \ln{3} - 107 \ln{2}}{2 \ln{3} - 3 \ln{2}}
+            \frac{35}{6}
+            \frac
+                {3 \log_2(5) - 7}
+                {2 \log_2(3) - 3}
+            +
+            \frac{5}{4}
         \]
         \( \approx 0.07541 \)
-    </td>
-</tr>
-<!-- TODO: GEV -->
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Weibull_distribution"
-            target="_blank"
-            title="Weibull distribution - Wikipedia"
-        >
-            Weibull
-        </a>
-        <br>
-        <code>weibull_min</code>
-    </td>
-    <td>
-        \( \alpha > 0 \)<br>
-        \( \beta > 0 \)<br>
-        \( \kappa := 1 / \alpha \)
-    </td>
-    <td>
-        \[
-            \left(
-                \frac{3}{2^\kappa} 
-                - \frac{2}{3^\kappa}
-            \right) \
-            \Gamma(\kappa) \ \kappa \beta
-        \]
-    </td>
-    <td>
-        \[
-            \left(
-                \frac{3}{2^\kappa} 
-                - \frac{6}{3^\kappa}
-                + \frac{3}{4^\kappa}
-            \right) \
-            \Gamma(\kappa) \ \kappa \beta
-        \]
-    </td>
-    <td>
-        \[
-            \frac{10}{9}
-            - \frac{20}{9} \frac
-                {2^{-\kappa} - 2 \cdot 4^{-\kappa} + 5^{-\kappa}}
-                {2^{-\kappa} - 2 \cdot 3^{-\kappa} + 4^{-\kappa}}
-        \]
-    </td>
-    <td>
-        \[
-            \frac{5}{4}
-            - \frac{35}{6} \frac
-                {3^{-\kappa} - 3 \cdot 4^{-\kappa} + 3 \cdot 5^{-\kappa} - 6^{-\kappa}}
-                {2^{-\kappa} - 2 \cdot 3^{-\kappa} + 4^{-\kappa}}
-        \]
     </td>
 </tr>
 <!-- TODO: Pareto I -->
