@@ -321,6 +321,8 @@ exist (in closed form).
         </a>
         <br>
         <code>pareto</code>
+        <br>
+        see eq. \( \eqref{eq:lr_pareto4} \) for \( \lmoment{r} \)
     </td>
     <td>
         \[
@@ -759,6 +761,41 @@ The trimmed L-moments of the GEV are
     \end{equation}
 \]
 
+
+### Pareto Type IV
+
+The [Pareto Type IV](https://wikipedia.org/wiki/Pareto_distribution) has two 
+shape parameters \( \alpha \in \mathbb{R} \) and 
+\( \gamma \in \mathbb{R}_{>0} \), and scale parameter \( \beta \).
+For \( x \ge 0 \), the CDF and its inverse (the PPF) are
+
+\[
+\begin{align*}
+    F(x) 
+        &= 1 - \left(
+            1 + \left(\frac x \beta\right)^{\frac 1 \gamma}
+        \right)^{-\alpha} \\
+    x(F) 
+        &= \beta \left(
+            (1 - F)^{-1 / \alpha} - 1
+        \right)^\gamma
+\end{align*}
+\]
+
+When \( \alpha > \gamma \), the trimmed L-moments are found to be:
+
+\[
+    \begin{equation}
+        \tlmoment{s,t}{r} 
+            = \frac{\beta \gamma}{r}
+            \sum_{k = t + 1}^{r + s + t}
+                (-1)^{k - t - 1}
+                \binom{r + k - 2}{r + t - 1}
+                \binom{r + s + t}{k}
+                \B(\gamma,\ k \alpha - \gamma)
+            \label{eq:lr_pareto4}
+    \end{equation}
+\]
 
 
 ### Kumaraswamy
