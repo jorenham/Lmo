@@ -812,6 +812,13 @@ distribution functions:
     \end{align*}
 \]
 
+An alternative parametrization is sometimes used, e.g. on 
+[Wikipedia](https://wikipedia.org/wiki/Generalized_extreme_value_distribution),
+where \( \xi = -\alpha \).
+The convention that is used here, is the same as in
+[`scipy.stats.genextreme`][scipy.stats.genextreme], where `c` corresponds to
+\( \alpha \).
+
 The trimmed L-moments of the GEV are
 
 \[
@@ -833,6 +840,7 @@ The trimmed L-moments of the GEV are
     \label{eq:lr_gev}
     \end{equation}
 \]
+
 
 
 ### Kumaraswamy
@@ -869,6 +877,9 @@ Its general \( r \)-th trimmed L-moment are:
     \end{equation}
 \]
 
+Unfortunately, the Kumaraswamy distribution is not implemented in 
+`scipy.stats`.
+
 ### Burr Type III / Dagum
 
 The Burr type III distribution, also known as the 
@@ -904,11 +915,15 @@ For \( \alpha > 1 \), the general L-moments are:
 \end{equation}
 \]
 
+The Burr Type III distribution is implemented in
+[`scipy.stats.burr`][scipy.stats.burr], where the shape parameters `c` and `d`
+correspond to  \( \alpha \) and \( \beta \), respectively.
+
 
 ### Burr Type XII
 
 Just like Kumaraswamy's distribution, the
-[Burr distribution](https://wikipedia.org/wiki/Burr_distribution) of type XII
+[Burr (Type XII) distribution](https://wikipedia.org/wiki/Burr_distribution)
 has two shape parameters \( \alpha \) and \( \beta \), both restricted to the
 positive reals.
 
@@ -936,6 +951,11 @@ When \( \beta > 1 / \alpha \), the general \( r \)-th trimmed L-moment is:
         \label{eq:lr_burr12}
 \end{equation}
 \]
+
+
+The Burr Type XII distribution is implemented in
+[`scipy.stats.burr12`][scipy.stats.burr12], where the shape parameters `c` 
+and `d` correspond to  \( \alpha \) and \( \beta \), respectively.
 
 ### Wakeby
 
@@ -997,6 +1017,9 @@ and trim \( s, t \in \mathbb{N}^2_{\ge 1} \) can be expressed as
 \end{equation}
 \]
 
+Unfortunately, the Wakeby distribution has currently no 
+[`scipy.stats`][scipy.stats] implementation.
+
 ### Generalized Lambda
 
 The [Tukey lambda distribution
@@ -1035,8 +1058,12 @@ general trimmed L-moments can be compactly expressed as:
 \end{equation}
 \]
 
+When \( \alpha = \gamma \) and \( \beta = \delta \), this is the 
+(non-generalized) Tukey-lambda distribution, which has been implemented as 
+[`scipy.stats.tukeylambda`][scipy.stats.tukeylambda]. Currently, this 
+4-parameter generalization has no [`scipy.stats`][scipy.stats] implementation.
+
 <!-- TODO: Generalized Pareto (GPD / Pareto-Pickands) -->
-<!-- TODO: Generalized Extreme Value (GEV) -->
 <!-- TODO: Generalized Logistic -->
 
 ## Constants and special functions
