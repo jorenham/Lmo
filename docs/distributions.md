@@ -786,12 +786,54 @@ symmetric trimming of order 1, i.e. `trim=(1, 1)`.
 </table>
 
 
-## General L-moments
+## General distribution L-moments
 
 Lmo derived a bunch of closed-form solutions for L-moments of several
 distributions. The proofs are not published, but it isn't difficult
 to validate their correctness, e.g. numerically, or symbolically with sympy or
 wolfram alpha / mathematica.
+
+
+### Generalized Extreme Value
+
+The [generalized extreme value (GEV)
+](https://wikipedia.org/wiki/Generalized_extreme_value_distribution) 
+distribution unifies the 
+[Gumbel](https://wikipedia.org/wiki/Gumbel_distribution), 
+[Fréchet](https://wikipedia.org/wiki/Fr%C3%A9chet_distribution),
+and [Weibull](https://wikipedia.org/wiki/Weibull_distribution) distributions.
+It has one shape parameter \( \alpha \in \mathbb{R} \), and the following 
+distribution functions:
+
+\[
+    \begin{align*}
+        F(x) &= e^{-\coxbox{-x}{\kappa}} \\
+        x(F) &= -\boxcox{-\ln(F)}{\kappa}
+    \end{align*}
+\]
+
+The trimmed L-moments of the GEV are
+
+\[
+    \begin{equation}
+    \tlmoment{s, t}{r} = 
+        \frac{(-1)^{r}}{r}
+        \sum_{k = s + 1}^{r + s + t}
+            (-1)^{k - s}
+            \binom{r + k - 2}{r + s - 1}
+            \binom{r + s + t}{k}
+            \left(
+            \begin{cases}
+                \gamma_e + \ln(k)
+                    & \text{if } \alpha = 0 \\
+                1 / \alpha - \Gamma(\alpha) \ k^{-\alpha} 
+                    & \text{if } \alpha \neq 0
+            \end{cases}    
+            \right)
+    \label{eq:lr_gev}
+    \end{equation}
+\]
+
 
 ### Kumaraswamy
 
@@ -806,7 +848,6 @@ The distribution functions are for \( 0 \le x \le 1 \) defined as:
 
 \[
 \begin{align*}
-f(x) &= \alpha \beta x^{\alpha-1}\left(1-x^\alpha\right)^{\beta-1} \\
 F(x) &= 1 - (1 - x^\alpha)^\beta \\
 x(F) &= \bigl(1 - (1 - F)^{1/\beta} \bigr)^{1/\alpha}
 \end{align*}
@@ -839,10 +880,6 @@ For \( x > 0 \), the distribution functions are:
 
 \[
 \begin{align*}
-    f(x) &=  
-        x^{\alpha \beta - 1} 
-        (1 + x^\alpha)^{-\beta-1} 
-        \alpha \beta \\
     F(x) &= 
         (1 + x^{-\alpha})^{-\beta} \\
     x(F) &= 
@@ -879,7 +916,6 @@ The distribution functions are for \( x > 0 \) defined as:
 
 \[
 \begin{align*}
-    f(x) &= \alpha \beta x^{\alpha-1} \left(1 + x^\alpha\right)^{-\beta-1} \\
     F(x) &= 1 - (1 - x^\alpha)^{-\beta} \\
     x(F) &= \bigl(1 - (1 - F)^{-1/\beta} \bigr)^{1/\alpha}
 \end{align*}
@@ -900,10 +936,6 @@ When \( \beta > 1 / \alpha \), the general \( r \)-th trimmed L-moment is:
         \label{eq:lr_burr12}
 \end{equation}
 \]
-
-Interestingly, this barely differs from that of Kumaraswamy's distribution
-\( \eqref{eq:lr_kum} \), even though the bounds of the distribution functions
-differ greatly.
 
 ### Wakeby
 
@@ -1232,7 +1264,7 @@ and constants.
         </a>
     </td>
 </tr>
-<tr id="def-bcox">
+<tr id="def-bcox" class="row-double-top">
     <td>
         <a
             href="https://wikipedia.org/wiki/Power_transform#Box%E2%80%93Cox_transformation"
@@ -1242,13 +1274,12 @@ and constants.
             Box–Cox transform
         </a>
     </td>
-    <td>\[ \boxcox{z}{\lambda} \]</td>
+    <td>\[ \boxcox{y}{\lambda} \]</td>
     <td>
         \[
-            =
-            \begin{cases}
-                (z^\lambda - 1) / \lambda & \text{if } \lambda \neq 0 \\
-                \ln(z) & \text{if } \lambda = 0
+            = \begin{cases}
+                (y^\lambda - 1) / \lambda & \text{if } \lambda \neq 0 \\
+                \ln(y) & \text{if } \lambda = 0
             \end{cases}
         \]
     </td>
@@ -1258,6 +1289,34 @@ and constants.
             target="_blank"
         >
             <code>scipy.special.boxcox</code>
+        </a>
+    </td>
+</tr>
+<tr id="def-bcox">
+    <td>
+        <a
+            href="https://wikipedia.org/wiki/Power_transform#Box%E2%80%93Cox_transformation"
+            target="_blank"
+            title="Box–Cox transformation - Power transform - Wikipedia"
+        >
+            Inverse Box–Cox transform
+        </a>
+    </td>
+    <td>\[ \coxbox{x}{\lambda} \]</td>
+    <td>
+        \[
+            = \begin{cases}
+                (\lambda y + 1)^{1 / \lambda} & \text{if } \lambda \neq 0 \\
+                e^{x} & \text{if } \lambda = 0
+            \end{cases}
+        \]
+    </td>
+    <td>
+        <a 
+            href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.boxcox.html"
+            target="_blank"
+        >
+            <code>scipy.special.inv_boxcox</code>
         </a>
     </td>
 </tr>
