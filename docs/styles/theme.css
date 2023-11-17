@@ -52,3 +52,7 @@ th {
 tr.row-double-top > td {
   border-top: 0.15rem double var(--md-typeset-table-color) !important;
 }
+
+.md-typeset__scrollwrap > .md-typeset__table > table {
+  overflow-y: hidden;
+}

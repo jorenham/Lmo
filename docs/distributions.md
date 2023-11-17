@@ -34,8 +34,8 @@ An overview of the untrimmed L-location, L-scale, L-skewness and L-kurtosis,
 of a bunch of popular univariate probability distributions, for which they
 exist (in closed form).
 
-
-<table style="overflow: hidden">
+<table>
+<thead>
 <tr>
     <th>Name /<br> <code>scipy.stats</code></th>
     <th>Params</th>
@@ -44,6 +44,7 @@ exist (in closed form).
     <th>\( \lratio{3} = \lmoment{3}/\lmoment{2} \)</th>
     <th>\( \lratio{4} = \lmoment{4}/\lmoment{2} \)</th>
 </tr>
+</thead>
 <tr>
     <td>
         <a
@@ -392,15 +393,17 @@ exist (in closed form).
 Collection of TL-location, -scale, -skewness, -kurtosis coefficients, with
 symmetric trimming of order 1, i.e. `trim=(1, 1)`.
 
-<table style="overflow: hidden">
-<tr>
-    <th>Name / <br><code>scipy.stats</code></th>
-    <th>Params</th>
-    <th>\( \tlmoment{1}{1} \)</th>
-    <th>\( \tlmoment{1}{2} \)</th>
-    <th>\( \tlratio{1}{3} \)</th>
-    <th>\( \tlratio{1}{4} \)</th>
-</tr>
+<table>
+<thead>
+    <tr>
+        <th>Name / <br><code>scipy.stats</code></th>
+        <th>Params</th>
+        <th>\( \tlmoment{1}{1} \)</th>
+        <th>\( \tlmoment{1}{2} \)</th>
+        <th>\( \tlratio{1}{3} \)</th>
+        <th>\( \tlratio{1}{4} \)</th>
+    </tr>
+</thead>
 <tr>
     <td>
         <a
@@ -1075,13 +1078,15 @@ An overview of the (non-obvious) mathematical notation of special functions
 and constants.
 
 
-<table style="overflow: hidden">
-<tr>
-    <th>Name</th>
-    <th>Notation</th>
-    <th>Definition</th>
-    <th>Python</th>
-</tr>
+<table>
+<thead>
+    <tr>
+        <th>Name</th>
+        <th>Notation</th>
+        <th>Definition</th>
+        <th>Python</th>
+    </tr>
+</thead>
 <tr id="const-euler">
     <td>
         <a
