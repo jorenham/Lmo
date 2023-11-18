@@ -42,14 +42,14 @@ pandas = { version = ">=1.4", optional = true }
 pytest = "^7.4"
 hypothesis = { extras = ["numpy"], version = "^6.88" }
 pyright = "^1.1"
-ruff = ">=0.1.4,<1.0"
+ruff = ">=0.1.6,<1.0"
 codespell = "^2.2"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.5"
 mkdocs-material = "^9.4"
 mkdocs-include-markdown-plugin = "^6.0"
-mkdocstrings = {extras = ["python"], version = ">=0.23,<1.0"}
+mkdocstrings = {extras = ["python"], version = ">=0.24,<1.0"}
 
 [tool.poetry.group.debug.dependencies]
 ipython = ">=8.17"
