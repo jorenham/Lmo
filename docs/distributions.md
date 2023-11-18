@@ -698,8 +698,6 @@ symmetric trimming of order 1, i.e. `trim=(1, 1)`.
         \( \approx 0.07541 \)
     </td>
 </tr>
-<!-- TODO: Pareto I -->
-<!-- TODO: Pareto III -->
 </table>
 
 
@@ -796,6 +794,8 @@ When \( \alpha > \gamma \), the trimmed L-moments are found to be:
             \label{eq:lr_pareto4}
     \end{equation}
 \]
+
+This distribution is currently not implemented in [`scipy.stats`][scipy.stats]
 
 
 ### Kumaraswamy
