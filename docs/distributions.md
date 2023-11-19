@@ -706,7 +706,7 @@ distributions. The proofs are not published, but it isn't difficult
 to validate their correctness, e.g. numerically, or symbolically with sympy or
 wolfram alpha / mathematica.
 
-### Generalized Extreme Value
+### GEV
 
 The [generalized extreme value (GEV)
 ](https://wikipedia.org/wiki/Generalized_extreme_value_distribution)
@@ -755,6 +755,69 @@ The trimmed L-moments of the GEV are
     \label{eq:lr_gev}
     \end{equation}
 \]
+
+### GPD
+
+The [generalized Pareto distribution
+](https://wikipedia.org/wiki/Generalized_Pareto_distribution) (GPD), with
+shape parameter \( \alpha \in \mathbb{R} \), has for \( x \ge 0 \) the
+distribution functions:
+
+\[
+    \begin{align*}
+        F(x) &= 1 - 1 / \coxbox{x}{\alpha} \\
+        x(F) &= \boxcox{1 / (1 - F)}{\alpha}
+    \end{align*}
+\]
+
+Note that this distribution is standard uniform if \( \alpha = 1 \), and
+standard exponential if \( \alpha = 0 \).
+
+The general trimmed L-moments of the GPD are:
+
+\[
+    \begin{equation}
+        \tlmoment{s,t}{r} = \begin{cases}
+            \displaystyle \sum_{k = 1}^{s + 1} \frac{1}{t + k}
+                & \text{if } \alpha = 0 \wedge r = 1 \\
+            \frac{1}{r} \B(r - 1,\ t + 1)
+                & \text{if } \alpha = 0 \wedge r > 1 \\
+            \displaystyle \frac{r + s + t}{\alpha \ r} \sum_{k = 0}^{r + t - 1}
+                \frac{(-1)^{r - k}}{k}
+                \binom{r + s + t - 1}{k + s}
+                \binom{r + s + k - 1}{k}
+                \left(
+                    1 - \frac{(k + 1)!}{\rfact{1 - \alpha}{k + 1}}
+                \right)
+                & \text{if } \alpha < 1
+        \end{cases}
+        \label{eq:lr_gpd}
+    \end{equation}
+\]
+
+Apparently left-trimming the exponential distribution does not influence any
+of the L-moments, besides the L-location.
+
+For the general LH-moments, this simplifies to:
+
+\[
+    \begin{equation}
+        \tlmoment{0,t}{r} = \begin{cases}
+             \displaystyle \frac{1}{t + 1}
+                & \text{if } \alpha = 0 \wedge r = 1 \\
+            \frac{1}{r} \B(r - 1,\ t + 1)
+                & \text{if } \alpha = 0 \wedge r > 1 \\
+            \displaystyle \frac{r + t}{r}
+                \frac{\rfact{1 + \alpha}{r - 2}}{\rfact{1 - \alpha + t}{r}}
+                - \frac{\ffact{1}{r}}{\alpha}
+                & \text{if } \alpha < 1
+        \end{cases}
+        \label{eq:lhr_gpd}
+    \end{equation}
+\]
+
+See [`scipy.stats.genpareto`][scipy.stats.genpareto] for the implementation of
+the GPD.
 
 ### Pareto Type IV
 

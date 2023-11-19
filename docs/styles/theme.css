@@ -53,4 +53,7 @@ th {
 .md-typeset__scrollwrap > .md-typeset__table > table {
     overflow-y: hidden;
 }
+.md-typeset div.arithmatex {
+    overflow-y: hidden;
+}
 
