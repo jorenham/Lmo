@@ -2,7 +2,7 @@
 
 This page lists L-moment statistics
 (L -location, scale, skewness, and kurtosis) of common univariate
-probability distributions, most of them continuous. 
+probability distributions, most of them continuous.
 
 Each of the listed expressions have been validated, both numerically and
 symbolically (with either Wolfram Alpha, SymPy, or pen and paper).
@@ -346,7 +346,6 @@ exist (in closed form).
     </td>
 </tr>
 </table>
-
 
 ## TL-stats
 
@@ -700,7 +699,6 @@ symmetric trimming of order 1, i.e. `trim=(1, 1)`.
 </tr>
 </table>
 
-
 ## General distribution L-moments
 
 Lmo derived a bunch of closed-form solutions for L-moments of several
@@ -708,16 +706,15 @@ distributions. The proofs are not published, but it isn't difficult
 to validate their correctness, e.g. numerically, or symbolically with sympy or
 wolfram alpha / mathematica.
 
-
 ### Generalized Extreme Value
 
 The [generalized extreme value (GEV)
-](https://wikipedia.org/wiki/Generalized_extreme_value_distribution) 
-distribution unifies the 
-[Gumbel](https://wikipedia.org/wiki/Gumbel_distribution), 
+](https://wikipedia.org/wiki/Generalized_extreme_value_distribution)
+distribution unifies the
+[Gumbel](https://wikipedia.org/wiki/Gumbel_distribution),
 [Fréchet](https://wikipedia.org/wiki/Fr%C3%A9chet_distribution),
 and [Weibull](https://wikipedia.org/wiki/Weibull_distribution) distributions.
-It has one shape parameter \( \alpha \in \mathbb{R} \), and the following 
+It has one shape parameter \( \alpha \in \mathbb{R} \), and the following
 distribution functions:
 
 \[
@@ -727,10 +724,10 @@ distribution functions:
     \end{align*}
 \]
 
-Here, \( \boxcox{\cdot}{\alpha} \) is the 
+Here, \( \boxcox{\cdot}{\alpha} \) is the
 [Box-Cox transformation function](#def-boxcox).
 
-An alternative parametrization is sometimes used, e.g. on 
+An alternative parametrization is sometimes used, e.g. on
 [Wikipedia](https://wikipedia.org/wiki/Generalized_extreme_value_distribution),
 where \( \xi = -\alpha \).
 The convention that is used here, is the same as in
@@ -741,7 +738,7 @@ The trimmed L-moments of the GEV are
 
 \[
     \begin{equation}
-    \tlmoment{s, t}{r} = 
+    \tlmoment{s, t}{r} =
         \frac{(-1)^{r}}{r}
         \sum_{k = s + 1}^{r + s + t}
             (-1)^{k - s}
@@ -751,29 +748,28 @@ The trimmed L-moments of the GEV are
             \begin{cases}
                 \gamma_e + \ln(k)
                     & \text{if } \alpha = 0 \\
-                1 / \alpha - \Gamma(\alpha) \ k^{-\alpha} 
+                1 / \alpha - \Gamma(\alpha) \ k^{-\alpha}
                     & \text{if } \alpha \neq 0
-            \end{cases}    
+            \end{cases}
             \right)
     \label{eq:lr_gev}
     \end{equation}
 \]
 
-
 ### Pareto Type IV
 
-The [Pareto Type IV](https://wikipedia.org/wiki/Pareto_distribution) has two 
-shape parameters \( \alpha \in \mathbb{R} \) and 
+The [Pareto Type IV](https://wikipedia.org/wiki/Pareto_distribution) has two
+shape parameters \( \alpha \in \mathbb{R} \) and
 \( \gamma \in \mathbb{R}_{>0} \), and scale parameter \( \beta \).
 For \( x \ge 0 \), the CDF and its inverse (the PPF) are
 
 \[
 \begin{align*}
-    F(x) 
+    F(x)
         &= 1 - \left(
             1 + \left(\frac x \beta\right)^{\frac 1 \gamma}
         \right)^{-\alpha} \\
-    x(F) 
+    x(F)
         &= \beta \left(
             (1 - F)^{-1 / \alpha} - 1
         \right)^\gamma
@@ -784,7 +780,7 @@ When \( \alpha > \gamma \), the trimmed L-moments are found to be:
 
 \[
     \begin{equation}
-        \tlmoment{s,t}{r} 
+        \tlmoment{s,t}{r}
             = \frac{\beta \gamma}{r}
             \sum_{k = t + 1}^{r + s + t}
                 (-1)^{k - t - 1}
@@ -795,8 +791,7 @@ When \( \alpha > \gamma \), the trimmed L-moments are found to be:
     \end{equation}
 \]
 
-This distribution is currently not implemented in [`scipy.stats`][scipy.stats]
-
+This distribution is currently not implemented in [`scipy.stats`][scipy.stats].
 
 ### Kumaraswamy
 
@@ -832,13 +827,13 @@ Its general \( r \)-th trimmed L-moment are:
     \end{equation}
 \]
 
-Unfortunately, the Kumaraswamy distribution is not implemented in 
+Unfortunately, the Kumaraswamy distribution is not implemented in
 `scipy.stats`.
 
 ### Burr Type III / Dagum
 
-The Burr type III distribution, also known as the 
-[Dagum distribution](https://wikipedia.org/wiki/Dagum_distribution), has two 
+The Burr type III distribution, also known as the
+[Dagum distribution](https://wikipedia.org/wiki/Dagum_distribution), has two
 shape parameters \( \alpha \) and \( \beta \), both restricted to the
 positive reals
 
@@ -846,9 +841,9 @@ For \( x > 0 \), the distribution functions are:
 
 \[
 \begin{align*}
-    F(x) &= 
+    F(x) &=
         (1 + x^{-\alpha})^{-\beta} \\
-    x(F) &= 
+    x(F) &=
         (F^{-1 / \beta} - 1)^{-1 / \alpha}
 \end{align*}
 \]
@@ -857,7 +852,7 @@ For \( \alpha > 1 \), the general L-moments are:
 
 \[
 \begin{equation}
-    \tlmoment{s,t}{r} = 
+    \tlmoment{s,t}{r} =
         (-1)^{t - 1 / \alpha} \
         \beta \
         \frac{r + s + t}{r}
@@ -873,7 +868,6 @@ For \( \alpha > 1 \), the general L-moments are:
 The Burr Type III distribution is implemented in
 [`scipy.stats.burr`][scipy.stats.burr], where the shape parameters `c` and `d`
 correspond to  \( \alpha \) and \( \beta \), respectively.
-
 
 ### Burr Type XII
 
@@ -907,9 +901,8 @@ When \( \beta > 1 / \alpha \), the general \( r \)-th trimmed L-moment is:
 \end{equation}
 \]
 
-
 The Burr Type XII distribution is implemented in
-[`scipy.stats.burr12`][scipy.stats.burr12], where the shape parameters `c` 
+[`scipy.stats.burr12`][scipy.stats.burr12], where the shape parameters `c`
 and `d` correspond to  \( \alpha \) and \( \beta \), respectively.
 
 ### Wakeby
@@ -934,7 +927,7 @@ and trim \( s, t \in \mathbb{N}^2_{\ge 1} \) can be expressed as
 <!-- \[
 \begin{equation}
     \tlmoment{s,t}{r}
-        = 
+        =
         \frac{\gamma}{r \delta}
         \frac
             {\B(\delta + r - 1,\ t - \delta + 1)}
@@ -972,26 +965,26 @@ and trim \( s, t \in \mathbb{N}^2_{\ge 1} \) can be expressed as
 \end{equation}
 \]
 
-Unfortunately, the Wakeby distribution has currently no 
+Unfortunately, the Wakeby distribution has currently no
 [`scipy.stats`][scipy.stats] implementation.
 
 ### Generalized Lambda
 
 The [Tukey lambda distribution
 ](https://wikipedia.org/wiki/Tukey_lambda_distribution) can be generalized
-to two scale parameters \( \alpha, \gamma \), and two shape parameters 
-\( \beta, \delta \). 
+to two scale parameters \( \alpha, \gamma \), and two shape parameters
+\( \beta, \delta \).
 
 Like the Wakeby distribution, the generalized lambda has no closed-form PDF
 or CDF. Instead, it is defined through its PPF:
 
 \[
-x(F) 
+x(F)
     = \alpha \boxcox{F}{\beta}
     - \gamma \boxcox{-F}{\delta}
 \]
 
-Although its central product moments have no closed-form expression, the 
+Although its central product moments have no closed-form expression, the
 general trimmed L-moments can be compactly expressed as:
 
 \[
@@ -1013,9 +1006,9 @@ general trimmed L-moments can be compactly expressed as:
 \end{equation}
 \]
 
-When \( \alpha = \gamma \) and \( \beta = \delta \), this is the 
-(non-generalized) Tukey-lambda distribution, which has been implemented as 
-[`scipy.stats.tukeylambda`][scipy.stats.tukeylambda]. Currently, this 
+When \( \alpha = \gamma \) and \( \beta = \delta \), this is the
+(non-generalized) Tukey-lambda distribution, which has been implemented as
+[`scipy.stats.tukeylambda`][scipy.stats.tukeylambda]. Currently, this
 4-parameter generalization has no [`scipy.stats`][scipy.stats] implementation.
 
 <!-- TODO: Generalized Pareto (GPD / Pareto-Pickands) -->
@@ -1023,9 +1016,8 @@ When \( \alpha = \gamma \) and \( \beta = \delta \), this is the
 
 ## Constants and special functions
 
-An overview of the (non-obvious) mathematical notation of special functions 
+An overview of the (non-obvious) mathematical notation of special functions
 and constants.
-
 
 <table>
 <thead>
@@ -1050,7 +1042,7 @@ and constants.
     <td>
         \[
             \begin{align*}
-                &= \int_1^\infty 
+                &= \int_1^\infty
                     \left(
                         \frac{1}{\lfloor x \rfloor} - \frac 1 x
                     \right) \
@@ -1061,7 +1053,7 @@ and constants.
         \]
     </td>
     <td>
-        <a 
+        <a
             href="https://numpy.org/doc/stable/reference/constants.html#numpy.euler_gamma"
             target="_blank"
         >
@@ -1082,7 +1074,7 @@ and constants.
     </td>
     <td>\[ n! \vphantom{\prod_{k=1}^n k} \]</td>
     <td>
-        \[ 
+        \[
             \begin{align*}
                 &= \prod_{k=1}^n k \\
                 &= \underbrace
@@ -1092,7 +1084,7 @@ and constants.
         \]
     </td>
     <td>
-        <a 
+        <a
             href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.factorial.html"
             target="_blank"
         >
@@ -1113,7 +1105,7 @@ and constants.
     <!-- <td>\[ x^{\underline{n}} \]</td> -->
     <td>\[ \ffact{x}{n} \]</td>
     <td>
-        \[ 
+        \[
             \begin{align*}
                 &= \prod_{k=0}^{n-1} (x - k) \\
                 &= \underbrace
@@ -1137,7 +1129,7 @@ and constants.
     <!-- <td>\[ x^{\overline{n}} \]</td> -->
     <td>\[ \rfact{x}{n} \]</td>
     <td>
-        \[ 
+        \[
             \begin{align*}
                 &= \prod_{k=0}^{n-1} (x + k) \\
                 &= \underbrace
@@ -1147,7 +1139,7 @@ and constants.
         \]
     </td>
     <td>
-        <a 
+        <a
             href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.poch.html"
             target="_blank"
         >
@@ -1167,7 +1159,7 @@ and constants.
     </td>
     <td>\[ \binom{n}{k} \]</td>
     <td>
-        \[ 
+        \[
             \begin{align*}
                 &= \frac{n!}{k! \ (n - k)!} \\
                 &= \frac{\ffact{n}{k}}{k!}
@@ -1175,7 +1167,7 @@ and constants.
         \]
     </td>
     <td>
-        <a 
+        <a
             href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.comb.html"
             target="_blank"
         >
@@ -1198,7 +1190,7 @@ and constants.
     <td>\[ \Gamma(z) \]</td>
     <td>\[ = \int_0^\infty t^{z-1} e^{-t} \, \mathrm{d} t \]</td>
     <td>
-        <a 
+        <a
             href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.gamma.html"
             target="_blank"
         >
@@ -1219,7 +1211,7 @@ and constants.
     <td>\[ \B(z_1,\ z_2) \]</td>
     <td>\[ = \frac{\Gamma(z_1) \Gamma(z_2)}{\Gamma(z_1 + z_2)} \]</td>
     <td>
-        <a 
+        <a
             href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.beta.html"
             target="_blank"
         >
@@ -1240,7 +1232,7 @@ and constants.
     <td>\[ \zeta(z) \vphantom{\sum_{n = 1}^{\infty}} \]</td>
     <td>\[ = \sum_{n = 1}^{\infty} n^{-z} \]</td>
     <td>
-        <a 
+        <a
             href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.zeta.html"
             target="_blank"
         >
@@ -1268,7 +1260,7 @@ and constants.
         \]
     </td>
     <td>
-        <a 
+        <a
             href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.boxcox.html"
             target="_blank"
         >
@@ -1296,7 +1288,7 @@ and constants.
         \]
     </td>
     <td>
-        <a 
+        <a
             href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.boxcox.html"
             target="_blank"
         >

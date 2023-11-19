@@ -14,9 +14,9 @@
 
 ~~~
 
-Is your tail too heavy? 
-Can't find a moment? 
-Are the swans black? 
+Is your tail too heavy?
+Can't find a moment?
+Are the swans black?
 The distribution pathological?
 
 ... then look no further: Lmo's got you covered!
