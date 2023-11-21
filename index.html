@@ -16,11 +16,11 @@
       
       
       
-        <link rel="next" href="api/">
+        <link rel="next" href="distributions/">
       
       
       <link rel="icon" href="img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.8">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.10">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.4b4a2bd9.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.fad675c6.min.css">
       
         
         <link rel="stylesheet" href="assets/stylesheets/palette.356b1318.min.css">
@@ -198,7 +198,9 @@
 
 
 
-<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  
+
+<nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
     <a href="." title="Lmo" class="md-nav__button md-logo" aria-label="Lmo" data-md-component="logo">
       
@@ -275,28 +277,36 @@
       
         <li class="md-nav__item">
   <a href="#key-features" class="md-nav__link">
-    Key Features
+    <span class="md-ellipsis">
+      Key Features
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#quick-example" class="md-nav__link">
-    Quick example
+    <span class="md-ellipsis">
+      Quick example
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#roadmap" class="md-nav__link">
-    Roadmap
+    <span class="md-ellipsis">
+      Roadmap
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#installation" class="md-nav__link">
-    Installation
+    <span class="md-ellipsis">
+      Installation
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Installation">
@@ -304,14 +314,18 @@
         
           <li class="md-nav__item">
   <a href="#required-dependencies" class="md-nav__link">
-    Required dependencies
+    <span class="md-ellipsis">
+      Required dependencies
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#optional-dependencies" class="md-nav__link">
-    Optional dependencies
+    <span class="md-ellipsis">
+      Optional dependencies
+    </span>
   </a>
   
 </li>
@@ -323,7 +337,9 @@
       
         <li class="md-nav__item">
   <a href="#foundational-literature" class="md-nav__link">
-    Foundational Literature
+    <span class="md-ellipsis">
+      Foundational Literature
+    </span>
   </a>
   
 </li>
@@ -332,6 +348,25 @@
   
 </nav>
       
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="distributions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Theoretical L-moments
+  </span>
+  
+
+      </a>
     </li>
   
 
@@ -381,87 +416,6 @@
               </div>
             
             
-              
-              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
-                <div class="md-sidebar__scrollwrap">
-                  <div class="md-sidebar__inner">
-                    
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#key-features" class="md-nav__link">
-    Key Features
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#quick-example" class="md-nav__link">
-    Quick example
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#roadmap" class="md-nav__link">
-    Roadmap
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#installation" class="md-nav__link">
-    Installation
-  </a>
-  
-    <nav class="md-nav" aria-label="Installation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#required-dependencies" class="md-nav__link">
-    Required dependencies
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#optional-dependencies" class="md-nav__link">
-    Optional dependencies
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#foundational-literature" class="md-nav__link">
-    Foundational Literature
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-                  </div>
-                </div>
-              </div>
-            
           
           
             <div class="md-content" data-md-component="content">
@@ -477,13 +431,15 @@
 
 <p><img src="https://jorenham.github.io/Lmo/img/lmo.svg" alt="jorenham/lmo" width="128" align="right"></p>
 <h1 id="lmo-trimmed-l-moments-and-l-comoments">Lmo - Trimmed L-moments and L-comoments</h1>
-<p><img alt="GitHub Workflow Status (with branch)" src="https://img.shields.io/github/actions/workflow/status/jorenham/lmo/CI.yml?branch=master&amp;style=flat-square" />
+<p><a href="https://github.com/jorenham/lmo/blob/master/LICENSE?"><img alt="license" src="https://img.shields.io/github/license/jorenham/lmo?style=flat-square" /></a>
 <a href="https://pypi.org/project/lmo/"><img alt="PyPI" src="https://img.shields.io/pypi/v/lmo?style=flat-square" /></a>
+<a href="https://pypi.org/project/lmo/"><img alt="PyPI - Downloads" src="https://img.shields.io/pypi/dm/Lmo?style=flat-square" /></a>
 <a href="https://github.com/jorenham/lmo"><img alt="versions" src="https://img.shields.io/pypi/pyversions/lmo?style=flat-square" /></a>
-<a href="https://github.com/jorenham/lmo/blob/master/LICENSE?"><img alt="license" src="https://img.shields.io/github/license/jorenham/lmo?style=flat-square" /></a></p>
-<div class="highlight"><pre><span></span><code>Is your tail too heavy? 
-Can&#39;t find a moment? 
-Are the swans black? 
+<img alt="GitHub Workflow Status (with branch)" src="https://img.shields.io/github/actions/workflow/status/jorenham/lmo/CI.yml?branch=master&amp;style=flat-square" />
+<img alt="GitHub commit activity (branch)" src="https://img.shields.io/github/commit-activity/m/jorenham/Lmo?style=flat-square" /></p>
+<div class="highlight"><pre><span></span><code>Is your tail too heavy?
+Can&#39;t find a moment?
+Are the swans black?
 The distribution pathological?
 
 ... then look no further: Lmo&#39;s got you covered!
@@ -656,10 +612,10 @@ the API reference.</p>
     </div>
     
     
-    <script id="__config" type="application/json">{"base": ".", "features": [], "search": "assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": ".", "features": ["toc.follow", "toc.integrate"], "search": "assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="assets/javascripts/bundle.81fa17fe.min.js"></script>
+      <script src="assets/javascripts/bundle.6c14ae12.min.js"></script>
       
         <script src="scripts/mathjax.js"></script>
       

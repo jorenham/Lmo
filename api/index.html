@@ -15,14 +15,14 @@
         <link rel="canonical" href="https://jorenham.github.io/Lmo/api/">
       
       
-        <link rel="prev" href="..">
+        <link rel="prev" href="../distributions/">
       
       
         <link rel="next" href="../contributing/">
       
       
       <link rel="icon" href="../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.8">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.10">
     
     
       
@@ -30,7 +30,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.4b4a2bd9.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.fad675c6.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.356b1318.min.css">
@@ -200,7 +200,9 @@
 
 
 
-<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  
+
+<nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
     <a href=".." title="Lmo" class="md-nav__button md-logo" aria-label="Lmo" data-md-component="logo">
       
@@ -235,6 +237,25 @@
   
   <span class="md-ellipsis">
     Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../distributions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Theoretical L-moments
   </span>
   
 
@@ -296,7 +317,9 @@
       
         <li class="md-nav__item">
   <a href="#high-level-api" class="md-nav__link">
-    High-level API
+    <span class="md-ellipsis">
+      High-level API
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="High-level API">
@@ -304,7 +327,9 @@
         
           <li class="md-nav__item">
   <a href="#sample-l-moments" class="md-nav__link">
-    Sample L-moments
+    <span class="md-ellipsis">
+      Sample L-moments
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Sample L-moments">
@@ -312,91 +337,117 @@
         
           <li class="md-nav__item">
   <a href="#lmo.l_kurtosis" class="md-nav__link">
-    l_kurtosis()
+    <span class="md-ellipsis">
+      l_kurtosis()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.l_loc" class="md-nav__link">
-    l_loc()
+    <span class="md-ellipsis">
+      l_loc()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.l_moment" class="md-nav__link">
-    l_moment()
+    <span class="md-ellipsis">
+      l_moment()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.l_moment_cov" class="md-nav__link">
-    l_moment_cov()
+    <span class="md-ellipsis">
+      l_moment_cov()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.l_moment_influence" class="md-nav__link">
-    l_moment_influence()
+    <span class="md-ellipsis">
+      l_moment_influence()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.l_ratio" class="md-nav__link">
-    l_ratio()
+    <span class="md-ellipsis">
+      l_ratio()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.l_ratio_influence" class="md-nav__link">
-    l_ratio_influence()
+    <span class="md-ellipsis">
+      l_ratio_influence()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.l_ratio_se" class="md-nav__link">
-    l_ratio_se()
+    <span class="md-ellipsis">
+      l_ratio_se()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.l_scale" class="md-nav__link">
-    l_scale()
+    <span class="md-ellipsis">
+      l_scale()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.l_skew" class="md-nav__link">
-    l_skew()
+    <span class="md-ellipsis">
+      l_skew()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.l_stats" class="md-nav__link">
-    l_stats()
+    <span class="md-ellipsis">
+      l_stats()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.l_stats_se" class="md-nav__link">
-    l_stats_se()
+    <span class="md-ellipsis">
+      l_stats_se()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.l_variation" class="md-nav__link">
-    l_variation()
+    <span class="md-ellipsis">
+      l_variation()
+    </span>
   </a>
   
 </li>
@@ -408,7 +459,9 @@
         
           <li class="md-nav__item">
   <a href="#sample-l-comoments" class="md-nav__link">
-    Sample L-comoments
+    <span class="md-ellipsis">
+      Sample L-comoments
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Sample L-comoments">
@@ -416,56 +469,72 @@
         
           <li class="md-nav__item">
   <a href="#lmo.l_cokurtosis" class="md-nav__link">
-    l_cokurtosis()
+    <span class="md-ellipsis">
+      l_cokurtosis()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.l_coloc" class="md-nav__link">
-    l_coloc()
+    <span class="md-ellipsis">
+      l_coloc()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.l_comoment" class="md-nav__link">
-    l_comoment()
+    <span class="md-ellipsis">
+      l_comoment()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.l_coratio" class="md-nav__link">
-    l_coratio()
+    <span class="md-ellipsis">
+      l_coratio()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.l_corr" class="md-nav__link">
-    l_corr()
+    <span class="md-ellipsis">
+      l_corr()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.l_coscale" class="md-nav__link">
-    l_coscale()
+    <span class="md-ellipsis">
+      l_coscale()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.l_coskew" class="md-nav__link">
-    l_coskew()
+    <span class="md-ellipsis">
+      l_coskew()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.l_costats" class="md-nav__link">
-    l_costats()
+    <span class="md-ellipsis">
+      l_costats()
+    </span>
   </a>
   
 </li>
@@ -477,7 +546,9 @@
         
           <li class="md-nav__item">
   <a href="#scipystats-extensions" class="md-nav__link">
-    scipy.stats extensions
+    <span class="md-ellipsis">
+      scipy.stats extensions
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="scipy.stats extensions">
@@ -485,7 +556,9 @@
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.scipy_stats.l_rv_generic" class="md-nav__link">
-    l_rv_generic
+    <span class="md-ellipsis">
+      l_rv_generic
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="l_rv_generic">
@@ -493,91 +566,117 @@
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.scipy_stats.l_rv_generic.l_moment" class="md-nav__link">
-    l_moment()
+    <span class="md-ellipsis">
+      l_moment()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.scipy_stats.l_rv_generic.l_ratio" class="md-nav__link">
-    l_ratio()
+    <span class="md-ellipsis">
+      l_ratio()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.scipy_stats.l_rv_generic.l_stats" class="md-nav__link">
-    l_stats()
+    <span class="md-ellipsis">
+      l_stats()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.scipy_stats.l_rv_generic.l_loc" class="md-nav__link">
-    l_loc()
+    <span class="md-ellipsis">
+      l_loc()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.scipy_stats.l_rv_generic.l_scale" class="md-nav__link">
-    l_scale()
+    <span class="md-ellipsis">
+      l_scale()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.scipy_stats.l_rv_generic.l_skew" class="md-nav__link">
-    l_skew()
+    <span class="md-ellipsis">
+      l_skew()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.scipy_stats.l_rv_generic.l_kurtosis" class="md-nav__link">
-    l_kurtosis()
+    <span class="md-ellipsis">
+      l_kurtosis()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.scipy_stats.l_rv_generic.l_moments_cov" class="md-nav__link">
-    l_moments_cov()
+    <span class="md-ellipsis">
+      l_moments_cov()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.scipy_stats.l_rv_generic.l_stats_cov" class="md-nav__link">
-    l_stats_cov()
+    <span class="md-ellipsis">
+      l_stats_cov()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.scipy_stats.l_rv_generic.l_moment_influence" class="md-nav__link">
-    l_moment_influence()
+    <span class="md-ellipsis">
+      l_moment_influence()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.scipy_stats.l_rv_generic.l_ratio_influence" class="md-nav__link">
-    l_ratio_influence()
+    <span class="md-ellipsis">
+      l_ratio_influence()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.scipy_stats.l_rv_generic.l_fit" class="md-nav__link">
-    l_fit()
+    <span class="md-ellipsis">
+      l_fit()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.scipy_stats.l_rv_generic.l_fit_loc_scale" class="md-nav__link">
-    l_fit_loc_scale()
+    <span class="md-ellipsis">
+      l_fit_loc_scale()
+    </span>
   </a>
   
 </li>
@@ -594,7 +693,9 @@
         
           <li class="md-nav__item">
   <a href="#pandas-extensions-optional" class="md-nav__link">
-    pandas extensions (optional)
+    <span class="md-ellipsis">
+      pandas extensions (optional)
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="pandas extensions (optional)">
@@ -602,7 +703,9 @@
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.pandas.Series" class="md-nav__link">
-    Series
+    <span class="md-ellipsis">
+      Series
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Series">
@@ -610,56 +713,72 @@
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.pandas.Series.l_moment" class="md-nav__link">
-    l_moment()
+    <span class="md-ellipsis">
+      l_moment()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.pandas.Series.l_ratio" class="md-nav__link">
-    l_ratio()
+    <span class="md-ellipsis">
+      l_ratio()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.pandas.Series.l_stats" class="md-nav__link">
-    l_stats()
+    <span class="md-ellipsis">
+      l_stats()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.pandas.Series.l_loc" class="md-nav__link">
-    l_loc()
+    <span class="md-ellipsis">
+      l_loc()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.pandas.Series.l_scale" class="md-nav__link">
-    l_scale()
+    <span class="md-ellipsis">
+      l_scale()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.pandas.Series.l_variation" class="md-nav__link">
-    l_variation()
+    <span class="md-ellipsis">
+      l_variation()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.pandas.Series.l_skew" class="md-nav__link">
-    l_skew()
+    <span class="md-ellipsis">
+      l_skew()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.pandas.Series.l_kurtosis" class="md-nav__link">
-    l_kurtosis()
+    <span class="md-ellipsis">
+      l_kurtosis()
+    </span>
   </a>
   
 </li>
@@ -671,7 +790,9 @@
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.pandas.DataFrame" class="md-nav__link">
-    DataFrame
+    <span class="md-ellipsis">
+      DataFrame
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="DataFrame">
@@ -679,119 +800,153 @@
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.pandas.DataFrame.l_moment" class="md-nav__link">
-    l_moment()
+    <span class="md-ellipsis">
+      l_moment()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.pandas.DataFrame.l_ratio" class="md-nav__link">
-    l_ratio()
+    <span class="md-ellipsis">
+      l_ratio()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.pandas.DataFrame.l_stats" class="md-nav__link">
-    l_stats()
+    <span class="md-ellipsis">
+      l_stats()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.pandas.DataFrame.l_loc" class="md-nav__link">
-    l_loc()
+    <span class="md-ellipsis">
+      l_loc()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.pandas.DataFrame.l_scale" class="md-nav__link">
-    l_scale()
+    <span class="md-ellipsis">
+      l_scale()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.pandas.DataFrame.l_variation" class="md-nav__link">
-    l_variation()
+    <span class="md-ellipsis">
+      l_variation()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.pandas.DataFrame.l_skew" class="md-nav__link">
-    l_skew()
+    <span class="md-ellipsis">
+      l_skew()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.pandas.DataFrame.l_kurtosis" class="md-nav__link">
-    l_kurtosis()
+    <span class="md-ellipsis">
+      l_kurtosis()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.pandas.DataFrame.l_kurt" class="md-nav__link">
-    l_kurt()
+    <span class="md-ellipsis">
+      l_kurt()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.pandas.DataFrame.l_comoment" class="md-nav__link">
-    l_comoment()
+    <span class="md-ellipsis">
+      l_comoment()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.pandas.DataFrame.l_coratio" class="md-nav__link">
-    l_coratio()
+    <span class="md-ellipsis">
+      l_coratio()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.pandas.DataFrame.l_coloc" class="md-nav__link">
-    l_coloc()
+    <span class="md-ellipsis">
+      l_coloc()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.pandas.DataFrame.l_coscale" class="md-nav__link">
-    l_coscale()
+    <span class="md-ellipsis">
+      l_coscale()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.pandas.DataFrame.l_corr" class="md-nav__link">
-    l_corr()
+    <span class="md-ellipsis">
+      l_corr()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.pandas.DataFrame.l_coskew" class="md-nav__link">
-    l_coskew()
+    <span class="md-ellipsis">
+      l_coskew()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.pandas.DataFrame.l_cokurtosis" class="md-nav__link">
-    l_cokurtosis()
+    <span class="md-ellipsis">
+      l_cokurtosis()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.contrib.pandas.DataFrame.l_cokurt" class="md-nav__link">
-    l_cokurt()
+    <span class="md-ellipsis">
+      l_cokurt()
+    </span>
   </a>
   
 </li>
@@ -808,7 +963,9 @@
         
           <li class="md-nav__item">
   <a href="#distributions" class="md-nav__link">
-    Distributions
+    <span class="md-ellipsis">
+      Distributions
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Distributions">
@@ -816,7 +973,9 @@
         
           <li class="md-nav__item">
   <a href="#lmo.l_rv_nonparametric" class="md-nav__link">
-    l_rv_nonparametric
+    <span class="md-ellipsis">
+      l_rv_nonparametric
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="l_rv_nonparametric">
@@ -824,42 +983,54 @@
         
           <li class="md-nav__item">
   <a href="#lmo.l_rv_nonparametric.l_moments" class="md-nav__link">
-    l_moments
+    <span class="md-ellipsis">
+      l_moments
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.l_rv_nonparametric.trim" class="md-nav__link">
-    trim
+    <span class="md-ellipsis">
+      trim
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.l_rv_nonparametric.ppf_poly" class="md-nav__link">
-    ppf_poly
+    <span class="md-ellipsis">
+      ppf_poly
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.l_rv_nonparametric.cdf_poly" class="md-nav__link">
-    cdf_poly
+    <span class="md-ellipsis">
+      cdf_poly
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.l_rv_nonparametric.pdf_poly" class="md-nav__link">
-    pdf_poly
+    <span class="md-ellipsis">
+      pdf_poly
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.l_rv_nonparametric.fit" class="md-nav__link">
-    fit()
+    <span class="md-ellipsis">
+      fit()
+    </span>
   </a>
   
 </li>
@@ -876,7 +1047,9 @@
         
           <li class="md-nav__item">
   <a href="#statistical-test-and-tools" class="md-nav__link">
-    Statistical test and tools
+    <span class="md-ellipsis">
+      Statistical test and tools
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Statistical test and tools">
@@ -884,7 +1057,9 @@
         
           <li class="md-nav__item">
   <a href="#lmo.diagnostic.HypothesisTestResult" class="md-nav__link">
-    HypothesisTestResult
+    <span class="md-ellipsis">
+      HypothesisTestResult
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="HypothesisTestResult">
@@ -892,14 +1067,18 @@
         
           <li class="md-nav__item">
   <a href="#lmo.diagnostic.HypothesisTestResult.is_valid" class="md-nav__link">
-    is_valid
+    <span class="md-ellipsis">
+      is_valid
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.diagnostic.HypothesisTestResult.is_significant" class="md-nav__link">
-    is_significant()
+    <span class="md-ellipsis">
+      is_significant()
+    </span>
   </a>
   
 </li>
@@ -911,56 +1090,72 @@
         
           <li class="md-nav__item">
   <a href="#lmo.diagnostic.normaltest" class="md-nav__link">
-    normaltest()
+    <span class="md-ellipsis">
+      normaltest()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.diagnostic.l_moment_gof" class="md-nav__link">
-    l_moment_gof()
+    <span class="md-ellipsis">
+      l_moment_gof()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.diagnostic.l_stats_gof" class="md-nav__link">
-    l_stats_gof()
+    <span class="md-ellipsis">
+      l_stats_gof()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.diagnostic.l_moment_bounds" class="md-nav__link">
-    l_moment_bounds()
+    <span class="md-ellipsis">
+      l_moment_bounds()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.diagnostic.l_ratio_bounds" class="md-nav__link">
-    l_ratio_bounds()
+    <span class="md-ellipsis">
+      l_ratio_bounds()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.diagnostic.rejection_point" class="md-nav__link">
-    rejection_point()
+    <span class="md-ellipsis">
+      rejection_point()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.diagnostic.error_sensitivity" class="md-nav__link">
-    error_sensitivity()
+    <span class="md-ellipsis">
+      error_sensitivity()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.diagnostic.shift_sensitivity" class="md-nav__link">
-    shift_sensitivity()
+    <span class="md-ellipsis">
+      shift_sensitivity()
+    </span>
   </a>
   
 </li>
@@ -977,7 +1172,9 @@
       
         <li class="md-nav__item">
   <a href="#low-level-api" class="md-nav__link">
-    Low-level API
+    <span class="md-ellipsis">
+      Low-level API
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Low-level API">
@@ -985,14 +1182,18 @@
         
           <li class="md-nav__item">
   <a href="#lmo.l_weights" class="md-nav__link">
-    l_weights()
+    <span class="md-ellipsis">
+      l_weights()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#inference" class="md-nav__link">
-    inference
+    <span class="md-ellipsis">
+      inference
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="inference">
@@ -1000,7 +1201,9 @@
         
           <li class="md-nav__item">
   <a href="#lmo.inference.GMMResult" class="md-nav__link">
-    GMMResult
+    <span class="md-ellipsis">
+      GMMResult
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="GMMResult">
@@ -1008,42 +1211,54 @@
         
           <li class="md-nav__item">
   <a href="#lmo.inference.GMMResult.n_arg" class="md-nav__link">
-    n_arg
+    <span class="md-ellipsis">
+      n_arg
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.inference.GMMResult.n_con" class="md-nav__link">
-    n_con
+    <span class="md-ellipsis">
+      n_con
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.inference.GMMResult.n_extra" class="md-nav__link">
-    n_extra
+    <span class="md-ellipsis">
+      n_extra
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.inference.GMMResult.j_test" class="md-nav__link">
-    j_test
+    <span class="md-ellipsis">
+      j_test
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.inference.GMMResult.AIC" class="md-nav__link">
-    AIC
+    <span class="md-ellipsis">
+      AIC
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.inference.GMMResult.AICc" class="md-nav__link">
-    AICc
+    <span class="md-ellipsis">
+      AICc
+    </span>
   </a>
   
 </li>
@@ -1055,7 +1270,9 @@
         
           <li class="md-nav__item">
   <a href="#lmo.inference.fit" class="md-nav__link">
-    fit()
+    <span class="md-ellipsis">
+      fit()
+    </span>
   </a>
   
 </li>
@@ -1067,7 +1284,9 @@
         
           <li class="md-nav__item">
   <a href="#theoretical" class="md-nav__link">
-    theoretical
+    <span class="md-ellipsis">
+      theoretical
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="theoretical">
@@ -1075,84 +1294,108 @@
         
           <li class="md-nav__item">
   <a href="#lmo.theoretical.l_moment_from_cdf" class="md-nav__link">
-    l_moment_from_cdf()
+    <span class="md-ellipsis">
+      l_moment_from_cdf()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.theoretical.l_moment_from_ppf" class="md-nav__link">
-    l_moment_from_ppf()
+    <span class="md-ellipsis">
+      l_moment_from_ppf()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.theoretical.l_ratio_from_cdf" class="md-nav__link">
-    l_ratio_from_cdf()
+    <span class="md-ellipsis">
+      l_ratio_from_cdf()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.theoretical.l_ratio_from_ppf" class="md-nav__link">
-    l_ratio_from_ppf()
+    <span class="md-ellipsis">
+      l_ratio_from_ppf()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.theoretical.l_stats_from_cdf" class="md-nav__link">
-    l_stats_from_cdf()
+    <span class="md-ellipsis">
+      l_stats_from_cdf()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.theoretical.l_stats_from_ppf" class="md-nav__link">
-    l_stats_from_ppf()
+    <span class="md-ellipsis">
+      l_stats_from_ppf()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.theoretical.l_moment_cov_from_cdf" class="md-nav__link">
-    l_moment_cov_from_cdf()
+    <span class="md-ellipsis">
+      l_moment_cov_from_cdf()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.theoretical.l_stats_cov_from_cdf" class="md-nav__link">
-    l_stats_cov_from_cdf()
+    <span class="md-ellipsis">
+      l_stats_cov_from_cdf()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.theoretical.l_moment_influence_from_cdf" class="md-nav__link">
-    l_moment_influence_from_cdf()
+    <span class="md-ellipsis">
+      l_moment_influence_from_cdf()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.theoretical.l_ratio_influence_from_cdf" class="md-nav__link">
-    l_ratio_influence_from_cdf()
+    <span class="md-ellipsis">
+      l_ratio_influence_from_cdf()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.theoretical.l_comoment_from_pdf" class="md-nav__link">
-    l_comoment_from_pdf()
+    <span class="md-ellipsis">
+      l_comoment_from_pdf()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.theoretical.l_coratio_from_pdf" class="md-nav__link">
-    l_coratio_from_pdf()
+    <span class="md-ellipsis">
+      l_coratio_from_pdf()
+    </span>
   </a>
   
 </li>
@@ -1164,7 +1407,9 @@
         
           <li class="md-nav__item">
   <a href="#linalg" class="md-nav__link">
-    linalg
+    <span class="md-ellipsis">
+      linalg
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="linalg">
@@ -1172,49 +1417,63 @@
         
           <li class="md-nav__item">
   <a href="#lmo.linalg.sandwich" class="md-nav__link">
-    sandwich()
+    <span class="md-ellipsis">
+      sandwich()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.linalg.pascal" class="md-nav__link">
-    pascal()
+    <span class="md-ellipsis">
+      pascal()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.linalg.ir_pascal" class="md-nav__link">
-    ir_pascal()
+    <span class="md-ellipsis">
+      ir_pascal()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.linalg.sh_legendre" class="md-nav__link">
-    sh_legendre()
+    <span class="md-ellipsis">
+      sh_legendre()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.linalg.sh_jacobi" class="md-nav__link">
-    sh_jacobi()
+    <span class="md-ellipsis">
+      sh_jacobi()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.linalg.succession_matrix" class="md-nav__link">
-    succession_matrix()
+    <span class="md-ellipsis">
+      succession_matrix()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.linalg.trim_matrix" class="md-nav__link">
-    trim_matrix()
+    <span class="md-ellipsis">
+      trim_matrix()
+    </span>
   </a>
   
 </li>
@@ -1226,7 +1485,9 @@
         
           <li class="md-nav__item">
   <a href="#order-statistics" class="md-nav__link">
-    Order statistics
+    <span class="md-ellipsis">
+      Order statistics
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Order statistics">
@@ -1234,14 +1495,18 @@
         
           <li class="md-nav__item">
   <a href="#lmo.ostats.weights" class="md-nav__link">
-    weights()
+    <span class="md-ellipsis">
+      weights()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.ostats.from_cdf" class="md-nav__link">
-    from_cdf()
+    <span class="md-ellipsis">
+      from_cdf()
+    </span>
   </a>
   
 </li>
@@ -1253,7 +1518,9 @@
         
           <li class="md-nav__item">
   <a href="#pwms" class="md-nav__link">
-    β PWMs
+    <span class="md-ellipsis">
+      β PWMs
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="β PWMs">
@@ -1261,14 +1528,18 @@
         
           <li class="md-nav__item">
   <a href="#lmo.pwm_beta.weights" class="md-nav__link">
-    weights()
+    <span class="md-ellipsis">
+      weights()
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#lmo.pwm_beta.cov" class="md-nav__link">
-    cov()
+    <span class="md-ellipsis">
+      cov()
+    </span>
   </a>
   
 </li>
@@ -1316,1021 +1587,6 @@
                 </div>
               </div>
             
-            
-              
-              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
-                <div class="md-sidebar__scrollwrap">
-                  <div class="md-sidebar__inner">
-                    
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#high-level-api" class="md-nav__link">
-    High-level API
-  </a>
-  
-    <nav class="md-nav" aria-label="High-level API">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#sample-l-moments" class="md-nav__link">
-    Sample L-moments
-  </a>
-  
-    <nav class="md-nav" aria-label="Sample L-moments">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#lmo.l_kurtosis" class="md-nav__link">
-    l_kurtosis()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.l_loc" class="md-nav__link">
-    l_loc()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.l_moment" class="md-nav__link">
-    l_moment()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.l_moment_cov" class="md-nav__link">
-    l_moment_cov()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.l_moment_influence" class="md-nav__link">
-    l_moment_influence()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.l_ratio" class="md-nav__link">
-    l_ratio()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.l_ratio_influence" class="md-nav__link">
-    l_ratio_influence()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.l_ratio_se" class="md-nav__link">
-    l_ratio_se()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.l_scale" class="md-nav__link">
-    l_scale()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.l_skew" class="md-nav__link">
-    l_skew()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.l_stats" class="md-nav__link">
-    l_stats()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.l_stats_se" class="md-nav__link">
-    l_stats_se()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.l_variation" class="md-nav__link">
-    l_variation()
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#sample-l-comoments" class="md-nav__link">
-    Sample L-comoments
-  </a>
-  
-    <nav class="md-nav" aria-label="Sample L-comoments">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#lmo.l_cokurtosis" class="md-nav__link">
-    l_cokurtosis()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.l_coloc" class="md-nav__link">
-    l_coloc()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.l_comoment" class="md-nav__link">
-    l_comoment()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.l_coratio" class="md-nav__link">
-    l_coratio()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.l_corr" class="md-nav__link">
-    l_corr()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.l_coscale" class="md-nav__link">
-    l_coscale()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.l_coskew" class="md-nav__link">
-    l_coskew()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.l_costats" class="md-nav__link">
-    l_costats()
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#scipystats-extensions" class="md-nav__link">
-    scipy.stats extensions
-  </a>
-  
-    <nav class="md-nav" aria-label="scipy.stats extensions">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.scipy_stats.l_rv_generic" class="md-nav__link">
-    l_rv_generic
-  </a>
-  
-    <nav class="md-nav" aria-label="l_rv_generic">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.scipy_stats.l_rv_generic.l_moment" class="md-nav__link">
-    l_moment()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.scipy_stats.l_rv_generic.l_ratio" class="md-nav__link">
-    l_ratio()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.scipy_stats.l_rv_generic.l_stats" class="md-nav__link">
-    l_stats()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.scipy_stats.l_rv_generic.l_loc" class="md-nav__link">
-    l_loc()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.scipy_stats.l_rv_generic.l_scale" class="md-nav__link">
-    l_scale()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.scipy_stats.l_rv_generic.l_skew" class="md-nav__link">
-    l_skew()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.scipy_stats.l_rv_generic.l_kurtosis" class="md-nav__link">
-    l_kurtosis()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.scipy_stats.l_rv_generic.l_moments_cov" class="md-nav__link">
-    l_moments_cov()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.scipy_stats.l_rv_generic.l_stats_cov" class="md-nav__link">
-    l_stats_cov()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.scipy_stats.l_rv_generic.l_moment_influence" class="md-nav__link">
-    l_moment_influence()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.scipy_stats.l_rv_generic.l_ratio_influence" class="md-nav__link">
-    l_ratio_influence()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.scipy_stats.l_rv_generic.l_fit" class="md-nav__link">
-    l_fit()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.scipy_stats.l_rv_generic.l_fit_loc_scale" class="md-nav__link">
-    l_fit_loc_scale()
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#pandas-extensions-optional" class="md-nav__link">
-    pandas extensions (optional)
-  </a>
-  
-    <nav class="md-nav" aria-label="pandas extensions (optional)">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.pandas.Series" class="md-nav__link">
-    Series
-  </a>
-  
-    <nav class="md-nav" aria-label="Series">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.pandas.Series.l_moment" class="md-nav__link">
-    l_moment()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.pandas.Series.l_ratio" class="md-nav__link">
-    l_ratio()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.pandas.Series.l_stats" class="md-nav__link">
-    l_stats()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.pandas.Series.l_loc" class="md-nav__link">
-    l_loc()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.pandas.Series.l_scale" class="md-nav__link">
-    l_scale()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.pandas.Series.l_variation" class="md-nav__link">
-    l_variation()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.pandas.Series.l_skew" class="md-nav__link">
-    l_skew()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.pandas.Series.l_kurtosis" class="md-nav__link">
-    l_kurtosis()
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.pandas.DataFrame" class="md-nav__link">
-    DataFrame
-  </a>
-  
-    <nav class="md-nav" aria-label="DataFrame">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.pandas.DataFrame.l_moment" class="md-nav__link">
-    l_moment()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.pandas.DataFrame.l_ratio" class="md-nav__link">
-    l_ratio()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.pandas.DataFrame.l_stats" class="md-nav__link">
-    l_stats()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.pandas.DataFrame.l_loc" class="md-nav__link">
-    l_loc()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.pandas.DataFrame.l_scale" class="md-nav__link">
-    l_scale()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.pandas.DataFrame.l_variation" class="md-nav__link">
-    l_variation()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.pandas.DataFrame.l_skew" class="md-nav__link">
-    l_skew()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.pandas.DataFrame.l_kurtosis" class="md-nav__link">
-    l_kurtosis()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.pandas.DataFrame.l_kurt" class="md-nav__link">
-    l_kurt()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.pandas.DataFrame.l_comoment" class="md-nav__link">
-    l_comoment()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.pandas.DataFrame.l_coratio" class="md-nav__link">
-    l_coratio()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.pandas.DataFrame.l_coloc" class="md-nav__link">
-    l_coloc()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.pandas.DataFrame.l_coscale" class="md-nav__link">
-    l_coscale()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.pandas.DataFrame.l_corr" class="md-nav__link">
-    l_corr()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.pandas.DataFrame.l_coskew" class="md-nav__link">
-    l_coskew()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.pandas.DataFrame.l_cokurtosis" class="md-nav__link">
-    l_cokurtosis()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.contrib.pandas.DataFrame.l_cokurt" class="md-nav__link">
-    l_cokurt()
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#distributions" class="md-nav__link">
-    Distributions
-  </a>
-  
-    <nav class="md-nav" aria-label="Distributions">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#lmo.l_rv_nonparametric" class="md-nav__link">
-    l_rv_nonparametric
-  </a>
-  
-    <nav class="md-nav" aria-label="l_rv_nonparametric">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#lmo.l_rv_nonparametric.l_moments" class="md-nav__link">
-    l_moments
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.l_rv_nonparametric.trim" class="md-nav__link">
-    trim
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.l_rv_nonparametric.ppf_poly" class="md-nav__link">
-    ppf_poly
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.l_rv_nonparametric.cdf_poly" class="md-nav__link">
-    cdf_poly
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.l_rv_nonparametric.pdf_poly" class="md-nav__link">
-    pdf_poly
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.l_rv_nonparametric.fit" class="md-nav__link">
-    fit()
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#statistical-test-and-tools" class="md-nav__link">
-    Statistical test and tools
-  </a>
-  
-    <nav class="md-nav" aria-label="Statistical test and tools">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#lmo.diagnostic.HypothesisTestResult" class="md-nav__link">
-    HypothesisTestResult
-  </a>
-  
-    <nav class="md-nav" aria-label="HypothesisTestResult">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#lmo.diagnostic.HypothesisTestResult.is_valid" class="md-nav__link">
-    is_valid
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.diagnostic.HypothesisTestResult.is_significant" class="md-nav__link">
-    is_significant()
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.diagnostic.normaltest" class="md-nav__link">
-    normaltest()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.diagnostic.l_moment_gof" class="md-nav__link">
-    l_moment_gof()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.diagnostic.l_stats_gof" class="md-nav__link">
-    l_stats_gof()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.diagnostic.l_moment_bounds" class="md-nav__link">
-    l_moment_bounds()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.diagnostic.l_ratio_bounds" class="md-nav__link">
-    l_ratio_bounds()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.diagnostic.rejection_point" class="md-nav__link">
-    rejection_point()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.diagnostic.error_sensitivity" class="md-nav__link">
-    error_sensitivity()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.diagnostic.shift_sensitivity" class="md-nav__link">
-    shift_sensitivity()
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#low-level-api" class="md-nav__link">
-    Low-level API
-  </a>
-  
-    <nav class="md-nav" aria-label="Low-level API">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#lmo.l_weights" class="md-nav__link">
-    l_weights()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#inference" class="md-nav__link">
-    inference
-  </a>
-  
-    <nav class="md-nav" aria-label="inference">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#lmo.inference.GMMResult" class="md-nav__link">
-    GMMResult
-  </a>
-  
-    <nav class="md-nav" aria-label="GMMResult">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#lmo.inference.GMMResult.n_arg" class="md-nav__link">
-    n_arg
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.inference.GMMResult.n_con" class="md-nav__link">
-    n_con
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.inference.GMMResult.n_extra" class="md-nav__link">
-    n_extra
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.inference.GMMResult.j_test" class="md-nav__link">
-    j_test
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.inference.GMMResult.AIC" class="md-nav__link">
-    AIC
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.inference.GMMResult.AICc" class="md-nav__link">
-    AICc
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.inference.fit" class="md-nav__link">
-    fit()
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#theoretical" class="md-nav__link">
-    theoretical
-  </a>
-  
-    <nav class="md-nav" aria-label="theoretical">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#lmo.theoretical.l_moment_from_cdf" class="md-nav__link">
-    l_moment_from_cdf()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.theoretical.l_moment_from_ppf" class="md-nav__link">
-    l_moment_from_ppf()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.theoretical.l_ratio_from_cdf" class="md-nav__link">
-    l_ratio_from_cdf()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.theoretical.l_ratio_from_ppf" class="md-nav__link">
-    l_ratio_from_ppf()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.theoretical.l_stats_from_cdf" class="md-nav__link">
-    l_stats_from_cdf()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.theoretical.l_stats_from_ppf" class="md-nav__link">
-    l_stats_from_ppf()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.theoretical.l_moment_cov_from_cdf" class="md-nav__link">
-    l_moment_cov_from_cdf()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.theoretical.l_stats_cov_from_cdf" class="md-nav__link">
-    l_stats_cov_from_cdf()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.theoretical.l_moment_influence_from_cdf" class="md-nav__link">
-    l_moment_influence_from_cdf()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.theoretical.l_ratio_influence_from_cdf" class="md-nav__link">
-    l_ratio_influence_from_cdf()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.theoretical.l_comoment_from_pdf" class="md-nav__link">
-    l_comoment_from_pdf()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.theoretical.l_coratio_from_pdf" class="md-nav__link">
-    l_coratio_from_pdf()
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#linalg" class="md-nav__link">
-    linalg
-  </a>
-  
-    <nav class="md-nav" aria-label="linalg">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#lmo.linalg.sandwich" class="md-nav__link">
-    sandwich()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.linalg.pascal" class="md-nav__link">
-    pascal()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.linalg.ir_pascal" class="md-nav__link">
-    ir_pascal()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.linalg.sh_legendre" class="md-nav__link">
-    sh_legendre()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.linalg.sh_jacobi" class="md-nav__link">
-    sh_jacobi()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.linalg.succession_matrix" class="md-nav__link">
-    succession_matrix()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.linalg.trim_matrix" class="md-nav__link">
-    trim_matrix()
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#order-statistics" class="md-nav__link">
-    Order statistics
-  </a>
-  
-    <nav class="md-nav" aria-label="Order statistics">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#lmo.ostats.weights" class="md-nav__link">
-    weights()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.ostats.from_cdf" class="md-nav__link">
-    from_cdf()
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#pwms" class="md-nav__link">
-    β PWMs
-  </a>
-  
-    <nav class="md-nav" aria-label="β PWMs">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#lmo.pwm_beta.weights" class="md-nav__link">
-    weights()
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lmo.pwm_beta.cov" class="md-nav__link">
-    cov()
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-                  </div>
-                </div>
-              </div>
             
           
           
@@ -11496,7 +10752,7 @@ are calculated from the CDF.</p>
             <p>
                 <span class="doc-param-annotation">
                   <b>TYPE:</b>
-                    <code><span title="lmo.theoretical.Pair">Pair</span>[float] | <span title="lmo.theoretical.Pair">Pair</span>[<a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a class="autorefs autorefs-external" title="numpy.float64" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64">float64</a>] | None</code>
+                    <code><span title="lmo.theoretical.Pair">Pair</span>[float] | None</code>
                 </span>
             </p>
           </td>
@@ -13319,10 +12575,10 @@ moment (PWM) point estimates <span class="arithmatex">\(\beta_k = M_{1,k,0}\)</s
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": ["toc.follow", "toc.integrate"], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.81fa17fe.min.js"></script>
+      <script src="../assets/javascripts/bundle.6c14ae12.min.js"></script>
       
         <script src="../scripts/mathjax.js"></script>
       

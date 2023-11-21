@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.8">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.10">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.4b4a2bd9.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.fad675c6.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.356b1318.min.css">
@@ -198,7 +198,9 @@
 
 
 
-<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  
+
+<nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
     <a href=".." title="Lmo" class="md-nav__button md-logo" aria-label="Lmo" data-md-component="logo">
       
@@ -233,6 +235,25 @@
   
   <span class="md-ellipsis">
     Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../distributions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Theoretical L-moments
   </span>
   
 
@@ -313,14 +334,18 @@
       
         <li class="md-nav__item">
   <a href="#issues" class="md-nav__link">
-    Issues
+    <span class="md-ellipsis">
+      Issues
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#development" class="md-nav__link">
-    Development
+    <span class="md-ellipsis">
+      Development
+    </span>
   </a>
   
 </li>
@@ -340,46 +365,6 @@
               </div>
             
             
-              
-              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
-                <div class="md-sidebar__scrollwrap">
-                  <div class="md-sidebar__inner">
-                    
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#issues" class="md-nav__link">
-    Issues
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#development" class="md-nav__link">
-    Development
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-                  </div>
-                </div>
-              </div>
-            
           
           
             <div class="md-content" data-md-component="content">
@@ -395,20 +380,20 @@
 <p>Any contributions to <em>Lmo</em> are appreciated!</p>
 <h2 id="issues">Issues</h2>
 <p>Questions, feature requests and bug reports are all welcome as issues.</p>
-<p>When reporting a bug, make sure to include the versions of <code>lmo</code>, <code>python</code>, 
-<code>numpy</code> and <code>scipy</code> you are using, and provide a <strong>reproducible</strong> example of 
+<p>When reporting a bug, make sure to include the versions of <code>lmo</code>, <code>python</code>,
+<code>numpy</code> and <code>scipy</code> you are using, and provide a <strong>reproducible</strong> example of
 the bug.</p>
 <h2 id="development">Development</h2>
-<p>Ensure you have <a href="https://python-poetry.org/docs/#installation">poetry</a> 
+<p>Ensure you have <a href="https://python-poetry.org/docs/#installation">poetry</a>
 installed, then clone your fork, and install with</p>
 <div class="highlight"><pre><span></span><code>poetry<span class="w"> </span>install<span class="w"> </span>--sync
 </code></pre></div>
 <p>It can help to use Lmo&rsquo;s lowest-supported Python version, so that you don&rsquo;t
-accidentally use those bleeding-edge Python features that you shouldn&rsquo;t, 
+accidentally use those bleeding-edge Python features that you shouldn&rsquo;t,
 <code>poetry env use python3.x</code></p>
-<p>Now you can go ahead and do your thing. 
-And don&rsquo;t forget the type annotations, add tests, and to lint it all. </p>
-<p>If you&rsquo;re a 10x developer that doesn&rsquo;t wait on CI workflows, you can use the 
+<p>Now you can go ahead and do your thing.
+And don&rsquo;t forget the type annotations, add tests, and to lint it all.</p>
+<p>If you&rsquo;re a 10x developer that doesn&rsquo;t wait on CI workflows, you can use the
 following 1337 shellscript (keep in mind that the CI runs this on all supported
 Python versions):</p>
 <div class="highlight"><pre><span></span><code>poetry<span class="w"> </span>run<span class="w"> </span>codespell<span class="w"> </span>check<span class="w"> </span>lmo
@@ -416,7 +401,7 @@ poetry<span class="w"> </span>run<span class="w"> </span>ruff<span class="w"> </
 poetry<span class="w"> </span>run<span class="w"> </span>pyright
 poetry<span class="w"> </span>run<span class="w"> </span>py.test
 </code></pre></div>
-<p>If your change involves documentation updates, you can conjure up a live 
+<p>If your change involves documentation updates, you can conjure up a live
 preview:</p>
 <div class="highlight"><pre><span></span><code>poetry<span class="w"> </span>run<span class="w"> </span>mkdocs<span class="w"> </span>serve
 </code></pre></div>
@@ -475,10 +460,10 @@ Lmo&rsquo;s personal assistant will do that on release.</p>
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": ["toc.follow", "toc.integrate"], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.81fa17fe.min.js"></script>
+      <script src="../assets/javascripts/bundle.6c14ae12.min.js"></script>
       
         <script src="../scripts/mathjax.js"></script>
       
