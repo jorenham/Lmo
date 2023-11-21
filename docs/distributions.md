@@ -708,7 +708,7 @@ wolfram alpha / mathematica.
 
 ### GEV
 
-The [generalized extreme value (GEV)
+The [*generalized extreme value* (GEV)
 ](https://wikipedia.org/wiki/Generalized_extreme_value_distribution)
 distribution unifies the
 [Gumbel](https://wikipedia.org/wiki/Gumbel_distribution),
@@ -756,9 +756,55 @@ The trimmed L-moments of the GEV are
     \end{equation}
 \]
 
+### GLO
+
+The *generalized logistic distribution* (GLO), also known as the [shifted
+log-logistic distribution
+](https://wikipedia.org/wiki/Shifted_log-logistic_distribution), with shape
+parameter \( \alpha \in \mathbb{R} \), is characterized by the following
+distribution functions:
+
+\[
+    \begin{align*}
+        F(x) &= \frac{1}{1 + \coxbox{x}{\alpha}} \\
+        x(F) &= -\boxcox{\frac{1 - F}{F}}{\alpha}
+    \end{align*}
+\]
+
+For \( -1 < \alpha < 1 \), the general trimmed L-moments of the GLO are:
+
+\[
+    \begin{equation}
+        \tlmoment{s, t}{r} = \begin{cases}
+            \displaystyle
+                \psi(s + 1) - \psi(t + 1)
+            & \text{if } \alpha = 0 \wedge r = 1 \\
+            \displaystyle
+                \frac{(-1)^r}{r} \B(r - 1,\ s + 1)
+                + \frac 1 r \B(r - 1,\ t + 1)
+            & \text{if } \alpha = 0 \\
+            \displaystyle
+                \frac{\ffact{1}{r}}{\alpha}
+                + \sum_{k = s + 1}^{r + s + t}
+                    (-1)^{r + s - k }
+                    \binom{r + k - 2}{r + s - 1}
+                    \binom{r + s + t}{k}
+                    \B(\alpha,\ k - \alpha)
+            & \text{if } -1 < \alpha < 1
+        \end{cases}
+    \label{eq:lr_glo}
+    \end{equation}
+\]
+
+Where \( \psi(z) \) is the [digamma function](#def-digamma).
+
+The corresponding `scipy.stats` implementation is
+[`kappa4`][scipy.stats.kappa4], with `h = -1` and `k` set to \( \alpha \);
+**not** [`genlogistic`][scipy.stats.genlogistic].
+
 ### GPD
 
-The [generalized Pareto distribution
+The [*generalized Pareto distribution*
 ](https://wikipedia.org/wiki/Generalized_Pareto_distribution) (GPD), with
 shape parameter \( \alpha \in \mathbb{R} \), has for \( x \ge 0 \) the
 distribution functions:
@@ -781,7 +827,7 @@ The general trimmed L-moments of the GPD are:
             \displaystyle \sum_{k = 1}^{s + 1} \frac{1}{t + k}
                 & \text{if } \alpha = 0 \wedge r = 1 \\
             \frac{1}{r} \B(r - 1,\ t + 1)
-                & \text{if } \alpha = 0 \wedge r > 1 \\
+                & \text{if } \alpha = 0 \\
             \displaystyle \frac{r + s + t}{\alpha \ r} \sum_{k = 0}^{r + t - 1}
                 \frac{(-1)^{r - k}}{k}
                 \binom{r + s + t - 1}{k + s}
@@ -821,7 +867,7 @@ the GPD.
 
 ### Pareto Type IV
 
-The [Pareto Type IV](https://wikipedia.org/wiki/Pareto_distribution) has two
+The [*Pareto Type IV*](https://wikipedia.org/wiki/Pareto_distribution) has two
 shape parameters \( \alpha \in \mathbb{R} \) and
 \( \gamma \in \mathbb{R}_{>0} \), and scale parameter \( \beta \).
 For \( x \ge 0 \), the CDF and its inverse (the PPF) are
@@ -893,10 +939,10 @@ Its general \( r \)-th trimmed L-moment are:
 Unfortunately, the Kumaraswamy distribution is not implemented in
 `scipy.stats`.
 
-### Burr Type III / Dagum
+### Burr Type III
 
-The Burr type III distribution, also known as the
-[Dagum distribution](https://wikipedia.org/wiki/Dagum_distribution), has two
+The *Burr type III* distribution, also known as the
+[*Dagum distribution*](https://wikipedia.org/wiki/Dagum_distribution), has two
 shape parameters \( \alpha \) and \( \beta \), both restricted to the
 positive reals
 
@@ -935,7 +981,7 @@ correspond to  \( \alpha \) and \( \beta \), respectively.
 ### Burr Type XII
 
 Just like Kumaraswamy's distribution, the
-[Burr (Type XII) distribution](https://wikipedia.org/wiki/Burr_distribution)
+[*Burr Type XII distribution*](https://wikipedia.org/wiki/Burr_distribution)
 has two shape parameters \( \alpha \) and \( \beta \), both restricted to the
 positive reals.
 
@@ -970,7 +1016,7 @@ and `d` correspond to  \( \alpha \) and \( \beta \), respectively.
 
 ### Wakeby
 
-The [Wakeby distribution](https://wikipedia.org/wiki/Wakeby_distribution)
+The [*Wakeby distribution*](https://wikipedia.org/wiki/Wakeby_distribution)
 is quantile-based, without closed-form expressions for the PDF and CDF, whose
 quantile function (PPF) is defined to be
 
@@ -1034,9 +1080,9 @@ Unfortunately, the Wakeby distribution has currently no
 ### Generalized Lambda
 
 The [Tukey lambda distribution
-](https://wikipedia.org/wiki/Tukey_lambda_distribution) can be generalized
-to two scale parameters \( \alpha, \gamma \), and two shape parameters
-\( \beta, \delta \).
+](https://wikipedia.org/wiki/Tukey_lambda_distribution) can be extended to
+the *generalized lambda distribution*, which has two scale parameters
+\( \alpha, \gamma \), and two shape parameters \( \beta, \delta \).
 
 Like the Wakeby distribution, the generalized lambda has no closed-form PDF
 or CDF. Instead, it is defined through its PPF:
@@ -1044,11 +1090,12 @@ or CDF. Instead, it is defined through its PPF:
 \[
 x(F)
     = \alpha \boxcox{F}{\beta}
-    - \gamma \boxcox{-F}{\delta}
+    - \gamma \boxcox{1 - F}{\delta}
 \]
 
-Although its central product moments have no closed-form expression, the
-general trimmed L-moments can be compactly expressed as:
+Although its central product moments have no closed-form expression, when
+\( \beta > -1 \) and \( \delta > -1 \), the general trimmed L-moments can be
+compactly expressed as:
 
 \[
 \begin{equation}
@@ -1074,8 +1121,6 @@ When \( \alpha = \gamma \) and \( \beta = \delta \), this is the
 [`scipy.stats.tukeylambda`][scipy.stats.tukeylambda]. Currently, this
 4-parameter generalization has no [`scipy.stats`][scipy.stats] implementation.
 
-<!-- TODO: Generalized Pareto (GPD / Pareto-Pickands) -->
-<!-- TODO: Generalized Logistic -->
 
 ## Constants and special functions
 
@@ -1240,7 +1285,6 @@ and constants.
 </tr>
 
 <tr id="def-gamma" class="row-double-top">
-    <!-- <td style="border-top-style: double;"> -->
     <td>
         <a
             href="https://wikipedia.org/wiki/Gamma_function"
@@ -1258,6 +1302,27 @@ and constants.
             target="_blank"
         >
             <code>scipy.special.gamma</code>
+        </a>
+    </td>
+</tr>
+<tr id="def-digamma">
+    <td>
+        <a
+            href="https://wikipedia.org/wiki/Digamma_function"
+            target="_blank"
+            title="Digamma function - Wikipedia"
+        >
+            Digamma function
+        </a>
+    </td>
+    <td>\[ \psi(z) \]</td>
+    <td>\[ = \frac{\mathrm{d}}{\mathrm{d}z} \ln \Gamma(z) \]</td>
+    <td>
+        <a
+            href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.digamma.html"
+            target="_blank"
+        >
+            <code>scipy.special.digamma</code>
         </a>
     </td>
 </tr>
@@ -1345,7 +1410,7 @@ and constants.
     <td>
         \[
             = \begin{cases}
-                (\lambda y + 1)^{1 / \lambda} & \text{if } \lambda \neq 0 \\
+                (\lambda x + 1)^{1 / \lambda} & \text{if } \lambda \neq 0 \\
                 e^{x} & \text{if } \lambda = 0
             \end{cases}
         \]
