@@ -1,8 +1,16 @@
 # L-moments of common probability distributions
 
-This page lists L-moment statistics
-(L -location, scale, skewness, and kurtosis) of common univariate
-probability distributions, most of them continuous.
+This page lists theoretical L-moments of popular probability distributions.
+
+All distributions are in the "standardized" form, similar to the convention
+used in the `scipy.stats` distribution documentation.
+Shifting a distribution only affects the L-location \( \tlmoment{s,t}{1} \),
+just like the expectation and the median.
+Scaling a distribution simply scales all L-moments
+\( \tlmoment{s,t}{r}, \; r \ge 1 \) analogous to e.g. the
+standard deviation or MAD.
+Note that neither shifting nor scaling affects the L-moment ratio's
+ \( \tlratio{s,t}{r} \).
 
 Each of the listed expressions have been validated, both numerically and
 symbolically (with either Wolfram Alpha, SymPy, or pen and paper).
@@ -15,7 +23,6 @@ Due to the exploratory use of symbolic computation software, this listing is
 likely to include some novel solutions. This is also the reason for the lack
 of references. But this should pose no problems in practise, since Lmo makes
 it trivial to check if they aren't incorrect.
-
 
 !!! tip
 
@@ -38,7 +45,7 @@ exist (in closed form).
 <thead>
 <tr>
     <th>Name /<br> <code>scipy.stats</code></th>
-    <th>Params</th>
+    <th>Shape</th>
     <th>\( \lmoment{1} \)</th>
     <th>\( \lmoment{2} \)</th>
     <th>\( \lratio{3} = \lmoment{3}/\lmoment{2} \)</th>
@@ -54,12 +61,13 @@ exist (in closed form).
         >
             Uniform
         </a>
+        \( [0, 1] \)
         <br>
         <code>uniform</code>
     </td>
-    <td>\( a < b \)</td>
-    <td>\[ \frac{a + b}{2} \]</td>
-    <td>\[ \frac{b - a}{6} \]</td>
+    <td></td>
+    <td>\[ \frac 1 2 \]</td>
+    <td>\[ \frac 1 6 \]</td>
     <td>\( 0 \)</td>
     <td>\( 0 \)</td>
 </tr>
@@ -75,14 +83,11 @@ exist (in closed form).
         <br>
         <code>norm</code>
     </td>
+    <td></td>
+    <td>\( 0 \)</td>
     <td>
-        \( \mu \)<br>
-        \( \sigma>0 \)
-    </td>
-    <td>\( \mu \)</td>
-    <td>
-        \[ \frac{\sigma}{\sqrt \pi} \]
-        \( \approx 0.5642 \ \sigma \)
+        \[ \frac{1}{\sqrt \pi} \]
+        \( \approx 0.5642 \)
     </td>
     <td>\( 0 \)</td>
     <td>
@@ -100,14 +105,11 @@ exist (in closed form).
             Logistic
         </a>
         <br>
-        <code>logistic(μ, s)</code>
+        <code>logistic</code>
     </td>
-    <td>
-        \( \mu \)<br>
-        \( s>0 \)
-    </td>
-    <td>\( \mu \)</td>
-    <td>\( s \)</td>
+    <td></td>
+    <td>\( 0 \)</td>
+    <td>\( 1 \)</td>
     <td>\( 0 \)</td>
     <td>
         \[ 1 / 6 \]
@@ -126,15 +128,9 @@ exist (in closed form).
         <br>
         <code>laplace</code>
     </td>
-    <td>
-        \( \mu \)<br>
-        \( b > 0 \)
-    </td>
-    <td>\( \mu \)</td>
-    <td>
-        \[ \frac 3 4 b \]
-        \( = 0.75 \ b\)
-    </td>
+    <td></td>
+    <td>\( 0 \)</td>
+    <td>\[ \frac 3 4 \]</td>
     <td>\( 0 \)</td>
     <td>
         \[ \frac{17}{72} \]
@@ -150,7 +146,6 @@ exist (in closed form).
         >
             Student's <i>t</i>
         </a>
-        (2 d.f.)
         <br>
         <code>t(2)</code>
     </td>
@@ -175,7 +170,6 @@ exist (in closed form).
         >
             Student's <i>t</i>
         </a>
-        (3 d.f.)
         <br>
         <code>t(3)</code>
     </td>
@@ -200,7 +194,6 @@ exist (in closed form).
         >
             Student's <i>t</i>
         </a>
-        (4 d.f.)
         <br>
         <code>t(4)</code>
     </td>
@@ -228,9 +221,9 @@ exist (in closed form).
         <br>
         <code>expon</code>
     </td>
-    <td>\( \lambda>0 \)</td>
-    <td>\[ \frac 1 \lambda \]</td>
-    <td>\[ \frac{1}{2 \lambda} \]</td>
+    <td></td>
+    <td>\( 1 \)</td>
+    <td>\[ \frac 1 2 \]</td>
     <td>
         \[ \frac 1 3 \]
         \( = 0.3\overline{3}\dots \)
@@ -252,22 +245,14 @@ exist (in closed form).
         <br>
         <code>rayleigh</code>
     </td>
-    <td>\( \sigma > 0 \)</td>
+    <td></td>
     <td>
-        \[
-            \frac 1 2
-            \sqrt{2 \pi} \
-            \sigma
-        \]
-        \( \approx 1.253 \ \sigma \)
+        \[ \frac 1 2 \sqrt{2 \pi} \]
+        \( \approx 1.253 \)
     </td>
     <td>
-        \[
-            \frac {\sqrt 2 - 1}{2}
-            \sqrt{\pi} \
-            \sigma
-        \]
-        \( \approx 0.3671 \ \sigma \)
+        \[ \frac {\sqrt 2 - 1}{2} \sqrt{\pi} \]
+        \( \approx 0.3671 \)
     </td>
     <td>
         \[ 2 \frac{2 + \sqrt 2}{\sqrt 3} - \frac{4 + \sqrt{2}}{\sqrt 2} \]
@@ -324,19 +309,12 @@ exist (in closed form).
         <br>
         see eq. \( \eqref{eq:lr_pareto4} \) for \( \lmoment{r} \)
     </td>
+    <td>\( \alpha > 0  \)</td>
     <td>
-        \[
-        \begin{align*}
-            \alpha &> 0 \quad \text{(shape)} \\
-            \beta  &> 0 \quad \text{(scale)}
-        \end{align*}
-        \]
+        \[ \frac{\alpha}{\alpha - 1} \]
     </td>
     <td>
-        \[ \frac{\alpha}{\alpha - 1} \ \beta \]
-    </td>
-    <td>
-        \[ \frac{\alpha}{\alpha - 1} \frac{1}{2 \alpha - 1} \ \beta \]
+        \[ \frac{\alpha}{\alpha - 1} \frac{1}{2 \alpha - 1} \]
     </td>
     <td>
         \[ \frac{\alpha + 1}{3 \alpha - 1} \]
@@ -356,7 +334,7 @@ symmetric trimming of order 1, i.e. `trim=(1, 1)`.
 <thead>
     <tr>
         <th>Name / <br><code>scipy.stats</code></th>
-        <th>Params</th>
+        <th>Shape</th>
         <th>\( \tlmoment{1}{1} \)</th>
         <th>\( \tlmoment{1}{2} \)</th>
         <th>\( \tlratio{1}{3} \)</th>
@@ -372,12 +350,13 @@ symmetric trimming of order 1, i.e. `trim=(1, 1)`.
         >
             Uniform
         </a>
+        \( [0, 1] \)
         <br>
         <code>uniform</code>
     </td>
-    <td>\( a < b \)</td>
-    <td>\[ (a + b) / 2 \]</td>
-    <td>\[ (a - b) / 10 \]</td>
+    <td></td>
+    <td>\[ \frac 1 2 \]</td>
+    <td>\[ \frac{1}{10} \]</td>
     <td>\( 0 \)</td>
     <td>\( 0 \)</td>
     <td></td>
@@ -394,17 +373,16 @@ symmetric trimming of order 1, i.e. `trim=(1, 1)`.
         <br>
         <code>norm</code>
     </td>
-    <td>
-        \( \mu \)<br>
-        \( \sigma>0 \)
-    </td>
-    <td>\( \mu \)</td>
+    <td></td>
+    <td>\( 0 \)</td>
     <td>
         \[
-            \left( 6 - 18 \ \frac{\arctan{\sqrt 2}}{\pi} \right)
-            \frac{\sigma}{\sqrt \pi}
+            \frac{6}{\sqrt \pi} \left(
+                1
+                - 3 \frac{\arctan{\sqrt 2}}{\pi}
+            \right)
         \]
-        \( \approx 0.2970 \ \sigma \)
+        \( \approx 0.2970 \)
     </td>
     <td>\( 0 \)</td>
     <td>
@@ -423,12 +401,12 @@ symmetric trimming of order 1, i.e. `trim=(1, 1)`.
         <br>
         <code>logistic(μ, s)</code>
     </td>
-    <td>\( \mu \)<br>\( s>0 \)</td>
-    <td>\( \mu \)</td>
-    <td>\( s / 2 \)</td>
+    <td></td>
+    <td>0</td>
+    <td>\[ \frac 1 2 \]</td>
     <td>\( 0 \)</td>
     <td>
-        \[ 1 / 12 \]
+        \[ \frac{1}{12} \]
         \( = 0.083\overline{3} \dots \)
     </td>
 </tr>
@@ -444,18 +422,15 @@ symmetric trimming of order 1, i.e. `trim=(1, 1)`.
         <br>
         <code>laplace</code>
     </td>
+    <td></td>
+    <td>\( 0 \)</td>
     <td>
-        \( \mu \)<br>
-        \( b > 0 \)
-    </td>
-    <td>\( \mu \)</td>
-    <td>
-        \[ 11b / 32 \]
-        \( = 0.34375 \ b\)
+        \[ \frac{11}{32} \]
+        \( = 0.34375 \)
     </td>
     <td>\( 0 \)</td>
     <td>
-        \[ 3 / 22 \]
+        \[ \frac{3}{22} \]
         \( = 0.136\overline{36} \dots \)
     </td>
 </tr>
@@ -477,7 +452,6 @@ symmetric trimming of order 1, i.e. `trim=(1, 1)`.
         >
             Student's <i>t</i>
         </a>
-        (1 d.f.)
         <br>
         <code>cauchy</code>
         /
@@ -487,7 +461,7 @@ symmetric trimming of order 1, i.e. `trim=(1, 1)`.
     <td>\( 0 \)</td>
     <td>
         \[ \frac{18 \vphantom{)}}{\pi^3 \vphantom{)}} \ \zeta(3) \]
-        \( \approx 0.6978 \ b \)
+        \( \approx 0.6978 \)
     </td>
     <td>\( 0 \)</td>
     <td>
@@ -504,7 +478,6 @@ symmetric trimming of order 1, i.e. `trim=(1, 1)`.
         >
             Student's <i>t</i>
         </a>
-        (2 d.f.)
         <br>
         <code>t(2)</code>
     </td>
@@ -529,7 +502,6 @@ symmetric trimming of order 1, i.e. `trim=(1, 1)`.
         >
             Student's <i>t</i>
         </a>
-        (3 d.f.)
         <br>
         <code>t(3)</code>
     </td>
@@ -554,7 +526,6 @@ symmetric trimming of order 1, i.e. `trim=(1, 1)`.
         >
             Student's <i>t</i>
         </a>
-        (4 d.f.)
         <br>
         <code>t(4)</code>
     </td>
@@ -582,9 +553,9 @@ symmetric trimming of order 1, i.e. `trim=(1, 1)`.
         <br>
         <code>expon</code>
     </td>
-    <td>\( \lambda>0 \)</td>
-    <td>\[ \frac{5}{6 \lambda} \]</td>
-    <td>\[ \frac{1}{4 \lambda} \]</td>
+    <td></td>
+    <td>\[ \frac 5 6 \]</td>
+    <td>\[ \frac 1 4 \]</td>
     <td>
         \[ \frac 2 9 \]
         \( = 0.2\overline{2}\dots \)
@@ -608,29 +579,20 @@ symmetric trimming of order 1, i.e. `trim=(1, 1)`.
     </td>
     <td></td>
     <td>
-        <!-- \[ \left( \frac 3 2 - \sqrt{\frac{2}{3}} \right) \sqrt \pi \ \sigma \] -->
         \[
-            \frac 1 6
+            \frac{\sqrt \pi}{6}
             \bigl( 9 - 2 \sqrt 6 \bigr)
-            \sqrt \pi \
         \]
         \( \approx 1.211  \)
     </td>
     <td>
         \[
-            \frac 1 4
+            \frac{\sqrt \pi}{4}
             \bigl( 6 - 4 \sqrt 6 + 3 \sqrt 2 \bigr)
-            \sqrt \pi \
         \]
         \( \approx 0.1970 \)
     </td>
     <td>
-        <!-- \[
-            \frac 2 9
-            \frac
-                {30 - 12 \sqrt{10} - 40 \sqrt 6 + 75 \sqrt 2}
-                {6 - 4 \sqrt 6 + 3 \sqrt 2}
-        \] -->
         \[
             \frac{10}{9}
             - \frac{8}{9}
@@ -705,6 +667,27 @@ Lmo derived a bunch of closed-form solutions for L-moments of several
 distributions. The proofs are not published, but it isn't difficult
 to validate their correctness, e.g. numerically, or symbolically with sympy or
 wolfram alpha / mathematica.
+
+### Bernoulli
+
+Surprisingly, the L-moments of the discrete
+[Bernoulli distribution](https://wikipedia.org/wiki/Bernoulli_distribution),
+can't be expressed as easily as the distribution itself:
+
+\[
+    \begin{equation}
+    \tlmoment{s, t}{r} =
+        \frac{(-1)^r}{r}
+        (1 - p)^{s + 1}
+        \jacobi{r + t - 1}{s + 1}{-t - 1}{2p - 1}
+        + \ffact{1}{r}
+    \label{eq:lr_bernoulli}
+    \end{equation}
+\]
+
+Here, \( \jacobi{n}{\alpha}{\beta}{x} \) is a
+[Jacobi polynomial](#def-jacobi) (although it's not orthogonal, since
+\( \beta > -1 \) does not hold).
 
 ### GEV
 
@@ -1380,6 +1363,35 @@ and constants.
             target="_blank"
         >
             <code>scipy.special.zeta</code>
+        </a>
+    </td>
+</tr>
+<tr id="def-jacobi" class="row-double-top">
+    <td>
+        <a
+            href="https://wikipedia.org/wiki/Jacobi_polynomials"
+            target="_blank"
+            title="Jacobi polynomials"
+        >
+            Jacobi polynomial
+        </a>
+    </td>
+    <td>\[ \jacobi{n}{\alpha}{\beta}{x} \]</td>
+    <td>
+        \[
+            = 2^{-n} \sum_{k=0}^n
+                \binom{n + \alpha}{k}
+                (x + 1)^{n + k}
+                \binom{n + \beta}{n - k}
+                (x - 1)^{n - k}
+        \]
+    </td>
+    <td>
+        <a
+            href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.eval_jacobi.html"
+            target="_blank"
+        >
+            <code>scipy.special.eval_jacobi</code>
         </a>
     </td>
 </tr>
