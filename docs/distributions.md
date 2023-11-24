@@ -45,7 +45,7 @@ exist (in closed form).
 <thead>
 <tr>
     <th>Name /<br> <code>scipy.stats</code></th>
-    <th>Params</th>
+    <th>Shape</th>
     <th>\( \lmoment{1} \)</th>
     <th>\( \lmoment{2} \)</th>
     <th>\( \lratio{3} = \lmoment{3}/\lmoment{2} \)</th>
@@ -61,12 +61,13 @@ exist (in closed form).
         >
             Uniform
         </a>
+        \( [0, 1] \)
         <br>
         <code>uniform</code>
     </td>
-    <td>\( a < b \)</td>
-    <td>\[ \frac{a + b}{2} \]</td>
-    <td>\[ \frac{b - a}{6} \]</td>
+    <td></td>
+    <td>\[ \frac 1 2 \]</td>
+    <td>\[ \frac 1 6 \]</td>
     <td>\( 0 \)</td>
     <td>\( 0 \)</td>
 </tr>
@@ -82,14 +83,11 @@ exist (in closed form).
         <br>
         <code>norm</code>
     </td>
+    <td></td>
+    <td>\( 0 \)</td>
     <td>
-        \( \mu \)<br>
-        \( \sigma>0 \)
-    </td>
-    <td>\( \mu \)</td>
-    <td>
-        \[ \frac{\sigma}{\sqrt \pi} \]
-        \( \approx 0.5642 \ \sigma \)
+        \[ \frac{1}{\sqrt \pi} \]
+        \( \approx 0.5642 \)
     </td>
     <td>\( 0 \)</td>
     <td>
@@ -107,14 +105,11 @@ exist (in closed form).
             Logistic
         </a>
         <br>
-        <code>logistic(μ, s)</code>
+        <code>logistic</code>
     </td>
-    <td>
-        \( \mu \)<br>
-        \( s>0 \)
-    </td>
-    <td>\( \mu \)</td>
-    <td>\( s \)</td>
+    <td></td>
+    <td>\( 0 \)</td>
+    <td>\( 1 \)</td>
     <td>\( 0 \)</td>
     <td>
         \[ 1 / 6 \]
@@ -133,15 +128,9 @@ exist (in closed form).
         <br>
         <code>laplace</code>
     </td>
-    <td>
-        \( \mu \)<br>
-        \( b > 0 \)
-    </td>
-    <td>\( \mu \)</td>
-    <td>
-        \[ \frac 3 4 b \]
-        \( = 0.75 \ b\)
-    </td>
+    <td></td>
+    <td>\( 0 \)</td>
+    <td>\[ \frac 3 4 \]</td>
     <td>\( 0 \)</td>
     <td>
         \[ \frac{17}{72} \]
@@ -157,7 +146,6 @@ exist (in closed form).
         >
             Student's <i>t</i>
         </a>
-        (2 d.f.)
         <br>
         <code>t(2)</code>
     </td>
@@ -182,7 +170,6 @@ exist (in closed form).
         >
             Student's <i>t</i>
         </a>
-        (3 d.f.)
         <br>
         <code>t(3)</code>
     </td>
@@ -207,7 +194,6 @@ exist (in closed form).
         >
             Student's <i>t</i>
         </a>
-        (4 d.f.)
         <br>
         <code>t(4)</code>
     </td>
@@ -235,9 +221,9 @@ exist (in closed form).
         <br>
         <code>expon</code>
     </td>
-    <td>\( \lambda>0 \)</td>
-    <td>\[ \frac 1 \lambda \]</td>
-    <td>\[ \frac{1}{2 \lambda} \]</td>
+    <td></td>
+    <td>\( 1 \)</td>
+    <td>\[ \frac 1 2 \]</td>
     <td>
         \[ \frac 1 3 \]
         \( = 0.3\overline{3}\dots \)
@@ -259,22 +245,14 @@ exist (in closed form).
         <br>
         <code>rayleigh</code>
     </td>
-    <td>\( \sigma > 0 \)</td>
+    <td></td>
     <td>
-        \[
-            \frac 1 2
-            \sqrt{2 \pi} \
-            \sigma
-        \]
-        \( \approx 1.253 \ \sigma \)
+        \[ \frac 1 2 \sqrt{2 \pi} \]
+        \( \approx 1.253 \)
     </td>
     <td>
-        \[
-            \frac {\sqrt 2 - 1}{2}
-            \sqrt{\pi} \
-            \sigma
-        \]
-        \( \approx 0.3671 \ \sigma \)
+        \[ \frac {\sqrt 2 - 1}{2} \sqrt{\pi} \]
+        \( \approx 0.3671 \)
     </td>
     <td>
         \[ 2 \frac{2 + \sqrt 2}{\sqrt 3} - \frac{4 + \sqrt{2}}{\sqrt 2} \]
@@ -331,19 +309,12 @@ exist (in closed form).
         <br>
         see eq. \( \eqref{eq:lr_pareto4} \) for \( \lmoment{r} \)
     </td>
+    <td>\( \alpha > 0  \)</td>
     <td>
-        \[
-        \begin{align*}
-            \alpha &> 0 \quad \text{(shape)} \\
-            \beta  &> 0 \quad \text{(scale)}
-        \end{align*}
-        \]
+        \[ \frac{\alpha}{\alpha - 1} \]
     </td>
     <td>
-        \[ \frac{\alpha}{\alpha - 1} \ \beta \]
-    </td>
-    <td>
-        \[ \frac{\alpha}{\alpha - 1} \frac{1}{2 \alpha - 1} \ \beta \]
+        \[ \frac{\alpha}{\alpha - 1} \frac{1}{2 \alpha - 1} \]
     </td>
     <td>
         \[ \frac{\alpha + 1}{3 \alpha - 1} \]
