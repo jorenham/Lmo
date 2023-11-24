@@ -23,7 +23,11 @@ window.MathJax = {
             // L-moment ratio (untrimmed)
             lratio: ["\\tau_{#1}", 1],
             // L-moment ratio (trimmed)
-            tlratio: ["\\tau^{(#1)}_{#2}", 2]
+            tlratio: ["\\tau^{(#1)}_{#2}", 2],
+            // Jacobi polynomial
+            jacobi: ["P_{#1}^{(#2, #3)}\\left(#4\\right)", 4],
+            // Shifted Jacobi polynomial
+            shjacobi: ["\\widetilde{P}_{#1}^{(#2, #3)}\\left(#4\\right)", 4]
         }
     },
     options: {

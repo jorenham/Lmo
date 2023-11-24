@@ -1,8 +1,16 @@
 # L-moments of common probability distributions
 
-This page lists L-moment statistics
-(L -location, scale, skewness, and kurtosis) of common univariate
-probability distributions, most of them continuous.
+This page lists theoretical L-moments of popular probability distributions.
+
+All distributions are in the "standardized" form, similar to the convention
+used in the `scipy.stats` distribution documentation.
+Shifting a distribution only affects the L-location \( \tlmoment{s,t}{1} \),
+just like the expectation and the median.
+Scaling a distribution simply scales all L-moments
+\( \tlmoment{s,t}{r}, \; r \ge 1 \) analogous to e.g. the
+standard deviation or MAD.
+Note that neither shifting nor scaling affects the L-moment ratio's
+ \( \tlratio{s,t}{r} \).
 
 Each of the listed expressions have been validated, both numerically and
 symbolically (with either Wolfram Alpha, SymPy, or pen and paper).
@@ -15,7 +23,6 @@ Due to the exploratory use of symbolic computation software, this listing is
 likely to include some novel solutions. This is also the reason for the lack
 of references. But this should pose no problems in practise, since Lmo makes
 it trivial to check if they aren't incorrect.
-
 
 !!! tip
 
@@ -706,6 +713,27 @@ distributions. The proofs are not published, but it isn't difficult
 to validate their correctness, e.g. numerically, or symbolically with sympy or
 wolfram alpha / mathematica.
 
+### Bernoulli
+
+Surprisingly, the L-moments of the discrete
+[Bernoulli distribution](https://wikipedia.org/wiki/Bernoulli_distribution),
+can't be expressed as easily as the distribution itself:
+
+\[
+    \begin{equation}
+    \tlmoment{s, t}{r} =
+        \frac{(-1)^r}{r}
+        (1 - p)^{s + 1}
+        \jacobi{r + t - 1}{s + 1}{-t - 1}{2p - 1}
+        + \ffact{1}{r}
+    \label{eq:lr_bernoulli}
+    \end{equation}
+\]
+
+Here, \( \jacobi{n}{\alpha}{\beta}{x} \) is a
+[Jacobi polynomial](#def-jacobi) (although it's not orthogonal, since
+\( \beta > -1 \) does not hold).
+
 ### GEV
 
 The [*generalized extreme value* (GEV)
@@ -1380,6 +1408,35 @@ and constants.
             target="_blank"
         >
             <code>scipy.special.zeta</code>
+        </a>
+    </td>
+</tr>
+<tr id="def-jacobi" class="row-double-top">
+    <td>
+        <a
+            href="https://wikipedia.org/wiki/Jacobi_polynomials"
+            target="_blank"
+            title="Jacobi polynomials"
+        >
+            Jacobi polynomial
+        </a>
+    </td>
+    <td>\[ \jacobi{n}{\alpha}{\beta}{x} \]</td>
+    <td>
+        \[
+            = 2^{-n} \sum_{k=0}^n
+                \binom{n + \alpha}{k}
+                (x + 1)^{n + k}
+                \binom{n + \beta}{n - k}
+                (x - 1)^{n - k}
+        \]
+    </td>
+    <td>
+        <a
+            href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.eval_jacobi.html"
+            target="_blank"
+        >
+            <code>scipy.special.eval_jacobi</code>
         </a>
     </td>
 </tr>
