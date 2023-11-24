@@ -334,7 +334,7 @@ symmetric trimming of order 1, i.e. `trim=(1, 1)`.
 <thead>
     <tr>
         <th>Name / <br><code>scipy.stats</code></th>
-        <th>Params</th>
+        <th>Shape</th>
         <th>\( \tlmoment{1}{1} \)</th>
         <th>\( \tlmoment{1}{2} \)</th>
         <th>\( \tlratio{1}{3} \)</th>
@@ -350,12 +350,13 @@ symmetric trimming of order 1, i.e. `trim=(1, 1)`.
         >
             Uniform
         </a>
+        \( [0, 1] \)
         <br>
         <code>uniform</code>
     </td>
-    <td>\( a < b \)</td>
-    <td>\[ (a + b) / 2 \]</td>
-    <td>\[ (a - b) / 10 \]</td>
+    <td></td>
+    <td>\[ \frac 1 2 \]</td>
+    <td>\[ \frac{1}{10} \]</td>
     <td>\( 0 \)</td>
     <td>\( 0 \)</td>
     <td></td>
@@ -372,17 +373,16 @@ symmetric trimming of order 1, i.e. `trim=(1, 1)`.
         <br>
         <code>norm</code>
     </td>
-    <td>
-        \( \mu \)<br>
-        \( \sigma>0 \)
-    </td>
-    <td>\( \mu \)</td>
+    <td></td>
+    <td>\( 0 \)</td>
     <td>
         \[
-            \left( 6 - 18 \ \frac{\arctan{\sqrt 2}}{\pi} \right)
-            \frac{\sigma}{\sqrt \pi}
+            \frac{6}{\sqrt \pi} \left(
+                1
+                - 3 \frac{\arctan{\sqrt 2}}{\pi}
+            \right)
         \]
-        \( \approx 0.2970 \ \sigma \)
+        \( \approx 0.2970 \)
     </td>
     <td>\( 0 \)</td>
     <td>
@@ -401,12 +401,12 @@ symmetric trimming of order 1, i.e. `trim=(1, 1)`.
         <br>
         <code>logistic(μ, s)</code>
     </td>
-    <td>\( \mu \)<br>\( s>0 \)</td>
-    <td>\( \mu \)</td>
-    <td>\( s / 2 \)</td>
+    <td></td>
+    <td>0</td>
+    <td>\[ \frac 1 2 \]</td>
     <td>\( 0 \)</td>
     <td>
-        \[ 1 / 12 \]
+        \[ \frac{1}{12} \]
         \( = 0.083\overline{3} \dots \)
     </td>
 </tr>
@@ -422,18 +422,15 @@ symmetric trimming of order 1, i.e. `trim=(1, 1)`.
         <br>
         <code>laplace</code>
     </td>
+    <td></td>
+    <td>\( 0 \)</td>
     <td>
-        \( \mu \)<br>
-        \( b > 0 \)
-    </td>
-    <td>\( \mu \)</td>
-    <td>
-        \[ 11b / 32 \]
-        \( = 0.34375 \ b\)
+        \[ \frac{11}{32} \]
+        \( = 0.34375 \)
     </td>
     <td>\( 0 \)</td>
     <td>
-        \[ 3 / 22 \]
+        \[ \frac{3}{22} \]
         \( = 0.136\overline{36} \dots \)
     </td>
 </tr>
@@ -455,7 +452,6 @@ symmetric trimming of order 1, i.e. `trim=(1, 1)`.
         >
             Student's <i>t</i>
         </a>
-        (1 d.f.)
         <br>
         <code>cauchy</code>
         /
@@ -465,7 +461,7 @@ symmetric trimming of order 1, i.e. `trim=(1, 1)`.
     <td>\( 0 \)</td>
     <td>
         \[ \frac{18 \vphantom{)}}{\pi^3 \vphantom{)}} \ \zeta(3) \]
-        \( \approx 0.6978 \ b \)
+        \( \approx 0.6978 \)
     </td>
     <td>\( 0 \)</td>
     <td>
@@ -482,7 +478,6 @@ symmetric trimming of order 1, i.e. `trim=(1, 1)`.
         >
             Student's <i>t</i>
         </a>
-        (2 d.f.)
         <br>
         <code>t(2)</code>
     </td>
@@ -507,7 +502,6 @@ symmetric trimming of order 1, i.e. `trim=(1, 1)`.
         >
             Student's <i>t</i>
         </a>
-        (3 d.f.)
         <br>
         <code>t(3)</code>
     </td>
@@ -532,7 +526,6 @@ symmetric trimming of order 1, i.e. `trim=(1, 1)`.
         >
             Student's <i>t</i>
         </a>
-        (4 d.f.)
         <br>
         <code>t(4)</code>
     </td>
@@ -560,9 +553,9 @@ symmetric trimming of order 1, i.e. `trim=(1, 1)`.
         <br>
         <code>expon</code>
     </td>
-    <td>\( \lambda>0 \)</td>
-    <td>\[ \frac{5}{6 \lambda} \]</td>
-    <td>\[ \frac{1}{4 \lambda} \]</td>
+    <td></td>
+    <td>\[ \frac 5 6 \]</td>
+    <td>\[ \frac 1 4 \]</td>
     <td>
         \[ \frac 2 9 \]
         \( = 0.2\overline{2}\dots \)
@@ -586,29 +579,20 @@ symmetric trimming of order 1, i.e. `trim=(1, 1)`.
     </td>
     <td></td>
     <td>
-        <!-- \[ \left( \frac 3 2 - \sqrt{\frac{2}{3}} \right) \sqrt \pi \ \sigma \] -->
         \[
-            \frac 1 6
+            \frac{\sqrt \pi}{6}
             \bigl( 9 - 2 \sqrt 6 \bigr)
-            \sqrt \pi \
         \]
         \( \approx 1.211  \)
     </td>
     <td>
         \[
-            \frac 1 4
+            \frac{\sqrt \pi}{4}
             \bigl( 6 - 4 \sqrt 6 + 3 \sqrt 2 \bigr)
-            \sqrt \pi \
         \]
         \( \approx 0.1970 \)
     </td>
     <td>
-        <!-- \[
-            \frac 2 9
-            \frac
-                {30 - 12 \sqrt{10} - 40 \sqrt 6 + 75 \sqrt 2}
-                {6 - 4 \sqrt 6 + 3 \sqrt 2}
-        \] -->
         \[
             \frac{10}{9}
             - \frac{8}{9}
