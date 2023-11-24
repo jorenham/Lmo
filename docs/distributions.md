@@ -719,13 +719,15 @@ distribution functions:
 
 \[
     \begin{align*}
-        F(x) &= e^{-\coxbox{-x}{\alpha}} \\
-        x(F) &= -\boxcox{-\ln(F)}{\alpha}
+        F(x) &= e^{-\qexp{1 - \alpha}{-x}} \\
+        x(F) &= -\qlog{1 - \alpha}{-\ln(F)}
     \end{align*}
 \]
 
-Here, \( \boxcox{\cdot}{\alpha} \) is the
-[Box-Cox transformation function](#def-boxcox).
+Here, \( \qexp{q}{y} \) and \( \qlog{q}{y} \) are the
+[Tsallis](https://wikipedia.org/wiki/Tsallis_statistics)
+[\( q \)-exponential](#def-qexp) and the [\( q \)-logarithm](#def-qlog),
+respectively.
 
 An alternative parametrization is sometimes used, e.g. on
 [Wikipedia](https://wikipedia.org/wiki/Generalized_extreme_value_distribution),
@@ -756,6 +758,11 @@ The trimmed L-moments of the GEV are
     \end{equation}
 \]
 
+Note that the GEV is effectively a reparametrized
+\( q \)-[Gumbel](https://wikipedia.org/wiki/Gumbel_distribution)
+[Tsallis distribution](https://wikipedia.org/wiki/Tsallis_distribution), with
+\( q = 1 - \alpha \).
+
 ### GLO
 
 The *generalized logistic distribution* (GLO), also known as the [shifted
@@ -766,8 +773,8 @@ distribution functions:
 
 \[
     \begin{align*}
-        F(x) &= \frac{1}{1 + \coxbox{x}{\alpha}} \\
-        x(F) &= -\boxcox{\frac{1 - F}{F}}{\alpha}
+        F(x) &= \frac{1}{1 + \qexp{1 - \alpha}{x}} \\
+        x(F) &= -\qlog{1 - \alpha}{\frac{1 - F}{F}}
     \end{align*}
 \]
 
@@ -802,6 +809,11 @@ The corresponding `scipy.stats` implementation is
 [`kappa4`][scipy.stats.kappa4], with `h = -1` and `k` set to \( \alpha \);
 **not** [`genlogistic`][scipy.stats.genlogistic].
 
+Note that the GLO is effectively a reparametrized
+\( q \)-[logistic](https://wikipedia.org/wiki/Logistic_distribution)
+[Tsallis distribution](https://wikipedia.org/wiki/Tsallis_distribution), with
+\( q = 1 - \alpha \).
+
 ### GPD
 
 The [*generalized Pareto distribution*
@@ -811,8 +823,8 @@ distribution functions:
 
 \[
     \begin{align*}
-        F(x) &= 1 - 1 / \coxbox{x}{\alpha} \\
-        x(F) &= \boxcox{1 / (1 - F)}{\alpha}
+        F(x) &= 1 - 1 / \qexp{1 - \alpha}{x} \\
+        x(F) &= \qlog{1 - \alpha}{1 / (1 - F)}
     \end{align*}
 \]
 
@@ -864,6 +876,11 @@ For the general LH-moments, this simplifies to:
 
 See [`scipy.stats.genpareto`][scipy.stats.genpareto] for the implementation of
 the GPD.
+
+Note that the GPD is a reparametrized [\( q \)-exponential distribution
+](https://wikipedia.org/wiki/Q-exponential_distribution), where
+\( q = (2 \alpha + 1) / (\alpha + 1) \) and \( \lambda = 1 / (2 - q) \) s.t.
+\( \alpha \neq -1 \) and \( q < 2 \).
 
 ### Pareto Type IV
 
@@ -1088,9 +1105,7 @@ Like the Wakeby distribution, the generalized lambda has no closed-form PDF
 or CDF. Instead, it is defined through its PPF:
 
 \[
-x(F)
-    = \alpha \boxcox{F}{\beta}
-    - \gamma \boxcox{1 - F}{\delta}
+x(F) = \alpha \qlog{1 - \beta}{F} - \gamma \qlog{1 - \delta}{1 - F}
 \]
 
 Although its central product moments have no closed-form expression, when
@@ -1368,22 +1383,24 @@ and constants.
         </a>
     </td>
 </tr>
-<tr id="def-boxcox" class="row-double-top">
+<tr id="def-qexp" class="row-double-top">
     <td>
         <a
-            href="https://wikipedia.org/wiki/Power_transform#Box%E2%80%93Cox_transformation"
+            href="https://wikipedia.org/wiki/Tsallis_statistics"
             target="_blank"
-            title="Box–Cox transformation - Power transform - Wikipedia"
+            title="Tsallis statistics"
         >
-            Box–Cox transform
+            Tsallis \( q \)-exponential
         </a>
     </td>
-    <td>\[ \boxcox{y}{\lambda} \]</td>
+    <td>\[ \qexp{q}{x} \]</td>
     <td>
         \[
             = \begin{cases}
-                (y^\lambda - 1) / \lambda & \text{if } \lambda \neq 0 \\
-                \ln(y) & \text{if } \lambda = 0
+                \displaystyle e^x
+                    & \text{if } q = 1 \\
+                \displaystyle \sqrt[1 - q]{1 + (1 - q) \ x}
+                    & \text{otherwise}
             \end{cases}
         \]
     </td>
@@ -1392,26 +1409,28 @@ and constants.
             href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.boxcox.html"
             target="_blank"
         >
-            <code>scipy.special.boxcox</code>
+            <code>scipy.special.inv_boxcox(x, 1 - q)</code>
         </a>
     </td>
 </tr>
-<tr id="def-coxbox">
+<tr id="def-qlog">
     <td>
         <a
-            href="https://wikipedia.org/wiki/Power_transform#Box%E2%80%93Cox_transformation"
+            href="https://wikipedia.org/wiki/Tsallis_statistics"
             target="_blank"
-            title="Box–Cox transformation - Power transform - Wikipedia"
+            title="Tsallis statistics"
         >
-            Inverse Box–Cox transform
+            Tsallis \( q \)-logarithm
         </a>
     </td>
-    <td>\[ \coxbox{x}{\lambda} \]</td>
+    <td>\[ \qlog{q}{x} \]</td>
     <td>
         \[
             = \begin{cases}
-                (\lambda x + 1)^{1 / \lambda} & \text{if } \lambda \neq 0 \\
-                e^{x} & \text{if } \lambda = 0
+                \displaystyle \ln(x)
+                    & \text{if } q = 1 \\
+                \displaystyle \frac{x^{1 - q} - 1}{1 - q}
+                    & \text{otherwise} \\
             \end{cases}
         \]
     </td>
@@ -1420,7 +1439,7 @@ and constants.
             href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.boxcox.html"
             target="_blank"
         >
-            <code>scipy.special.inv_boxcox</code>
+            <code>scipy.special.boxcox(x, 1 - q)</code>
         </a>
     </td>
 </tr>
