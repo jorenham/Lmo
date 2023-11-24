@@ -22,7 +22,7 @@
       
       
       <link rel="icon" href="../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.10">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.11">
     
     
       
@@ -1188,12 +1188,14 @@ It has one shape parameter <span class="arithmatex">\( \alpha \in \mathbb{R} \)<
 distribution functions:</p>
 <div class="arithmatex">\[
     \begin{align*}
-        F(x) &amp;= e^{-\coxbox{-x}{\alpha}} \\
-        x(F) &amp;= -\boxcox{-\ln(F)}{\alpha}
+        F(x) &amp;= e^{-\qexp{1 - \alpha}{-x}} \\
+        x(F) &amp;= -\qlog{1 - \alpha}{-\ln(F)}
     \end{align*}
 \]</div>
-<p>Here, <span class="arithmatex">\( \boxcox{\cdot}{\alpha} \)</span> is the
-<a href="#def-boxcox">Box-Cox transformation function</a>.</p>
+<p>Here, <span class="arithmatex">\( \qexp{q}{y} \)</span> and <span class="arithmatex">\( \qlog{q}{y} \)</span> are the
+<a href="https://wikipedia.org/wiki/Tsallis_statistics">Tsallis</a>
+<a href="#def-qexp"><span class="arithmatex">\( q \)</span>-exponential</a> and the <a href="#def-qlog"><span class="arithmatex">\( q \)</span>-logarithm</a>,
+respectively.</p>
 <p>An alternative parametrization is sometimes used, e.g. on
 <a href="https://wikipedia.org/wiki/Generalized_extreme_value_distribution">Wikipedia</a>,
 where <span class="arithmatex">\( \xi = -\alpha \)</span>.
@@ -1220,6 +1222,10 @@ The convention that is used here, is the same as in
     \label{eq:lr_gev}
     \end{equation}
 \]</div>
+<p>Note that the GEV is effectively a reparametrized
+<span class="arithmatex">\( q \)</span>-<a href="https://wikipedia.org/wiki/Gumbel_distribution">Gumbel</a>
+<a href="https://wikipedia.org/wiki/Tsallis_distribution">Tsallis distribution</a>, with
+<span class="arithmatex">\( q = 1 - \alpha \)</span>.</p>
 <h3 id="glo">GLO</h3>
 <p>The <em>generalized logistic distribution</em> (GLO), also known as the <a href="https://wikipedia.org/wiki/Shifted_log-logistic_distribution">shifted
 log-logistic distribution
@@ -1228,8 +1234,8 @@ parameter <span class="arithmatex">\( \alpha \in \mathbb{R} \)</span>, is charac
 distribution functions:</p>
 <div class="arithmatex">\[
     \begin{align*}
-        F(x) &amp;= \frac{1}{1 + \coxbox{x}{\alpha}} \\
-        x(F) &amp;= -\boxcox{\frac{1 - F}{F}}{\alpha}
+        F(x) &amp;= \frac{1}{1 + \qexp{1 - \alpha}{x}} \\
+        x(F) &amp;= -\qlog{1 - \alpha}{\frac{1 - F}{F}}
     \end{align*}
 \]</div>
 <p>For <span class="arithmatex">\( -1 &lt; \alpha &lt; 1 \)</span>, the general trimmed L-moments of the GLO are:</p>
@@ -1259,6 +1265,10 @@ distribution functions:</p>
 <p>The corresponding <code>scipy.stats</code> implementation is
 <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.kappa4.html#scipy.stats.kappa4"><code>kappa4</code></a>, with <code>h = -1</code> and <code>k</code> set to <span class="arithmatex">\( \alpha \)</span>;
 <strong>not</strong> <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.genlogistic.html#scipy.stats.genlogistic"><code>genlogistic</code></a>.</p>
+<p>Note that the GLO is effectively a reparametrized
+<span class="arithmatex">\( q \)</span>-<a href="https://wikipedia.org/wiki/Logistic_distribution">logistic</a>
+<a href="https://wikipedia.org/wiki/Tsallis_distribution">Tsallis distribution</a>, with
+<span class="arithmatex">\( q = 1 - \alpha \)</span>.</p>
 <h3 id="gpd">GPD</h3>
 <p>The <a href="https://wikipedia.org/wiki/Generalized_Pareto_distribution"><em>generalized Pareto distribution</em>
 </a> (GPD), with
@@ -1266,8 +1276,8 @@ shape parameter <span class="arithmatex">\( \alpha \in \mathbb{R} \)</span>, has
 distribution functions:</p>
 <div class="arithmatex">\[
     \begin{align*}
-        F(x) &amp;= 1 - 1 / \coxbox{x}{\alpha} \\
-        x(F) &amp;= \boxcox{1 / (1 - F)}{\alpha}
+        F(x) &amp;= 1 - 1 / \qexp{1 - \alpha}{x} \\
+        x(F) &amp;= \qlog{1 - \alpha}{1 / (1 - F)}
     \end{align*}
 \]</div>
 <p>Note that this distribution is standard uniform if <span class="arithmatex">\( \alpha = 1 \)</span>, and
@@ -1312,6 +1322,10 @@ of the L-moments, besides the L-location.</p>
 \]</div>
 <p>See <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.genpareto.html#scipy.stats.genpareto"><code>scipy.stats.genpareto</code></a> for the implementation of
 the GPD.</p>
+<p>Note that the GPD is a reparametrized <a href="https://wikipedia.org/wiki/Q-exponential_distribution"><span class="arithmatex">\( q \)</span>-exponential distribution
+</a>, where
+<span class="arithmatex">\( q = (2 \alpha + 1) / (\alpha + 1) \)</span> and <span class="arithmatex">\( \lambda = 1 / (2 - q) \)</span> s.t.
+<span class="arithmatex">\( \alpha \neq -1 \)</span> and <span class="arithmatex">\( q &lt; 2 \)</span>.</p>
 <h3 id="pareto-type-iv">Pareto Type IV</h3>
 <p>The <a href="https://wikipedia.org/wiki/Pareto_distribution"><em>Pareto Type IV</em></a> has two
 shape parameters <span class="arithmatex">\( \alpha \in \mathbb{R} \)</span> and
@@ -1498,9 +1512,7 @@ the <em>generalized lambda distribution</em>, which has two scale parameters
 <p>Like the Wakeby distribution, the generalized lambda has no closed-form PDF
 or CDF. Instead, it is defined through its PPF:</p>
 <div class="arithmatex">\[
-x(F)
-    = \alpha \boxcox{F}{\beta}
-    - \gamma \boxcox{1 - F}{\delta}
+x(F) = \alpha \qlog{1 - \beta}{F} - \gamma \qlog{1 - \delta}{1 - F}
 \]</div>
 <p>Although its central product moments have no closed-form expression, when
 <span class="arithmatex">\( \beta &gt; -1 \)</span> and <span class="arithmatex">\( \delta &gt; -1 \)</span>, the general trimmed L-moments can be
@@ -1771,22 +1783,24 @@ and constants.</p>
         </a>
     </td>
 </tr>
-<tr id="def-boxcox" class="row-double-top">
+<tr id="def-qexp" class="row-double-top">
     <td>
         <a
-            href="https://wikipedia.org/wiki/Power_transform#Box%E2%80%93Cox_transformation"
+            href="https://wikipedia.org/wiki/Tsallis_statistics"
             target="_blank"
-            title="Box–Cox transformation - Power transform - Wikipedia"
+            title="Tsallis statistics"
         >
-            Box–Cox transform
+            Tsallis \( q \)-exponential
         </a>
     </td>
-    <td>\[ \boxcox{y}{\lambda} \]</td>
+    <td>\[ \qexp{q}{x} \]</td>
     <td>
         \[
             = \begin{cases}
-                (y^\lambda - 1) / \lambda & \text{if } \lambda \neq 0 \\
-                \ln(y) & \text{if } \lambda = 0
+                \displaystyle e^x
+                    & \text{if } q = 1 \\
+                \displaystyle \sqrt[1 - q]{1 + (1 - q) \ x}
+                    & \text{otherwise}
             \end{cases}
         \]
     </td>
@@ -1795,26 +1809,28 @@ and constants.</p>
             href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.boxcox.html"
             target="_blank"
         >
-            <code>scipy.special.boxcox</code>
+            <code>scipy.special.inv_boxcox(x, 1 - q)</code>
         </a>
     </td>
 </tr>
-<tr id="def-coxbox">
+<tr id="def-qlog">
     <td>
         <a
-            href="https://wikipedia.org/wiki/Power_transform#Box%E2%80%93Cox_transformation"
+            href="https://wikipedia.org/wiki/Tsallis_statistics"
             target="_blank"
-            title="Box–Cox transformation - Power transform - Wikipedia"
+            title="Tsallis statistics"
         >
-            Inverse Box–Cox transform
+            Tsallis \( q \)-logarithm
         </a>
     </td>
-    <td>\[ \coxbox{x}{\lambda} \]</td>
+    <td>\[ \qlog{q}{x} \]</td>
     <td>
         \[
             = \begin{cases}
-                (\lambda x + 1)^{1 / \lambda} & \text{if } \lambda \neq 0 \\
-                e^{x} & \text{if } \lambda = 0
+                \displaystyle \ln(x)
+                    & \text{if } q = 1 \\
+                \displaystyle \frac{x^{1 - q} - 1}{1 - q}
+                    & \text{otherwise} \\
             \end{cases}
         \]
     </td>
@@ -1823,7 +1839,7 @@ and constants.</p>
             href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.boxcox.html"
             target="_blank"
         >
-            <code>scipy.special.inv_boxcox</code>
+            <code>scipy.special.boxcox(x, 1 - q)</code>
         </a>
     </td>
 </tr>

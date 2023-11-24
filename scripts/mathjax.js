@@ -10,9 +10,9 @@ window.MathJax = {
             E: "\\mathop{\\mathbb{E}}",
             // Beta function
             B: "\\mathop{\\mathrm{B}}",
-            // Box-Cox transformation, and its inverse
-            boxcox: ["\\rm \\mathcal{P}_{#2}\\left( #1 \\right)", 2],
-            coxbox: ["\\rm \\mathcal{P}^{-1}_{#2}\\left( #1 \\right)", 2],
+            // Tsallis' q-log and q-exp
+            qexp: ["e_{#1}^{#2}", 2],
+            qlog: ["\\ln_{#1}\\left({#2}\\right)", 2],
             // Falling and rising factorials
             ffact: ["\\left( #1 \\right)^{-}_{#2}", 2],
             rfact: ["\\left( #1 \\right)^{+}_{#2}", 2],
