@@ -902,43 +902,6 @@ When \( \alpha > \gamma \), the trimmed L-moments are found to be:
 
 This distribution is currently not implemented in [`scipy.stats`][scipy.stats].
 
-### Kumaraswamy
-
-For [Kumaraswamy's distribution
-](https://wikipedia.org/wiki/Kumaraswamy_distribution) with parameters
-\( \alpha \in \mathbb{R}_{>0} \) and \( \beta \in \mathbb{R}_{>0} \),
-the general solution for the \( r \)th L-moment has been derived by
-[Jones (2009)](https://doi.org/10.1016/j.stamet.2008.04.001). This can be
-extended for the general trimmed L-moments.
-
-The distribution functions are for \( 0 \le x \le 1 \) defined as:
-
-\[
-\begin{align*}
-F(x) &= 1 - (1 - x^\alpha)^\beta \\
-x(F) &= \bigl(1 - (1 - F)^{1/\beta} \bigr)^{1/\alpha}
-\end{align*}
-\]
-
-Its general \( r \)-th trimmed L-moment are:
-
-\[
-    \begin{equation}
-        \tlmoment{s,t}{r} =
-            \beta \
-            \frac{r + s + t}{r}
-            \sum_{k = t}^{r + s + t - 1}
-                (-1)^k
-                \binom{k + r - 1}{k - t}
-                \binom{r + s + t - 1}{k}
-                \B\bigl(1 + 1 / \alpha,\ \beta + k \beta \bigr)
-            \label{eq:lr_kum}
-    \end{equation}
-\]
-
-Unfortunately, the Kumaraswamy distribution is not implemented in
-`scipy.stats`.
-
 ### Burr Type III
 
 The *Burr type III* distribution, also known as the
@@ -1013,6 +976,43 @@ When \( \beta > 1 / \alpha \), the general \( r \)-th trimmed L-moment is:
 The Burr Type XII distribution is implemented in
 [`scipy.stats.burr12`][scipy.stats.burr12], where the shape parameters `c`
 and `d` correspond to  \( \alpha \) and \( \beta \), respectively.
+
+### Kumaraswamy
+
+For [Kumaraswamy's distribution
+](https://wikipedia.org/wiki/Kumaraswamy_distribution) with parameters
+\( \alpha \in \mathbb{R}_{>0} \) and \( \beta \in \mathbb{R}_{>0} \),
+the general solution for the \( r \)th L-moment has been derived by
+[Jones (2009)](https://doi.org/10.1016/j.stamet.2008.04.001). This can be
+extended for the general trimmed L-moments.
+
+The distribution functions are for \( 0 \le x \le 1 \) defined as:
+
+\[
+\begin{align*}
+F(x) &= 1 - (1 - x^\alpha)^\beta \\
+x(F) &= \bigl(1 - (1 - F)^{1/\beta} \bigr)^{1/\alpha}
+\end{align*}
+\]
+
+Its general \( r \)-th trimmed L-moment are:
+
+\[
+    \begin{equation}
+        \tlmoment{s,t}{r} =
+            \beta \
+            \frac{r + s + t}{r}
+            \sum_{k = t}^{r + s + t - 1}
+                (-1)^k
+                \binom{k + r - 1}{k - t}
+                \binom{r + s + t - 1}{k}
+                \B\bigl(1 + 1 / \alpha,\ \beta + k \beta \bigr)
+            \label{eq:lr_kum}
+    \end{equation}
+\]
+
+Unfortunately, the Kumaraswamy distribution is not implemented in
+`scipy.stats`.
 
 ### Wakeby
 
