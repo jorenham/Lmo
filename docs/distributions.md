@@ -865,46 +865,9 @@ Note that the GPD is a reparametrized [\( q \)-exponential distribution
 \( q = (2 \alpha + 1) / (\alpha + 1) \) and \( \lambda = 1 / (2 - q) \) s.t.
 \( \alpha \neq -1 \) and \( q < 2 \).
 
-### Pareto Type IV
+### Burr III / Dagum
 
-The [*Pareto Type IV*](https://wikipedia.org/wiki/Pareto_distribution) has two
-shape parameters \( \alpha \in \mathbb{R} \) and
-\( \gamma \in \mathbb{R}_{>0} \), and scale parameter \( \beta \).
-For \( x \ge 0 \), the CDF and its inverse (the PPF) are
-
-\[
-\begin{align*}
-    F(x)
-        &= 1 - \left(
-            1 + \left(\frac x \beta\right)^{\frac 1 \gamma}
-        \right)^{-\alpha} \\
-    x(F)
-        &= \beta \left(
-            (1 - F)^{-1 / \alpha} - 1
-        \right)^\gamma
-\end{align*}
-\]
-
-When \( \alpha > \gamma \), the trimmed L-moments are found to be:
-
-\[
-    \begin{equation}
-        \tlmoment{s,t}{r}
-            = \frac{\beta \gamma}{r}
-            \sum_{k = t + 1}^{r + s + t}
-                (-1)^{k - t - 1}
-                \binom{r + k - 2}{r + t - 1}
-                \binom{r + s + t}{k}
-                \B(\gamma,\ k \alpha - \gamma)
-            \label{eq:lr_pareto4}
-    \end{equation}
-\]
-
-This distribution is currently not implemented in [`scipy.stats`][scipy.stats].
-
-### Burr Type III
-
-The *Burr type III* distribution, also known as the
+The *Burr III* distribution, also known as the
 [*Dagum distribution*](https://wikipedia.org/wiki/Dagum_distribution), has two
 shape parameters \( \alpha \) and \( \beta \), both restricted to the
 positive reals
@@ -937,23 +900,33 @@ For \( \alpha > 1 \), the general L-moments are:
 \end{equation}
 \]
 
-The Burr Type III distribution is implemented in
+The Burr III distribution is implemented in
 [`scipy.stats.burr`][scipy.stats.burr], where the shape parameters `c` and `d`
 correspond to  \( \alpha \) and \( \beta \), respectively.
+Equivalently, [`scipy.stats.mielke`][scipy.stats.mielke] can be used, by
+setting `k` and `s` to \( \alpha \beta \) and \( \alpha \), respectively.
 
-### Burr Type XII
+The special case where \( \beta = 1 \) is known as the
+[*log-logistic*](https://wikipedia.org/wiki/Log-logistic_distribution)
+distribution
 
-Just like Kumaraswamy's distribution, the
-[*Burr Type XII distribution*](https://wikipedia.org/wiki/Burr_distribution)
+### Burr XII / Pareto IV
+
+The
+[*Burr XII distribution*](https://wikipedia.org/wiki/Burr_distribution)
 has two shape parameters \( \alpha \) and \( \beta \), both restricted to the
-positive reals.
+positive reals. It is also known as the *Singh-Maddala distribution*.
+The alternative parametrization \( \alpha \mapsto 1 / \gamma \), where
+\( \gamma > 0 \), is known as the (standard) type IV
+[*Pareto distribution*](https://wikipedia.org/wiki/Pareto_distribution)
 
-The distribution functions are for \( x > 0 \) defined as:
+
+The distribution functions for \( x > 0 \) are defined as:
 
 \[
 \begin{align*}
-    F(x) &= 1 - (1 - x^\alpha)^{-\beta} \\
-    x(F) &= \bigl(1 - (1 - F)^{-1/\beta} \bigr)^{1/\alpha}
+    F(x) &= 1 - (1 + x^\alpha)^{-\beta} \\
+    x(F) &= \bigl((1 - F)^{-1/\beta} - 1 \bigr)^{1/\alpha}
 \end{align*}
 \]
 
@@ -973,9 +946,19 @@ When \( \beta > 1 / \alpha \), the general \( r \)-th trimmed L-moment is:
 \end{equation}
 \]
 
-The Burr Type XII distribution is implemented in
+This distribution is implemented in
 [`scipy.stats.burr12`][scipy.stats.burr12], where the shape parameters `c`
 and `d` correspond to  \( \alpha \) and \( \beta \), respectively.
+
+The Burr XII and Burr III distributions are related as \( Y = 1 / X \), where
+\( X \) and \( Y \) are random variables with Burr XII \( (\alpha, \beta) \)
+and Burr III \( (1 / \alpha, \beta) \)
+distributions (or vice-versa), respectively.
+
+In the special case where \( \alpha = 1 \) is known as the
+[*Lomax distribution*](https://wikipedia.org/wiki/Lomax_distribution). This
+has been implemented as [scipy.stats.lomax][scipy.stats.lomax], where the
+parameter `c` corresponds to \( \beta \).
 
 ### Kumaraswamy
 
@@ -1024,7 +1007,6 @@ quantile function (PPF) is defined to be
 x(F) =
     \frac \alpha \beta \bigl(1 - (1 - F)^\beta\bigr)
     - \frac \gamma \delta \bigl(1 - (1 - F)^{-\delta}\bigr)
-    + \mu
 \]
 
 Each of the scale- \( \alpha, \gamma \) and shape parameters
