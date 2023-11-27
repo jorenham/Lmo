@@ -307,7 +307,7 @@ exist (in closed form).
         <br>
         <code>pareto</code>
         <br>
-        see eq. \( \eqref{eq:lr_pareto4} \) for \( \lmoment{r} \)
+        see eq. \( \eqref{eq:lr_burr12} \) for \( \lmoment{r} \)
     </td>
     <td>\( \alpha > 0  \)</td>
     <td>
