@@ -806,8 +806,8 @@ distribution functions:
 
 \[
     \begin{align*}
-        F(x) &= 1 - 1 / \qexp{1 - \alpha}{x} \\
-        x(F) &= \qlog{1 - \alpha}{1 / (1 - F)}
+        F(x) &= 1 - \qexp{1 + \alpha}{-x} \\
+        x(F) &= -\qlog{1 + \alpha}{1 - F}
     \end{align*}
 \]
 
