@@ -1,7 +1,7 @@
 window.MathJax = {
     tex: {
         inlineMath: [["\\(", "\\)"]],
-        displayMath: [["\\[", "\\]"]],
+        displayMath: [["\\[", "\\]"], ["$$", "$$"]],
         processEscapes: true,
         processEnvironments: true,
         tags: "ams",
@@ -31,7 +31,6 @@ window.MathJax = {
         }
     },
     options: {
-        // ignoreHtmlClass: ".*",
         processHtmlClass: "arithmatex"
     },
     chtml: {
