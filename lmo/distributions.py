@@ -509,7 +509,7 @@ class kumaraswamy_gen(rv_continuous):  # noqa: N801
         b: float,
         trim: tuple[int, int] | tuple[float, float],
         quad_opts: QuadOptions | None = None,
-    ) -> npt.NDArray[np.float64]:
+    ) -> _ArrF8:
         s, t = trim
         lmbda_r: float | npt.NDArray[np.float64]
         if isinstance(s, float) or isinstance(t, float):
@@ -526,7 +526,9 @@ class kumaraswamy_gen(rv_continuous):  # noqa: N801
             )
             return np.asarray(lmbda_r)
 
-        return np.atleast_1d(_l_moment_kumaraswamy(r, s, t, a, b))
+        return np.atleast_1d(
+            cast(_ArrF8, _l_moment_kumaraswamy(r, s, t, a, b)),
+        )
 
 
 kumaraswamy: Final[rv_continuous] = kumaraswamy_gen(
