@@ -1,6 +1,6 @@
 """Mathematical "special" functions, extending `scipy.special`."""
 
-__all__ = ('fpow', 'gamma2')
+__all__ = ('fpow', 'gamma2', 'harmonic')
 
 from typing import cast, overload
 
@@ -148,3 +148,51 @@ def gamma2(
     )
     res *= cast(float, _special.gamma(a))  # type: ignore
     return res
+
+
+def harmonic(
+    n: npt.ArrayLike,
+    /,
+    out: npt.NDArray[np.float64] | npt.NDArray[np.complex128] | None = None,
+) -> float | complex | npt.NDArray[np.float64] | npt.NDArray[np.complex128]:
+    r"""
+    Harmonic number \( H_n = \sum_{k=1}^{n} 1 / k \), extended for real and
+    complex argument via analytic contunuation.
+
+    Examples:
+        >>> harmonic(0)
+        0.0
+        >>> harmonic(1)
+        1.0
+        >>> harmonic(2)
+        1.5
+        >>> harmonic(42)
+        4.3267...
+        >>> harmonic(np.pi)
+        1.8727...
+        >>> harmonic(-1 / 12)
+        -0.1461...
+        >>> harmonic(1 - 1j)
+        (1.1718...-0.5766...j)
+
+    Args:
+        n: Real- or complex- valued parameter, as array-like or scalar.
+        out: Optional real or complex output array for the results.
+
+    Returns:
+        out: Array or scalar with the value(s) of the function.
+
+    See Also:
+        - [Harmonic number - Wikipedia
+        ](https://wikipedia.org/wiki/Harmonic_number)
+    """
+    _n = np.asanyarray(n)
+
+    _out = cast(
+        npt.NDArray[np.float64] | npt.NDArray[np.complex128],
+        _special.digamma(_n + 1, out),  # type: ignore
+    )
+    _out += np.euler_gamma
+
+    return _out[()] if np.isscalar(n) else _out
+

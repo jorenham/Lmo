@@ -1,15 +1,21 @@
-# pyright: reportIncompatibleMethodOverride=false
+"""Probability distributions, compatible with [`scipy.stats`][scipy.stats]."""
 
-__all__ = ('l_rv_nonparametric',)
+__all__ = (
+    'l_rv_nonparametric',
+    'kumaraswamy',
+)
+
+# pyright: reportIncompatibleMethodOverride=false
 
 import functools
 import math
 import warnings
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from typing import (
     Any,
     Final,
     SupportsIndex,
+    TypeAlias,
     TypeVar,
     cast,
 )
@@ -17,6 +23,8 @@ from typing import (
 import numpy as np
 import numpy.polynomial as npp
 import numpy.typing as npt
+import scipy.special as sc  # type: ignore
+from scipy.stats._distn_infrastructure import _ShapeInfo  # type: ignore
 from scipy.stats.distributions import (  # type: ignore
     rv_continuous,
 )
@@ -27,10 +35,13 @@ from ._utils import (
     clean_trim,
 )
 from .diagnostic import l_ratio_bounds
+from .special import harmonic
+from .theoretical import l_moment_from_cdf
 from .typing import (
     AnyTrim,
     FloatVector,
     PolySeries,
+    QuadOptions,
 )
 
 T = TypeVar('T')
@@ -41,6 +52,8 @@ V = TypeVar('V', bound=float | npt.NDArray[np.float64])
 
 _F_EPS: Final[np.float64] = np.finfo(float).eps
 
+
+# Non-parametric
 
 def _check_lmoments(l_r: npt.NDArray[np.floating[Any]], s: float, t: float):
     if (n := len(l_r)) < 2:
@@ -82,7 +95,6 @@ def _ppf_poly_series(
         kind=npp.Legendre,
         symbol='q',
     )
-
 
 class l_rv_nonparametric(rv_continuous):  # noqa: N801
     r"""
@@ -356,7 +368,9 @@ class l_rv_nonparametric(rv_continuous):  # noqa: N801
                 to the provided `l_moments`.
 
         Returns:
-            A fitted [`l_rv_nonparametric`][lmo.l_rv_nonparametric] instance.
+            A fitted
+            [`l_rv_nonparametric`][lmo.distributions.l_rv_nonparametric]
+            instance.
 
         Todo:
             - Optimal `rmax` selection (the error appears to be periodic..?)
@@ -387,3 +401,158 @@ class l_rv_nonparametric(rv_continuous):  # noqa: N801
 
         return cls(l_r, trim=_trim, a=a, b=b)
 
+
+# Parametric
+
+
+_ArrF8: TypeAlias = npt.NDArray[np.float64]
+
+def _l_moment_kumaraswamy_single(
+    r: int,
+    s: int,
+    t: int,
+    a: float,
+    b: float,
+) -> float:
+    if r == 0:
+        return 1.0
+
+    k = np.arange(t + 1, r + s + t + 1)
+    return (
+        (-1)**(k - 1)
+        * cast(_ArrF8, sc.comb(r + k - 2, r + t - 1))  # type: ignore
+        * cast(_ArrF8, sc.comb(r + s + t, k))  # type: ignore
+        * cast(_ArrF8, sc.beta(1 / a, 1 + k * b)) / a  # type: ignore
+    ).sum() / r
+
+_l_moment_kumaraswamy = np.vectorize(
+    _l_moment_kumaraswamy_single,
+    otypes=[float],
+    excluded={1, 2, 3, 4},
+)
+
+
+class kumaraswamy_gen(rv_continuous):  # noqa: N801
+    def _shape_info(self) -> Sequence[_ShapeInfo]:
+        ia = _ShapeInfo('a', False, (0, np.inf), (False, False))
+        ib = _ShapeInfo('b', False, (0, np.inf), (False, False))
+        return [ia, ib]
+
+    def _pdf(
+        self,
+        x: npt.NDArray[np.float64],
+        a: float,
+        b: float,
+    ) -> npt.NDArray[np.float64]:
+        return a * b * x**(a - 1) * (1 - x**a)**(b - 1)
+
+    def _logpdf(
+        self,
+        x: npt.NDArray[np.float64],
+        a: float,
+        b: float,
+    ) -> npt.NDArray[np.float64]:
+        return (
+            np.log(a * b)
+            + (a - 1) * np.log(x)
+            + (b - 1) * np.log(1 - x**a)
+        )
+
+    def _cdf(
+        self,
+        x: npt.NDArray[np.float64],
+        a: float,
+        b: float,
+    ) -> npt.NDArray[np.float64]:
+        return 1 - (1 - x**a)**b
+
+    def _sf(
+        self,
+        x: npt.NDArray[np.float64],
+        a: float,
+        b: float,
+    ) -> npt.NDArray[np.float64]:
+        return (1 - x**a)**(b - 1)
+
+    def _isf(
+        self,
+        q: npt.NDArray[np.float64],
+        a: float,
+        b: float,
+    ) -> npt.NDArray[np.float64]:
+        return (1 - q**(1 / b))**(1 / a)
+
+    def _ppf(
+        self,
+        q: npt.NDArray[np.float64],
+        a: float,
+        b: float,
+    ) -> npt.NDArray[np.float64]:
+        return (1 - (1 - q)**(1 / b))**(1 / a)
+
+    def _entropy(self, a: float, b: float) -> float:
+        # https://en.wikipedia.org/wiki/Kumaraswamy_distribution
+        return (1 - 1 / b) + (1 - 1 / a) * harmonic(b) - np.log(a * b)
+
+    def _munp(
+        self,
+        n: int,
+        a: float,
+        b: float,
+    ) -> float:
+        return b * cast(float, sc.beta(1 + n / a, b))  # type: ignore
+
+    def _l_moment(
+        self,
+        r: npt.NDArray[np.int64],
+        a: float,
+        b: float,
+        trim: tuple[int, int] | tuple[float, float],
+        quad_opts: QuadOptions | None = None,
+    ) -> _ArrF8:
+        s, t = trim
+        lmbda_r: float | npt.NDArray[np.float64]
+        if isinstance(s, float) or isinstance(t, float):
+            lmbda_r = cast(
+                float | npt.NDArray[np.float64],
+                l_moment_from_cdf(
+                    functools.partial(self._cdf, a=a, b=b), # type: ignore
+                    r,
+                    trim=trim,
+                    support=(0, 1),
+                    ppf=functools.partial(self._ppf, a=a, b=b), # type: ignore
+                    quad_opts=quad_opts,
+                ),  # type: ignore
+            )
+            return np.asarray(lmbda_r)
+
+        return np.atleast_1d(
+            cast(_ArrF8, _l_moment_kumaraswamy(r, s, t, a, b)),
+        )
+
+
+kumaraswamy: Final[rv_continuous] = kumaraswamy_gen(
+    a=0.0,
+    b=1.0,
+    name='kumaraswamy',
+)
+r"""
+A Kumaraswamy random variable, similar to
+[`scipy.stats.beta`][scipy.stats.beta].
+
+The probability density function for
+[`kumaraswamy`][lmo.distributions.kumaraswamy] is:
+
+\[
+    f(x, a, b) = a x^{a - 1} b \left(1 - x^a\right)^{b - 1}
+\]
+
+for \( 0 < x < 1,\ a > 0,\ b > 0 \).
+
+[`kumaraswamy`][kumaraswamy] takes \( a \) and \( b \) as shape parameters.
+
+See Also:
+    - [Kumaraswamy distribution - Wikipedia
+    ](https://wikipedia.org/wiki/Kumaraswamy_distribution)
+
+"""

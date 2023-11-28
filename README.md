@@ -41,8 +41,6 @@ So Lmo is as fast as sorting your samples (in terms of time-complexity).
 - Fast estimation of L-*co*moment matrices from your multidimensional data
   or multivariate distribution.
 - Goodness-of-fit test, using L-moment or L-moment ratio's.
-- Non-parametric estimation of continuous distributions
-  with `lmo.l_rv_nonparametric`
 - Exact (co)variance structure of the sample- and population L-moments.
 - Theoretical & empirical influence functions of L-moments & L-ratio's.
 - Complete [docs](https://jorenham.github.io/lmo/), including detailed API
