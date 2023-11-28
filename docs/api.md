@@ -19,7 +19,21 @@
       filters: ["^l_co"]
       heading_level: 4
 
-### `scipy.stats` extensions
+### Distributions
+
+::: lmo.distributions
+    options:
+      heading_level: 4
+
+### Statistical test and tools
+
+::: lmo.diagnostic
+    options:
+      heading_level: 4
+
+## Third party integration
+
+### `scipy.stats`
 
 ::: lmo.contrib.scipy_stats
     options:
@@ -28,7 +42,7 @@
       - l_rv_generic
       heading_level: 4
 
-### `pandas` extensions (optional)
+### `pandas` (optional)
 
 ::: lmo.contrib.pandas
     options:
@@ -36,20 +50,6 @@
       members:
       - Series
       - DataFrame
-      heading_level: 4
-
-### Distributions
-
-::: lmo
-    options:
-      members:
-      - l_rv_nonparametric
-      heading_level: 4
-
-### Statistical test and tools
-
-::: lmo.diagnostic
-    options:
       heading_level: 4
 
 ## Low-level API

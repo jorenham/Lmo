@@ -10,12 +10,12 @@ __all__ = (
 import functools
 import math
 import warnings
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from typing import (
     Any,
     Final,
-    Sequence,
     SupportsIndex,
+    TypeAlias,
     TypeVar,
     cast,
 )
@@ -29,18 +29,19 @@ from scipy.stats.distributions import (  # type: ignore
     rv_continuous,
 )
 
-from .special import harmonic
-
 from ._poly import jacobi_series, roots
 from ._utils import (
     clean_order,
     clean_trim,
 )
 from .diagnostic import l_ratio_bounds
+from .special import harmonic
+from .theoretical import l_moment_from_cdf
 from .typing import (
     AnyTrim,
     FloatVector,
     PolySeries,
+    QuadOptions,
 )
 
 T = TypeVar('T')
@@ -403,6 +404,34 @@ class l_rv_nonparametric(rv_continuous):  # noqa: N801
 
 # Parametric
 
+
+_ArrF8: TypeAlias = npt.NDArray[np.float64]
+
+def _l_moment_kumaraswamy_single(
+    r: int,
+    s: int,
+    t: int,
+    a: float,
+    b: float,
+) -> float:
+    if r == 0:
+        return 1.0
+
+    k = np.arange(t + 1, r + s + t + 1)
+    return (
+        (-1)**(k - 1)
+        * cast(_ArrF8, sc.comb(r + k - 2, r + t - 1))  # type: ignore
+        * cast(_ArrF8, sc.comb(r + s + t, k))  # type: ignore
+        * cast(_ArrF8, sc.beta(1 / a, 1 + k * b)) / a  # type: ignore
+    ).sum() / r
+
+_l_moment_kumaraswamy = np.vectorize(
+    _l_moment_kumaraswamy_single,
+    otypes=[float],
+    excluded={1, 2, 3, 4},
+)
+
+
 class kumaraswamy_gen(rv_continuous):  # noqa: N801
     r"""
     A Kumaraswamy random variable, similar to [`beta`][scipy.stats.beta].
@@ -492,14 +521,31 @@ class kumaraswamy_gen(rv_continuous):  # noqa: N801
     ) -> float:
         return b * cast(float, sc.beta(1 + n / a, b))  # type: ignore
 
-    # def _l_moment(
-    #     self,
-    #     r: npt.NDArray[np.int64],
-    #     a: float,
-    #     b: float,
-    #     trim: tuple[int, int],
-    # ) -> npt.NDArray[np.float64]:
-    #     ...
+    def _l_moment(
+        self,
+        r: npt.NDArray[np.int64],
+        a: float,
+        b: float,
+        trim: tuple[int, int] | tuple[float, float],
+        quad_opts: QuadOptions | None = None,
+    ) -> npt.NDArray[np.float64]:
+        s, t = trim
+        lmbda_r: float | npt.NDArray[np.float64]
+        if isinstance(s, float) or isinstance(t, float):
+            lmbda_r = cast(
+                float | npt.NDArray[np.float64],
+                l_moment_from_cdf(
+                    functools.partial(self._cdf, a=a, b=b), # type: ignore
+                    r,
+                    trim=trim,
+                    support=(0, 1),
+                    ppf=functools.partial(self._ppf, a=a, b=b), # type: ignore
+                    quad_opts=quad_opts,
+                ),  # type: ignore
+            )
+            return np.asarray(lmbda_r)
+
+        return np.atleast_1d(_l_moment_kumaraswamy(r, s, t, a, b))
 
 
 kumaraswamy: Final[rv_continuous] = kumaraswamy_gen(
