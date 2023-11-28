@@ -60,15 +60,15 @@
       - l_weights
       heading_level: 3
 
-### `inference`
+### `constants`
 
-::: lmo.inference
+::: lmo.constants
     options:
       heading_level: 4
 
-### `theoretical`
+### `inference`
 
-::: lmo.theoretical
+::: lmo.inference
     options:
       heading_level: 4
 
@@ -79,14 +79,26 @@
       heading_level: 4
       show_root_full_path: true
 
-### Order statistics
+### `ostats`
 
 ::: lmo.ostats
     options:
       heading_level: 4
 
-### β PWMs
+### `pwm_beta`
 
 ::: lmo.pwm_beta
+    options:
+      heading_level: 4
+
+### `special`
+
+::: lmo.special
+    options:
+      heading_level: 4
+
+### `theoretical`
+
+::: lmo.theoretical
     options:
       heading_level: 4
