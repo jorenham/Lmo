@@ -1,6 +1,6 @@
 """Mathematical "special" functions, extending `scipy.special`."""
 
-__all__ = ('gamma2',)
+__all__ = ('fpow', 'gamma2')
 
 from typing import cast, overload
 
