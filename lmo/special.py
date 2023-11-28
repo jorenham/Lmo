@@ -153,8 +153,8 @@ def gamma2(
 def harmonic(
     n: npt.ArrayLike,
     /,
-    out: npt.NDArray[np.float64 | np.float128] | None = None,
-) -> float | complex | npt.NDArray[np.float64 | np.float128]:
+    out: npt.NDArray[np.float64] | npt.NDArray[np.complex128] | None = None,
+) -> float | complex | npt.NDArray[np.float64] | npt.NDArray[np.complex128]:
     r"""
     Harmonic number \( H_n = \sum_{k=1}^{n} 1 / k \), extended for real and
     complex argument via analytic contunuation.
@@ -189,7 +189,7 @@ def harmonic(
     _n = np.asanyarray(n)
 
     _out = cast(
-        npt.NDArray[np.float64 | np.float128],
+        npt.NDArray[np.float64] | npt.NDArray[np.complex128],
         _special.digamma(_n + 1, out),  # type: ignore
     )
     _out += np.euler_gamma
