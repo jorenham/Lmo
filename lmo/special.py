@@ -12,10 +12,79 @@ from .typing import AnyNDArray, AnyScalar
 
 
 @overload
+def fpow(
+    x: AnyScalar,
+    n: AnyScalar,
+    out: None = ...,
+) -> float: ...
+
+@overload
+def fpow(
+    x: AnyNDArray[np.generic],
+    n: npt.ArrayLike,
+    out: npt.NDArray[np.float64] | None = ...,
+) -> npt.NDArray[np.float64]: ...
+
+@overload
+def fpow(
+    x: npt.ArrayLike,
+    n: AnyNDArray[np.generic],
+    out: npt.NDArray[np.float64] | None = ...,
+) -> npt.NDArray[np.float64]: ...
+
+@overload
+def fpow(
+    x: npt.ArrayLike,
+    n: npt.ArrayLike,
+    out: npt.NDArray[np.float64],
+) -> npt.NDArray[np.float64]: ...
+
+@overload
+def fpow(
+    x: npt.ArrayLike,
+    n: npt.ArrayLike,
+    out: npt.NDArray[np.float64] | None = ...,
+) -> float | npt.NDArray[np.float64]: ...
+
+def fpow(
+    x: npt.ArrayLike,
+    n: npt.ArrayLike,
+    out: npt.NDArray[np.float64] | None = None,
+) -> float | npt.NDArray[np.float64]:
+    r"""
+    Factorial power, or falling factorial.
+
+    It is defined as
+
+    \[
+        \ffact{x}{n} = \frac{\Gamma(x + 1)}{\Gamma(x - n + 1)}
+    \]
+
+    Args:
+        x: Real-valued array-like or scalar.
+        n: Real valued array-like or scalar.
+        out: Optional output array for the function results
+
+    Returns:
+        out: Array or scalar with the value(s) of the function.
+
+    See Also:
+        - [`scipy.special.poch`][scipy.special.poch] -- the rising factorial
+    """
+    _x, _n = np.asanyarray(x), np.asanyarray(n)
+    res = cast(
+        npt.NDArray[np.float64],
+        _special.poch(_x - _n + 1, _n, out=out),  # type: ignore
+    )
+    if res.ndim == 0 and np.isscalar(x) and np.isscalar(n):
+        return res[()]
+    return res
+
+@overload
 def gamma2(
     a: float,
     x: AnyScalar,
-    out: npt.NDArray[np.float64] | None = ...,
+    out: None = ...,
 ) -> float: ...
 
 @overload
@@ -23,6 +92,13 @@ def gamma2(
     a: float,
     x: AnyNDArray[np.generic],
     out: npt.NDArray[np.float64] | None = ...,
+) -> npt.NDArray[np.float64]: ...
+
+@overload
+def gamma2(
+    a: float,
+    x: npt.ArrayLike,
+    out: npt.NDArray[np.float64],
 ) -> npt.NDArray[np.float64]: ...
 
 @overload
