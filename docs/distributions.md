@@ -1041,13 +1041,12 @@ Its general \( r \)-th trimmed L-moment are:
 \[
     \begin{equation}
         \tlmoment{s,t}{r} =
-            \beta \
-            \frac{r + s + t}{r}
-            \sum_{k = t}^{r + s + t - 1}
-                (-1)^k
-                \binom{k + r - 1}{k - t}
-                \binom{r + s + t - 1}{k}
-                \B\bigl(1 + 1 / \alpha,\ \beta + k \beta \bigr)
+            \frac{1}{r}
+            \sum_{k = t + 1}^{r + s + t}
+                (-1)^{k - 1}
+                \binom{r + k - 2}{r + t - 1}
+                \binom{r + s + t}{k}
+                \frac{\B\bigl(1 / \alpha,\ 1 + k \beta \bigr)}{\alpha}
             \label{eq:lr_kum}
     \end{equation}
 \]
