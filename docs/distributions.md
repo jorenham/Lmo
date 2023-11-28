@@ -1232,12 +1232,13 @@ and constants.
         <td>
             $$
             \begin{align\*}
-                &= \prod_{k=0}^{n-1} (x - k) \\\\
-                &= x \times (x - 1) \times \ldots \times (x - n + 1)
+                &= \frac{\Gamma(x + 1)}{\Gamma(x - n + 1)} \\\\
+                &= \prod_{k=0}^{n-1} (x - k)
+                    \quad (\text{if } n \in \mathbb{n})
             \end{align\*}
             $$
         </td>
-        <td></td>
+        <td>[`lmo.special.fpow`][lmo.special.fpow]</td>
     </tr>
     <tr id="def-rising">
         <td>
@@ -1248,8 +1249,9 @@ and constants.
         <td>
             $$
             \begin{align\*}
-                &= \prod_{k=0}^{n-1} (x + k) \\\\
-                &= x \times (x + 1) \times \ldots \times (x + n - 1)
+                &= \frac{\Gamma(x + n)}{\Gamma(x)} \\\\
+                &= \prod_{k=0}^{n-1} (x + k)
+                    \quad (\text{if } n \in \mathbb{n})
             \end{align\*}
             $$
         </td>
