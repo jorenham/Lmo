@@ -91,7 +91,7 @@ exist (in closed form).
     </td>
     <td>\( 0 \)</td>
     <td>
-        \[ 30 \ \frac{\arctan{\sqrt 2}}{\pi} - 9 \]
+        \[ 30 \ \frac{\theta_m}{\pi} - 9 \]
         \( \approx 0.1226 \)
     </td>
 </tr>
@@ -224,6 +224,33 @@ exist (in closed form).
     <td></td>
     <td>\( 1 \)</td>
     <td>\[ \frac 1 2 \]</td>
+    <td>
+        \[ \frac 1 3 \]
+        \( = 0.3\overline{3}\dots \)
+    </td>
+    <td>
+        \[ \frac 1 6 \]
+        \( = 0.16\overline{6}\dots \)
+    </td>
+</tr>
+<tr>
+    <td>
+        <a
+            href="https://wikipedia.org/wiki/Half-normal_distribution"
+            target="_blank"
+            title="Half-normal distribution - Wikipedia"
+        >
+            Half-normal
+        </a>
+        <br>
+        <code>halfnorm</code>
+    </td>
+    <td></td>
+    <td>\( 1 \)</td>
+    <td>
+        \[ \sqrt 2 - 1 \]<br>
+        \( \approx 0.4142 \)
+    </td>
     <td>
         \[ \frac 1 3 \]
         \( = 0.3\overline{3}\dots \)
@@ -379,7 +406,7 @@ symmetric trimming of order 1, i.e. `trim=(1, 1)`.
         \[
             \frac{6}{\sqrt \pi} \left(
                 1
-                - 3 \frac{\arctan{\sqrt 2}}{\pi}
+                - 3 \frac{\theta_m}{\pi}
             \right)
         \]
         \( \approx 0.2970 \)
@@ -1138,357 +1165,212 @@ When \( \alpha = \gamma \) and \( \beta = \delta \), this is the
 An overview of the (non-obvious) mathematical notation of special functions
 and constants.
 
-<table>
-<thead>
+<table markdown="span">
     <tr>
         <th>Name</th>
         <th>Notation</th>
         <th>Definition</th>
         <th>Python</th>
     </tr>
-</thead>
-<tr id="const-euler">
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Euler-Mascheroni_constant"
-            target="_blank"
-            title="Euler's constant"
-        >
-            Euler–Mascheroni constant
-        </a>
-    </td>
-    <td>\[ \gamma_e \]</td>
-    <td>
-        \[
-            \begin{align*}
+    <tr id="const-euler">
+        <td>
+            [Euler–Mascheroni constant
+            ](https://wikipedia.org/wiki/Euler-Mascheroni_constant)
+        </td>
+        <td>\( \gamma_e \)</td>
+        <td>
+            $$
+            \begin{align\*}
                 &= \int_1^\infty
                     \left(
                         \frac{1}{\lfloor x \rfloor} - \frac 1 x
                     \right) \
-                    \mathrm{d} x \\
-                &= \lim_{x \to 0} \left( \frac 1 x - \Gamma(x) \right) \\
+                    \mathrm{d} x \\\\
+                &= \lim_{x \to 0} \left( \frac 1 x - \Gamma(x) \right) \\\\
                 &\approx 0.5772 \vphantom{\frac 1 1}
-            \end{align*}
-        \]
-    </td>
-    <td>
-        <a
-            href="https://numpy.org/doc/stable/reference/constants.html#numpy.euler_gamma"
-            target="_blank"
-        >
-            <code>numpy.euler_gamma</code>
-        </a>
-    </td>
-</tr>
-
-<tr id="def-factorial" class="row-double-top">
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Factorial"
-            target="_blank"
-            title="Factorial - Wikipedia"
-        >
-            Factorial
-        </a>
-    </td>
-    <td>\[ n! \vphantom{\prod_{k=1}^n k} \]</td>
-    <td>
-        \[
-            \begin{align*}
-                &= \prod_{k=1}^n k \\
-                &= \underbrace
-                    {1 \times 2 \times \ldots \times n}
-                    _{n{\text{ factors}}}
-            \end{align*}
-        \]
-    </td>
-    <td>
-        <a
-            href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.factorial.html"
-            target="_blank"
-        >
-            <code>scipy.special.factorial</code>
-        </a>
-    </td>
-</tr>
-<tr id="def-falling">
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Falling_and_rising_factorials"
-            target="_blank"
-            title="Falling and rising factorials - Wikipedia"
-        >
-            Falling factorial
-        </a>
-    </td>
-    <!-- <td>\[ x^{\underline{n}} \]</td> -->
-    <td>\[ \ffact{x}{n} \]</td>
-    <td>
-        \[
-            \begin{align*}
-                &= \prod_{k=0}^{n-1} (x - k) \\
-                &= \underbrace
-                    {x \ (x - 1) \ldots (x - n + 1)}
-                    _{n{\text{ factors}}}
-            \end{align*}
-        \]
-    </td>
-    <td></td>
-</tr>
-<tr id="def-rising">
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Falling_and_rising_factorials"
-            target="_blank"
-            title="Falling and rising factorials - Wikipedia"
-        >
-            Rising factorial
-        </a>
-    </td>
-    <!-- <td>\[ x^{\overline{n}} \]</td> -->
-    <td>\[ \rfact{x}{n} \]</td>
-    <td>
-        \[
-            \begin{align*}
-                &= \prod_{k=0}^{n-1} (x + k) \\
-                &= \underbrace
-                    {x \ (x + 1) \ldots (x + n - 1)}
-                    _{n{\text{ factors}}}
-            \end{align*}
-        \]
-    </td>
-    <td>
-        <a
-            href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.poch.html"
-            target="_blank"
-        >
-            <code>scipy.special.poch</code>
-        </a>
-    </td>
-</tr>
-<tr id="def-binom">
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Binomial_coefficient"
-            target="_blank"
-            title="Binomial coefficient - Wikipedia"
-        >
-            Binomial coefficient
-        </a>
-    </td>
-    <td>\[ \binom{n}{k} \]</td>
-    <td>
-        \[
-            \begin{align*}
-                &= \frac{n!}{k! \ (n - k)!} \\
+            \end{align\*}
+            $$
+        </td>
+        <td>[`numpy.euler_gamma`][numpy.euler_gamma]</td>
+    </tr>
+    <tr id="const-theta_m">
+        <td>
+            [Magic angle](https://wikipedia.org/wiki/Magic_angle)
+        </td>
+        <td>\( \theta_m \)</td>
+        <td>
+            $$
+            \begin{align\*}
+                &= \arctan \left( \sqrt 2 \right) \\\\
+                &= \arccos \left( 1 / \sqrt 3 \right)
+            \end{align\*}
+            $$
+        </td>
+        <td>[`lmo.constants.theta_m`][lmo.constants.theta_m]</td>
+    </tr>
+    <tr id="def-factorial" class="row-double-top">
+        <td>
+            [Factorial](https://wikipedia.org/wiki/Factorial)
+        </td>
+        <td>$$ n! \vphantom{\prod_{k=1}^n k} $$</td>
+        <td>
+            $$
+            \begin{align\*}
+                &= \prod_{k=1}^n k \\\\
+                &= 1 \times 2 \times \ldots \times n
+            \end{align\*}
+            $$
+        </td>
+        <td>[`scipy.special.factorial`][scipy.special.factorial]</td>
+    </tr>
+    <tr id="def-falling">
+        <td>
+            [Falling factorial
+            ](https://wikipedia.org/wiki/Falling_and_rising_factorials)
+        </td>
+        <td>\( \ffact{x}{n} \)</td>
+        <td>
+            $$
+            \begin{align\*}
+                &= \frac{\Gamma(x + 1)}{\Gamma(x - n + 1)} \\\\
+                &= \prod_{k=0}^{n-1} (x - k)
+                    \quad (\text{if } n \in \mathbb{n})
+            \end{align\*}
+            $$
+        </td>
+        <td>[`lmo.special.fpow`][lmo.special.fpow]</td>
+    </tr>
+    <tr id="def-rising">
+        <td>
+            [Rising factorial
+            ](https://wikipedia.org/wiki/Falling_and_rising_factorials)
+        </td>
+        <td>\( \rfact{x}{n} \)</td>
+        <td>
+            $$
+            \begin{align\*}
+                &= \frac{\Gamma(x + n)}{\Gamma(x)} \\\\
+                &= \prod_{k=0}^{n-1} (x + k)
+                    \quad (\text{if } n \in \mathbb{n})
+            \end{align\*}
+            $$
+        </td>
+        <td>[`scipy.special.poch`][scipy.special.poch]</td>
+    </tr>
+    <tr id="def-binom">
+        <td>
+            [Binomial coefficient
+            ](https://wikipedia.org/wiki/Binomial_coefficient)
+        </td>
+        <td>$$ \binom n k $$</td>
+        <td>
+            $$
+            \begin{align\*}
+                &= \frac{n!}{k! \ (n - k)!} \\\\
                 &= \frac{\ffact{n}{k}}{k!}
-            \end{align*}
-        \]
-    </td>
-    <td>
-        <a
-            href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.comb.html"
-            target="_blank"
-        >
-            <code>scipy.special.comb</code>
-        </a>
-    </td>
-</tr>
-
-<tr id="def-gamma" class="row-double-top">
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Gamma_function"
-            target="_blank"
-            title="Gamma function - Wikipedia"
-        >
-            Gamma function
-        </a>
-    </td>
-    <td>\[ \Gamma(z) \]</td>
-    <td>\[ = \int_0^\infty t^{z-1} e^{-t} \, \mathrm{d} t \]</td>
-    <td>
-        <a
-            href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.gamma.html"
-            target="_blank"
-        >
-            <code>scipy.special.gamma</code>
-        </a>
-    </td>
-</tr>
-<tr id="def-gammainc" class="row-double-top">
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Incomplete_gamma_function"
-            target="_blank"
-            title="Incomplete gamma function - Wikipedia"
-        >
-            Incomplete gamma function
-        </a>
-    </td>
-    <td>\[ \Gamma(s,\ z) \]</td>
-    <td>\[ = \int_z^\infty t^{s - 1} e^{-t} \, \mathrm{d} t \]</td>
-    <td>
-        <a
-            href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.gammaincc.html"
-            target="_blank"
-        >
-            <code>
-                scipy.special.gamma(s) * scipy.special.gammaincc(s, z)
-            <code>
-        </a>
-    </td>
-</tr>
-<tr id="def-digamma">
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Digamma_function"
-            target="_blank"
-            title="Digamma function - Wikipedia"
-        >
-            Digamma function
-        </a>
-    </td>
-    <td>\[ \psi(z) \]</td>
-    <td>\[ = \frac{\mathrm{d}}{\mathrm{d}z} \ln \Gamma(z) \]</td>
-    <td>
-        <a
-            href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.digamma.html"
-            target="_blank"
-        >
-            <code>scipy.special.digamma</code>
-        </a>
-    </td>
-</tr>
-<tr id="def-beta">
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Beta_function"
-            target="_blank"
-            title="Beta function - Wikipedia"
-        >
-            Beta function
-        </a>
-    </td>
-    <td>\[ \B(z_1,\ z_2) \]</td>
-    <td>\[ = \frac{\Gamma(z_1) \Gamma(z_2)}{\Gamma(z_1 + z_2)} \]</td>
-    <td>
-        <a
-            href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.beta.html"
-            target="_blank"
-        >
-            <code>scipy.special.beta</code>
-        </a>
-    </td>
-</tr>
-<tr id="def-zeta">
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Riemann_zeta_function"
-            target="_blank"
-            title="Riemann zeta function - Wikipedia"
-        >
-            Riemann zeta function
-        </a>
-    </td>
-    <td>\[ \zeta(z) \vphantom{\sum_{n = 1}^{\infty}} \]</td>
-    <td>\[ = \sum_{n = 1}^{\infty} n^{-z} \]</td>
-    <td>
-        <a
-            href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.zeta.html"
-            target="_blank"
-        >
-            <code>scipy.special.zeta</code>
-        </a>
-    </td>
-</tr>
-<tr id="def-jacobi" class="row-double-top">
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Jacobi_polynomials"
-            target="_blank"
-            title="Jacobi polynomials"
-        >
-            Jacobi polynomial
-        </a>
-    </td>
-    <td>\[ \jacobi{n}{\alpha}{\beta}{x} \]</td>
-    <td>
-        \[
+            \end{align\*}
+            $$
+        </td>
+        <td>[`scipy.special.comb`][scipy.special.comb]</td>
+    </tr>
+    <tr id="def-gamma" class="row-double-top">
+        <td>
+            [Gamma function](https://wikipedia.org/wiki/Gamma_function)
+        </td>
+        <td>\( \Gamma(z) \)</td>
+        <td>\( = \int_0^\infty t^{z-1} e^{-t} \, \mathrm{d} t \)</td>
+        <td>[`scipy.special.gamma`][scipy.special.gamma]</td>
+    </tr>
+    <tr id="def-gammainc" class="row-double-top">
+        <td>
+            [Incomplete Gamma function
+            ](https://wikipedia.org/wiki/Incomplete_gamma_function)
+        </td>
+        <td>\( \Gamma(a,\ x) \)</td>
+        <td>\( = \int_x^\infty t^{a - 1} e^{-t} \, \mathrm{d} t \)</td>
+        <td>[`lmo.special.gamma2`][lmo.special.gamma2]</td>
+    </tr>
+    <tr id="def-digamma">
+        <td>
+            [Digamma function](https://wikipedia.org/wiki/Digamma_function)
+        </td>
+        <td>\( \psi(z) \)</td>
+        <td>
+            $$
+            = \frac{\mathrm{d}}{\mathrm{d}z} \ln \Gamma(z)
+            $$
+        </td>
+        <td>[`scipy.special.digamma`][scipy.special.digamma]</td>
+    </tr>
+    <tr id="def-beta">
+        <td>
+            [Beta function](https://wikipedia.org/wiki/Beta_function)
+        </td>
+        <td>\( \B(x,\ y) \)</td>
+        <td>
+            $$
+            = \frac{\Gamma(x) \Gamma(y)}{\Gamma(x + y)}
+            $$
+        </td>
+        <td>[`scipy.special.beta`][scipy.special.beta]</td>
+    </tr>
+    <tr id="def-zeta">
+        <td>
+            [Riemann zeta function
+            ](https://wikipedia.org/wiki/Riemann_zeta_function)
+        </td>
+        <td>\( \zeta(z) \)</td>
+        <td>$$ = \sum_{n = 1}^{\infty} n^{-z} $$</td>
+        <td>[`scipy.special.zeta`][scipy.special.zeta]</td>
+    </tr>
+    <tr id="def-jacobi" class="row-double-top">
+        <td>
+            [Jacobi polynomial](https://wikipedia.org/wiki/Jacobi_polynomials)
+        </td>
+        <td>\( \jacobi{n}{\alpha}{\beta}{x} \)</td>
+        <td>
+            $$
             = \frac{1}{2^n} \sum_{k=0}^n
                 \binom{n + \alpha}{k}
                 \binom{n + \beta}{n - k}
                 (x + 1)^{n + k}
                 (x - 1)^{n - k}
-        \]
-    </td>
-    <td>
-        <a
-            href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.eval_jacobi.html"
-            target="_blank"
-        >
-            <code>scipy.special.eval_jacobi</code>
-        </a>
-    </td>
-</tr>
-<tr id="def-qexp" class="row-double-top">
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Tsallis_statistics"
-            target="_blank"
-            title="Tsallis statistics"
-        >
-            Tsallis \( q \)-exponential
-        </a>
-    </td>
-    <td>\[ \qexp{q}{x} \]</td>
-    <td>
-        \[
+            $$
+        </td>
+        <td>[`scipy.special.eval_jacobi`][scipy.special.eval_jacobi]</td>
+    </tr>
+    <tr id="def-qexp" class="row-double-top">
+        <td>
+            [*q*-exponential](https://wikipedia.org/wiki/Tsallis_statistics)
+        </td>
+        <td>\( \qexp{1 - q}{x} \)</td>
+        <td>
+            $$
             = \begin{cases}
                 \displaystyle e^x
-                    & \text{if } q = 1 \\
-                \displaystyle \sqrt[1 - q]{1 + (1 - q) \ x}
+                    & \text{if } q = 0 \\\\
+                \displaystyle (1 + q x)^{1 / q}
                     & \text{otherwise}
             \end{cases}
-        \]
-    </td>
-    <td>
-        <a
-            href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.boxcox.html"
-            target="_blank"
-        >
-            <code>scipy.special.inv_boxcox(x, 1 - q)</code>
-        </a>
-    </td>
-</tr>
-<tr id="def-qlog">
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Tsallis_statistics"
-            target="_blank"
-            title="Tsallis statistics"
-        >
-            Tsallis \( q \)-logarithm
-        </a>
-    </td>
-    <td>\[ \qlog{q}{x} \]</td>
-    <td>
-        \[
+            $$
+        </td>
+        <td>[`scipy.special.inv_boxcox`][scipy.special.boxcox]</td>
+    </tr>
+    <tr id="def-qlog">
+        <td>
+            [*q*-logarithm](https://wikipedia.org/wiki/Tsallis_statistics)
+        </td>
+        <td>\( \qlog{1 - q}{y} \)</td>
+        <td>
+            $$
             = \begin{cases}
-                \displaystyle \ln(x)
-                    & \text{if } q = 1 \\
-                \displaystyle \frac{x^{1 - q} - 1}{1 - q}
-                    & \text{otherwise} \\
+                \displaystyle \ln(y)
+                    & \text{if } q = 0 \\\\
+                \displaystyle \left( y^q - 1 \right) / q
+                    & \text{otherwise}
             \end{cases}
-        \]
-    </td>
-    <td>
-        <a
-            href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.boxcox.html"
-            target="_blank"
-        >
-            <code>scipy.special.boxcox(x, 1 - q)</code>
-        </a>
-    </td>
-</tr>
+            $$
+        </td>
+        <td>[`scipy.special.boxcox`][scipy.special.boxcox]</td>
+    </tr>
 </table>

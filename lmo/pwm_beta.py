@@ -1,5 +1,6 @@
 r"""
-Power-Weighted Moment (PWM) $\beta_k = M_{1,k,0}$.
+Low-level utility functions for calculating a special case of the
+probability-weighted moments (PWM's), $\beta_k = M_{1,k,0}$.
 
 Primarily used as an intermediate step for L-moment estimation.
 """
