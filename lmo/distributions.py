@@ -433,25 +433,6 @@ _l_moment_kumaraswamy = np.vectorize(
 
 
 class kumaraswamy_gen(rv_continuous):  # noqa: N801
-    r"""
-    A Kumaraswamy random variable, similar to [`beta`][scipy.stats.beta].
-
-    The probability density function for
-    [`kumaraswamy`][kumaraswamy] is:
-
-    \[
-        f(x, a, b) = a x^{a - 1} b \left(1 - x^a\right)^{b - 1}
-    \]
-
-    for \( 0 < x < 1,\ a > 0,\ b > 0 \).
-
-    [`kumaraswamy`][kumaraswamy] takes \( a \) and \( b \) as shape parameters.
-
-    See Also:
-        - [Kumaraswamy distribution - Wikipedia
-        ](https://wikipedia.org/wiki/Kumaraswamy_distribution)
-
-    """
     def _shape_info(self) -> Sequence[_ShapeInfo]:
         ia = _ShapeInfo('a', False, (0, np.inf), (False, False))
         ib = _ShapeInfo('b', False, (0, np.inf), (False, False))
@@ -553,3 +534,23 @@ kumaraswamy: Final[rv_continuous] = kumaraswamy_gen(
     b=1.0,
     name='kumaraswamy',
 )
+r"""
+A Kumaraswamy random variable, similar to
+[`scipy.stats.beta`][scipy.stats.beta].
+
+The probability density function for
+[`kumaraswamy`][lmo.distributions.kumaraswamy] is:
+
+\[
+    f(x, a, b) = a x^{a - 1} b \left(1 - x^a\right)^{b - 1}
+\]
+
+for \( 0 < x < 1,\ a > 0,\ b > 0 \).
+
+[`kumaraswamy`][kumaraswamy] takes \( a \) and \( b \) as shape parameters.
+
+See Also:
+    - [Kumaraswamy distribution - Wikipedia
+    ](https://wikipedia.org/wiki/Kumaraswamy_distribution)
+
+"""

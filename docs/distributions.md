@@ -1051,8 +1051,8 @@ Its general \( r \)-th trimmed L-moment are:
     \end{equation}
 \]
 
-Unfortunately, the Kumaraswamy distribution is not implemented in
-`scipy.stats`.
+The Kumaraswamy distribution is implemented in
+[`lmo.distributions.kumaraswamy`][lmo.distributions.kumaraswamy].
 
 ### Wakeby
 
@@ -1072,28 +1072,6 @@ Each of the scale- \( \alpha, \gamma \) and shape parameters
 Lmo figured out that the L-moments with any order \( r \in \mathbb{N}_{\ge 1} \)
 and trim \( s, t \in \mathbb{N}^2_{\ge 1} \) can be expressed as
 
-<!-- \[
-\begin{equation}
-    \tlmoment{s,t}{r}
-        =
-        \frac{\gamma}{r \delta}
-        \frac
-            {\B(\delta + r - 1,\ t - \delta + 1)}
-            {\B(\delta,\ r + s + t - \delta + 1)}
-        -
-        \frac{\alpha}{r \beta}
-        \frac
-            {\B(-\beta + r - 1,\ t + \beta + 1)}
-            {\B(-\beta,\ r + s + t + \beta + 1)}
-    +
-    \begin{cases}
-         \mu + \frac \alpha \beta - \frac \gamma \delta
-            & \text{if } r = 1 \\
-        0
-            & \text{if } r > 1
-    \end{cases}
-\end{equation}
-\] -->
 \[
 \begin{equation}
     \tlmoment{s,t}{r}
