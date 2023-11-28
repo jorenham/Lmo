@@ -689,6 +689,37 @@ Here, \( \jacobi{n}{\alpha}{\beta}{x} \) is a
 [Jacobi polynomial](#def-jacobi) (although it's not orthogonal, since
 \( \beta > -1 \) does not hold).
 
+
+### Gompertz
+
+The [Gompertz distribution](https://wikipedia.org/wiki/Gompertz_distribution)
+with shape parameter \( \alpha > 0 \) and \( x \ge 0 \), has the following CDF
+and PPF:
+
+
+\[
+    \begin{align*}
+        F(x) &= 1 - e^{\alpha (1 - e^x)} \\
+        x(F) &= \ln\left( 1 - \frac{\ln(1-F)}{\alpha} \right)
+    \end{align*}
+\]
+
+The general trimmed L-moments of the Gompertz distribution are:
+
+\[
+    \begin{equation}
+    \tlmoment{s, t}{r} =
+        \frac{1}{r}
+        \sum_{k = t + 1}^{r + s + t}
+            (-1)^{k - t - 1}
+            \binom{r + k - 2}{r + t - 1}
+            \binom{r + s + t}{k}
+            e^{\alpha k} \
+            \Gamma(0,\ \alpha k)
+    \label{eq:lr_gompertz}
+    \end{equation}
+\]
+
 ### GEV
 
 The [*generalized extreme value* (GEV)
@@ -1285,6 +1316,29 @@ and constants.
         </a>
     </td>
 </tr>
+<tr id="def-gammainc" class="row-double-top">
+    <td>
+        <a
+            href="https://wikipedia.org/wiki/Incomplete_gamma_function"
+            target="_blank"
+            title="Incomplete gamma function - Wikipedia"
+        >
+            Incomplete gamma function
+        </a>
+    </td>
+    <td>\[ \Gamma(s,\ z) \]</td>
+    <td>\[ = \int_z^\infty t^{s - 1} e^{-t} \, \mathrm{d} t \]</td>
+    <td>
+        <a
+            href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.gammaincc.html"
+            target="_blank"
+        >
+            <code>
+                scipy.special.gamma(s) * scipy.special.gammaincc(s, z)
+            <code>
+        </a>
+    </td>
+</tr>
 <tr id="def-digamma">
     <td>
         <a
@@ -1361,10 +1415,10 @@ and constants.
     <td>\[ \jacobi{n}{\alpha}{\beta}{x} \]</td>
     <td>
         \[
-            = 2^{-n} \sum_{k=0}^n
+            = \frac{1}{2^n} \sum_{k=0}^n
                 \binom{n + \alpha}{k}
-                (x + 1)^{n + k}
                 \binom{n + \beta}{n - k}
+                (x + 1)^{n + k}
                 (x - 1)^{n - k}
         \]
     </td>
