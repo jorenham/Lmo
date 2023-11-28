@@ -22,7 +22,7 @@
       
       
       <link rel="icon" href="../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.12">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.14">
     
     
       
@@ -231,6 +231,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href=".." class="md-nav__link">
         
@@ -250,6 +251,7 @@
   
   
     
+  
   
   
     <li class="md-nav__item md-nav__item--active">
@@ -334,6 +336,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#gompertz" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gompertz
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#gev" class="md-nav__link">
     <span class="md-ellipsis">
       GEV
@@ -361,9 +372,18 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#pareto-type-iv" class="md-nav__link">
+  <a href="#burr-iii-dagum" class="md-nav__link">
     <span class="md-ellipsis">
-      Pareto Type IV
+      Burr III / Dagum
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#burr-xii-pareto-iv" class="md-nav__link">
+    <span class="md-ellipsis">
+      Burr XII / Pareto IV
     </span>
   </a>
   
@@ -373,24 +393,6 @@
   <a href="#kumaraswamy" class="md-nav__link">
     <span class="md-ellipsis">
       Kumaraswamy
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#burr-type-iii" class="md-nav__link">
-    <span class="md-ellipsis">
-      Burr Type III
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#burr-type-xii" class="md-nav__link">
-    <span class="md-ellipsis">
-      Burr Type XII
     </span>
   </a>
   
@@ -441,6 +443,7 @@
   
   
   
+  
     <li class="md-nav__item">
       <a href="../api/" class="md-nav__link">
         
@@ -457,6 +460,7 @@
     
       
       
+  
   
   
   
@@ -791,7 +795,7 @@ exist (in closed form).</p>
         <br>
         <code>pareto</code>
         <br>
-        see eq. \( \eqref{eq:lr_pareto4} \) for \( \lmoment{r} \)
+        see eq. \( \eqref{eq:lr_burr12} \) for \( \lmoment{r} \)
     </td>
     <td>\( \alpha > 0  \)</td>
     <td>
@@ -1165,6 +1169,30 @@ can&rsquo;t be expressed as easily as the distribution itself:</p>
 <p>Here, <span class="arithmatex">\( \jacobi{n}{\alpha}{\beta}{x} \)</span> is a
 <a href="#def-jacobi">Jacobi polynomial</a> (although it&rsquo;s not orthogonal, since
 <span class="arithmatex">\( \beta &gt; -1 \)</span> does not hold).</p>
+<h3 id="gompertz">Gompertz</h3>
+<p>The <a href="https://wikipedia.org/wiki/Gompertz_distribution">Gompertz distribution</a>
+with shape parameter <span class="arithmatex">\( \alpha &gt; 0 \)</span> and <span class="arithmatex">\( x \ge 0 \)</span>, has the following CDF
+and PPF:</p>
+<div class="arithmatex">\[
+    \begin{align*}
+        F(x) &amp;= 1 - e^{\alpha (1 - e^x)} \\
+        x(F) &amp;= \ln\left( 1 - \frac{\ln(1-F)}{\alpha} \right)
+    \end{align*}
+\]</div>
+<p>The general trimmed L-moments of the Gompertz distribution are:</p>
+<div class="arithmatex">\[
+    \begin{equation}
+    \tlmoment{s, t}{r} =
+        \frac{1}{r}
+        \sum_{k = t + 1}^{r + s + t}
+            (-1)^{k - t - 1}
+            \binom{r + k - 2}{r + t - 1}
+            \binom{r + s + t}{k}
+            e^{\alpha k} \
+            \Gamma(0,\ \alpha k)
+    \label{eq:lr_gompertz}
+    \end{equation}
+\]</div>
 <h3 id="gev">GEV</h3>
 <p>The <a href="https://wikipedia.org/wiki/Generalized_extreme_value_distribution"><em>generalized extreme value</em> (GEV)
 </a>
@@ -1264,8 +1292,8 @@ shape parameter <span class="arithmatex">\( \alpha \in \mathbb{R} \)</span>, has
 distribution functions:</p>
 <div class="arithmatex">\[
     \begin{align*}
-        F(x) &amp;= 1 - 1 / \qexp{1 - \alpha}{x} \\
-        x(F) &amp;= \qlog{1 - \alpha}{1 / (1 - F)}
+        F(x) &amp;= 1 - \qexp{1 + \alpha}{-x} \\
+        x(F) &amp;= -\qlog{1 + \alpha}{1 - F}
     \end{align*}
 \]</div>
 <p>Note that this distribution is standard uniform if <span class="arithmatex">\( \alpha = 1 \)</span>, and
@@ -1314,37 +1342,83 @@ the GPD.</p>
 </a>, where
 <span class="arithmatex">\( q = (2 \alpha + 1) / (\alpha + 1) \)</span> and <span class="arithmatex">\( \lambda = 1 / (2 - q) \)</span> s.t.
 <span class="arithmatex">\( \alpha \neq -1 \)</span> and <span class="arithmatex">\( q &lt; 2 \)</span>.</p>
-<h3 id="pareto-type-iv">Pareto Type IV</h3>
-<p>The <a href="https://wikipedia.org/wiki/Pareto_distribution"><em>Pareto Type IV</em></a> has two
-shape parameters <span class="arithmatex">\( \alpha \in \mathbb{R} \)</span> and
-<span class="arithmatex">\( \gamma \in \mathbb{R}_{&gt;0} \)</span>, and scale parameter <span class="arithmatex">\( \beta \)</span>.
-For <span class="arithmatex">\( x \ge 0 \)</span>, the CDF and its inverse (the PPF) are</p>
+<h3 id="burr-iii-dagum">Burr III / Dagum</h3>
+<p>The <em>Burr III</em> distribution, also known as the
+<a href="https://wikipedia.org/wiki/Dagum_distribution"><em>Dagum distribution</em></a>, has two
+shape parameters <span class="arithmatex">\( \alpha \)</span> and <span class="arithmatex">\( \beta \)</span>, both restricted to the
+positive reals</p>
+<p>For <span class="arithmatex">\( x &gt; 0 \)</span>, the distribution functions are:</p>
 <div class="arithmatex">\[
 \begin{align*}
-    F(x)
-        &amp;= 1 - \left(
-            1 + \left(\frac x \beta\right)^{\frac 1 \gamma}
-        \right)^{-\alpha} \\
-    x(F)
-        &amp;= \beta \left(
-            (1 - F)^{-1 / \alpha} - 1
-        \right)^\gamma
+    F(x) &amp;=
+        (1 + x^{-\alpha})^{-\beta} \\
+    x(F) &amp;=
+        (F^{-1 / \beta} - 1)^{-1 / \alpha}
 \end{align*}
 \]</div>
-<p>When <span class="arithmatex">\( \alpha &gt; \gamma \)</span>, the trimmed L-moments are found to be:</p>
+<p>For <span class="arithmatex">\( \alpha &gt; 1 \)</span>, the general L-moments are:</p>
 <div class="arithmatex">\[
-    \begin{equation}
-        \tlmoment{s,t}{r}
-            = \frac{\beta \gamma}{r}
-            \sum_{k = t + 1}^{r + s + t}
-                (-1)^{k - t - 1}
-                \binom{r + k - 2}{r + t - 1}
-                \binom{r + s + t}{k}
-                \B(\gamma,\ k \alpha - \gamma)
-            \label{eq:lr_pareto4}
-    \end{equation}
+\begin{equation}
+    \tlmoment{s,t}{r} =
+        (-1)^{t - 1 / \alpha} \
+        \beta \
+        \frac{r + s + t}{r}
+        \sum_{k = s}^{r + s + t - 1}
+            (-1)^{k}
+            \binom{k + r - 1}{k - s}
+            \binom{r + s + t - 1}{k}
+            \B(1 - 1 / \alpha, -\beta - k \beta)
+    \label{eq:lr_burr3}
+\end{equation}
 \]</div>
-<p>This distribution is currently not implemented in <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/stats.html#module-scipy.stats"><code>scipy.stats</code></a>.</p>
+<p>The Burr III distribution is implemented in
+<a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.burr.html#scipy.stats.burr"><code>scipy.stats.burr</code></a>, where the shape parameters <code>c</code> and <code>d</code>
+correspond to  <span class="arithmatex">\( \alpha \)</span> and <span class="arithmatex">\( \beta \)</span>, respectively.
+Equivalently, <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.mielke.html#scipy.stats.mielke"><code>scipy.stats.mielke</code></a> can be used, by
+setting <code>k</code> and <code>s</code> to <span class="arithmatex">\( \alpha \beta \)</span> and <span class="arithmatex">\( \alpha \)</span>, respectively.</p>
+<p>The special case where <span class="arithmatex">\( \beta = 1 \)</span> is known as the
+<a href="https://wikipedia.org/wiki/Log-logistic_distribution"><em>log-logistic</em></a>
+distribution</p>
+<h3 id="burr-xii-pareto-iv">Burr XII / Pareto IV</h3>
+<p>The
+<a href="https://wikipedia.org/wiki/Burr_distribution"><em>Burr XII distribution</em></a>
+has two shape parameters <span class="arithmatex">\( \alpha \)</span> and <span class="arithmatex">\( \beta \)</span>, both restricted to the
+positive reals. It is also known as the <em>Singh-Maddala distribution</em>.
+The alternative parametrization <span class="arithmatex">\( \alpha \mapsto 1 / \gamma \)</span>, where
+<span class="arithmatex">\( \gamma &gt; 0 \)</span>, is known as the (standard) type IV
+<a href="https://wikipedia.org/wiki/Pareto_distribution"><em>Pareto distribution</em></a></p>
+<p>The distribution functions for <span class="arithmatex">\( x &gt; 0 \)</span> are defined as:</p>
+<div class="arithmatex">\[
+\begin{align*}
+    F(x) &amp;= 1 - (1 + x^\alpha)^{-\beta} \\
+    x(F) &amp;= \bigl((1 - F)^{-1/\beta} - 1 \bigr)^{1/\alpha}
+\end{align*}
+\]</div>
+<p>When <span class="arithmatex">\( \beta &gt; 1 / \alpha \)</span>, the general <span class="arithmatex">\( r \)</span>-th trimmed L-moment is:</p>
+<div class="arithmatex">\[
+\begin{equation}
+    \tlmoment{s,t}{r} =
+        \beta \
+        \frac{r + s + t}{r}
+        \sum_{k = t}^{r + s + t - 1}
+            (-1)^k
+            \binom{k + r - 1}{k - t}
+            \binom{r + s + t - 1}{k}
+            \B\bigl(1 + 1 / \alpha,\ \beta + k \beta - 1 / \alpha \bigr)
+        \label{eq:lr_burr12}
+\end{equation}
+\]</div>
+<p>This distribution is implemented in
+<a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.burr12.html#scipy.stats.burr12"><code>scipy.stats.burr12</code></a>, where the shape parameters <code>c</code>
+and <code>d</code> correspond to  <span class="arithmatex">\( \alpha \)</span> and <span class="arithmatex">\( \beta \)</span>, respectively.</p>
+<p>The Burr XII and Burr III distributions are related as <span class="arithmatex">\( Y = 1 / X \)</span>, where
+<span class="arithmatex">\( X \)</span> and <span class="arithmatex">\( Y \)</span> are random variables with Burr XII <span class="arithmatex">\( (\alpha, \beta) \)</span>
+and Burr III <span class="arithmatex">\( (1 / \alpha, \beta) \)</span>
+distributions (or vice-versa), respectively.</p>
+<p>In the special case where <span class="arithmatex">\( \alpha = 1 \)</span> is known as the
+<a href="https://wikipedia.org/wiki/Lomax_distribution"><em>Lomax distribution</em></a>. This
+has been implemented as <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.lomax.html#scipy.stats.lomax">scipy.stats.lomax</a>, where the
+parameter <code>c</code> corresponds to <span class="arithmatex">\( \beta \)</span>.</p>
 <h3 id="kumaraswamy">Kumaraswamy</h3>
 <p>For <a href="https://wikipedia.org/wiki/Kumaraswamy_distribution">Kumaraswamy&rsquo;s distribution
 </a> with parameters
@@ -1375,67 +1449,6 @@ x(F) &amp;= \bigl(1 - (1 - F)^{1/\beta} \bigr)^{1/\alpha}
 \]</div>
 <p>Unfortunately, the Kumaraswamy distribution is not implemented in
 <code>scipy.stats</code>.</p>
-<h3 id="burr-type-iii">Burr Type III</h3>
-<p>The <em>Burr type III</em> distribution, also known as the
-<a href="https://wikipedia.org/wiki/Dagum_distribution"><em>Dagum distribution</em></a>, has two
-shape parameters <span class="arithmatex">\( \alpha \)</span> and <span class="arithmatex">\( \beta \)</span>, both restricted to the
-positive reals</p>
-<p>For <span class="arithmatex">\( x &gt; 0 \)</span>, the distribution functions are:</p>
-<div class="arithmatex">\[
-\begin{align*}
-    F(x) &amp;=
-        (1 + x^{-\alpha})^{-\beta} \\
-    x(F) &amp;=
-        (F^{-1 / \beta} - 1)^{-1 / \alpha}
-\end{align*}
-\]</div>
-<p>For <span class="arithmatex">\( \alpha &gt; 1 \)</span>, the general L-moments are:</p>
-<div class="arithmatex">\[
-\begin{equation}
-    \tlmoment{s,t}{r} =
-        (-1)^{t - 1 / \alpha} \
-        \beta \
-        \frac{r + s + t}{r}
-        \sum_{k = s}^{r + s + t - 1}
-            (-1)^{k}
-            \binom{k + r - 1}{k - s}
-            \binom{r + s + t - 1}{k}
-            \B(1 - 1 / \alpha, -\beta - k \beta)
-    \label{eq:lr_burr3}
-\end{equation}
-\]</div>
-<p>The Burr Type III distribution is implemented in
-<a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.burr.html#scipy.stats.burr"><code>scipy.stats.burr</code></a>, where the shape parameters <code>c</code> and <code>d</code>
-correspond to  <span class="arithmatex">\( \alpha \)</span> and <span class="arithmatex">\( \beta \)</span>, respectively.</p>
-<h3 id="burr-type-xii">Burr Type XII</h3>
-<p>Just like Kumaraswamy&rsquo;s distribution, the
-<a href="https://wikipedia.org/wiki/Burr_distribution"><em>Burr Type XII distribution</em></a>
-has two shape parameters <span class="arithmatex">\( \alpha \)</span> and <span class="arithmatex">\( \beta \)</span>, both restricted to the
-positive reals.</p>
-<p>The distribution functions are for <span class="arithmatex">\( x &gt; 0 \)</span> defined as:</p>
-<div class="arithmatex">\[
-\begin{align*}
-    F(x) &amp;= 1 - (1 - x^\alpha)^{-\beta} \\
-    x(F) &amp;= \bigl(1 - (1 - F)^{-1/\beta} \bigr)^{1/\alpha}
-\end{align*}
-\]</div>
-<p>When <span class="arithmatex">\( \beta &gt; 1 / \alpha \)</span>, the general <span class="arithmatex">\( r \)</span>-th trimmed L-moment is:</p>
-<div class="arithmatex">\[
-\begin{equation}
-    \tlmoment{s,t}{r} =
-        \beta \
-        \frac{r + s + t}{r}
-        \sum_{k = t}^{r + s + t - 1}
-            (-1)^k
-            \binom{k + r - 1}{k - t}
-            \binom{r + s + t - 1}{k}
-            \B\bigl(1 + 1 / \alpha,\ \beta + k \beta - 1 / \alpha \bigr)
-        \label{eq:lr_burr12}
-\end{equation}
-\]</div>
-<p>The Burr Type XII distribution is implemented in
-<a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.burr12.html#scipy.stats.burr12"><code>scipy.stats.burr12</code></a>, where the shape parameters <code>c</code>
-and <code>d</code> correspond to  <span class="arithmatex">\( \alpha \)</span> and <span class="arithmatex">\( \beta \)</span>, respectively.</p>
 <h3 id="wakeby">Wakeby</h3>
 <p>The <a href="https://wikipedia.org/wiki/Wakeby_distribution"><em>Wakeby distribution</em></a>
 is quantile-based, without closed-form expressions for the PDF and CDF, whose
@@ -1444,7 +1457,6 @@ quantile function (PPF) is defined to be</p>
 x(F) =
     \frac \alpha \beta \bigl(1 - (1 - F)^\beta\bigr)
     - \frac \gamma \delta \bigl(1 - (1 - F)^{-\delta}\bigr)
-    + \mu
 \]</div>
 <p>Each of the scale- <span class="arithmatex">\( \alpha, \gamma \)</span> and shape parameters
 <span class="arithmatex">\( \beta, \delta \)</span>, are assumed to be positive real numbers.</p>
@@ -1708,6 +1720,29 @@ and constants.</p>
         </a>
     </td>
 </tr>
+<tr id="def-gammainc" class="row-double-top">
+    <td>
+        <a
+            href="https://wikipedia.org/wiki/Incomplete_gamma_function"
+            target="_blank"
+            title="Incomplete gamma function - Wikipedia"
+        >
+            Incomplete gamma function
+        </a>
+    </td>
+    <td>\[ \Gamma(s,\ z) \]</td>
+    <td>\[ = \int_z^\infty t^{s - 1} e^{-t} \, \mathrm{d} t \]</td>
+    <td>
+        <a
+            href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.gammaincc.html"
+            target="_blank"
+        >
+            <code>
+                scipy.special.gamma(s) * scipy.special.gammaincc(s, z)
+            <code>
+        </a>
+    </td>
+</tr>
 <tr id="def-digamma">
     <td>
         <a
@@ -1784,10 +1819,10 @@ and constants.</p>
     <td>\[ \jacobi{n}{\alpha}{\beta}{x} \]</td>
     <td>
         \[
-            = 2^{-n} \sum_{k=0}^n
+            = \frac{1}{2^n} \sum_{k=0}^n
                 \binom{n + \alpha}{k}
-                (x + 1)^{n + k}
                 \binom{n + \beta}{n - k}
+                (x + 1)^{n + k}
                 (x - 1)^{n - k}
         \]
     </td>
@@ -1917,7 +1952,7 @@ and constants.</p>
     <script id="__config" type="application/json">{"base": "..", "features": ["toc.follow", "toc.integrate"], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.6c14ae12.min.js"></script>
+      <script src="../assets/javascripts/bundle.cd18aaf1.min.js"></script>
       
         <script src="../scripts/mathjax.js"></script>
       
