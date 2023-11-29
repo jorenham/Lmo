@@ -1060,13 +1060,13 @@ The [*Wakeby distribution*](https://wikipedia.org/wiki/Wakeby_distribution)
 is quantile-based -- the CDF and PDF are not analytically expressible for the
 general case.
 It has two scale parameters \( \alpha \in \mathbb{R},\ \gamma \ge 0 \),
-and two shape parameters \( \beta \ge 0, \ \delta \ge 0 \).
+and two shape parameters \( \beta, \ \delta \).
 Additionally, the following constraints apply:
 
 - \( \alpha + \gamma \ge 0 \),
 - if \( \alpha = 0 \) then \( \beta = 0 \),
 - if \( \gamma = 0 \) then \( \delta = 0 \), and
-- if \( \beta + \delta = 0 \) then \( \gamma = 0 \).
+- if \( \beta + \delta \le 0 \) then \( \beta = \gamma = \delta = 0 \).
 
 The quantile function (PPF) is defined to be
 
@@ -1076,7 +1076,7 @@ x(F) =
     - \gamma \qlog{1 + \delta}{1 - F}
 \]
 
-For \( \beta > 0 \) and \( \delta > 0 \), this is equivalent to
+If \( \beta \neq 0 \) and \( \delta \neq 0 \), this is equivalent to
 
 \[
 x(F) =
@@ -1084,8 +1084,20 @@ x(F) =
     - \frac{\gamma}{\delta} (1 - (1 - F)^{-\delta})
 \]
 
-Lmo figured out that the L-moments with any order \( r \in \mathbb{N}_{\ge 1} \)
-and trim \( s, t \in \mathbb{N}^2_{\ge 1} \) can be expressed as
+The support of the distribution depends on the parameters:
+
+\[
+x \in \begin{cases}
+    \displaystyle
+    \big[0,\ \infty\big)
+        & \text{if } \gamma > 0 \text{ and } \delta \ge 0 \\
+    \displaystyle
+    \left[0,\ \frac{\alpha}{\beta} - \frac{\gamma}{\delta} \right]
+        & \text{if } \gamma = 0 \text{ or } \delta < 0 \\
+\end{cases}
+\]
+
+Lmo figured out that all of Wakeby's (trimmed) L-moments can be expressed as
 
 \[
 \begin{equation}
@@ -1108,6 +1120,24 @@ and trim \( s, t \in \mathbb{N}^2_{\ge 1} \) can be expressed as
 
 Unfortunately, the Wakeby distribution has currently no
 [`scipy.stats`][scipy.stats] implementation.
+
+!!! info "Special cases"
+
+    There are several notable special cases of the Wakeby distribution:
+
+    [GPD -- Generalized Pareto](#gpd)
+    :   With \( \alpha = 0 \) and \( \gamma = 1 \), Wakeby is the standard
+        GPD, and \( \delta \) its shape parameter.
+
+        Conversely, with \( \alpha = 1 \) and \( \gamma = 0 \), this is
+        the *Bounded* GPD, \( \text{BGPD}(-\beta) \),
+        s.t. \( 0 \le x \le 1 / \beta \).
+    [Exponential](https://wikipedia.org/wiki/Exponential_distribution)
+    :   With \( \alpha = 1 \) and \( \beta = \gamma = \delta = 0 \), Wakeby is
+        standard exponential.
+    [Uniform](https://wikipedia.org/wiki/Continuous_uniform_distribution)
+    :   With \( \alpha = \beta = 1 \) and \( \gamma = 0 \), Wakeby is standard
+        uniform on \( [0, 1] \).
 
 ### Generalized Lambda
 
