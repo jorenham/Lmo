@@ -1059,13 +1059,13 @@ The Kumaraswamy distribution is implemented in
 The [*Wakeby distribution*](https://wikipedia.org/wiki/Wakeby_distribution)
 is quantile-based -- the CDF and PDF are not analytically expressible for the
 general case.
-It has two scale parameters \( \alpha \in \mathbb{R}, \gamma \ge 0 \),
-and two shape parameters \( \beta \ge 0, \delta \ge 0 \).
+It has two scale parameters \( \alpha \in \mathbb{R},\ \gamma \ge 0 \),
+and two shape parameters \( \beta \ge 0, \ \delta \ge 0 \).
 Additionally, the following constraints apply:
 
-- \( \alpha + \gamma \ge 0 \)
-- if \( \alpha = 0 \) then \( \beta = 0 \)
-- if \( \gamma = 0 \) then \( \delta = 0 \)
+- \( \alpha + \gamma \ge 0 \),
+- if \( \alpha = 0 \) then \( \beta = 0 \),
+- if \( \gamma = 0 \) then \( \delta = 0 \), and
 - if \( \beta + \delta = 0 \) then \( \gamma = 0 \).
 
 The quantile function (PPF) is defined to be
