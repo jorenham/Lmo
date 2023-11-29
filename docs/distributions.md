@@ -1057,17 +1057,32 @@ The Kumaraswamy distribution is implemented in
 ### Wakeby
 
 The [*Wakeby distribution*](https://wikipedia.org/wiki/Wakeby_distribution)
-is quantile-based, without closed-form expressions for the PDF and CDF, whose
-quantile function (PPF) is defined to be
+is quantile-based -- the CDF and PDF are not analytically expressible for the
+general case.
+It has two scale parameters \( \alpha \in \mathbb{R}, \gamma \ge 0 \),
+and two shape parameters \( \beta \ge 0, \delta \ge 0 \).
+Additionally, the following constraints apply:
+
+- \( \alpha + \gamma \ge 0 \)
+- if \( \alpha = 0 \) then \( \beta = 0 \)
+- if \( \gamma = 0 \) then \( \delta = 0 \)
+- if \( \beta + \delta = 0 \) then \( \gamma = 0 \).
+
+The quantile function (PPF) is defined to be
 
 \[
 x(F) =
-    \frac \alpha \beta \bigl(1 - (1 - F)^\beta\bigr)
-    - \frac \gamma \delta \bigl(1 - (1 - F)^{-\delta}\bigr)
+    - \alpha \qlog{1 - \beta}{1 - F}
+    - \gamma \qlog{1 + \delta}{1 - F}
 \]
 
-Each of the scale- \( \alpha, \gamma \) and shape parameters
-\( \beta, \delta \), are assumed to be positive real numbers.
+For \( \beta > 0 \) and \( \delta > 0 \), this is equivalent to
+
+\[
+x(F) =
+    \frac{\alpha}{\beta} (1 - (1 - F)^\beta)
+    - \frac{\gamma}{\delta} (1 - (1 - F)^{-\delta})
+\]
 
 Lmo figured out that the L-moments with any order \( r \in \mathbb{N}_{\ge 1} \)
 and trim \( s, t \in \mathbb{N}^2_{\ge 1} \) can be expressed as
