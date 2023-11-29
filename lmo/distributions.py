@@ -552,7 +552,6 @@ for \( 0 < x < 1,\ a > 0,\ b > 0 \).
 [`kumaraswamy`][kumaraswamy] takes \( a \) and \( b \) as shape parameters.
 
 See Also:
-    - [Kumaraswamy distribution - Wikipedia
-    ](https://wikipedia.org/wiki/Kumaraswamy_distribution)
+    - [Theoretical L-moments - Kumaraswamy](distributions.md#kumaraswamy)
 
 """
