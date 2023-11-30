@@ -1102,7 +1102,7 @@ Lmo figured out that all of Wakeby's (trimmed) L-moments can be expressed as
 \[
 \begin{equation}
     \tlmoment{s,t}{r}
-        = \frac{\rfact{r + t}{s + 1}}{r} \left[
+        = -\frac{\rfact{r + t}{s + 1}}{r} \left[
             \alpha \frac
                 {\rfact{1 - \beta}{r - 2}}
                 {\rfact{1 + \beta + t}{r + s}}
@@ -1110,7 +1110,7 @@ Lmo figured out that all of Wakeby's (trimmed) L-moments can be expressed as
                 {\rfact{1 + \delta}{r - 2}}
                 {\rfact{1 - \delta + t}{r + s}}
         \right]
-        + \underbrace{
+        - \underbrace{
             \ffact{1}{r} \left(
                 \frac \alpha \beta - \frac \gamma \delta
             \right)
