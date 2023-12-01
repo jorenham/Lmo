@@ -1059,42 +1059,42 @@ The Kumaraswamy distribution is implemented in
 The [*Wakeby distribution*](https://wikipedia.org/wiki/Wakeby_distribution)
 is quantile-based -- the CDF and PDF are not analytically expressible for the
 general case.
-It has two scale parameters \( \alpha \in \mathbb{R},\ \gamma \ge 0 \),
-and two shape parameters \( \beta, \ \delta \).
-Additionally, the following constraints apply:
+Without loss of generality, Lmo uses a 3-parameter "standardized"
+paremetrization, with shape parameters \( \beta,\ \delta,\ \phi \).
 
-- \( \alpha + \gamma \ge 0 \),
-- if \( \alpha = 0 \) then \( \beta = 0 \),
-- if \( \gamma = 0 \) then \( \delta = 0 \), and
-- if \( \beta + \delta \le 0 \) then \( \beta = \gamma = \delta = 0 \).
+Each of the following restrictions apply:
 
-The quantile function (PPF) is defined to be
+- \( \beta + \delta \ge 0 \)
+- \( 0 \le \phi \le 1 \)
+- if \( \beta + \delta = 0 \), then \( \phi = 1 \)
+- if \( \phi = 0 \), then \( \beta = 0 \)
+- if \( \phi = 1 \), then \( \delta = 0 \)
 
-\[
-x(F) =
-    - \alpha \qlog{1 - \beta}{1 - F}
-    - \gamma \qlog{1 + \delta}{1 - F}
-\]
-
-If \( \beta \neq 0 \) and \( \delta \neq 0 \), this is equivalent to
-
-\[
-x(F) =
-    \frac{\alpha}{\beta} (1 - (1 - F)^\beta)
-    - \frac{\gamma}{\delta} (1 - (1 - F)^{-\delta})
-\]
-
-The support of the distribution depends on the parameters:
+The domain of the distribution is
 
 \[
 x \in \begin{cases}
     \displaystyle
     \big[0,\ \infty\big)
-        & \text{if } \gamma > 0 \text{ and } \delta \ge 0 \\
+        & \text{if }  \delta \ge 0 \text{ and } \phi < 1  \\
     \displaystyle
-    \left[0,\ \frac{\alpha}{\beta} - \frac{\gamma}{\delta} \right]
-        & \text{if } \gamma = 0 \text{ or } \delta < 0 \\
+    \left[0,\ \frac{\phi}{\beta} - \frac{1 - \phi}{\delta} \right]
+        & \text{if } \delta < 0 \text{ or } \phi = 1 \\
 \end{cases}
+\]
+
+The quantile function (PPF) is defined to be
+
+\[
+x(F) = -\phi \qlog{1 - \beta}{1 - F} - (1 - \phi) \qlog{1 + \delta}{1 - F}
+\]
+
+or, if \( \beta \neq 0 \) and \( \delta \neq 0 \), this is equivalent to
+
+\[
+x(F) =
+    \frac{\phi}{\beta} (1 - (1 - F)^\beta)
+    - \frac{1 - \phi}{\delta} (1 - (1 - F)^{-\delta})
 \]
 
 Lmo figured out that all of Wakeby's (trimmed) L-moments can be expressed as
@@ -1103,16 +1103,16 @@ Lmo figured out that all of Wakeby's (trimmed) L-moments can be expressed as
 \begin{equation}
     \tlmoment{s,t}{r}
         = -\frac{\rfact{r + t}{s + 1}}{r} \left[
-            \alpha \frac
+            \phi \frac
                 {\rfact{1 - \beta}{r - 2}}
                 {\rfact{1 + \beta + t}{r + s}}
-            + \gamma \frac
+            + (1 - \phi) \frac
                 {\rfact{1 + \delta}{r - 2}}
                 {\rfact{1 - \delta + t}{r + s}}
         \right]
         - \underbrace{
             \ffact{1}{r} \left(
-                \frac \alpha \beta - \frac \gamma \delta
+                \frac{\phi}{\beta} - \frac{1 - \phi}{\delta}
             \right)
         }_{\text{will be } 0 \text{ if } r>1}
 \end{equation}
@@ -1126,18 +1126,31 @@ Unfortunately, the Wakeby distribution has currently no
     There are several notable special cases of the Wakeby distribution:
 
     [GPD -- Generalized Pareto](#gpd)
-    :   With \( \alpha = 0 \) and \( \gamma = 1 \), Wakeby is the standard
-        GPD, and \( \delta \) its shape parameter.
+    :   With \( \phi = 0 \), Wakeby is the standard GPD, and
+        \( \delta \) its shape parameter.
 
-        Conversely, with \( \alpha = 1 \) and \( \gamma = 0 \), this is
-        the *Bounded* GPD, \( \text{BGPD}(-\beta) \),
-        s.t. \( 0 \le x \le 1 / \beta \).
+        Conversely, \( \phi = 1 \) yields a *bounded* GPD variant, with
+        shape parameter \( -\beta \), and \( 1 / \beta \) the upper bound.
     [Exponential](https://wikipedia.org/wiki/Exponential_distribution)
-    :   With \( \alpha = 1 \) and \( \beta = \gamma = \delta = 0 \), Wakeby is
+    :   With \( \beta = \delta = 0 \) and \( \phi = 1 \), Wakeby is
         standard exponential.
     [Uniform](https://wikipedia.org/wiki/Continuous_uniform_distribution)
-    :   With \( \alpha = \beta = 1 \) and \( \gamma = 0 \), Wakeby is standard
-        uniform on \( [0, 1] \).
+    :   With \( \beta = \phi = 1 \) (and therefore \( \delta = 0 \)) Wakeby
+        is uniform on \( [0, 1] \).
+
+!!! note "Alternative parametrization"
+
+    This 3-parameter Wakeby distribution is equivalent to the 5-parameter
+    variant that is generally used, after scaling by \( \sigma \) and shifting
+    by \( \xi \). The shape parameters \( \beta \) and \( \delta \) are
+    (intentionally) equivalent, the scale parameters are related by
+    ( \alpha \equiv \sigma \phi \) and \( gamma \equiv \sigma (1 - \phi) \),
+    and the location parameter is precisely \( \xi \).
+
+    Conversely, Lmo's "standard" Wakeby distribution can by obtained from
+    5-Wakeby, by shifting and scaling s.t. \( \xi = 0 \) and
+    \( \alpha + \gamma = 1 \). Finally, \( \phi \equiv \alpha = 1 - \gamma \)
+    effectively combines the two scale parameters.
 
 ### Generalized Lambda
 
