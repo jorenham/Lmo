@@ -407,7 +407,7 @@ class l_rv_nonparametric(rv_continuous):  # noqa: N801
 
 _ArrF8: TypeAlias = npt.NDArray[np.float64]
 
-def _l_moment_kumaraswamy_single(
+def _kumaraswamy_lmo0(
     r: int,
     s: int,
     t: int,
@@ -425,14 +425,17 @@ def _l_moment_kumaraswamy_single(
         * cast(_ArrF8, sc.beta(1 / a, 1 + k * b)) / a  # type: ignore
     ).sum() / r
 
-_l_moment_kumaraswamy = np.vectorize(
-    _l_moment_kumaraswamy_single,
+_kumaraswamy_lmo = np.vectorize(
+    _kumaraswamy_lmo0,
     otypes=[float],
     excluded={1, 2, 3, 4},
 )
 
 
 class kumaraswamy_gen(rv_continuous):  # noqa: N801
+    def _argcheck(self, a: float, b: float) -> bool:
+        return (a > 0) & (b > 0)
+
     def _shape_info(self) -> Sequence[_ShapeInfo]:
         ia = _ShapeInfo('a', False, (0, np.inf), (False, False))
         ib = _ShapeInfo('b', False, (0, np.inf), (False, False))
@@ -527,7 +530,7 @@ class kumaraswamy_gen(rv_continuous):  # noqa: N801
             return np.asarray(lmbda_r)
 
         return np.atleast_1d(
-            cast(_ArrF8, _l_moment_kumaraswamy(r, s, t, a, b)),
+            cast(_ArrF8, _kumaraswamy_lmo(r, s, t, a, b)),
         )
 
 
@@ -555,3 +558,117 @@ See Also:
     - [Theoretical L-moments - Kumaraswamy](distributions.md#kumaraswamy)
 
 """
+
+
+def _wakaby_isf0(
+    q: float,
+    b: float,
+    d: float,
+    f: float,
+) -> float:
+    """Standard Wakeby inverse survival function, does not validate params."""
+    if q < 0 or q > 1:
+        return np.nan
+    if q == 0:
+        return np.inf if f < 1 and d >= 0 else f / b - (1 - f) / d
+    if q == 1:
+        return 0
+
+    return -f * sc.boxcox(q, b) - (1 - f) * sc.boxcox(q, -d)  # type: ignore
+
+_wakaby_isf = np.vectorize(_wakaby_isf0, otypes=[float])
+
+def _wakeby_sf0(
+    x: float,
+    b: float,
+    d: float,
+    f: float,
+) -> float:
+    """Wakeby survival function."""
+    if b == f == 1:
+        # standard uniform
+        return 1 - x
+    if b == d == 0:
+        # standard exponential
+        return np.exp(-x)
+    if f == 0:
+        # GPD
+        return cast(float, sc.invboxcox(-x, -d))  # type: ignore
+    if f == 1:
+        # GPD (bounded)
+        return cast(float, sc.invboxcox(-x, b))  # type: ignore
+    if b == 0 and d != 0:
+        w = (1 - f) / f
+        return (
+            w / sc.lambertw(w * np.exp(w + d * x / f))  # type: ignore
+        )**(1 / d)
+
+    # TODO: scipy.optimize.root_scalar (halley's method)
+    raise NotImplementedError
+
+_wakaby_sf = np.vectorize(_wakeby_sf0, otypes=[float])
+
+
+class wakeby_gen(rv_continuous):  # noqa: N801
+    def _argcheck(self, b: float, d: float, f: float) -> bool:
+        return (
+            (b + d >= 0)
+            & ((b + d > 0) | (f == 1))
+            & (f >= 0)
+            & (f <= 1)
+            & ((f > 0) | (b == 0))
+            & ((f < 1) | (d == 0))
+        )
+
+    def _shape_info(self) -> Sequence[_ShapeInfo]:
+        ib = _ShapeInfo('b', False, (-np.inf, np.inf), (False, False))
+        id = _ShapeInfo('d', False, (-np.inf, np.inf), (False, False))
+        if_ = _ShapeInfo('f', False, (0, 1), (True, True))
+        return [ib, id, if_]
+
+    def _pdf(
+        self,
+        x: npt.NDArray[np.float64],
+        b: float,
+        d: float,
+        f: float,
+    ) -> npt.NDArray[np.float64]:
+        # See Johnson, Kotz & Balakrishnan (1994), page 46
+        q = _wakaby_sf(x, b, d, f)
+        return q**(d + 1) / (f * q**(b + d) + 1 - f)
+
+    def _sf(
+        self,
+        x: npt.NDArray[np.float64],
+        b: float,
+        d: float,
+        f: float,
+    ) -> npt.NDArray[np.float64]:
+        return _wakaby_sf(x, b, d, f)
+
+    def _cdf(
+        self,
+        x: npt.NDArray[np.float64],
+        b: float,
+        d: float,
+        f: float,
+    ) -> npt.NDArray[np.float64]:
+        return 1 - _wakaby_sf(x, b, d, f)
+
+    def _ppf(
+        self,
+        p: npt.NDArray[np.float64],
+        b: float,
+        d: float,
+        f: float,
+    ) -> npt.NDArray[np.float64]:
+        return _wakaby_isf(1 - p, b, d, f)
+
+    def _isf(
+        self,
+        q: npt.NDArray[np.float64],
+         b: float,
+        d: float,
+        f: float,
+    ) -> npt.NDArray[np.float64]:
+        return _wakaby_isf(q, b, d, f)
