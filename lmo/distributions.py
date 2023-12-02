@@ -3,6 +3,7 @@
 __all__ = (
     'l_rv_nonparametric',
     'kumaraswamy',
+    'wakeby',
 )
 
 # pyright: reportIncompatibleMethodOverride=false
@@ -23,6 +24,7 @@ from typing import (
 import numpy as np
 import numpy.polynomial as npp
 import numpy.typing as npt
+import scipy.optimize as so  # type: ignore
 import scipy.special as sc  # type: ignore
 from scipy.stats._distn_infrastructure import _ShapeInfo  # type: ignore
 from scipy.stats.distributions import (  # type: ignore
@@ -560,59 +562,126 @@ See Also:
 """
 
 
-def _wakaby_isf0(
+def _wakeby_isf0(
     q: float,
     b: float,
     d: float,
     f: float,
+    x: float = 0.0,
 ) -> float:
-    """Standard Wakeby inverse survival function, does not validate params."""
-    if q < 0 or q > 1:
-        return np.nan
+    """Inverse survival function, does not validate params."""
     if q == 0:
-        return np.inf if f < 1 and d >= 0 else f / b - (1 - f) / d
+        return math.inf if f < 1 and d >= 0 else f / b - (1 - f) / d
     if q == 1:
-        return 0
+        return 0.
 
-    return -f * sc.boxcox(q, b) - (1 - f) * sc.boxcox(q, -d)  # type: ignore
+    if f == 0:
+        u = 0.
+    elif b == 0:
+        u = math.log(q)
+    else:
+        u = (q**b - 1) / b
 
-_wakaby_isf = np.vectorize(_wakaby_isf0, otypes=[float])
+    if f == 1:
+        v = 0.
+    elif d == 0:
+        v = u if b == 0 and f != 0 else math.log(q)
+    else:
+        nd = -d
+        v = (q**nd - 1) / nd
 
-def _wakeby_sf0(
+    return x - f * u - (1 - f) * v
+
+_wakeby_isf = np.vectorize(_wakeby_isf0, otypes=[float])
+
+
+def _wakeby_isf_d1(
+    q: float,
+    b: float,
+    d: float,
+    f: float,
+    x: float = 0.0,
+) -> float:
+    """First derivative of the inverse survival function."""
+    # avoid zero division errors
+    q = max(q, 1e-5)
+
+    return -f * q**(b - 1) - (1 - f) * q**(-d - 1)
+
+def _wakeby_isf_d2(
+    q: float,
+    b: float,
+    d: float,
+    f: float,
+    x: float = 0.0,
+) -> float:
+    """First derivative of the inverse survival function."""
+    # avoid zero division errors
+    q = max(q, 1e-5)
+
+    return -f * (b - 1) * q**(b - 2) - (1 - f) * (-1 - d) * q**(-d - 2)
+
+
+def _wakeby_sf0(  # noqa: C901
     x: float,
     b: float,
     d: float,
     f: float,
 ) -> float:
     """Wakeby survival function."""
+    if x <= 0:
+        return 1.
+
+    x_max = np.inf if f < 1 and d >= 0 else f / b - (1 - f) / d
+    if x >= x_max:
+        return 0.
+
     if b == f == 1:
         # standard uniform
         return 1 - x
     if b == d == 0:
         # standard exponential
-        return np.exp(-x)
-    if f == 0:
-        # GPD
-        return cast(float, sc.invboxcox(-x, -d))  # type: ignore
+        assert f == 1
+        return math.exp(-x)
     if f == 1:
-        # GPD (bounded)
-        return cast(float, sc.invboxcox(-x, b))  # type: ignore
+        # GPD (bounded above)
+        return (1 - b * x)**(1 / b)
+    if f == 0:
+        # GPD (no upper bound)
+        return (1 + d * x)**(-1 / d)
     if b == 0 and d != 0:
+        # https://wikipedia.org/wiki/Lambert_W_function
+        # it's easy to show that this is valid for all x, f, and d
         w = (1 - f) / f
         return (
-            w / sc.lambertw(w * np.exp(w + d * x / f))  # type: ignore
+            w / sc.lambertw(w * math.exp((1 + d * x) / f - 1))  # type: ignore
         )**(1 / d)
 
-    # TODO: scipy.optimize.root_scalar (halley's method)
-    raise NotImplementedError
+    res = cast(
+        so.RootResults,
+        so.root_scalar(  # type: ignore
+            _wakeby_isf0,
+            args=(b, d, f, -x),
+            x0=_wakeby_isf0(0.5, b, d, f),  # median
+            fprime=_wakeby_isf_d1,
+            fprime2=_wakeby_isf_d2,
+            method='halley',
+        ),
+    )
+    return cast(float, res.root)
 
-_wakaby_sf = np.vectorize(_wakeby_sf0, otypes=[float])
+
+_wakeby_sf = np.vectorize(_wakeby_sf0, otypes=[float])
 
 
 class wakeby_gen(rv_continuous):  # noqa: N801
+    a: float
+
     def _argcheck(self, b: float, d: float, f: float) -> bool:
         return (
-            (b + d >= 0)
+            np.isfinite(b)
+            & np.isfinite(d)
+            & (b + d >= 0)
             & ((b + d > 0) | (f == 1))
             & (f >= 0)
             & (f <= 1)
@@ -621,10 +690,18 @@ class wakeby_gen(rv_continuous):  # noqa: N801
         )
 
     def _shape_info(self) -> Sequence[_ShapeInfo]:
-        ib = _ShapeInfo('b', False, (-np.inf, np.inf), (False, False))
-        id = _ShapeInfo('d', False, (-np.inf, np.inf), (False, False))
-        if_ = _ShapeInfo('f', False, (0, 1), (True, True))
-        return [ib, id, if_]
+        ibeta = _ShapeInfo('b', False, (-np.inf, np.inf), (False, False))
+        idelta = _ShapeInfo('d', False, (-np.inf, np.inf), (False, False))
+        iphi = _ShapeInfo('f', False, (0, 1), (True, True))
+        return [ibeta, idelta, iphi]
+
+    def _get_support(
+        self,
+        b: float,
+        d: float,
+        f: float,
+    ) -> tuple[float, float]:
+        return self.a, f / b - (1 - f) / d if f == 1 or d < 0 else np.inf
 
     def _pdf(
         self,
@@ -634,17 +711,8 @@ class wakeby_gen(rv_continuous):  # noqa: N801
         f: float,
     ) -> npt.NDArray[np.float64]:
         # See Johnson, Kotz & Balakrishnan (1994), page 46
-        q = _wakaby_sf(x, b, d, f)
+        q = _wakeby_sf(x, b, d, f)
         return q**(d + 1) / (f * q**(b + d) + 1 - f)
-
-    def _sf(
-        self,
-        x: npt.NDArray[np.float64],
-        b: float,
-        d: float,
-        f: float,
-    ) -> npt.NDArray[np.float64]:
-        return _wakaby_sf(x, b, d, f)
 
     def _cdf(
         self,
@@ -653,7 +721,7 @@ class wakeby_gen(rv_continuous):  # noqa: N801
         d: float,
         f: float,
     ) -> npt.NDArray[np.float64]:
-        return 1 - _wakaby_sf(x, b, d, f)
+        return 1 - _wakeby_sf(x, b, d, f)
 
     def _ppf(
         self,
@@ -662,7 +730,7 @@ class wakeby_gen(rv_continuous):  # noqa: N801
         d: float,
         f: float,
     ) -> npt.NDArray[np.float64]:
-        return _wakaby_isf(1 - p, b, d, f)
+        return _wakeby_isf(1 - p, b, d, f)
 
     def _isf(
         self,
@@ -671,4 +739,29 @@ class wakeby_gen(rv_continuous):  # noqa: N801
         d: float,
         f: float,
     ) -> npt.NDArray[np.float64]:
-        return _wakaby_isf(q, b, d, f)
+        return _wakeby_isf(q, b, d, f)
+
+    def _stats(self, b: float, d: float, f: float) -> tuple[
+        float | None,
+        float | None,
+        float | None,
+        float | None,
+    ]:
+        u = f / (1 + b)
+        v = (1 - f) / (1 - d)
+
+        m1 = u + v
+        m2 = u**2 / (1 + 2 * b) + 2 * u * v / (1 + b - d) + v**2 / (1 - 2 * d)
+
+        return m1, m2, None, None
+
+
+wakeby: Final[wakeby_gen] = wakeby_gen(
+    momtype=1,
+    a=0.0,
+    name='wakeby',
+)
+"""
+A Wakeby random variable, a generalization of
+[`scipy.stats.genpareto`][scipy.stats.genpareto].
+"""
