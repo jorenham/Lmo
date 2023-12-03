@@ -595,40 +595,18 @@ def _wakeby_isf0(
 _wakeby_isf = np.vectorize(_wakeby_isf0, otypes=[float])
 
 
-def _wakeby_isf_d1(
-    q: float,
-    b: float,
-    d: float,
-    f: float,
-    x: float = 0.0,
-) -> float:
-    """First derivative of the inverse survival function."""
-    # avoid zero division errors
-    q = max(q, 1e-5)
-
-    return -f * q**(b - 1) - (1 - f) * q**(-d - 1)
-
-def _wakeby_isf_d2(
-    q: float,
-    b: float,
-    d: float,
-    f: float,
-    x: float = 0.0,
-) -> float:
-    """First derivative of the inverse survival function."""
-    # avoid zero division errors
-    q = max(q, 1e-5)
-
-    return -f * (b - 1) * q**(b - 2) - (1 - f) * (-1 - d) * q**(-d - 2)
-
-
-def _wakeby_sf0(  # noqa: C901
+def _wakeby_sf0(
     x: float,
     b: float,
     d: float,
     f: float,
 ) -> float:
-    """Wakeby survival function."""
+    """
+    Numerical approximation of Wakeby's survival function.
+
+    Uses a modified version of Halley's algorithm, as originally implemented
+    by J.R.M. Hosking in fortran: https://lib.stat.cmu.edu/general/lmoments
+    """
     if x <= 0:
         return 1.
 
@@ -657,18 +635,56 @@ def _wakeby_sf0(  # noqa: C901
             w / sc.lambertw(w * math.exp((1 + d * x) / f - 1))  # type: ignore
         )**(1 / d)
 
-    res = cast(
-        so.RootResults,
-        so.root_scalar(  # type: ignore
-            _wakeby_isf0,
-            args=(b, d, f, -x),
-            x0=_wakeby_isf0(0.5, b, d, f),  # median
-            fprime=_wakeby_isf_d1,
-            fprime2=_wakeby_isf_d2,
-            method='halley',
-        ),
-    )
-    return cast(float, res.root)
+    if x < _wakeby_isf0(.9, b, d, f):
+        z = 0
+    elif x >= _wakeby_isf0(.01, b, d, f):
+        if d < 0:
+            z = math.log(1 + (x - f / b) * d / (1 - f)) / d
+        elif d > 0:
+            z = math.log(1 + x * d / (1 - f)) / d
+        else:
+            z = (x - f / b) / (1 - f)
+    else:
+        z = .7
+
+    eps = 1e-8
+    maxit = 20
+    ufl = math.log(math.nextafter(0, 1))
+
+    for _ in range(maxit):
+        bz = -b * z
+        eb = math.exp(bz) if bz >= ufl else 0
+        gb = (1 - eb) / b if abs(b) > eps else z
+
+        ed = math.exp(d * z)
+        gd = (1 - ed) / d if abs(d) > eps else -z
+
+        x_est = f * gb - (1 - f) * gd
+        qd0 = x - x_est
+        qd1 = f * eb + (1 - f) * ed
+        qd2 = -f * b * eb + (1 - f) * d * ed
+
+        tmp = qd1 - .5 * qd0 * qd2 / qd1
+        if tmp <= 0:
+            tmp = qd1
+
+        z_inc = min(qd0 / tmp, 3)
+        z_new = z + z_inc
+        if z_new <= 0:
+            z /= 5
+            continue
+        z = z_new
+
+        if abs(z_inc) <= eps:
+            break
+    else:
+        warnings.warn(
+            'Wakeby SF did not converge, the result may be unreliable',
+            RuntimeWarning,
+            stacklevel=4,
+        )
+
+    return math.exp(-z) if -z >= ufl else 1
 
 
 _wakeby_sf = np.vectorize(_wakeby_sf0, otypes=[float])
