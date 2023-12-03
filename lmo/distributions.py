@@ -24,7 +24,6 @@ from typing import (
 import numpy as np
 import numpy.polynomial as npp
 import numpy.typing as npt
-import scipy.optimize as so  # type: ignore
 import scipy.special as sc  # type: ignore
 from scipy.stats._distn_infrastructure import _ShapeInfo  # type: ignore
 from scipy.stats.distributions import (  # type: ignore
@@ -567,7 +566,6 @@ def _wakeby_isf0(
     b: float,
     d: float,
     f: float,
-    x: float = 0.0,
 ) -> float:
     """Inverse survival function, does not validate params."""
     if q == 0:
@@ -590,12 +588,12 @@ def _wakeby_isf0(
         nd = -d
         v = (q**nd - 1) / nd
 
-    return x - f * u - (1 - f) * v
+    return -f * u - (1 - f) * v
 
 _wakeby_isf = np.vectorize(_wakeby_isf0, otypes=[float])
 
 
-def _wakeby_sf0(
+def _wakeby_sf0(  # noqa: C901
     x: float,
     b: float,
     d: float,
