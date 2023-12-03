@@ -1118,8 +1118,8 @@ Lmo figured out that all of Wakeby's (trimmed) L-moments can be expressed as
 \end{equation}
 \]
 
-Unfortunately, the Wakeby distribution has currently no
-[`scipy.stats`][scipy.stats] implementation.
+The Wakeby distribution is implemented in
+[`lmo.distributions.wakeby`][lmo.distributions.wakeby].
 
 !!! info "Special cases"
 

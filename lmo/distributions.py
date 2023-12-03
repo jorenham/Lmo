@@ -535,11 +535,7 @@ class kumaraswamy_gen(rv_continuous):  # noqa: N801
         )
 
 
-kumaraswamy: Final[rv_continuous] = kumaraswamy_gen(
-    a=0.0,
-    b=1.0,
-    name='kumaraswamy',
-)
+kumaraswamy: rv_continuous = kumaraswamy_gen(a=0.0, b=1.0, name='kumaraswamy')
 r"""
 A Kumaraswamy random variable, similar to
 [`scipy.stats.beta`][scipy.stats.beta].
@@ -801,12 +797,11 @@ class wakeby_gen(rv_continuous):  # noqa: N801
         return m1, m2, m3, m4
 
 
-wakeby: Final[wakeby_gen] = wakeby_gen(
-    momtype=1,
-    a=0.0,
-    name='wakeby',
-)
-"""
-A Wakeby random variable, a generalization of
+wakeby: rv_continuous = wakeby_gen(a=0, name='wakeby')
+r"""A Wakeby random variable, a generalization of
 [`scipy.stats.genpareto`][scipy.stats.genpareto].
+
+[`wakeby`][wakeby] takes \( b \), \( d \) and \( f \) as shape parameters.
+
+For details, see [Theoretical L-moments - Wakeby](distributions.md#wakeby).
 """
