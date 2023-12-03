@@ -761,13 +761,34 @@ class wakeby_gen(rv_continuous):  # noqa: N801
         float | None,
         float | None,
     ]:
+        if d >= 1:
+            # hard NaN (not inf); indeterminate integral
+            return math.nan, math.nan, math.nan, math.nan
+
         u = f / (1 + b)
         v = (1 - f) / (1 - d)
 
         m1 = u + v
-        m2 = u**2 / (1 + 2 * b) + 2 * u * v / (1 + b - d) + v**2 / (1 - 2 * d)
 
-        return m1, m2, None, None
+        if d >= 1 / 2:
+            return m1, math.nan, math.nan, math.nan
+
+        m2 = (
+            u**2 / (1 + 2 * b)
+            + 2 * u * v / (1 + b - d)
+            + v**2 / (1 - 2 * d)
+        )
+
+        # no skewness and kurtosis (yet?); the equations are kinda huge...
+        if d >= 1 / 3:
+            return m1, m2, math.nan, math.nan
+        m3 = None
+
+        if d >= 1 / 4:
+            return m1, m2, m3, math.nan
+        m4 = None
+
+        return m1, m2, m3, m4
 
 
 wakeby: Final[wakeby_gen] = wakeby_gen(
