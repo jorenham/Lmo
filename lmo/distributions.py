@@ -593,6 +593,17 @@ def _wakeby_isf0(
 _wakeby_isf = np.vectorize(_wakeby_isf0, otypes=[float])
 
 
+def _wakeby_qdf(
+    p: npt.NDArray[np.float64],
+    b: float,
+    d: float,
+    f: float,
+) -> npt.NDArray[np.float64]:
+    """Quantile densitity function (QDF), the derivative of the PPF."""
+    q = 1 - p
+    return f * q**(b - 1) + (1 - f) * q**(-d - 1)
+
+
 def _wakeby_sf0(  # noqa: C901
     x: float,
     b: float,
@@ -682,7 +693,7 @@ def _wakeby_sf0(  # noqa: C901
             stacklevel=4,
         )
 
-    return math.exp(-z) if -z >= ufl else 1
+    return math.exp(-z) if -z >= ufl else 0
 
 
 _wakeby_sf = np.vectorize(_wakeby_sf0, otypes=[float])
@@ -724,9 +735,8 @@ class wakeby_gen(rv_continuous):  # noqa: N801
         d: float,
         f: float,
     ) -> npt.NDArray[np.float64]:
-        # See Johnson, Kotz & Balakrishnan (1994), page 46
-        q = _wakeby_sf(x, b, d, f)
-        return q**(d + 1) / (f * q**(b + d) + 1 - f)
+        # application of the inverse function theorem
+        return 1 / _wakeby_qdf(self._cdf(x, b, d, f), b, d, f)
 
     def _cdf(
         self,
