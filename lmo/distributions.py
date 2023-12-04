@@ -631,6 +631,12 @@ def _wakeby_sf0(  # noqa: C901
     if f == 0:
         # GPD (no upper bound)
         return (1 + d * x)**(-1 / d)
+    if b == d and b > 0:
+        # unnamed special case
+        cx = b * x
+        return (
+            (2 * f - cx - 1 + math.sqrt((cx + 1)**2 - 4 * cx * f)) / (2 * f)
+        )**(1 / b)
     if b == 0 and d != 0:
         # https://wikipedia.org/wiki/Lambert_W_function
         # it's easy to show that this is valid for all x, f, and d
