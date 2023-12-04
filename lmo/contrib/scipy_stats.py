@@ -284,6 +284,9 @@ class l_rv_generic(PatchClass):  # noqa: N801
         _r = clean_orders(r)
         _trim = clean_trim(trim)
 
+        if not self._argcheck(*args, **kwds):
+            return np.full(_r.shape, np.nan)[()]
+
         args, loc, scale = self._parse_args(*args, **kwds)
 
         if _trim[0] <= 0 and _trim[1] <= 0:
