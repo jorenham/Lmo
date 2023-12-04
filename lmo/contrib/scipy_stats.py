@@ -284,10 +284,9 @@ class l_rv_generic(PatchClass):  # noqa: N801
         _r = clean_orders(r)
         _trim = clean_trim(trim)
 
-        if not self._argcheck(*args, **kwds):
-            return np.full(_r.shape, np.nan)[()]
-
         args, loc, scale = self._parse_args(*args, **kwds)
+        if not self._argcheck(*args):
+            return np.full(_r.shape, np.nan)[()]
 
         if _trim[0] <= 0 and _trim[1] <= 0:
             mu1 = self._stats(*args)[0]
