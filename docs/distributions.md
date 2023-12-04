@@ -742,7 +742,7 @@ The general trimmed L-moments of the Gompertz distribution are:
             \binom{r + k - 2}{r + t - 1}
             \binom{r + s + t}{k}
             e^{\alpha k} \
-            \Gamma(0,\ \alpha k)
+            \Gamma_{\alpha k}(0)
     \label{eq:lr_gompertz}
     \end{equation}
 \]
@@ -825,7 +825,7 @@ For \( -1 < \alpha < 1 \), the general trimmed L-moments of the GLO are:
     \begin{equation}
         \tlmoment{s, t}{r} = \begin{cases}
             \displaystyle
-                \psi(s + 1) - \psi(t + 1)
+                \digamma(s + 1) - \digamma(t + 1)
             & \text{if } \alpha = 0 \wedge r = 1 \\
             \displaystyle
                 \frac{(-1)^r}{r} \B(r - 1,\ s + 1)
@@ -844,7 +844,7 @@ For \( -1 < \alpha < 1 \), the general trimmed L-moments of the GLO are:
     \end{equation}
 \]
 
-Where \( \psi(z) \) is the [digamma function](#def-digamma).
+Where \( \digamma(z) \) is the [digamma function](#def-digamma).
 
 The corresponding `scipy.stats` implementation is
 [`kappa4`][scipy.stats.kappa4], with `h = -1` and `k` set to \( \alpha \);
@@ -1075,11 +1075,17 @@ The domain of the distribution is
 \[
 x \in \begin{cases}
     \displaystyle
-    \big[0,\ \infty\big)
-        & \text{if }  \delta \ge 0 \text{ and } \phi < 1  \\
-    \displaystyle
     \left[0,\ \frac{\phi}{\beta} - \frac{1 - \phi}{\delta} \right]
-        & \text{if } \delta < 0 \text{ or } \phi = 1 \\
+        & \text{if } \delta < 0 \vee (
+            \phi = 1 \wedge
+            \beta \, \delta \neq 0
+        ) \\
+    \displaystyle
+    \big[0,\ \infty\big]
+        & \text{if }  \beta = 0 \vee (
+            \phi < 1 \wedge
+            \delta \ge 0
+        )
 \end{cases}
 \]
 
@@ -1097,29 +1103,49 @@ x(F) =
     - \frac{1 - \phi}{\delta} (1 - (1 - F)^{-\delta})
 \]
 
-Lmo figured out that all of Wakeby's (trimmed) L-moments can be expressed as
+Lmo figured out that when \( \delta < t + 1 \), all of Wakeby's (trimmed)
+L-moments can be expressed as
 
 \[
-\begin{equation}
+\begin{align}
+    \tlmoment{s,t}{1}
+    &= \phi \left(
+    \begin{cases}
+        \displaystyle H_{s + t + 1} - H_t
+            & \text{if } \beta = 0 \\
+        \displaystyle \frac{1}{\beta} - \frac
+            {\rfact{t + 1}{s + 1}}
+            {\beta \ \rfact{t + 1 + \beta }{s + 1}}
+            & \text{if } \beta \neq 0
+    \end{cases}
+    \right)
+    + (1 - \phi) \left(
+    \begin{cases}
+        \displaystyle H_{s + t + 1} - H_t
+            & \text{if } \delta = 0 \\
+        \displaystyle \frac
+            {\rfact{t + 1}{s + 1}}
+            {\delta \rfact{t + 1 - \delta}{s + 1}}
+        - \frac{1}{\delta}
+            & \text{if } \delta \neq 0
+    \end{cases}
+    \right) \\
     \tlmoment{s,t}{r}
-        = -\frac{\rfact{r + t}{s + 1}}{r} \left[
-            \phi \frac
-                {\rfact{1 - \beta}{r - 2}}
-                {\rfact{1 + \beta + t}{r + s}}
-            + (1 - \phi) \frac
-                {\rfact{1 + \delta}{r - 2}}
-                {\rfact{1 - \delta + t}{r + s}}
-        \right]
-        - \underbrace{
-            \ffact{1}{r} \left(
-                \frac{\phi}{\beta} - \frac{1 - \phi}{\delta}
-            \right)
-        }_{\text{will be } 0 \text{ if } r>1}
-\end{equation}
+    &= \frac{\rfact{r + t}{s + 1}}{r} \left(
+        \phi \frac
+            {\rfact{1 - \beta}{r - 2}}
+            { \rfact{1 + \beta + t}{r + s}}
+        + (1 - \phi) \frac
+            {\rfact{1 + \delta}{r - 2}}
+            {\rfact{1 - \delta + t}{r + s}}
+    \right) \quad \text{for } r > 1
+\end{align}
 \]
 
-The Wakeby distribution is implemented in
-[`lmo.distributions.wakeby`][lmo.distributions.wakeby].
+where \( H_n \) is a [harmonic number](#def-harmonic).
+
+See [`lmo.distributions.wakeby`][lmo.distributions.wakeby] for the
+implementation.
 
 !!! info "Special cases"
 
@@ -1144,7 +1170,7 @@ The Wakeby distribution is implemented in
     variant that is generally used, after scaling by \( \sigma \) and shifting
     by \( \xi \). The shape parameters \( \beta \) and \( \delta \) are
     (intentionally) equivalent, the scale parameters are related by
-    ( \alpha \equiv \sigma \phi \) and \( gamma \equiv \sigma (1 - \phi) \),
+    \( \alpha \equiv \sigma \phi \) and \( gamma \equiv \sigma (1 - \phi) \),
     and the location parameter is precisely \( \xi \).
 
     Conversely, Lmo's "standard" Wakeby distribution can by obtained from
@@ -1216,12 +1242,12 @@ and constants.
         <td>
             $$
             \begin{align\*}
+                &= \lim_{x \to 0} \left( \frac 1 x - \Gamma(x) \right) \\\\
                 &= \int_1^\infty
                     \left(
                         \frac{1}{\lfloor x \rfloor} - \frac 1 x
                     \right) \
                     \mathrm{d} x \\\\
-                &= \lim_{x \to 0} \left( \frac 1 x - \Gamma(x) \right) \\\\
                 &\approx 0.5772 \vphantom{\frac 1 1}
             \end{align\*}
             $$
@@ -1236,12 +1262,83 @@ and constants.
         <td>
             $$
             \begin{align\*}
-                &= \arctan \left( \sqrt 2 \right) \\\\
-                &= \arccos \left( 1 / \sqrt 3 \right)
+                &= \tan^{-1} \sqrt 2 = \cos^{-1} \frac{1}{\sqrt 3} \\\\
+                &\approx 0.9553
             \end{align\*}
             $$
         </td>
         <td>[`lmo.constants.theta_m`][lmo.constants.theta_m]</td>
+    </tr>
+    <tr id="def-gammainc" class="row-double-top">
+        <td>
+            [Incomplete Gamma function
+            ](https://wikipedia.org/wiki/Incomplete_gamma_function)
+        </td>
+        <td>\( \Gamma_a(z) \)</td>
+        <td>
+            $$
+            = \int_a^\infty t^{z - 1} e^{-t} \, \mathrm{d} t
+            $$
+        </td>
+        <td>[`lmo.special.gamma2`][lmo.special.gamma2]</td>
+    </tr>
+    <tr id="def-gamma">
+        <td>
+            [Gamma function](https://wikipedia.org/wiki/Gamma_function)
+        </td>
+        <td>\( \Gamma(z) \)</td>
+        <td>\( = \Gamma_0(z) \)</td>
+        <td>
+            [`math.gamma`][math.gamma]<br>
+            [`scipy.special.gamma`][scipy.special.gamma]
+        </td>
+    </tr>
+    <tr id="def-digamma">
+        <td>
+            [Digamma function](https://wikipedia.org/wiki/Digamma_function)<br>
+            (a.k.a. \( \psi(z) \ \), yet
+            ["psi"](https://en.wikipedia.org/wiki/Psi_(Greek)) \( \neq \)
+            ["digamma"](https://wikipedia.org/wiki/Digamma))
+        </td>
+        <td>\( \digamma(z) \)</td>
+        <td>
+            $$
+            \begin{align\*}
+            &= \frac{\mathrm{d}}{\mathrm{d}z} \ln \Gamma(z)
+                = \frac{\Gamma'(z)}{\Gamma(z)} \\\\
+            &= \int_0^1 \frac{1 - t^z}{1 - t} \mathrm{d} t - \gamma_e
+            \end{align\*}
+            $$
+        </td>
+        <td>[`scipy.special.digamma`][scipy.special.digamma]</td>
+    </tr>
+    <tr id="def-beta">
+        <td>
+            [Beta function](https://wikipedia.org/wiki/Beta_function)
+        </td>
+        <td>\( \B(x,\ y) \)</td>
+        <td>
+            $$
+            \begin{align\*}
+            &= \frac{\Gamma(x) \Gamma(y)}{\Gamma(x + y)} \\\\
+            &= \int_0^1 t^{x - 1} (1 - t)^{y - 1} \ \mathrm{d} t
+            \end{align\*}
+            $$
+        </td>
+        <td>[`scipy.special.beta`][scipy.special.beta]</td>
+    </tr>
+    <tr id="def-zeta">
+        <td>
+            [Riemann zeta function
+            ](https://wikipedia.org/wiki/Riemann_zeta_function)
+        </td>
+        <td>\( \zeta(z) \)</td>
+        <td>
+            $$
+            = \sum_{n = 1}^{\infty} \frac{1}{n^z}
+            $$
+        </td>
+        <td>[`scipy.special.zeta`][scipy.special.zeta]</td>
     </tr>
     <tr id="def-factorial" class="row-double-top">
         <td>
@@ -1250,27 +1347,31 @@ and constants.
         <td>$$ n! \vphantom{\prod_{k=1}^n k} $$</td>
         <td>
             $$
-            \begin{align\*}
-                &= \prod_{k=1}^n k \\\\
-                &= 1 \times 2 \times \ldots \times n
-            \end{align\*}
+            = \begin{cases}
+                \displaystyle \prod_{k=1}^n k
+                    & \text{if } n \in \mathbb{N} \\\\
+                \displaystyle \Gamma(n - 1)
+                    & \text{otherwise}
+            \end{cases}
             $$
         </td>
-        <td>[`scipy.special.factorial`][scipy.special.factorial]</td>
+        <td>
+            [`math.factorial`][math.factorial]<br>
+            [`scipy.special.factorial`][scipy.special.factorial]
+        </td>
     </tr>
     <tr id="def-falling">
         <td>
             [Falling factorial
-            ](https://wikipedia.org/wiki/Falling_and_rising_factorials)
+            ](https://wikipedia.org/wiki/Falling_and_rising_factorials)<br>
+            (a.k.a. the *falling power*)
         </td>
         <td>\( \ffact{x}{n} \)</td>
         <td>
             $$
-            \begin{align\*}
-                &= \frac{\Gamma(x + 1)}{\Gamma(x - n + 1)} \\\\
-                &= \prod_{k=0}^{n-1} (x - k)
-                    \quad (\text{if } n \in \mathbb{n})
-            \end{align\*}
+                = \frac{x!}{(x - n)!}
+                = \frac{\Gamma(x + 1)}{\Gamma(x - n + 1)}
+                = \rfact{x - n + 1}{n}
             $$
         </td>
         <td>[`lmo.special.fpow`][lmo.special.fpow]</td>
@@ -1278,16 +1379,15 @@ and constants.
     <tr id="def-rising">
         <td>
             [Rising factorial
-            ](https://wikipedia.org/wiki/Falling_and_rising_factorials)
+            ](https://wikipedia.org/wiki/Falling_and_rising_factorials) <br>
+            (a.k.a. the *pochhammer symbol*)
         </td>
         <td>\( \rfact{x}{n} \)</td>
         <td>
             $$
-            \begin{align\*}
-                &= \frac{\Gamma(x + n)}{\Gamma(x)} \\\\
-                &= \prod_{k=0}^{n-1} (x + k)
-                    \quad (\text{if } n \in \mathbb{n})
-            \end{align\*}
+                = \frac{\Gamma(x + n)}{\Gamma(x)}
+                = \frac{(x + n - 1)!}{(x - 1)!}
+                = \ffact{x + n - 1}{n}
             $$
         </td>
         <td>[`scipy.special.poch`][scipy.special.poch]</td>
@@ -1300,63 +1400,32 @@ and constants.
         <td>$$ \binom n k $$</td>
         <td>
             $$
-            \begin{align\*}
-                &= \frac{n!}{k! \ (n - k)!} \\\\
-                &= \frac{\ffact{n}{k}}{k!}
-            \end{align\*}
+                = \frac{n!}{k! \ (n - k)!}
+                = \frac{1}{k \ \B(k,\ n - k + 1)}
             $$
         </td>
-        <td>[`scipy.special.comb`][scipy.special.comb]</td>
-    </tr>
-    <tr id="def-gamma" class="row-double-top">
         <td>
-            [Gamma function](https://wikipedia.org/wiki/Gamma_function)
+            [`math.comb`][math.comb]<br>
+            [`scipy.special.comb`][scipy.special.comb]
         </td>
-        <td>\( \Gamma(z) \)</td>
-        <td>\( = \int_0^\infty t^{z-1} e^{-t} \, \mathrm{d} t \)</td>
-        <td>[`scipy.special.gamma`][scipy.special.gamma]</td>
     </tr>
-    <tr id="def-gammainc" class="row-double-top">
+    <tr id="def-harmonic">
         <td>
-            [Incomplete Gamma function
-            ](https://wikipedia.org/wiki/Incomplete_gamma_function)
+            [Harmonic number
+            ](https://wikipedia.org/wiki/Harmonic_number)
         </td>
-        <td>\( \Gamma(a,\ x) \)</td>
-        <td>\( = \int_x^\infty t^{a - 1} e^{-t} \, \mathrm{d} t \)</td>
-        <td>[`lmo.special.gamma2`][lmo.special.gamma2]</td>
-    </tr>
-    <tr id="def-digamma">
-        <td>
-            [Digamma function](https://wikipedia.org/wiki/Digamma_function)
-        </td>
-        <td>\( \psi(z) \)</td>
+        <td>\( H_n \)</td>
         <td>
             $$
-            = \frac{\mathrm{d}}{\mathrm{d}z} \ln \Gamma(z)
+            = \begin{cases}
+                \displaystyle \sum_{k=1}^n \frac{1}{k}
+                    & \text{if } n \in \mathbb{N} \\\\
+                \displaystyle \digamma(n + 1) + \gamma_e
+                    & \text{otherwise}
+            \end{cases}
             $$
         </td>
-        <td>[`scipy.special.digamma`][scipy.special.digamma]</td>
-    </tr>
-    <tr id="def-beta">
-        <td>
-            [Beta function](https://wikipedia.org/wiki/Beta_function)
-        </td>
-        <td>\( \B(x,\ y) \)</td>
-        <td>
-            $$
-            = \frac{\Gamma(x) \Gamma(y)}{\Gamma(x + y)}
-            $$
-        </td>
-        <td>[`scipy.special.beta`][scipy.special.beta]</td>
-    </tr>
-    <tr id="def-zeta">
-        <td>
-            [Riemann zeta function
-            ](https://wikipedia.org/wiki/Riemann_zeta_function)
-        </td>
-        <td>\( \zeta(z) \)</td>
-        <td>$$ = \sum_{n = 1}^{\infty} n^{-z} $$</td>
-        <td>[`scipy.special.zeta`][scipy.special.zeta]</td>
+        <td>[`lmo.special.harmonic`][lmo.special.harmonic]</td>
     </tr>
     <tr id="def-jacobi" class="row-double-top">
         <td>
@@ -1384,7 +1453,7 @@ and constants.
             = \begin{cases}
                 \displaystyle e^x
                     & \text{if } q = 0 \\\\
-                \displaystyle (1 + q x)^{1 / q}
+                \displaystyle (1 + q x)^{\frac{1}{q}}
                     & \text{otherwise}
             \end{cases}
             $$
@@ -1393,15 +1462,17 @@ and constants.
     </tr>
     <tr id="def-qlog">
         <td>
-            [*q*-logarithm](https://wikipedia.org/wiki/Tsallis_statistics)
+            [*q*-logarithm](https://wikipedia.org/wiki/Tsallis_statistics)<br>
+            (a.k.a. the
+            [Box-Cox transform](https://wikipedia.org/wiki/Power_transform))
         </td>
         <td>\( \qlog{1 - q}{y} \)</td>
         <td>
             $$
             = \begin{cases}
-                \displaystyle \ln(y)
+                \displaystyle \ln y
                     & \text{if } q = 0 \\\\
-                \displaystyle \left( y^q - 1 \right) / q
+                \displaystyle \frac{y^q - 1}{q}
                     & \text{otherwise}
             \end{cases}
             $$
