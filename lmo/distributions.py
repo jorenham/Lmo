@@ -548,6 +548,15 @@ See Also:
 """
 
 
+def _wakeby_ub(b: float, d: float, f: float) -> float:
+    """Upper bound of x."""
+    if d < 0:
+        return f / b - (1 - f) / d
+    if f == 1 and b:
+        return 1 / b
+    return math.inf
+
+
 def _wakeby_isf0(
     q: float,
     b: float,
@@ -555,9 +564,9 @@ def _wakeby_isf0(
     f: float,
 ) -> float:
     """Inverse survival function, does not validate params."""
-    if q == 0:
-        return math.inf if f < 1 and d >= 0 else f / b - (1 - f) / d
-    if q == 1:
+    if q <= 0:
+        return _wakeby_ub(b, d, f)
+    if q >= 1:
         return 0.
 
     if f == 0:
@@ -606,8 +615,7 @@ def _wakeby_sf0(  # noqa: C901
     if x <= 0:
         return 1.
 
-    x_max = np.inf if f < 1 and d >= 0 else f / b - (1 - f) / d
-    if x >= x_max:
+    if x >= _wakeby_ub(b, d, f):
         return 0.
 
     if b == f == 1:
@@ -700,44 +708,27 @@ def _wakeby_lmo0(
     if d >= (b == 0) + 1 + t:
         return math.nan
 
-    if f == 0:
-        u = 0
-    elif b == 0:
-        if r == 1:
-            u = cast(float, harmonic(s + t + 1) - harmonic(t))
-        else:
-            u = sc.beta(r - 1, 1 + t)  # type: ignore
-    else:
-        u = (
-            sc.poch(r + t, s + 1)
-            * sc.poch(1 - b, r - 2)
-            / sc.poch(1 + b + t, r + s)
-            + (r == 1) / b
-        )
+    def _lmo0_partial(theta: float, scale: float) -> float:
+        if scale == 0:
+            return 0
+        if r == 1 and theta == 0:
+            return cast(float, harmonic(s + t + 1) - harmonic(t))
 
-    if f == 1:
-        v = 0
-    elif d == 0:
-        if r == 1:
-            v = cast(float, harmonic(s + t + 1) - harmonic(t))
-        else:
-            v = sc.beta(r - 1, 1 + t)  # type: ignore
-    else:
-        v = (
+        return scale * (
             sc.poch(r + t, s + 1)
-            * sc.poch(1 + d, r - 2)
-            / sc.poch(1 - d + t, r + s)
-            - (r == 1) / d
-        )
+            * sc.poch(1 - theta, r - 2)
+            / sc.poch(1 + theta + t, r + s)
+            + (1 / theta if r == 1 else 0)
+        ) / r
 
-    return (f * u + (1 - f) * v) / r
+    return _lmo0_partial(b, f) + _lmo0_partial(-d, 1 - f)
 
 _wakeby_lmo = np.vectorize(_wakeby_lmo0, [float], excluded={1, 2})
 
 class wakeby_gen(rv_continuous):  # noqa: N801
     a: float
 
-    def _argcheck(self, b: float, d: float, f: float) -> bool:
+    def _argcheck(self, b: float, d: float, f: float) -> int:
         return (
             np.isfinite(b)
             & np.isfinite(d)
@@ -763,7 +754,8 @@ class wakeby_gen(rv_continuous):  # noqa: N801
     ) -> tuple[float, float]:
         if not self._argcheck(b, d, f):
             return math.nan, math.nan
-        return self.a, f / b - (1 - f) / d if f == 1 or d < 0 else np.inf
+
+        return self.a, _wakeby_ub(b, d, f)
 
     def _pdf(
         self,
