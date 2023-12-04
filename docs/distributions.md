@@ -1073,19 +1073,13 @@ Each of the following restrictions apply:
 The domain of the distribution is
 
 \[
-x \in \begin{cases}
-    \displaystyle
-    \left[0,\ \frac{\phi}{\beta} - \frac{1 - \phi}{\delta} \right]
-        & \text{if } \delta < 0 \vee (
-            \phi = 1 \wedge
-            \beta \, \delta \neq 0
-        ) \\
-    \displaystyle
-    \big[0,\ \infty\big]
-        & \text{if }  \beta = 0 \vee (
-            \phi < 1 \wedge
-            \delta \ge 0
-        )
+0 \le x \le \begin{cases}
+    \displaystyle \frac \phi \beta - \frac{1 - \phi}{\delta}
+        & \text{if } \delta < 0 \\
+    \displaystyle \frac 1 \beta
+        & \text{if } \beta > 0 \wedge \phi = 1 \\
+    \displaystyle \infty
+        & \text{otherwise}
 \end{cases}
 \]
 
