@@ -37,7 +37,7 @@ from ._utils import (
 )
 from .diagnostic import l_ratio_bounds
 from .special import harmonic
-from .theoretical import l_moment_from_cdf
+from .theoretical import l_moment_from_ppf
 from .typing import (
     AnyTrim,
     FloatVector,
@@ -426,11 +426,7 @@ def _kumaraswamy_lmo0(
         * cast(_ArrF8, sc.beta(1 / a, 1 + k * b)) / a  # type: ignore
     ).sum() / r
 
-_kumaraswamy_lmo = np.vectorize(
-    _kumaraswamy_lmo0,
-    otypes=[float],
-    excluded={1, 2, 3, 4},
-)
+_kumaraswamy_lmo = np.vectorize(_kumaraswamy_lmo0, [float], excluded={1, 2})
 
 
 class kumaraswamy_gen(rv_continuous):  # noqa: N801
@@ -515,24 +511,19 @@ class kumaraswamy_gen(rv_continuous):  # noqa: N801
         quad_opts: QuadOptions | None = None,
     ) -> _ArrF8:
         s, t = trim
-        lmbda_r: float | npt.NDArray[np.float64]
-        if isinstance(s, float) or isinstance(t, float):
-            lmbda_r = cast(
-                float | npt.NDArray[np.float64],
-                l_moment_from_cdf(
-                    functools.partial(self._cdf, a=a, b=b), # type: ignore
+        if quad_opts is not None or isinstance(s, float):
+            return cast(
+                _ArrF8,
+                super()._l_moment(  # type: ignore
                     r,
+                    a,
+                    b,
                     trim=trim,
-                    support=(0, 1),
-                    ppf=functools.partial(self._ppf, a=a, b=b), # type: ignore
                     quad_opts=quad_opts,
-                ),  # type: ignore
+                ),
             )
-            return np.asarray(lmbda_r)
 
-        return np.atleast_1d(
-            cast(_ArrF8, _kumaraswamy_lmo(r, s, t, a, b)),
-        )
+        return np.atleast_1d(cast(_ArrF8, _kumaraswamy_lmo(r, s, t, a, b)))
 
 
 kumaraswamy: rv_continuous = kumaraswamy_gen(a=0.0, b=1.0, name='kumaraswamy')
@@ -586,7 +577,7 @@ def _wakeby_isf0(
 
     return -f * u - (1 - f) * v
 
-_wakeby_isf = np.vectorize(_wakeby_isf0, otypes=[float])
+_wakeby_isf = np.vectorize(_wakeby_isf0, [float])
 
 
 def _wakeby_qdf(
@@ -692,8 +683,56 @@ def _wakeby_sf0(  # noqa: C901
     return math.exp(-z) if -z >= ufl else 0
 
 
-_wakeby_sf = np.vectorize(_wakeby_sf0, otypes=[float])
+_wakeby_sf = np.vectorize(_wakeby_sf0, [float])
 
+def _wakeby_lmo0(
+    r: int,
+    s: float,
+    t: float,
+    b: float,
+    d: float,
+    f: float,
+) -> float:
+    # TODO: thoroughly test this
+    if r == 0:
+        return 1.
+
+    if d >= (b == 0) + 1 + t:
+        return math.nan
+
+    if f == 0:
+        u = 0
+    elif b == 0:
+        if r == 1:
+            u = cast(float, harmonic(s + t + 1) - harmonic(t))
+        else:
+            u = sc.beta(r - 1, 1 + t)  # type: ignore
+    else:
+        u = (
+            sc.poch(r + t, s + 1)
+            * sc.poch(1 - b, r - 2)
+            / sc.poch(1 + b + t, r + s)
+            + (r == 1) / b
+        )
+
+    if f == 1:
+        v = 0
+    elif d == 0:
+        if r == 1:
+            v = cast(float, harmonic(s + t + 1) - harmonic(t))
+        else:
+            v = sc.beta(r - 1, 1 + t)  # type: ignore
+    else:
+        v = (
+            sc.poch(r + t, s + 1)
+            * sc.poch(1 + d, r - 2)
+            / sc.poch(1 - d + t, r + s)
+            - (r == 1) / d
+        )
+
+    return (f * u + (1 - f) * v) / r
+
+_wakeby_lmo = np.vectorize(_wakeby_lmo0, [float], excluded={1, 2})
 
 class wakeby_gen(rv_continuous):  # noqa: N801
     a: float
@@ -722,6 +761,8 @@ class wakeby_gen(rv_continuous):  # noqa: N801
         d: float,
         f: float,
     ) -> tuple[float, float]:
+        if not self._argcheck(b, d, f):
+            return math.nan, math.nan
         return self.a, f / b - (1 - f) / d if f == 1 or d < 0 else np.inf
 
     def _pdf(
@@ -796,8 +837,36 @@ class wakeby_gen(rv_continuous):  # noqa: N801
 
         return m1, m2, m3, m4
 
+    def _l_moment(
+        self,
+        r: npt.NDArray[np.int64],
+        b: float,
+        d: float,
+        f: float,
+        trim: tuple[int, int] | tuple[float, float],
+        quad_opts: QuadOptions | None = None,
+    ) -> _ArrF8:
+        s, t = trim
 
-wakeby: rv_continuous = wakeby_gen(a=0, name='wakeby')
+        if quad_opts is not None:
+            # only do numerical integration when quad_opts is passed
+            lmbda_r = cast(
+                float | npt.NDArray[np.float64],
+                l_moment_from_ppf(
+                    functools.partial(self._ppf, b=b, d=d, f=f), # type: ignore
+                    r,
+                    trim=trim,
+                    quad_opts=quad_opts,
+                ),  # type: ignore
+            )
+            return np.asarray(lmbda_r)
+
+        return np.atleast_1d(
+            cast(_ArrF8, _wakeby_lmo(r, s, t, b, d, f)),
+        )
+
+
+wakeby: rv_continuous = wakeby_gen(a=.0, name='wakeby')
 r"""A Wakeby random variable, a generalization of
 [`scipy.stats.genpareto`][scipy.stats.genpareto].
 
