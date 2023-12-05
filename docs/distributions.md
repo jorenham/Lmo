@@ -869,59 +869,54 @@ distribution functions:
     \end{align*}
 \]
 
-Note that this distribution is standard uniform if \( \alpha = 1 \), and
-standard exponential if \( \alpha = 0 \).
 
-The general trimmed L-moments of the GPD are:
+The L-moments of the GPD exist when \( \alpha < 1 + t \), and can be
+compactly expressed as
 
 \[
     \begin{equation}
         \tlmoment{s,t}{r} = \begin{cases}
-            \displaystyle \sum_{k = 1}^{s + 1} \frac{1}{t + k}
+            \displaystyle H_{s + t + 1} - H_t
                 & \text{if } \alpha = 0 \wedge r = 1 \\
-            \frac{1}{r} \B(r - 1,\ t + 1)
-                & \text{if } \alpha = 0 \\
-            \displaystyle \frac{r + s + t}{\alpha \ r} \sum_{k = 0}^{r + t - 1}
-                \frac{(-1)^{r - k}}{k}
-                \binom{r + s + t - 1}{k + s}
-                \binom{r + s + k - 1}{k}
-                \left(
-                    1 - \frac{(k + 1)!}{\rfact{1 - \alpha}{k + 1}}
-                \right)
-                & \text{if } \alpha < 1
+            \displaystyle \frac{1}{\alpha r} \left[
+                \frac
+                    {\B(t + 1 - \alpha,\ r - 1 + \alpha)}
+                    {\B(r + s + t - 1 - \alpha,\ \alpha)}
+                - \ffact{1}{r}
+            \right]
+                & \text{otherwise,}
         \end{cases}
         \label{eq:lr_gpd}
     \end{equation}
 \]
 
-Apparently left-trimming the exponential distribution does not influence any
-of the L-moments, besides the L-location.
+where \( H_n \) is a [harmonic number](#def-harmonic).
 
-For the general LH-moments, this simplifies to:
+See [`scipy.stats.genpareto`][scipy.stats.genpareto] for an Lmo-compatible
+implementation.
 
-\[
-    \begin{equation}
-        \tlmoment{0,t}{r} = \begin{cases}
-             \displaystyle \frac{1}{t + 1}
-                & \text{if } \alpha = 0 \wedge r = 1 \\
-            \frac{1}{r} \B(r - 1,\ t + 1)
-                & \text{if } \alpha = 0 \wedge r > 1 \\
-            \displaystyle \frac{r + t}{r}
-                \frac{\rfact{1 + \alpha}{r - 2}}{\rfact{1 - \alpha + t}{r}}
-                - \frac{\ffact{1}{r}}{\alpha}
-                & \text{if } \alpha < 1
-        \end{cases}
-        \label{eq:lhr_gpd}
-    \end{equation}
-\]
+!!! info "Special cases"
 
-See [`scipy.stats.genpareto`][scipy.stats.genpareto] for the implementation of
-the GPD.
+    There are several notable special cases of the GPD:
 
-Note that the GPD is a reparametrized [\( q \)-exponential distribution
-](https://wikipedia.org/wiki/Q-exponential_distribution), where
-\( q = (2 \alpha + 1) / (\alpha + 1) \) and \( \lambda = 1 / (2 - q) \) s.t.
-\( \alpha \neq -1 \) and \( q < 2 \).
+    [\( q \)-Exponential](https://wikipedia.org/wiki/Q-exponential_distribution)
+    :   When \( \alpha > -1 \), GPD is \( q \)-exponential with shape
+        \( q = 2 - 1 / (1 + \alpha) \) and rate (inverse scale)
+        \( \lambda = \alpha + 1 \).
+
+    [Exponential](https://wikipedia.org/wiki/Exponential_distribution)
+    :   When \( \alpha = 0 \), GPD is standard exponential.
+
+    [Uniform](https://wikipedia.org/wiki/Continuous_uniform_distribution)
+    :   When \( \alpha = 1 \) GPD is uniform on \( [0, 1] \).
+
+!!! info "Generalizations"
+
+    [Wakeby's distribution](#wakeby)
+    :   Implemented in Lmo, see below.
+
+    [Kappa distribution](https://doi.org/10.1147/rd.383.0251)
+    :   Not implemented (yet?).
 
 ### Burr III / Dagum
 
