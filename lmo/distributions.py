@@ -1,5 +1,4 @@
 """Probability distributions, compatible with [`scipy.stats`][scipy.stats]."""
-
 __all__ = (
     'l_rv_nonparametric',
     'kumaraswamy',
@@ -27,7 +26,7 @@ import numpy.typing as npt
 import scipy.special as sc  # type: ignore
 from scipy.stats._distn_infrastructure import _ShapeInfo  # type: ignore
 from scipy.stats.distributions import (  # type: ignore
-    rv_continuous,
+    rv_continuous as _rv_continuous,
 )
 
 from ._poly import jacobi_series, roots
@@ -43,6 +42,7 @@ from .typing import (
     FloatVector,
     PolySeries,
     QuadOptions,
+    RVContinuous,
 )
 
 T = TypeVar('T')
@@ -50,6 +50,7 @@ X = TypeVar('X', bound='l_rv_nonparametric')
 F = TypeVar('F', bound=np.floating[Any])
 M = TypeVar('M', bound=Callable[..., Any])
 V = TypeVar('V', bound=float | npt.NDArray[np.float64])
+
 
 _F_EPS: Final[np.float64] = np.finfo(float).eps
 
@@ -97,7 +98,7 @@ def _ppf_poly_series(
         symbol='q',
     )
 
-class l_rv_nonparametric(rv_continuous):  # noqa: N801
+class l_rv_nonparametric(_rv_continuous):  # noqa: N801
     r"""
     Estimate a distribution using the given L-moments.
     See [`scipy.stats.rv_continuous`][scipy.stats.rv_continuous] for the
@@ -429,7 +430,7 @@ def _kumaraswamy_lmo0(
 _kumaraswamy_lmo = np.vectorize(_kumaraswamy_lmo0, [float], excluded={1, 2})
 
 
-class kumaraswamy_gen(rv_continuous):  # noqa: N801
+class kumaraswamy_gen(_rv_continuous):  # noqa: N801
     def _argcheck(self, a: float, b: float) -> bool:
         return (a > 0) & (b > 0)
 
@@ -525,8 +526,11 @@ class kumaraswamy_gen(rv_continuous):  # noqa: N801
 
         return np.atleast_1d(cast(_ArrF8, _kumaraswamy_lmo(r, s, t, a, b)))
 
-
-kumaraswamy: rv_continuous = kumaraswamy_gen(a=0.0, b=1.0, name='kumaraswamy')
+kumaraswamy: RVContinuous[float, float] = kumaraswamy_gen(
+    a=0.0,
+    b=1.0,
+    name='kumaraswamy',
+)  # type: ignore
 r"""
 A Kumaraswamy random variable, similar to
 [`scipy.stats.beta`][scipy.stats.beta].
@@ -729,7 +733,7 @@ def _wakeby_lmo0(
 
 _wakeby_lmo = np.vectorize(_wakeby_lmo0, [float], excluded={1, 2})
 
-class wakeby_gen(rv_continuous):  # noqa: N801
+class wakeby_gen(_rv_continuous):  # noqa: N801
     a: float
 
     def _argcheck(self, b: float, d: float, f: float) -> int:
@@ -862,7 +866,10 @@ class wakeby_gen(rv_continuous):  # noqa: N801
         )
 
 
-wakeby: rv_continuous = wakeby_gen(a=.0, name='wakeby')
+wakeby: RVContinuous[float, float, float] = wakeby_gen(
+    a=0.0,
+    name='wakeby',
+)  # type: ignore
 r"""A Wakeby random variable, a generalization of
 [`scipy.stats.genpareto`][scipy.stats.genpareto].
 
