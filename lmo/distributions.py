@@ -581,8 +581,7 @@ def _wakeby_isf0(
     elif d == 0:
         v = u if b == 0 and f != 0 else math.log(q)
     else:
-        nd = -d
-        v = (q**nd - 1) / nd
+        v = -(q**(-d) - 1) / d
 
     return -f * u - (1 - f) * v
 
@@ -595,7 +594,7 @@ def _wakeby_qdf(
     d: float,
     f: float,
 ) -> npt.NDArray[np.float64]:
-    """Quantile densitity function (QDF), the derivative of the PPF."""
+    """Quantile density function (QDF), the derivative of the PPF."""
     q = 1 - p
     return f * q**(b - 1) + (1 - f) * q**(-d - 1)
 
@@ -707,9 +706,8 @@ def _wakeby_lmo0(
     d: float,
     f: float,
 ) -> float:
-    # TODO: thoroughly test this
     if r == 0:
-        return 1.
+        return 1
 
     if d >= (b == 0) + 1 + t:
         return math.nan
@@ -721,9 +719,9 @@ def _wakeby_lmo0(
             return cast(float, harmonic(s + t + 1) - harmonic(t))
 
         return scale * (
-            sc.poch(r + t, s + 1)
-            * sc.poch(1 - theta, r - 2)
-            / sc.poch(1 + theta + t, r + s)
+            sc.poch(r + t, s + 1)  # type: ignore
+            * sc.poch(1 - theta, r - 2)  # type: ignore
+            / sc.poch(1 + theta + t, r + s)  # type: ignore
             + (1 / theta if r == 1 else 0)
         ) / r
 
