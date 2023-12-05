@@ -913,10 +913,11 @@ implementation.
 !!! info "Generalizations"
 
     [Wakeby's distribution](#wakeby)
-    :   Implemented in Lmo, see below.
+    :   Implemented as [`lmo.distributions.wakeby`][lmo.distributions.wakeby].
+        See below for details, including the general L-moments in closed-form.
 
     [Kappa distribution](https://doi.org/10.1147/rd.383.0251)
-    :   Not implemented (yet?).
+    :   Implemented in as [`scipy.stats.kappa4`][scipy.stats.kappa4].
 
 ### Burr III / Dagum
 
