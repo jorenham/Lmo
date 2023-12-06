@@ -1038,7 +1038,11 @@ class RVContinuous(RVContinuousBase[Unpack[Ps]], Protocol[Unpack[Ps]]):
     ) -> float: ...
 
 
-class RVContinuousFrozen(RVContinuousBase[()], Protocol[Unpack[Ps]]):
+class RVContinuousFrozen(
+    # somehow RVContinuousBase[()] fails on (only) Python 3.10.
+    RVContinuousBase[Unpack[tuple[()]]],
+    Protocol[Unpack[Ps]],
+):
     """Generic type stub for [`rv_continuous_frozen`]."""
     args: (
         tuple[Unpack[Ps]]
