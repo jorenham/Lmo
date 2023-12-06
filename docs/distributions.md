@@ -1058,6 +1058,9 @@ general case.
 Without loss of generality, Lmo uses a 3-parameter "standardized"
 paremetrization, with shape parameters \( \beta,\ \delta,\ \phi \).
 
+<img src="../gallery/wakeby.svg" width="100%"
+    style="height: auto; aspect-ratio: 16/9;" alt="Wakeby distribution PDF" />
+
 Each of the following restrictions apply:
 
 - \( \beta + \delta \ge 0 \)
@@ -1092,6 +1095,21 @@ x(F) =
     \frac{\phi}{\beta} (1 - (1 - F)^\beta)
     - \frac{1 - \phi}{\delta} (1 - (1 - F)^{-\delta})
 \]
+
+
+!!! note "Alternative parametrization"
+
+    This 3-parameter Wakeby distribution is equivalent to the 5-parameter
+    variant that is generally used, after scaling by \( \sigma \) and shifting
+    by \( \xi \). The shape parameters \( \beta \) and \( \delta \) are
+    (intentionally) equivalent, the scale parameters are related by
+    \( \alpha \equiv \sigma \phi \) and \( gamma \equiv \sigma (1 - \phi) \),
+    and the location parameter is precisely \( \xi \).
+
+    Conversely, Lmo's "standard" Wakeby distribution can by obtained from
+    5-Wakeby, by shifting and scaling s.t. \( \xi = 0 \) and
+    \( \alpha + \gamma = 1 \). Finally, \( \phi \equiv \alpha = 1 - \gamma \)
+    effectively combines the two scale parameters.
 
 Lmo figured out that when \( \delta < t + 1 \), all of Wakeby's (trimmed)
 L-moments can be expressed as
@@ -1153,20 +1171,6 @@ implementation.
     [Uniform](https://wikipedia.org/wiki/Continuous_uniform_distribution)
     :   With \( \beta = \phi = 1 \) (and therefore \( \delta = 0 \)) Wakeby
         is uniform on \( [0, 1] \).
-
-!!! note "Alternative parametrization"
-
-    This 3-parameter Wakeby distribution is equivalent to the 5-parameter
-    variant that is generally used, after scaling by \( \sigma \) and shifting
-    by \( \xi \). The shape parameters \( \beta \) and \( \delta \) are
-    (intentionally) equivalent, the scale parameters are related by
-    \( \alpha \equiv \sigma \phi \) and \( gamma \equiv \sigma (1 - \phi) \),
-    and the location parameter is precisely \( \xi \).
-
-    Conversely, Lmo's "standard" Wakeby distribution can by obtained from
-    5-Wakeby, by shifting and scaling s.t. \( \xi = 0 \) and
-    \( \alpha + \gamma = 1 \). Finally, \( \phi \equiv \alpha = 1 - \gamma \)
-    effectively combines the two scale parameters.
 
 ### Generalized Lambda
 
