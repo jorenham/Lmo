@@ -43,6 +43,7 @@ plugins:
       handlers:
         python:
           import:
+            - url: https://docs.python.org/3/objects.inv
             - url: https://numpy.org/doc/stable/objects.inv
             - url: https://docs.scipy.org/doc/scipy/objects.inv
             - url: https://pandas.pydata.org/docs/objects.inv

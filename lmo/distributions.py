@@ -1,8 +1,8 @@
 """Probability distributions, compatible with [`scipy.stats`][scipy.stats]."""
-
 __all__ = (
     'l_rv_nonparametric',
     'kumaraswamy',
+    'wakeby',
 )
 
 # pyright: reportIncompatibleMethodOverride=false
@@ -26,7 +26,7 @@ import numpy.typing as npt
 import scipy.special as sc  # type: ignore
 from scipy.stats._distn_infrastructure import _ShapeInfo  # type: ignore
 from scipy.stats.distributions import (  # type: ignore
-    rv_continuous,
+    rv_continuous as _rv_continuous,
 )
 
 from ._poly import jacobi_series, roots
@@ -36,12 +36,13 @@ from ._utils import (
 )
 from .diagnostic import l_ratio_bounds
 from .special import harmonic
-from .theoretical import l_moment_from_cdf
+from .theoretical import l_moment_from_ppf
 from .typing import (
     AnyTrim,
     FloatVector,
     PolySeries,
     QuadOptions,
+    RVContinuous,
 )
 
 T = TypeVar('T')
@@ -49,6 +50,7 @@ X = TypeVar('X', bound='l_rv_nonparametric')
 F = TypeVar('F', bound=np.floating[Any])
 M = TypeVar('M', bound=Callable[..., Any])
 V = TypeVar('V', bound=float | npt.NDArray[np.float64])
+
 
 _F_EPS: Final[np.float64] = np.finfo(float).eps
 
@@ -96,7 +98,7 @@ def _ppf_poly_series(
         symbol='q',
     )
 
-class l_rv_nonparametric(rv_continuous):  # noqa: N801
+class l_rv_nonparametric(_rv_continuous):  # noqa: N801
     r"""
     Estimate a distribution using the given L-moments.
     See [`scipy.stats.rv_continuous`][scipy.stats.rv_continuous] for the
@@ -407,7 +409,7 @@ class l_rv_nonparametric(rv_continuous):  # noqa: N801
 
 _ArrF8: TypeAlias = npt.NDArray[np.float64]
 
-def _l_moment_kumaraswamy_single(
+def _kumaraswamy_lmo0(
     r: int,
     s: int,
     t: int,
@@ -425,14 +427,13 @@ def _l_moment_kumaraswamy_single(
         * cast(_ArrF8, sc.beta(1 / a, 1 + k * b)) / a  # type: ignore
     ).sum() / r
 
-_l_moment_kumaraswamy = np.vectorize(
-    _l_moment_kumaraswamy_single,
-    otypes=[float],
-    excluded={1, 2, 3, 4},
-)
+_kumaraswamy_lmo = np.vectorize(_kumaraswamy_lmo0, [float], excluded={1, 2})
 
 
-class kumaraswamy_gen(rv_continuous):  # noqa: N801
+class kumaraswamy_gen(_rv_continuous):  # noqa: N801
+    def _argcheck(self, a: float, b: float) -> bool:
+        return (a > 0) & (b > 0)
+
     def _shape_info(self) -> Sequence[_ShapeInfo]:
         ia = _ShapeInfo('a', False, (0, np.inf), (False, False))
         ib = _ShapeInfo('b', False, (0, np.inf), (False, False))
@@ -511,31 +512,25 @@ class kumaraswamy_gen(rv_continuous):  # noqa: N801
         quad_opts: QuadOptions | None = None,
     ) -> _ArrF8:
         s, t = trim
-        lmbda_r: float | npt.NDArray[np.float64]
-        if isinstance(s, float) or isinstance(t, float):
-            lmbda_r = cast(
-                float | npt.NDArray[np.float64],
-                l_moment_from_cdf(
-                    functools.partial(self._cdf, a=a, b=b), # type: ignore
+        if quad_opts is not None or isinstance(s, float):
+            return cast(
+                _ArrF8,
+                super()._l_moment(  # type: ignore
                     r,
+                    a,
+                    b,
                     trim=trim,
-                    support=(0, 1),
-                    ppf=functools.partial(self._ppf, a=a, b=b), # type: ignore
                     quad_opts=quad_opts,
-                ),  # type: ignore
+                ),
             )
-            return np.asarray(lmbda_r)
 
-        return np.atleast_1d(
-            cast(_ArrF8, _l_moment_kumaraswamy(r, s, t, a, b)),
-        )
+        return np.atleast_1d(cast(_ArrF8, _kumaraswamy_lmo(r, s, t, a, b)))
 
-
-kumaraswamy: Final[rv_continuous] = kumaraswamy_gen(
+kumaraswamy: RVContinuous[float, float] = kumaraswamy_gen(
     a=0.0,
     b=1.0,
     name='kumaraswamy',
-)
+)  # type: ignore
 r"""
 A Kumaraswamy random variable, similar to
 [`scipy.stats.beta`][scipy.stats.beta].
@@ -552,7 +547,333 @@ for \( 0 < x < 1,\ a > 0,\ b > 0 \).
 [`kumaraswamy`][kumaraswamy] takes \( a \) and \( b \) as shape parameters.
 
 See Also:
-    - [Kumaraswamy distribution - Wikipedia
-    ](https://wikipedia.org/wiki/Kumaraswamy_distribution)
+    - [Theoretical L-moments - Kumaraswamy](distributions.md#kumaraswamy)
 
+"""
+
+
+def _wakeby_ub(b: float, d: float, f: float) -> float:
+    """Upper bound of x."""
+    if d < 0:
+        return f / b - (1 - f) / d
+    if f == 1 and b:
+        return 1 / b
+    return math.inf
+
+
+def _wakeby_isf0(
+    q: float,
+    b: float,
+    d: float,
+    f: float,
+) -> float:
+    """Inverse survival function, does not validate params."""
+    if q <= 0:
+        return _wakeby_ub(b, d, f)
+    if q >= 1:
+        return 0.
+
+    if f == 0:
+        u = 0.
+    elif b == 0:
+        u = math.log(q)
+    else:
+        u = (q**b - 1) / b
+
+    if f == 1:
+        v = 0.
+    elif d == 0:
+        v = u if b == 0 and f != 0 else math.log(q)
+    else:
+        v = -(q**(-d) - 1) / d
+
+    return -f * u - (1 - f) * v
+
+_wakeby_isf = np.vectorize(_wakeby_isf0, [float])
+
+
+def _wakeby_qdf(
+    p: npt.NDArray[np.float64],
+    b: float,
+    d: float,
+    f: float,
+) -> npt.NDArray[np.float64]:
+    """Quantile density function (QDF), the derivative of the PPF."""
+    q = 1 - p
+    return f * q**(b - 1) + (1 - f) * q**(-d - 1)
+
+
+def _wakeby_sf0(  # noqa: C901
+    x: float,
+    b: float,
+    d: float,
+    f: float,
+) -> float:
+    """
+    Numerical approximation of Wakeby's survival function.
+
+    Uses a modified version of Halley's algorithm, as originally implemented
+    by J.R.M. Hosking in fortran: https://lib.stat.cmu.edu/general/lmoments
+    """
+    if x <= 0:
+        return 1.
+
+    if x >= _wakeby_ub(b, d, f):
+        return 0.
+
+    if b == f == 1:
+        # standard uniform
+        return 1 - x
+    if b == d == 0:
+        # standard exponential
+        assert f == 1
+        return math.exp(-x)
+    if f == 1:
+        # GPD (bounded above)
+        return (1 - b * x)**(1 / b)
+    if f == 0:
+        # GPD (no upper bound)
+        return (1 + d * x)**(-1 / d)
+    if b == d and b > 0:
+        # unnamed special case
+        cx = b * x
+        return (
+            (2 * f - cx - 1 + math.sqrt((cx + 1)**2 - 4 * cx * f)) / (2 * f)
+        )**(1 / b)
+    if b == 0 and d != 0:
+        # https://wikipedia.org/wiki/Lambert_W_function
+        # it's easy to show that this is valid for all x, f, and d
+        w = (1 - f) / f
+        return (
+            w / sc.lambertw(w * math.exp((1 + d * x) / f - 1))  # type: ignore
+        )**(1 / d)
+
+    if x < _wakeby_isf0(.9, b, d, f):
+        z = 0
+    elif x >= _wakeby_isf0(.01, b, d, f):
+        if d < 0:
+            z = math.log(1 + (x - f / b) * d / (1 - f)) / d
+        elif d > 0:
+            z = math.log(1 + x * d / (1 - f)) / d
+        else:
+            z = (x - f / b) / (1 - f)
+    else:
+        z = .7
+
+    eps = 1e-8
+    maxit = 20
+    ufl = math.log(math.nextafter(0, 1))
+
+    for _ in range(maxit):
+        bz = -b * z
+        eb = math.exp(bz) if bz >= ufl else 0
+        gb = (1 - eb) / b if abs(b) > eps else z
+
+        ed = math.exp(d * z)
+        gd = (1 - ed) / d if abs(d) > eps else -z
+
+        x_est = f * gb - (1 - f) * gd
+        qd0 = x - x_est
+        qd1 = f * eb + (1 - f) * ed
+        qd2 = -f * b * eb + (1 - f) * d * ed
+
+        tmp = qd1 - .5 * qd0 * qd2 / qd1
+        if tmp <= 0:
+            tmp = qd1
+
+        z_inc = min(qd0 / tmp, 3)
+        z_new = z + z_inc
+        if z_new <= 0:
+            z /= 5
+            continue
+        z = z_new
+
+        if abs(z_inc) <= eps:
+            break
+    else:
+        warnings.warn(
+            'Wakeby SF did not converge, the result may be unreliable',
+            RuntimeWarning,
+            stacklevel=4,
+        )
+
+    return math.exp(-z) if -z >= ufl else 0
+
+
+_wakeby_sf = np.vectorize(_wakeby_sf0, [float])
+
+def _wakeby_lmo0(
+    r: int,
+    s: float,
+    t: float,
+    b: float,
+    d: float,
+    f: float,
+) -> float:
+    if r == 0:
+        return 1
+
+    if d >= (b == 0) + 1 + t:
+        return math.nan
+
+    def _lmo0_partial(theta: float, scale: float) -> float:
+        if scale == 0:
+            return 0
+        if r == 1 and theta == 0:
+            return cast(float, harmonic(s + t + 1) - harmonic(t))
+
+        return scale * (
+            sc.poch(r + t, s + 1)  # type: ignore
+            * sc.poch(1 - theta, r - 2)  # type: ignore
+            / sc.poch(1 + theta + t, r + s)  # type: ignore
+            + (1 / theta if r == 1 else 0)
+        ) / r
+
+    return _lmo0_partial(b, f) + _lmo0_partial(-d, 1 - f)
+
+_wakeby_lmo = np.vectorize(_wakeby_lmo0, [float], excluded={1, 2})
+
+class wakeby_gen(_rv_continuous):  # noqa: N801
+    a: float
+
+    def _argcheck(self, b: float, d: float, f: float) -> int:
+        return (
+            np.isfinite(b)
+            & np.isfinite(d)
+            & (b + d >= 0)
+            & ((b + d > 0) | (f == 1))
+            & (f >= 0)
+            & (f <= 1)
+            & ((f > 0) | (b == 0))
+            & ((f < 1) | (d == 0))
+        )
+
+    def _shape_info(self) -> Sequence[_ShapeInfo]:
+        ibeta = _ShapeInfo('b', False, (-np.inf, np.inf), (False, False))
+        idelta = _ShapeInfo('d', False, (-np.inf, np.inf), (False, False))
+        iphi = _ShapeInfo('f', False, (0, 1), (True, True))
+        return [ibeta, idelta, iphi]
+
+    def _get_support(
+        self,
+        b: float,
+        d: float,
+        f: float,
+    ) -> tuple[float, float]:
+        if not self._argcheck(b, d, f):
+            return math.nan, math.nan
+
+        return self.a, _wakeby_ub(b, d, f)
+
+    def _pdf(
+        self,
+        x: npt.NDArray[np.float64],
+        b: float,
+        d: float,
+        f: float,
+    ) -> npt.NDArray[np.float64]:
+        # application of the inverse function theorem
+        return 1 / _wakeby_qdf(self._cdf(x, b, d, f), b, d, f)
+
+    def _cdf(
+        self,
+        x: npt.NDArray[np.float64],
+        b: float,
+        d: float,
+        f: float,
+    ) -> npt.NDArray[np.float64]:
+        return 1 - _wakeby_sf(x, b, d, f)
+
+    def _ppf(
+        self,
+        p: npt.NDArray[np.float64],
+        b: float,
+        d: float,
+        f: float,
+    ) -> npt.NDArray[np.float64]:
+        return _wakeby_isf(1 - p, b, d, f)
+
+    def _isf(
+        self,
+        q: npt.NDArray[np.float64],
+         b: float,
+        d: float,
+        f: float,
+    ) -> npt.NDArray[np.float64]:
+        return _wakeby_isf(q, b, d, f)
+
+    def _stats(self, b: float, d: float, f: float) -> tuple[
+        float | None,
+        float | None,
+        float | None,
+        float | None,
+    ]:
+        if d >= 1:
+            # hard NaN (not inf); indeterminate integral
+            return math.nan, math.nan, math.nan, math.nan
+
+        u = f / (1 + b)
+        v = (1 - f) / (1 - d)
+
+        m1 = u + v
+
+        if d >= 1 / 2:
+            return m1, math.nan, math.nan, math.nan
+
+        m2 = (
+            u**2 / (1 + 2 * b)
+            + 2 * u * v / (1 + b - d)
+            + v**2 / (1 - 2 * d)
+        )
+
+        # no skewness and kurtosis (yet?); the equations are kinda huge...
+        if d >= 1 / 3:
+            return m1, m2, math.nan, math.nan
+        m3 = None
+
+        if d >= 1 / 4:
+            return m1, m2, m3, math.nan
+        m4 = None
+
+        return m1, m2, m3, m4
+
+    def _l_moment(
+        self,
+        r: npt.NDArray[np.int64],
+        b: float,
+        d: float,
+        f: float,
+        trim: tuple[int, int] | tuple[float, float],
+        quad_opts: QuadOptions | None = None,
+    ) -> _ArrF8:
+        s, t = trim
+
+        if quad_opts is not None:
+            # only do numerical integration when quad_opts is passed
+            lmbda_r = cast(
+                float | npt.NDArray[np.float64],
+                l_moment_from_ppf(
+                    functools.partial(self._ppf, b=b, d=d, f=f), # type: ignore
+                    r,
+                    trim=trim,
+                    quad_opts=quad_opts,
+                ),  # type: ignore
+            )
+            return np.asarray(lmbda_r)
+
+        return np.atleast_1d(
+            cast(_ArrF8, _wakeby_lmo(r, s, t, b, d, f)),
+        )
+
+
+wakeby: RVContinuous[float, float, float] = wakeby_gen(
+    a=0.0,
+    name='wakeby',
+)  # type: ignore
+r"""A Wakeby random variable, a generalization of
+[`scipy.stats.genpareto`][scipy.stats.genpareto].
+
+[`wakeby`][wakeby] takes \( b \), \( d \) and \( f \) as shape parameters.
+
+For details, see [Theoretical L-moments - Wakeby](distributions.md#wakeby).
 """

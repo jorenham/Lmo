@@ -195,4 +195,3 @@ def harmonic(
     _out += np.euler_gamma
 
     return _out[()] if np.isscalar(n) else _out
-

@@ -31,13 +31,17 @@ __all__ = (
     'QuadOptions',
     'OptimizeResult',
 
+    'RVContinuousBase',
+    'RVContinuous',
+    'RVContinuousFrozen',
+
     'AnyTrim',
 
     'DistributionFunction',
 )
 
 import sys
-from collections.abc import Iterator, Sequence
+from collections.abc import Callable, Iterator, Sequence
 from typing import (
     Any,
     ClassVar,
@@ -57,13 +61,12 @@ import numpy as np
 import numpy.typing as npt
 
 if sys.version_info < (3, 11):
-    from typing_extensions import Self
+    from typing_extensions import Self, TypeVarTuple, Unpack
 else:
-    from typing import Self
+    from typing import Self, TypeVarTuple, Unpack
 
 T = TypeVar('T', bound=np.generic)
 T_co = TypeVar('T_co', covariant=True, bound=np.generic)
-
 
 @runtime_checkable
 class SupportsArray(Protocol[T_co]):
@@ -386,6 +389,677 @@ class OptimizeResult(Protocol):
     fun: float
     nfev: int
     nit: int
+
+V = TypeVar('V', bound=float | npt.NDArray[np.float64])
+Ps = TypeVarTuple('Ps')
+RandomState: TypeAlias = np.random.RandomState | np.random.Generator
+
+class RVContinuousBase(Protocol[Unpack[Ps]]):
+    """
+    Generic type stub for both [`rv_continuous`][scipy.stats.rv_continuous]
+    and `rv_continuous_frozen`.
+    """
+    a: float
+    b: float
+
+    random_state: RandomState
+
+    @overload
+    def pdf(
+        self,
+        x: AnyFloat,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+    ) -> float: ...
+
+    @overload
+    def pdf(
+        self,
+        x: _ArrayR,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+    ) -> npt.NDArray[np.float64]: ...
+
+    @overload
+    def logpdf(
+        self,
+        x: AnyFloat,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+    ) -> float: ...
+
+    @overload
+    def logpdf(
+        self,
+        x: _ArrayR,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+    ) -> npt.NDArray[np.float64]: ...
+
+    @overload
+    def cdf(
+        self,
+        x: AnyFloat,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+    ) -> float: ...
+
+    @overload
+    def cdf(
+        self,
+        x: _ArrayR,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+    ) -> npt.NDArray[np.float64]: ...
+
+    @overload
+    def logcdf(
+        self,
+        x: AnyFloat,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+    ) -> float: ...
+
+    @overload
+    def logcdf(
+        self,
+        x: _ArrayR,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+    ) -> npt.NDArray[np.float64]: ...
+
+    @overload
+    def sf(
+        self,
+        x: AnyFloat,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+    ) -> float: ...
+
+    @overload
+    def sf(
+        self,
+        x: _ArrayR,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+    ) -> npt.NDArray[np.float64]: ...
+
+    @overload
+    def logsf(
+        self,
+        x: AnyFloat,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+    ) -> float: ...
+
+    @overload
+    def logsf(
+        self,
+        x: _ArrayR,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+    ) -> npt.NDArray[np.float64]: ...
+
+    @overload
+    def ppf(
+        self,
+        q: AnyFloat,
+        *__args:(
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+    ) -> float: ...
+
+    @overload
+    def ppf(
+        self,
+        q: _ArrayR,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+    ) -> npt.NDArray[np.float64]: ...
+
+    @overload
+    def isf(
+        self,
+        q: AnyFloat,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+    ) -> float: ...
+
+    @overload
+    def isf(
+        self,
+        q: _ArrayR,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+    ) -> npt.NDArray[np.float64]: ...
+
+    def fit(
+        self,
+        data: npt.ArrayLike,
+        *__args: Unpack[Ps],
+        loc: float = ...,
+        scale: float = ...,
+        floc: float = ...,
+        fscale: float = ...,
+        optimizer: str | Callable[
+            [
+                Callable[[float, Unpack[Ps]], float],
+                Sequence[float],
+                tuple[Unpack[Ps]],
+            ],
+            float,
+        ] = ...,
+        method: Literal['MLE', 'MM'] = ...,
+        **__kwds: float,
+    ) -> tuple[Unpack[Ps], float, float]: ...
+
+    def fit_loc_scale(
+        self,
+        data: npt.ArrayLike,
+        *__args: Unpack[Ps],
+    ) -> tuple[float, float]: ...
+
+    def expect(
+        self,
+        func: Callable[[float], float],
+        args: tuple[Unpack[Ps]] = ...,
+        loc: float = ...,
+        scale: float = ...,
+        lb: float | None = ...,
+        ub: float | None = ...,
+        conditional: bool = ...,
+        **kwds: Unpack[QuadOptions],
+    ) -> float: ...
+
+    @overload
+    def rvs(
+        self,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+        size: int = ...,
+        random_state: RandomState = ...,
+    ) -> float: ...
+
+    @overload
+    def rvs(
+        self,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+        size: tuple[int, ...],
+        random_state: RandomState = ...,
+    ) -> npt.NDArray[np.float64]: ...
+
+    def stats(
+        self,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+        moments: str = ...,
+    ) -> tuple[float]: ...
+
+    def moment(
+        self,
+        order: int,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+    ) -> float: ...
+
+    def entropy(
+        self,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+    ) -> float: ...
+
+    def median(
+        self,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+    ) -> float: ...
+
+    def mean(
+        self,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+    ) -> float: ...
+
+    def var(
+        self,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+    ) -> float: ...
+
+    def std(
+        self,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+    ) -> float: ...
+
+    @overload
+    def interval(
+        self,
+        confidence: float,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+    ) -> tuple[float, float]: ...
+
+    @overload
+    def interval(
+        self,
+        confidence: npt.NDArray[np.floating[Any]],
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+    ) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]: ...
+
+    def support(
+        self,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+    ) -> tuple[float, float]: ...
+
+
+    @overload
+    def l_moment(
+        self,
+        r: AnyInt,
+        /,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+        trim: 'AnyTrim' = ...,
+        quad_opts: QuadOptions | None = ...,
+    ) -> np.float64: ...
+
+    @overload
+    def l_moment(
+        self,
+        r: IntVector,
+        /,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+        trim: 'AnyTrim' = ...,
+        quad_opts: QuadOptions | None = ...,
+        **kwds: Any,
+    ) -> npt.NDArray[np.float64]: ...
+
+    @overload
+    def l_ratio(
+        self,
+        order: AnyInt,
+        order_denom: AnyInt | IntVector,
+        /,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+        trim: 'AnyTrim' = ...,
+        quad_opts: QuadOptions | None = ...,
+    ) -> np.float64: ...
+
+    @overload
+    def l_ratio(
+        self,
+        order: IntVector,
+        order_denom: AnyInt | IntVector,
+        /,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+        trim: 'AnyTrim' = ...,
+        quad_opts: QuadOptions | None = ...,
+    ) -> npt.NDArray[np.float64]: ...
+
+    def l_stats(
+        self,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+        trim: 'AnyTrim' = ...,
+        moments: int = ...,
+        quad_opts: QuadOptions | None = ...,
+    ) -> npt.NDArray[np.float64]: ...
+
+    def l_loc(
+        self,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+        trim: 'AnyTrim' = ...,
+        quad_opts: QuadOptions | None = ...,
+    ) -> npt.NDArray[np.float64]: ...
+
+    def l_scale(
+        self,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+        trim: 'AnyTrim' = ...,
+        quad_opts: QuadOptions | None = ...,
+    ) -> npt.NDArray[np.float64]: ...
+
+    def l_skew(
+        self,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+        trim: 'AnyTrim' = ...,
+        quad_opts: QuadOptions | None = ...,
+    ) -> npt.NDArray[np.float64]: ...
+
+    def l_kurtosis(
+        self,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+        trim: 'AnyTrim' = ...,
+        quad_opts: QuadOptions | None = ...,
+    ) -> npt.NDArray[np.float64]: ...
+
+    def l_moments_cov(
+        self,
+        r_max: int,
+        /,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+        trim: 'AnyTrim' = ...,
+        quad_opts: QuadOptions | None = ...,
+        **kwds: Any,
+    ) -> npt.NDArray[np.float64]: ...
+
+    def l_stats_cov(
+        self,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+        moments: int = 4,
+        trim: 'AnyTrim' = ...,
+        quad_opts: QuadOptions | None = ...,
+        **kwds: Any,
+    ) -> npt.NDArray[np.float64]: ...
+
+    def l_moment_influence(
+        self,
+        r: AnyInt,
+        /,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+        trim: 'AnyTrim' = ...,
+        quad_opts: QuadOptions | None = ...,
+        tol: float = ...,
+        **kwds: Any,
+    ) -> Callable[[V], V]: ...
+
+    def l_ratio_influence(
+        self,
+        r: AnyInt,
+        k: AnyInt,
+        /,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+        trim: 'AnyTrim' = ...,
+        quad_opts: QuadOptions | None = ...,
+        tol: float = ...,
+        **kwds: Any,
+    ) -> Callable[[V], V]: ...
+
+class RVContinuous(RVContinuousBase[Unpack[Ps]], Protocol[Unpack[Ps]]):
+    """Generic type stub for [`rv_continuous`][scipy.stats.rv_continuous]."""
+    badvalue: float
+    name: str
+    xtol: float
+    # moment_type: Literal[0, 1]
+    moment_type: int
+    shapes: str | None
+
+    def __init__(
+        self,
+        momtype: Literal[0, 1] = ...,
+        a: float | None = ...,
+        b: float | None = ...,
+        xtol: float = ...,
+        badvalue: float | None = ...,
+        name: str | None = ...,
+        longname: str | None = ...,
+        shapes: str | None = ...,
+        seed: int | RandomState | None = ...,
+    ) -> None: ...
+
+    def __call__(
+        self,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+    ) -> 'RVContinuousFrozen[Unpack[Ps]]': ...
+
+    def nnlf(
+        self,
+        theta: (
+            tuple[Unpack[Ps]]
+            | tuple[Unpack[Ps], float]
+            | tuple[Unpack[Ps], float, float]
+        ),
+        x: npt.ArrayLike,
+    ) -> float: ...
+
+
+class RVContinuousFrozen(
+    # somehow RVContinuousBase[()] fails on (only) Python 3.10.
+    RVContinuousBase[Unpack[tuple[()]]],
+    Protocol[Unpack[Ps]],
+):
+    """Generic type stub for [`rv_continuous_frozen`]."""
+    args: (
+        tuple[Unpack[Ps]]
+        | tuple[Unpack[Ps], float]
+        | tuple[Unpack[Ps], float, float]
+    )
+    kwargs: dict[str, Any]
+    dist: RVContinuous[Unpack[Ps]]
+
+    def __init__(
+        self,
+        dist: RVContinuous[Unpack[Ps]],
+        *__args: Unpack[Ps],
+        loc: float = ...,
+        scale: float = ...,
+        **__kwds: Any,
+    ) -> None: ...
 
 
 # Lmo specific aliases
