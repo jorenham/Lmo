@@ -1216,7 +1216,7 @@ and PPF:</p>
             \binom{r + k - 2}{r + t - 1}
             \binom{r + s + t}{k}
             e^{\alpha k} \
-            \Gamma(0,\ \alpha k)
+            \Gamma_{\alpha k}(0)
     \label{eq:lr_gompertz}
     \end{equation}
 \]</div>
@@ -1286,7 +1286,7 @@ distribution functions:</p>
     \begin{equation}
         \tlmoment{s, t}{r} = \begin{cases}
             \displaystyle
-                \psi(s + 1) - \psi(t + 1)
+                \digamma(s + 1) - \digamma(t + 1)
             &amp; \text{if } \alpha = 0 \wedge r = 1 \\
             \displaystyle
                 \frac{(-1)^r}{r} \B(r - 1,\ s + 1)
@@ -1304,7 +1304,7 @@ distribution functions:</p>
     \label{eq:lr_glo}
     \end{equation}
 \]</div>
-<p>Where <span class="arithmatex">\( \psi(z) \)</span> is the <a href="#def-digamma">digamma function</a>.</p>
+<p>Where <span class="arithmatex">\( \digamma(z) \)</span> is the <a href="#def-digamma">digamma function</a>.</p>
 <p>The corresponding <code>scipy.stats</code> implementation is
 <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.kappa4.html#scipy.stats.kappa4"><code>kappa4</code></a>, with <code>h = -1</code> and <code>k</code> set to <span class="arithmatex">\( \alpha \)</span>;
 <strong>not</strong> <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.genlogistic.html#scipy.stats.genlogistic"><code>genlogistic</code></a>.</p>
@@ -1323,52 +1323,51 @@ distribution functions:</p>
         x(F) &amp;= -\qlog{1 + \alpha}{1 - F}
     \end{align*}
 \]</div>
-<p>Note that this distribution is standard uniform if <span class="arithmatex">\( \alpha = 1 \)</span>, and
-standard exponential if <span class="arithmatex">\( \alpha = 0 \)</span>.</p>
-<p>The general trimmed L-moments of the GPD are:</p>
+<p>The L-moments of the GPD exist when <span class="arithmatex">\( \alpha &lt; 1 + t \)</span>, and can be
+compactly expressed as</p>
 <div class="arithmatex">\[
     \begin{equation}
         \tlmoment{s,t}{r} = \begin{cases}
-            \displaystyle \sum_{k = 1}^{s + 1} \frac{1}{t + k}
+            \displaystyle H_{s + t + 1} - H_t
                 &amp; \text{if } \alpha = 0 \wedge r = 1 \\
-            \frac{1}{r} \B(r - 1,\ t + 1)
-                &amp; \text{if } \alpha = 0 \\
-            \displaystyle \frac{r + s + t}{\alpha \ r} \sum_{k = 0}^{r + t - 1}
-                \frac{(-1)^{r - k}}{k}
-                \binom{r + s + t - 1}{k + s}
-                \binom{r + s + k - 1}{k}
-                \left(
-                    1 - \frac{(k + 1)!}{\rfact{1 - \alpha}{k + 1}}
-                \right)
-                &amp; \text{if } \alpha &lt; 1
+            \displaystyle \frac{1}{\alpha r} \left[
+                \frac
+                    {\B(t + 1 - \alpha,\ r - 1 + \alpha)}
+                    {\B(r + s + t - 1 - \alpha,\ \alpha)}
+                - \ffact{1}{r}
+            \right]
+                &amp; \text{otherwise,}
         \end{cases}
         \label{eq:lr_gpd}
     \end{equation}
 \]</div>
-<p>Apparently left-trimming the exponential distribution does not influence any
-of the L-moments, besides the L-location.</p>
-<p>For the general LH-moments, this simplifies to:</p>
-<div class="arithmatex">\[
-    \begin{equation}
-        \tlmoment{0,t}{r} = \begin{cases}
-             \displaystyle \frac{1}{t + 1}
-                &amp; \text{if } \alpha = 0 \wedge r = 1 \\
-            \frac{1}{r} \B(r - 1,\ t + 1)
-                &amp; \text{if } \alpha = 0 \wedge r &gt; 1 \\
-            \displaystyle \frac{r + t}{r}
-                \frac{\rfact{1 + \alpha}{r - 2}}{\rfact{1 - \alpha + t}{r}}
-                - \frac{\ffact{1}{r}}{\alpha}
-                &amp; \text{if } \alpha &lt; 1
-        \end{cases}
-        \label{eq:lhr_gpd}
-    \end{equation}
-\]</div>
-<p>See <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.genpareto.html#scipy.stats.genpareto"><code>scipy.stats.genpareto</code></a> for the implementation of
-the GPD.</p>
-<p>Note that the GPD is a reparametrized <a href="https://wikipedia.org/wiki/Q-exponential_distribution"><span class="arithmatex">\( q \)</span>-exponential distribution
-</a>, where
-<span class="arithmatex">\( q = (2 \alpha + 1) / (\alpha + 1) \)</span> and <span class="arithmatex">\( \lambda = 1 / (2 - q) \)</span> s.t.
-<span class="arithmatex">\( \alpha \neq -1 \)</span> and <span class="arithmatex">\( q &lt; 2 \)</span>.</p>
+<p>where <span class="arithmatex">\( H_n \)</span> is a <a href="#def-harmonic">harmonic number</a>.</p>
+<p>See <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.genpareto.html#scipy.stats.genpareto"><code>scipy.stats.genpareto</code></a> for an Lmo-compatible
+implementation.</p>
+<div class="admonition info">
+<p class="admonition-title">Special cases</p>
+<p>There are several notable special cases of the GPD:</p>
+<dl>
+<dt><a href="https://wikipedia.org/wiki/Q-exponential_distribution"><span class="arithmatex">\( q \)</span>-Exponential</a></dt>
+<dd>When <span class="arithmatex">\( \alpha &gt; -1 \)</span>, GPD is <span class="arithmatex">\( q \)</span>-exponential with shape
+<span class="arithmatex">\( q = 2 - 1 / (1 + \alpha) \)</span> and rate (inverse scale)
+<span class="arithmatex">\( \lambda = \alpha + 1 \)</span>.</dd>
+<dt><a href="https://wikipedia.org/wiki/Exponential_distribution">Exponential</a></dt>
+<dd>When <span class="arithmatex">\( \alpha = 0 \)</span>, GPD is standard exponential.</dd>
+<dt><a href="https://wikipedia.org/wiki/Continuous_uniform_distribution">Uniform</a></dt>
+<dd>When <span class="arithmatex">\( \alpha = 1 \)</span> GPD is uniform on <span class="arithmatex">\( [0, 1] \)</span>.</dd>
+</dl>
+</div>
+<div class="admonition info">
+<p class="admonition-title">Generalizations</p>
+<dl>
+<dt><a href="#wakeby">Wakeby&rsquo;s distribution</a></dt>
+<dd>Implemented as <a class="autorefs autorefs-internal" href="../api/#lmo.distributions.wakeby"><code>lmo.distributions.wakeby</code></a>.
+See below for details, including the general L-moments in closed-form.</dd>
+<dt><a href="https://doi.org/10.1147/rd.383.0251">Kappa distribution</a></dt>
+<dd>Implemented in as <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.kappa4.html#scipy.stats.kappa4"><code>scipy.stats.kappa4</code></a>.</dd>
+</dl>
+</div>
 <h3 id="burr-iii-dagum">Burr III / Dagum</h3>
 <p>The <em>Burr III</em> distribution, also known as the
 <a href="https://wikipedia.org/wiki/Dagum_distribution"><em>Dagum distribution</em></a>, has two
@@ -1464,73 +1463,126 @@ x(F) &amp;= \bigl(1 - (1 - F)^{1/\beta} \bigr)^{1/\alpha}
 <div class="arithmatex">\[
     \begin{equation}
         \tlmoment{s,t}{r} =
-            \beta \
-            \frac{r + s + t}{r}
-            \sum_{k = t}^{r + s + t - 1}
-                (-1)^k
-                \binom{k + r - 1}{k - t}
-                \binom{r + s + t - 1}{k}
-                \B\bigl(1 + 1 / \alpha,\ \beta + k \beta \bigr)
+            \frac{1}{r}
+            \sum_{k = t + 1}^{r + s + t}
+                (-1)^{k - 1}
+                \binom{r + k - 2}{r + t - 1}
+                \binom{r + s + t}{k}
+                \frac{\B\bigl(1 / \alpha,\ 1 + k \beta \bigr)}{\alpha}
             \label{eq:lr_kum}
     \end{equation}
 \]</div>
-<p>Unfortunately, the Kumaraswamy distribution is not implemented in
-<code>scipy.stats</code>.</p>
+<p>The Kumaraswamy distribution is implemented in
+<a class="autorefs autorefs-internal" href="../api/#lmo.distributions.kumaraswamy"><code>lmo.distributions.kumaraswamy</code></a>.</p>
 <h3 id="wakeby">Wakeby</h3>
 <p>The <a href="https://wikipedia.org/wiki/Wakeby_distribution"><em>Wakeby distribution</em></a>
-is quantile-based, without closed-form expressions for the PDF and CDF, whose
-quantile function (PPF) is defined to be</p>
+is quantile-based &ndash; the CDF and PDF are not analytically expressible for the
+general case.
+Without loss of generality, Lmo uses a 3-parameter &ldquo;standardized&rdquo;
+paremetrization, with shape parameters <span class="arithmatex">\( \beta,\ \delta,\ \phi \)</span>.</p>
+<p><img src="../gallery/wakeby.svg" width="100%"
+    style="height: auto; aspect-ratio: 16/9;" alt="Wakeby distribution PDF" /></p>
+<p>Each of the following restrictions apply:</p>
+<ul>
+<li><span class="arithmatex">\( \beta + \delta \ge 0 \)</span></li>
+<li><span class="arithmatex">\( 0 \le \phi \le 1 \)</span></li>
+<li>if <span class="arithmatex">\( \beta + \delta = 0 \)</span>, then <span class="arithmatex">\( \phi = 1 \)</span></li>
+<li>if <span class="arithmatex">\( \phi = 0 \)</span>, then <span class="arithmatex">\( \beta = 0 \)</span></li>
+<li>if <span class="arithmatex">\( \phi = 1 \)</span>, then <span class="arithmatex">\( \delta = 0 \)</span></li>
+</ul>
+<p>The domain of the distribution is</p>
+<div class="arithmatex">\[
+0 \le x \le \begin{cases}
+    \displaystyle \frac \phi \beta - \frac{1 - \phi}{\delta}
+        &amp; \text{if } \delta &lt; 0 \\
+    \displaystyle \frac 1 \beta
+        &amp; \text{if } \beta &gt; 0 \wedge \phi = 1 \\
+    \displaystyle \infty
+        &amp; \text{otherwise}
+\end{cases}
+\]</div>
+<p>The quantile function (PPF) is defined to be</p>
+<div class="arithmatex">\[
+x(F) = -\phi \qlog{1 - \beta}{1 - F} - (1 - \phi) \qlog{1 + \delta}{1 - F}
+\]</div>
+<p>or, if <span class="arithmatex">\( \beta \neq 0 \)</span> and <span class="arithmatex">\( \delta \neq 0 \)</span>, this is equivalent to</p>
 <div class="arithmatex">\[
 x(F) =
-    \frac \alpha \beta \bigl(1 - (1 - F)^\beta\bigr)
-    - \frac \gamma \delta \bigl(1 - (1 - F)^{-\delta}\bigr)
+    \frac{\phi}{\beta} (1 - (1 - F)^\beta)
+    - \frac{1 - \phi}{\delta} (1 - (1 - F)^{-\delta})
 \]</div>
-<p>Each of the scale- <span class="arithmatex">\( \alpha, \gamma \)</span> and shape parameters
-<span class="arithmatex">\( \beta, \delta \)</span>, are assumed to be positive real numbers.</p>
-<p>Lmo figured out that the L-moments with any order <span class="arithmatex">\( r \in \mathbb{N}_{\ge 1} \)</span>
-and trim <span class="arithmatex">\( s, t \in \mathbb{N}^2_{\ge 1} \)</span> can be expressed as</p>
-<!-- \[
-\begin{equation}
-    \tlmoment{s,t}{r}
-        =
-        \frac{\gamma}{r \delta}
-        \frac
-            {\B(\delta + r - 1,\ t - \delta + 1)}
-            {\B(\delta,\ r + s + t - \delta + 1)}
-        -
-        \frac{\alpha}{r \beta}
-        \frac
-            {\B(-\beta + r - 1,\ t + \beta + 1)}
-            {\B(-\beta,\ r + s + t + \beta + 1)}
-    +
-    \begin{cases}
-         \mu + \frac \alpha \beta - \frac \gamma \delta
-            & \text{if } r = 1 \\
-        0
-            & \text{if } r > 1
-    \end{cases}
-\end{equation}
-\] -->
+<div class="admonition note">
+<p class="admonition-title">Alternative parametrization</p>
+<p>This 3-parameter Wakeby distribution is equivalent to the 5-parameter
+variant that is generally used, after scaling by <span class="arithmatex">\( \sigma \)</span> and shifting
+by <span class="arithmatex">\( \xi \)</span>. The shape parameters <span class="arithmatex">\( \beta \)</span> and <span class="arithmatex">\( \delta \)</span> are
+(intentionally) equivalent, the scale parameters are related by
+<span class="arithmatex">\( \alpha \equiv \sigma \phi \)</span> and <span class="arithmatex">\( gamma \equiv \sigma (1 - \phi) \)</span>,
+and the location parameter is precisely <span class="arithmatex">\( \xi \)</span>.</p>
+<p>Conversely, Lmo&rsquo;s &ldquo;standard&rdquo; Wakeby distribution can by obtained from
+5-Wakeby, by shifting and scaling s.t. <span class="arithmatex">\( \xi = 0 \)</span> and
+<span class="arithmatex">\( \alpha + \gamma = 1 \)</span>. Finally, <span class="arithmatex">\( \phi \equiv \alpha = 1 - \gamma \)</span>
+effectively combines the two scale parameters.</p>
+</div>
+<p>Lmo figured out that when <span class="arithmatex">\( \delta &lt; t + 1 \)</span>, all of Wakeby&rsquo;s (trimmed)
+L-moments can be expressed as</p>
 <div class="arithmatex">\[
-\begin{equation}
+\begin{align}
+    \tlmoment{s,t}{1}
+    &amp;= \phi \left(
+    \begin{cases}
+        \displaystyle H_{s + t + 1} - H_t
+            &amp; \text{if } \beta = 0 \\
+        \displaystyle \frac{1}{\beta} - \frac
+            {\rfact{t + 1}{s + 1}}
+            {\beta \ \rfact{t + 1 + \beta }{s + 1}}
+            &amp; \text{if } \beta \neq 0
+    \end{cases}
+    \right)
+    + (1 - \phi) \left(
+    \begin{cases}
+        \displaystyle H_{s + t + 1} - H_t
+            &amp; \text{if } \delta = 0 \\
+        \displaystyle \frac
+            {\rfact{t + 1}{s + 1}}
+            {\delta \rfact{t + 1 - \delta}{s + 1}}
+        - \frac{1}{\delta}
+            &amp; \text{if } \delta \neq 0
+    \end{cases}
+    \right) \\
     \tlmoment{s,t}{r}
-        = \frac{\rfact{r + t}{s + 1}}{r} \left[
-            \alpha \frac
-                {\rfact{1 - \beta}{r - 2}}
-                {\rfact{1 + \beta + t}{r + s}}
-            + \gamma \frac
-                {\rfact{1 + \delta}{r - 2}}
-                {\rfact{1 - \delta + t}{r + s}}
-        \right]
-        + \underbrace{
-            \ffact{1}{r} \left(
-                \frac \alpha \beta - \frac \gamma \delta
-            \right)
-        }_{\text{will be } 0 \text{ if } r&gt;1}
-\end{equation}
+    &amp;= \frac{\rfact{r + t}{s + 1}}{r} \left(
+        \phi \frac
+            {\rfact{1 - \beta}{r - 2}}
+            { \rfact{1 + \beta + t}{r + s}}
+        + (1 - \phi) \frac
+            {\rfact{1 + \delta}{r - 2}}
+            {\rfact{1 - \delta + t}{r + s}}
+    \right) \quad \text{for } r &gt; 1
+\end{align}
 \]</div>
-<p>Unfortunately, the Wakeby distribution has currently no
-<a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/stats.html#module-scipy.stats"><code>scipy.stats</code></a> implementation.</p>
+<p>where <span class="arithmatex">\( H_n \)</span> is a <a href="#def-harmonic">harmonic number</a>.</p>
+<p>See <a class="autorefs autorefs-internal" href="../api/#lmo.distributions.wakeby"><code>lmo.distributions.wakeby</code></a> for the
+implementation.</p>
+<div class="admonition info">
+<p class="admonition-title">Special cases</p>
+<p>There are several notable special cases of the Wakeby distribution:</p>
+<dl>
+<dt><a href="#gpd">GPD &ndash; Generalized Pareto</a></dt>
+<dd>
+<p>With <span class="arithmatex">\( \phi = 0 \)</span>, Wakeby is the standard GPD, and
+<span class="arithmatex">\( \delta \)</span> its shape parameter.</p>
+<p>Conversely, <span class="arithmatex">\( \phi = 1 \)</span> yields a <em>bounded</em> GPD variant, with
+shape parameter <span class="arithmatex">\( -\beta \)</span>, and <span class="arithmatex">\( 1 / \beta \)</span> the upper bound.</p>
+</dd>
+<dt><a href="https://wikipedia.org/wiki/Exponential_distribution">Exponential</a></dt>
+<dd>With <span class="arithmatex">\( \beta = \delta = 0 \)</span> and <span class="arithmatex">\( \phi = 1 \)</span>, Wakeby is
+standard exponential.</dd>
+<dt><a href="https://wikipedia.org/wiki/Continuous_uniform_distribution">Uniform</a></dt>
+<dd>With <span class="arithmatex">\( \beta = \phi = 1 \)</span> (and therefore <span class="arithmatex">\( \delta = 0 \)</span>) Wakeby
+is uniform on <span class="arithmatex">\( [0, 1] \)</span>.</dd>
+</dl>
+</div>
 <h3 id="generalized-lambda">Generalized Lambda</h3>
 <p>The <a href="https://wikipedia.org/wiki/Tukey_lambda_distribution">Tukey lambda distribution
 </a> can be extended to
@@ -1585,12 +1637,12 @@ and constants.</p>
         <td>
             $$
             \begin{align*}
+                &amp;= \lim_{x \to 0} \left( \frac 1 x - \Gamma(x) \right) \\
                 &amp;= \int_1^\infty
                     \left(
                         \frac{1}{\lfloor x \rfloor} - \frac 1 x
                     \right) \
                     \mathrm{d} x \\
-                &amp;= \lim_{x \to 0} \left( \frac 1 x - \Gamma(x) \right) \\
                 &amp;\approx 0.5772 \vphantom{\frac 1 1}
             \end{align*}
             $$
@@ -1605,12 +1657,83 @@ and constants.</p>
         <td>
             $$
             \begin{align*}
-                &amp;= \arctan \left( \sqrt 2 \right) \\
-                &amp;= \arccos \left( 1 / \sqrt 3 \right)
+                &amp;= \tan^{-1} \sqrt 2 = \cos^{-1} \frac{1}{\sqrt 3} \\
+                &amp;\approx 0.9553
             \end{align*}
             $$
         </td>
         <td><a class="autorefs autorefs-internal" href="../api/#lmo.constants.theta_m"><code>lmo.constants.theta_m</code></a></td>
+    </tr>
+    <tr id="def-gammainc" class="row-double-top">
+        <td>
+            <a href="https://wikipedia.org/wiki/Incomplete_gamma_function">Incomplete Gamma function
+            </a>
+        </td>
+        <td><span class="arithmatex">\( \Gamma_a(z) \)</span></td>
+        <td>
+            $$
+            = \int_a^\infty t^{z - 1} e^{-t} \, \mathrm{d} t
+            $$
+        </td>
+        <td><a class="autorefs autorefs-internal" href="../api/#lmo.special.gamma2"><code>lmo.special.gamma2</code></a></td>
+    </tr>
+    <tr id="def-gamma">
+        <td>
+            <a href="https://wikipedia.org/wiki/Gamma_function">Gamma function</a>
+        </td>
+        <td><span class="arithmatex">\( \Gamma(z) \)</span></td>
+        <td><span class="arithmatex">\( = \Gamma_0(z) \)</span></td>
+        <td>
+            <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/math.html#math.gamma"><code>math.gamma</code></a><br>
+            <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.gamma.html#scipy.special.gamma"><code>scipy.special.gamma</code></a>
+        </td>
+    </tr>
+    <tr id="def-digamma">
+        <td>
+            <a href="https://wikipedia.org/wiki/Digamma_function">Digamma function</a><br>
+            (a.k.a. <span class="arithmatex">\( \psi(z) \ \)</span>, yet
+            <a href="https://en.wikipedia.org/wiki/Psi_(Greek)">&ldquo;psi&rdquo;</a> <span class="arithmatex">\( \neq \)</span>
+            <a href="https://wikipedia.org/wiki/Digamma">&ldquo;digamma&rdquo;</a>)
+        </td>
+        <td><span class="arithmatex">\( \digamma(z) \)</span></td>
+        <td>
+            $$
+            \begin{align*}
+            &amp;= \frac{\mathrm{d}}{\mathrm{d}z} \ln \Gamma(z)
+                = \frac{\Gamma&rsquo;(z)}{\Gamma(z)} \\
+            &amp;= \int_0^1 \frac{1 - t^z}{1 - t} \mathrm{d} t - \gamma_e
+            \end{align*}
+            $$
+        </td>
+        <td><a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.digamma.html#scipy.special.digamma"><code>scipy.special.digamma</code></a></td>
+    </tr>
+    <tr id="def-beta">
+        <td>
+            <a href="https://wikipedia.org/wiki/Beta_function">Beta function</a>
+        </td>
+        <td><span class="arithmatex">\( \B(x,\ y) \)</span></td>
+        <td>
+            $$
+            \begin{align*}
+            &amp;= \frac{\Gamma(x) \Gamma(y)}{\Gamma(x + y)} \\
+            &amp;= \int_0^1 t^{x - 1} (1 - t)^{y - 1} \ \mathrm{d} t
+            \end{align*}
+            $$
+        </td>
+        <td><a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.beta.html#scipy.special.beta"><code>scipy.special.beta</code></a></td>
+    </tr>
+    <tr id="def-zeta">
+        <td>
+            <a href="https://wikipedia.org/wiki/Riemann_zeta_function">Riemann zeta function
+            </a>
+        </td>
+        <td><span class="arithmatex">\( \zeta(z) \)</span></td>
+        <td>
+            $$
+            = \sum_{n = 1}^{\infty} \frac{1}{n^z}
+            $$
+        </td>
+        <td><a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.zeta.html#scipy.special.zeta"><code>scipy.special.zeta</code></a></td>
     </tr>
     <tr id="def-factorial" class="row-double-top">
         <td>
@@ -1619,27 +1742,31 @@ and constants.</p>
         <td>$$ n! \vphantom{\prod_{k=1}^n k} $$</td>
         <td>
             $$
-            \begin{align*}
-                &amp;= \prod_{k=1}^n k \\
-                &amp;= 1 \times 2 \times \ldots \times n
-            \end{align*}
+            = \begin{cases}
+                \displaystyle \prod_{k=1}^n k
+                    &amp; \text{if } n \in \mathbb{N} \\
+                \displaystyle \Gamma(n - 1)
+                    &amp; \text{otherwise}
+            \end{cases}
             $$
         </td>
-        <td><a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.factorial.html#scipy.special.factorial"><code>scipy.special.factorial</code></a></td>
+        <td>
+            <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/math.html#math.factorial"><code>math.factorial</code></a><br>
+            <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.factorial.html#scipy.special.factorial"><code>scipy.special.factorial</code></a>
+        </td>
     </tr>
     <tr id="def-falling">
         <td>
             <a href="https://wikipedia.org/wiki/Falling_and_rising_factorials">Falling factorial
-            </a>
+            </a><br>
+            (a.k.a. the <em>falling power</em>)
         </td>
         <td><span class="arithmatex">\( \ffact{x}{n} \)</span></td>
         <td>
             $$
-            \begin{align*}
-                &amp;= \frac{\Gamma(x + 1)}{\Gamma(x - n + 1)} \\
-                &amp;= \prod_{k=0}^{n-1} (x - k)
-                    \quad (\text{if } n \in \mathbb{n})
-            \end{align*}
+                = \frac{x!}{(x - n)!}
+                = \frac{\Gamma(x + 1)}{\Gamma(x - n + 1)}
+                = \rfact{x - n + 1}{n}
             $$
         </td>
         <td><a class="autorefs autorefs-internal" href="../api/#lmo.special.fpow"><code>lmo.special.fpow</code></a></td>
@@ -1647,16 +1774,15 @@ and constants.</p>
     <tr id="def-rising">
         <td>
             <a href="https://wikipedia.org/wiki/Falling_and_rising_factorials">Rising factorial
-            </a>
+            </a> <br>
+            (a.k.a. the <em>pochhammer symbol</em>)
         </td>
         <td><span class="arithmatex">\( \rfact{x}{n} \)</span></td>
         <td>
             $$
-            \begin{align*}
-                &amp;= \frac{\Gamma(x + n)}{\Gamma(x)} \\
-                &amp;= \prod_{k=0}^{n-1} (x + k)
-                    \quad (\text{if } n \in \mathbb{n})
-            \end{align*}
+                = \frac{\Gamma(x + n)}{\Gamma(x)}
+                = \frac{(x + n - 1)!}{(x - 1)!}
+                = \ffact{x + n - 1}{n}
             $$
         </td>
         <td><a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.poch.html#scipy.special.poch"><code>scipy.special.poch</code></a></td>
@@ -1669,63 +1795,32 @@ and constants.</p>
         <td>$$ \binom n k $$</td>
         <td>
             $$
-            \begin{align*}
-                &amp;= \frac{n!}{k! \ (n - k)!} \\
-                &amp;= \frac{\ffact{n}{k}}{k!}
-            \end{align*}
+                = \frac{n!}{k! \ (n - k)!}
+                = \frac{1}{k \ \B(k,\ n - k + 1)}
             $$
         </td>
-        <td><a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.comb.html#scipy.special.comb"><code>scipy.special.comb</code></a></td>
-    </tr>
-    <tr id="def-gamma" class="row-double-top">
         <td>
-            <a href="https://wikipedia.org/wiki/Gamma_function">Gamma function</a>
+            <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/math.html#math.comb"><code>math.comb</code></a><br>
+            <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.comb.html#scipy.special.comb"><code>scipy.special.comb</code></a>
         </td>
-        <td><span class="arithmatex">\( \Gamma(z) \)</span></td>
-        <td><span class="arithmatex">\( = \int_0^\infty t^{z-1} e^{-t} \, \mathrm{d} t \)</span></td>
-        <td><a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.gamma.html#scipy.special.gamma"><code>scipy.special.gamma</code></a></td>
     </tr>
-    <tr id="def-gammainc" class="row-double-top">
+    <tr id="def-harmonic">
         <td>
-            <a href="https://wikipedia.org/wiki/Incomplete_gamma_function">Incomplete Gamma function
+            <a href="https://wikipedia.org/wiki/Harmonic_number">Harmonic number
             </a>
         </td>
-        <td><span class="arithmatex">\( \Gamma(a,\ x) \)</span></td>
-        <td><span class="arithmatex">\( = \int_x^\infty t^{a - 1} e^{-t} \, \mathrm{d} t \)</span></td>
-        <td><a class="autorefs autorefs-internal" href="../api/#lmo.special.gamma2"><code>lmo.special.gamma2</code></a></td>
-    </tr>
-    <tr id="def-digamma">
-        <td>
-            <a href="https://wikipedia.org/wiki/Digamma_function">Digamma function</a>
-        </td>
-        <td><span class="arithmatex">\( \psi(z) \)</span></td>
+        <td><span class="arithmatex">\( H_n \)</span></td>
         <td>
             $$
-            = \frac{\mathrm{d}}{\mathrm{d}z} \ln \Gamma(z)
+            = \begin{cases}
+                \displaystyle \sum_{k=1}^n \frac{1}{k}
+                    &amp; \text{if } n \in \mathbb{N} \\
+                \displaystyle \digamma(n + 1) + \gamma_e
+                    &amp; \text{otherwise}
+            \end{cases}
             $$
         </td>
-        <td><a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.digamma.html#scipy.special.digamma"><code>scipy.special.digamma</code></a></td>
-    </tr>
-    <tr id="def-beta">
-        <td>
-            <a href="https://wikipedia.org/wiki/Beta_function">Beta function</a>
-        </td>
-        <td><span class="arithmatex">\( \B(x,\ y) \)</span></td>
-        <td>
-            $$
-            = \frac{\Gamma(x) \Gamma(y)}{\Gamma(x + y)}
-            $$
-        </td>
-        <td><a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.beta.html#scipy.special.beta"><code>scipy.special.beta</code></a></td>
-    </tr>
-    <tr id="def-zeta">
-        <td>
-            <a href="https://wikipedia.org/wiki/Riemann_zeta_function">Riemann zeta function
-            </a>
-        </td>
-        <td><span class="arithmatex">\( \zeta(z) \)</span></td>
-        <td>$$ = \sum_{n = 1}^{\infty} n^{-z} $$</td>
-        <td><a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.zeta.html#scipy.special.zeta"><code>scipy.special.zeta</code></a></td>
+        <td><a class="autorefs autorefs-internal" href="../api/#lmo.special.harmonic"><code>lmo.special.harmonic</code></a></td>
     </tr>
     <tr id="def-jacobi" class="row-double-top">
         <td>
@@ -1753,7 +1848,7 @@ and constants.</p>
             = \begin{cases}
                 \displaystyle e^x
                     &amp; \text{if } q = 0 \\
-                \displaystyle (1 + q x)^{1 / q}
+                \displaystyle (1 + q x)^{\frac{1}{q}}
                     &amp; \text{otherwise}
             \end{cases}
             $$
@@ -1762,15 +1857,17 @@ and constants.</p>
     </tr>
     <tr id="def-qlog">
         <td>
-            <a href="https://wikipedia.org/wiki/Tsallis_statistics"><em>q</em>-logarithm</a>
+            <a href="https://wikipedia.org/wiki/Tsallis_statistics"><em>q</em>-logarithm</a><br>
+            (a.k.a. the
+            <a href="https://wikipedia.org/wiki/Power_transform">Box-Cox transform</a>)
         </td>
         <td><span class="arithmatex">\( \qlog{1 - q}{y} \)</span></td>
         <td>
             $$
             = \begin{cases}
-                \displaystyle \ln(y)
+                \displaystyle \ln y
                     &amp; \text{if } q = 0 \\
-                \displaystyle \left( y^q - 1 \right) / q
+                \displaystyle \frac{y^q - 1}{q}
                     &amp; \text{otherwise}
             \end{cases}
             $$
