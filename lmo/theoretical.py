@@ -178,31 +178,36 @@ def l_moment_from_cdf(
     \lambda^{(s, t)}_r =
     \begin{cases}
         1 & r = 0 \\
-        \int_{-\infty}^{\infty}
-            \left(H(x) - I_{F(x)}(s+1, \,t+1)\right)
-            \,\mathrm{d} x
+        \displaystyle
+        \int_{\mathbb{R}}
+            \left(H(x) - I_u(s + 1,\ t + 1)\right) \
+            \mathrm{d} x
         & r = 1 \\
+        \displaystyle
         \frac{c^{(s,t)}_r}{r}
-        \int_{-\infty}^{\infty}
-            F(x)^{s+1}
-            \left(1 - F(x)\right)^{t+1}
-            \,\tilde{P}^{(t+1, s+1)}_{r-2}\big(F(x)\big)
-            \,\mathrm{d} x
-        & r > 1 \;,
+        \int_{\mathbb{R}}
+            u^{s + 1}
+            \left(1 - u\right)^{t + 1} \
+            \widetilde{P}^{(t + 1, s + 1)}_{r - 2}(u) \
+            \mathrm{d} x
+        & r > 1 \;
+    ,
     \end{cases}
     $$
 
-    where
+    where,
 
     $$
     c^{(s,t)}_r =
-    \frac{r+s+t}{r}
-    \frac{B(r,\,r+s+t)}{B(r+s,\,r+t)} \;,
+        \frac{r + s + t}{r}
+        \frac{\B(r,\ r + s + t)}{\B(r + s,\ r + t)} \;
+    ,
     $$
 
-    $\tilde{P}^{(a,b)}_n(x)$ the shifted ($x \mapsto 2x-1$) Jacobi
-    polynomial, $H(x)$ the Heaviside step function, and $I_x(\alpha, \beta)$
-    the regularized incomplete gamma function.
+    $\widetilde{P}^{(\alpha, \beta)}_k(x)$ the shifted ($x \mapsto 2x-1$)
+    Jacobi polynomial, $H(x)$ the Heaviside step function, and
+    $I_x(\alpha, \beta)$ the regularized incomplete gamma function, and
+    $u = F_X(x)$ the probability integral transform of $x \sim X$.
 
     Notes:
         Numerical integration is performed with
@@ -368,19 +373,19 @@ def l_moment_from_ppf(
 ) -> np.float64 | npt.NDArray[np.float64]:
     r"""
     Evaluate the population L-moment of a univariate probability distribution,
-    using its Percentile Function (PPF) $x(F)$, also commonly known as the
+    using its Percentile Function (PPF), $x(F)$, also commonly known as the
     quantile function, which is the inverse of the Cumulative Distribution
     Function (CDF).
 
     $$
     \lambda^{(s, t)}_r =
-    c^{(s,t)}_r
-    \int_0^1
-        F^s (1 - F)^t
-        \,\tilde{P}^{(t, s)}_{r-1}(F)
-        \,x(F)
-        \,\mathrm{d} F
-    \;,
+        c^{(s, t)}_r
+        \int_0^1
+            F^s (1 - F)^t \
+            \widetilde{P}^{(t, s)}_{r - 1}(F) \
+            x(F) \
+            \mathrm{d} F \;
+    ,
     $$
 
     where
@@ -391,8 +396,8 @@ def l_moment_from_ppf(
     \frac{B(r,\,r+s+t)}{B(r+s,\,r+t)} \;,
     $$
 
-    and $\tilde{P}^{(a,b)}_n(x)$ the shifted ($x \mapsto 2x-1$) Jacobi
-    polynomial.
+    and $\widetilde{P}^{(\alpha, \beta)}_k(x)$ the shifted ($x \mapsto 2x-1$)
+    Jacobi polynomial.
 
     Notes:
         Numerical integration is performed with
@@ -771,30 +776,32 @@ def l_moment_cov_from_cdf(
     This function calculates the covariance matrix
 
     $$
-    \begin{align}
+    \begin{align*}
     \bf{\Lambda}^{(s,t)}_{k, r}
         &= \mathrm{Cov}[l^{(s, t)}_k, l^{(s, t)}_r] \\
         &= c_k c_r
-        \iint\limits_{x < y} \Big[
-            p_k\big(F(x)\big) \, p_r\big(F(y)\big) +
-            p_r\big(F(x)\big) \, p_k\big(F(y)\big)
-        \Big]
-        w^{(s+1,\, t)}\big(F(x)\big) \,
-        w^{(s,\, t+1)}\big(F(y)\big) \,
-        \mathrm{d}x \, \mathrm{d}y
-        \;,
-    \end{align}
+        \iint\limits_{x < y} \left(
+            p^{(s, t)}_k(u) \ p^{(s, t)}_r(v) +
+            p^{(s, t)}_r(u) \ p^{(s, t)}_k(v)
+        \right) \
+        w^{(s + 1,\ t)}(u) \
+        w^{(s,\ t + 1)}(v) \
+        \mathrm{d} x \
+        \mathrm{d} y \;
+    ,
+    \end{align*}
     $$
 
-    where
+    where $u = F_X(x)$ and $v = F_Y(y)$ (marginal) probability integral
+    transforms, and
 
     $$
     c_n = \frac{\Gamma(n) \Gamma(n+s+t+1)}{n \Gamma(n+s) \Gamma(n+t)}\;,
     $$
 
     the shifted Jacobi polynomial
-    $p_n(u) = P^{(t, s)}_{n-1}(2u - 1)$, $P^{(t, s)}_m$, and
-    $w^{(s,t)}(u) = u^s (1-u)^t$ its weight function.
+    $p^{(s, t)}_n(u) = P^{(t, s)}_{n-1}(2u - 1)$, $P^{(t, s)}_m$, and
+    $w^{(s, t)}(u) = u^s (1 - u)^t$ its weight function.
 
     Notes:
         This function uses [`scipy.integrate.nquad`][scipy.integrate.nquad]
