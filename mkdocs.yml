@@ -77,6 +77,8 @@ markdown_extensions:
   - md_in_html
   - sane_lists
   - smarty
+  - toc:
+      permalink: true
 
   # https://facelessuser.github.io/pymdown-extensions/
   - pymdownx.betterem
