@@ -10,8 +10,8 @@ strict: true
 
 nav:
   - Overview: index.md
-  - Theoretical L-moments: distributions.md
-  - API Docs: api.md
+  - Distributions: distributions.md
+  - API Reference: api.md
   - Contributing: contributing.md
 
 theme:
@@ -19,6 +19,12 @@ theme:
   logo: img/logo.png
   favicon: img/favicon.ico
   features:
+    # - navigation.sections
+    - navigation.path
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
+    - navigation.tracking
     - toc.follow
     - toc.integrate
   palette:
