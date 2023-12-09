@@ -61,6 +61,8 @@ plugins:
             show_source: false
             show_submodules: false
             signature_crossrefs: true
+  - git-revision-date-localized:
+      type: iso_date
 
 markdown_extensions:
   # https://python-markdown.github.io/extensions/

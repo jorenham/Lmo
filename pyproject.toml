@@ -50,6 +50,7 @@ mkdocs = "^1.5"
 mkdocs-material = "^9.4"
 mkdocs-include-markdown-plugin = "^6.0"
 mkdocstrings = {extras = ["python"], version = ">=0.24,<1.0"}
+mkdocs-git-revision-date-localized-plugin = "^1.2.1"
 
 [tool.poetry.group.debug.dependencies]
 ipython = ">=8.17"
