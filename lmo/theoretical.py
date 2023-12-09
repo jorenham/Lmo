@@ -1277,8 +1277,9 @@ def l_comoment_from_pdf(
 ) -> npt.NDArray[np.float64]:
     r"""
     Evaluate the theoretical L-*co*moment matrix of a multivariate probability
-    distribution, using the joint PDF $f_{\vec{X}}(\vec{x})$ and $n$ marginal
-    CDFs $F_X(x)$ of random vector $\vec{X}$.
+    distribution, using the joint PDF
+    $f(\vec x) \equiv f(x_1, x_2, \ldots, x_n)$ of random vector $\vec{X}$,
+    and the marginal CDFs $F_k$ of its $k$-th random variable.
 
     The L-*co*moment matrix is defined as
 
@@ -1293,33 +1294,37 @@ def l_comoment_from_pdf(
     with elements
 
     $$
-    \begin{align}
+    \begin{align*}
     \lambda_{r [ij]}^{(s, t)}
         &= c^{(s,t)}_r \int_{\mathbb{R^n}}
-            x_i
-            \,F_j(x_j)^s \,\bar{F}_j(x_j)^t
-            \,\tilde{P}^{(s, t)}_r \big(F_j(x_j) \big)
-            \,f(\vec{x})
-            \, d \vec{x} \\
+            x_i \
+            u_j^s \
+            (1 - u_j)^t \
+            \widetilde{P}^{(t, s)}_{r - 1} (u_j) \
+            f(\vec{x}) \
+            \mathrm{d} \vec{x} \\
         &= c^{(s,t)}_r \, \mathbb{E}_{\vec{X}} \left[
-            X_i
-            \,F_j(X_j)^s \,\bar{F}_j(X_j)^t
-            \,\tilde{P}^{(s, t)}_r \big(F_j(X_j) \big)
-            \,f(\vec{X})
+            X_i \
+            U_j^s \
+            (1 - U_j)^t \
+            \widetilde{P}^{(t, s)}_{r - 1}(U_j)
         \right]
-        \;,
-    \end{align}
+        \, ,
+    \end{align*}
     $$
 
-    with vector $\vec{x} = \begin{bmatrix} x_1 & \cdots & x_n \end{bmatrix}^T$,
-    $f$ the joint PDF, $F_i$ the marginal CDF of $X_i$ and $\bar{F}_i$ its
-    complement (the *Survival Function*), $\tilde{P}^{(s, t)}_n$ the shifted
-    Jacobi polynomial, and
+    where $U_j = F_j(X_j)$ and $u_j = F_j(x_j)$ denote the (marginal)
+    [probability integral transform
+    ](https://wikipedia.org/wiki/Probability_integral_transform) of
+    $X_j$ and $x_j \sim X_j$.
+    Furthermore, $\widetilde{P}^{(\alpha, \beta)}_k$ is a shifted Jacobi
+    polynomial, and
 
     $$
     c^{(s,t)}_r =
-    \frac{r+s+t}{r}
-    \frac{B(r,\,r+s+t)}{B(r+s,\,r+t)} \;,
+        \frac{r + s + t}{r}
+        \frac{\B(r,\ r + s + t)}{\B(r + s,\ r + t)} \;
+    ,
     $$
 
     a positive constant.
@@ -1329,13 +1334,12 @@ def l_comoment_from_pdf(
     $$
     \lambda_{r [ij]}^{(s, t)}
         = c^{(s,t)}_r \mathrm{Cov} \left[
-            X_i ,\;
-            F_j(X_j)^s
-            \,\bar{F}_j(X_j)^t
-            \,\tilde{P}^{(s, t)}_r \big(F_j(X_j) \big)
-            \,f(\vec{X})
-        \right]
-        \;,
+            X_i, \;
+            U_j^s \
+            (1 - U_j)^t \
+            \widetilde{P}^{(t, s)}_{r - 1}(U_j)
+        \right] \;
+        ,
     $$
 
     and without trim ($s = t = 0$), this simplifies to
@@ -1344,21 +1348,21 @@ def l_comoment_from_pdf(
     \lambda_{r [ij]}
         = \mathrm{Cov} \left[
             X_i ,\;
-            \,\tilde{P}_r \big(F_j(X_j) \big)
-            \,f(\vec{X})
-        \right]
-        \;,
+            \widetilde{P}_{r - 1} (U_j)
+        \right] \;
+        ,
     $$
 
-    with $\tilde{P}_n$ the shifted Legendre polynomial. This last form is
-    precisely the definition introduced by Serfling & Xiao (2007).
+    with $\tilde{P}_n = \tilde{P}^{(0, 0)}_n$ the shifted Legendre polynomial.
+    This last form is precisely the definition introduced by
+    Serfling & Xiao (2007).
 
     Note that the L-comoments along the diagonal, are equivalent to the
     (univariate) L-moments, i.e.
 
     $$
     \lambda_{r [ii]}^{(s, t)}\big( \vec{X} \big)
-    = \lambda_{r}^{(s, t)}\big( X_i \big) \;.
+        = \lambda_{r}^{(s, t)}\big( X_i \big) \;.
     $$
 
     Notes:
