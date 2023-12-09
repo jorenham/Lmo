@@ -865,6 +865,29 @@ class wakeby_gen(_rv_continuous):  # noqa: N801
             cast(_ArrF8, _wakeby_lmo(r, s, t, b, d, f)),
         )
 
+    def _entropy(self, b: float, d: float, f: float) -> float:
+        """
+        Entropy can be calculated from the QDF (PPF derivative) as the
+        Integrate[Log[QDF[u]], {u, 0, 1}]. This is the (semi) closed-form
+        solution in this case.
+        At the time of writing, this result appears to be novel.
+
+        The `f` conditionals are the limiting cases, e.g. for uniform,
+        exponential, and GPD (genpareto).
+        """
+        if f == 0:
+            return 1 + d
+        if f == 1:
+            return 1 - b
+
+        bd = b + d
+        assert bd > 0
+
+        return 1 - b + bd * cast(
+            float,
+            sc.hyp2f1(1, 1 / bd, 1 + 1 / bd, -f / (1 - f)),  # type: ignore
+        )
+
 
 wakeby: RVContinuous[float, float, float] = wakeby_gen(
     a=0.0,
