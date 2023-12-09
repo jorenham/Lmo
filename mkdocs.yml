@@ -83,6 +83,7 @@ markdown_extensions:
   # https://facelessuser.github.io/pymdown-extensions/
   - pymdownx.betterem
   - pymdownx.highlight
+  - pymdownx.inlinehilite
   - pymdownx.superfences
   - pymdownx.tasklist:
       custom_checkbox: true
