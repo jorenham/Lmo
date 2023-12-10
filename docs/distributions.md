@@ -748,9 +748,7 @@ The general trimmed L-moments of the Gompertz distribution are:
 
 ### GEV
 
-The [*generalized extreme value* (GEV)
-](https://wikipedia.org/wiki/Generalized_extreme_value_distribution)
-distribution unifies the
+The [GEV](https://wikipedia.org/wiki/GEV_distribution) unifies the
 [Gumbel](https://wikipedia.org/wiki/Gumbel_distribution),
 [Fréchet](https://wikipedia.org/wiki/Fr%C3%A9chet_distribution),
 and [Weibull](https://wikipedia.org/wiki/Weibull_distribution) distributions.
@@ -758,10 +756,10 @@ It has one shape parameter \( \alpha \in \mathbb{R} \), and the following
 distribution functions:
 
 \[
-    \begin{align*}
-        F(x) &= e^{-\qexp{1 - \alpha}{-x}} \\
-        x(F) &= -\qlog{1 - \alpha}{-\ln(F)}
-    \end{align*}
+\begin{align*}
+    F(x) &= e^{-\qexp{1 - \alpha}{-x}} \\
+    x(F) &= -\qlog{1 - \alpha}{-\ln(F)}
+\end{align*}
 \]
 
 Here, \( \qexp{q}{y} \) and \( \qlog{q}{y} \) are the
@@ -770,7 +768,7 @@ Here, \( \qexp{q}{y} \) and \( \qlog{q}{y} \) are the
 respectively.
 
 An alternative parametrization is sometimes used, e.g. on
-[Wikipedia](https://wikipedia.org/wiki/Generalized_extreme_value_distribution),
+[Wikipedia](https://wikipedia.org/wiki/GEV_distribution),
 where \( \xi = -\alpha \).
 The convention that is used here, is the same as in
 [`scipy.stats.genextreme`][scipy.stats.genextreme], where `c` corresponds to
@@ -779,7 +777,7 @@ The convention that is used here, is the same as in
 The trimmed L-moments of the GEV are
 
 \[
-    \begin{equation}
+\begin{equation}
     \tlmoment{s, t}{r} =
         \frac{(-1)^{r}}{r}
         \sum_{k = s + 1}^{r + s + t}
@@ -795,7 +793,7 @@ The trimmed L-moments of the GEV are
             \end{cases}
             \right)
     \label{eq:lr_gev}
-    \end{equation}
+\end{equation}
 \]
 
 Note that the GEV is effectively a reparametrized
@@ -805,8 +803,7 @@ Note that the GEV is effectively a reparametrized
 
 ### GLO
 
-The *generalized logistic distribution* (GLO), also known as the [shifted
-log-logistic distribution
+The GLO, also known as the [shifted log-logistic distribution
 ](https://wikipedia.org/wiki/Shifted_log-logistic_distribution), with shape
 parameter \( \alpha \in \mathbb{R} \), is characterized by the following
 distribution functions:
@@ -856,8 +853,7 @@ Note that the GLO is effectively a reparametrized
 
 ### GPD
 
-The [*generalized Pareto distribution*
-](https://wikipedia.org/wiki/Generalized_Pareto_distribution) (GPD), with
+The [GPD](https://wikipedia.org/wiki/Generalized_Pareto_distribution), with
 shape parameter \( \alpha \in \mathbb{R} \), has for \( x \ge 0 \) the
 distribution functions:
 
@@ -896,7 +892,6 @@ implementation.
 
 /// admonition | Special cases
     type: info
-
 There are several notable special cases of the GPD:
 
 [\( q \)-Exponential](https://wikipedia.org/wiki/Q-exponential_distribution)
@@ -1085,7 +1080,7 @@ The domain of the distribution is
 \end{cases}
 \]
 
-The quantile function (PPF) is defined to be
+The PPF is defined to be
 
 \[
 x(F) = -\phi \qlog{1 - \beta}{1 - F} - (1 - \phi) \qlog{1 + \delta}{1 - F}
@@ -1178,19 +1173,17 @@ There are several notable special cases of the Wakeby distribution:
     is uniform on \( [0, 1] \).
 ///
 
-### Generalized Lambda
+### GLD
 
-The [Tukey lambda distribution
-](https://wikipedia.org/wiki/Tukey_lambda_distribution) can be extended to
-the *generalized lambda distribution* (GLD).
+The GLD is a flexible generalization of the [Tukey lambda distribution
+](https://wikipedia.org/wiki/Tukey_lambda_distribution).
 Like the Wakeby distribution, Lmo uses an unconventional "standardized"
 paremetrization, with shape parameters \( \beta,\ \delta,\ \phi \), where
 \( \phi \in [0, 1] \) replaces the more commonly used shape parameters
 \( \alpha \) and \( \beta \). Refer to the Wakeby section for details.
 
 Like the Wakeby distribution, the PDF and CDF of the GLD are not analytically
-expressible. Instead, the GLD is defined through its PPF (quantile function,
-the inverse of the CDF):
+expressible. Instead, the GLD is defined through its PPF:
 
 \[
 x(F) = \phi \qlog{1 - \beta}{F} - (1 - \phi) \qlog{1 - \delta}{1 - F}
@@ -1501,3 +1494,16 @@ and constants.
         <td>[`scipy.special.boxcox`][scipy.special.boxcox]</td>
     </tr>
 </table>
+
+*[STD]: Standard deviation
+*[MAD]: Median absolute deviation
+*[RV]: Random variable
+*[PMF]: Probability mass function
+*[PDF]: Probability density function
+*[CDF]: Cumulative distribution function
+*[PPF]: Percent point function, inverse of the CDF, a.k.a. quantile function
+*[QDF]: Quantile density function, derivative of the PPF
+*[GEV]: Generalized (maximum) Extreme Value distribution
+*[GLO]: Generalized Logistic distribution
+*[GPD]: Generalized Pareto Distribution
+*[GLD]: Generalized Tukey–Lambda Distribution

@@ -19,7 +19,7 @@ theme:
   logo: img/logo.png
   favicon: img/favicon.ico
   features:
-    # - navigation.sections
+    - content.tooltips
     - navigation.path
     - navigation.tabs
     - navigation.tabs.sticky
@@ -72,7 +72,8 @@ plugins:
 
 markdown_extensions:
   # https://python-markdown.github.io/extensions/
-  # - admonition
+  - abbr
+  - attr_list
   - extra
   - md_in_html
   - sane_lists
@@ -85,9 +86,14 @@ markdown_extensions:
       generic: true
   - pymdownx.betterem
   - pymdownx.blocks.admonition
+  - pymdownx.blocks.definition
   - pymdownx.blocks.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.highlight
   - pymdownx.inlinehilite
+  - pymdownx.snippets:
   - pymdownx.striphtml
   - pymdownx.superfences
   - pymdownx.tasklist:
