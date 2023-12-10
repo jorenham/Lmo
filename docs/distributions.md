@@ -1237,7 +1237,7 @@ The domain is
 x
 \le \left\{ \begin{array}{l}
     \displaystyle \infty \ , & \text{if } \delta \le 0 \\
-    \displaystyle \frac{1 - \phi}{\phi} \ , & \text{if } \delta > 0
+    \displaystyle \frac{1 - \phi}{\delta} \ , & \text{if } \delta > 0
 \end{array}
 \right.
 \]
