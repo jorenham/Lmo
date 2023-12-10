@@ -1182,8 +1182,8 @@ paremetrization, with shape parameters \( \beta,\ \delta,\ \phi \), where
 \( \phi \in [0, 1] \) replaces the more commonly used shape parameters
 \( \alpha \) and \( \beta \). Refer to the Wakeby section for details.
 
-Like the Wakeby distribution, the PDF and CDF of the GPD are not analytically
-expressible. Instead, the GPD is defined through its PPF (quantile function,
+Like the Wakeby distribution, the PDF and CDF of the GLD are not analytically
+expressible. Instead, the GLD is defined through its PPF (quantile function,
 the inverse of the CDF):
 
 \[
@@ -1196,17 +1196,18 @@ The domain is
 \left.
 \begin{array}{l}
     \text{if } \beta \le 0: & \displaystyle -\infty \\
-    \text{if } 0 < \beta:  & \displaystyle -\frac \phi \beta
+    \text{if } \beta > 0:  & \displaystyle -\frac \phi \beta
 \end{array}
 \right\} \le
 x
-\le \begin{cases}
+\le \left\{ \begin{array}{l}
     \displaystyle \infty \ , & \text{if } \delta \le 0 \\
-    \displaystyle \frac{1 - \phi}{\phi} \ , & \text{if } 0 < \delta
-\end{cases}
+    \displaystyle \frac{1 - \phi}{\phi} \ , & \text{if } \delta > 0
+\end{array}
+\right.
 \]
 
-Unlike GPD's central product-moments, which have no general closed-form
+Unlike GLD's central product-moments, which have no general closed-form
 expression, its trimmed L-moments can be expressed quite elegantly.
 When \( \beta > -1 \) and \( \delta > -1 \), all L-moments are defined for
 \( r \ge 1 \) and \( s, t \ge 0 \) as:
@@ -1230,7 +1231,7 @@ When \( \beta > -1 \) and \( \delta > -1 \), all L-moments are defined for
 \end{equation}
 \]
 
-When \( \phi = 1 - \phi = \frac 1 2 \) and \( \beta = \delta \), GPD is the
+When \( \phi = 1 - \phi = \frac 1 2 \) and \( \beta = \delta \), GLD is the
 (non-generalized) Tukey-lambda distribution, implemented as
 [`scipy.stats.tukeylambda`][scipy.stats.tukeylambda].
 At the moment, the GPD itself has no Python implementation *yet*.
