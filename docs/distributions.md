@@ -696,8 +696,8 @@ wolfram alpha / mathematica.
 ### Bernoulli
 
 Surprisingly, the L-moments of the discrete
-[Bernoulli distribution](https://wikipedia.org/wiki/Bernoulli_distribution),
-can't be expressed as easily as the distribution itself:
+[Bernoulli distribution](https://wikipedia.org/wiki/Bernoulli_distribution)
+[^BERN], can't be expressed as easily as the distribution itself:
 
 \[
     \begin{equation}
@@ -714,12 +714,15 @@ Here, \( \jacobi{n}{\alpha}{\beta}{x} \) is a
 [Jacobi polynomial](#def-jacobi) (although it's not orthogonal, since
 \( \beta > -1 \) does not hold).
 
+[^BERN]:
+    [J.V. Uspensky (1937)](https://www.worldcat.org/oclc/996937) --
+    Introduction to mathematical probability
 
 ### Gompertz
 
 The [Gompertz distribution](https://wikipedia.org/wiki/Gompertz_distribution)
-with shape parameter \( \alpha > 0 \) and \( x \ge 0 \), has the following CDF
-and PPF:
+[^GOMP] with shape parameter \( \alpha > 0 \) and \( x \ge 0 \), has the
+following CDF and PPF:
 
 
 \[
@@ -744,6 +747,11 @@ The general trimmed L-moments of the Gompertz distribution are:
     \label{eq:lr_gompertz}
     \end{equation}
 \]
+
+[^GOMP]:
+    [B. Gompertz (1825)](https://doi.org/10.1098/rstl.1825.0026) -- On the
+    nature of the function expressive of the law of human mortality, and on a
+    new mode of determining the value of life contingencies.
 
 ### GEV
 
@@ -800,9 +808,14 @@ Note that the GEV is effectively a reparametrized
 [Tsallis distribution](https://wikipedia.org/wiki/Tsallis_distribution), with
 \( q = 1 - \alpha \).
 
+[^GEV]:
+    [A.F. Jenkinson (1955)](https://doi.org/10.1002/qj.49708134804) --
+    The frequency distribution of the annual maximum (or minimum) values of
+    meteorological elements
+
 ### GLO
 
-The GLO, also known as the [shifted log-logistic distribution
+The GLO [^GLO], also known as the [shifted log-logistic distribution
 ](https://wikipedia.org/wiki/Shifted_log-logistic_distribution), with shape
 parameter \( \alpha \in \mathbb{R} \), is characterized by the following
 distribution functions:
@@ -850,10 +863,15 @@ Note that the GLO is effectively a reparametrized
 [Tsallis distribution](https://wikipedia.org/wiki/Tsallis_distribution), with
 \( q = 1 - \alpha \).
 
+[^GLO]:
+    [J.R.M. Hosking (1986)
+    ](https://dominoweb.draco.res.ibm.com/reports/RC12210.pdf) --
+    The theory of probability weighted moments
+
 ### GPD
 
-The [GPD](https://wikipedia.org/wiki/Generalized_Pareto_distribution), with
-shape parameter \( \alpha \in \mathbb{R} \), has for \( x \ge 0 \) the
+The [GPD](https://wikipedia.org/wiki/Generalized_Pareto_distribution) [^GPD],
+with shape parameter \( \alpha \in \mathbb{R} \), has for \( x \ge 0 \) the
 distribution functions:
 
 \[
@@ -915,9 +933,14 @@ There are several notable special cases of the GPD:
 :   Implemented in as [`scipy.stats.kappa4`][scipy.stats.kappa4].
 ///
 
+[^GPD]:
+    [J.R.M. Hosking & J.R. Wallis (1987)
+    ](https://doi.org/10.1080/00401706.1987.10488243) -- Parameter and
+    Quantile Estimation for the Generalized Pareto Distribution
+
 ### Burr III / Dagum
 
-The *Burr III* distribution, also known as the
+The *Burr III* distribution [^BURR], also known as the
 [*Dagum distribution*](https://wikipedia.org/wiki/Dagum_distribution), has two
 shape parameters \( \alpha \) and \( \beta \), both restricted to the
 positive reals
@@ -963,7 +986,7 @@ distribution
 ### Burr XII / Pareto IV
 
 The
-[*Burr XII distribution*](https://wikipedia.org/wiki/Burr_distribution)
+[*Burr XII distribution*](https://wikipedia.org/wiki/Burr_distribution) [^BURR]
 has two shape parameters \( \alpha \) and \( \beta \), both restricted to the
 positive reals. It is also known as the *Singh-Maddala distribution*.
 The alternative parametrization \( \alpha \mapsto 1 / \gamma \), where
@@ -1009,14 +1032,18 @@ In the special case where \( \alpha = 1 \) is known as the
 has been implemented as [scipy.stats.lomax][scipy.stats.lomax], where the
 parameter `c` corresponds to \( \beta \).
 
+[^BURR]:
+    [I.W. Burr (1942)](https://doi.org/10.1214%2Faoms%2F1177731607) --
+    Cumulative Frequency Functions
+
 ### Kumaraswamy
 
 For [Kumaraswamy's distribution
-](https://wikipedia.org/wiki/Kumaraswamy_distribution) with parameters
+](https://wikipedia.org/wiki/Kumaraswamy_distribution) [^KUM1] with parameters
 \( \alpha \in \mathbb{R}_{>0} \) and \( \beta \in \mathbb{R}_{>0} \),
-the general solution for the \( r \)th L-moment has been derived by
-[Jones (2009)](https://doi.org/10.1016/j.stamet.2008.04.001). This can be
-extended for the general trimmed L-moments.
+the general solution for the \( r \)th (untrimmed L-moment has been derived by
+M.C. Jones in 2009 [^KUM2]. Lmo has extended these results for the general
+trimmed L-moments.
 
 The distribution functions are for \( 0 \le x \le 1 \) defined as:
 
@@ -1045,10 +1072,19 @@ Its general \( r \)-th trimmed L-moment are:
 The Kumaraswamy distribution is implemented in
 [`lmo.distributions.kumaraswamy`][lmo.distributions.kumaraswamy].
 
+[^KUM1]:
+    [P. Kumaraswamy](https://doi.org/10.1016/0022-1694(80)90036-0) --
+    A generalized probability density function for double-bounded random
+    processes
+[^KUM2]:
+    [M.C. Jones (2009)](https://doi.org/10.1016/j.stamet.2008.04.001) --
+    Kumaraswamy’s distribution: A beta-type distribution with some
+    tractability advantages
+
 ### Wakeby
 
 The [*Wakeby distribution*](https://wikipedia.org/wiki/Wakeby_distribution)
-is quantile-based -- the CDF and PDF are not analytically expressible for the
+[^WAK] is quantile-based -- the CDF and PDF are not analytically expressible for the
 general case.
 Without loss of generality, Lmo uses a 3-parameter "standardized"
 paremetrization, with shape parameters \( \beta,\ \delta,\ \phi \).
@@ -1169,9 +1205,13 @@ There are several notable special cases of the Wakeby distribution:
     is uniform on \( [0, 1] \).
 ///
 
+[^WAK]:
+    [J.C. Houghton (1978)](https://doi.org/10.1029/WR014i006p01105) -- Birth
+    of a parent: The Wakeby Distribution for modeling flood flows
+
 ### GLD
 
-The GLD is a flexible generalization of the [Tukey lambda distribution
+The GLD [^GLD] is a flexible generalization of the [Tukey lambda distribution
 ](https://wikipedia.org/wiki/Tukey_lambda_distribution).
 Like the Wakeby distribution, Lmo uses an unconventional "standardized"
 paremetrization, with shape parameters \( \beta,\ \delta,\ \phi \), where
@@ -1230,6 +1270,11 @@ When \( \phi = 1 - \phi = \frac 1 2 \) and \( \beta = \delta \), GLD is the
 (non-generalized) Tukey-lambda distribution, implemented as
 [`scipy.stats.tukeylambda`][scipy.stats.tukeylambda].
 At the moment, the GPD itself has no Python implementation *yet*.
+
+[^GLD]:
+    [J.S. Ramberg & B.W. Schmeiser (1974)
+    ](https://doi.org/10.1145/360827.360840) -- An approximate method for
+    generating asymmetric random variables
 
 ## Constants and special functions
 
@@ -1490,6 +1535,7 @@ and constants.
         <td>[`scipy.special.boxcox`][scipy.special.boxcox]</td>
     </tr>
 </table>
+
 
 *[STD]: Standard deviation
 *[MAD]: Median absolute deviation
