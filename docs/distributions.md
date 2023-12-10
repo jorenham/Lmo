@@ -1176,44 +1176,64 @@ implementation.
 
 The [Tukey lambda distribution
 ](https://wikipedia.org/wiki/Tukey_lambda_distribution) can be extended to
-the *generalized lambda distribution*, which has two scale parameters
-\( \alpha, \gamma \), and two shape parameters \( \beta, \delta \).
+the *generalized lambda distribution* (GLD).
+Like the Wakeby distribution, Lmo uses an unconventional "standardized"
+paremetrization, with shape parameters \( \beta,\ \delta,\ \phi \), where
+\( \phi \in [0, 1] \) replaces the more commonly used shape parameters
+\( \alpha \) and \( \beta \). Refer to the Wakeby section for details.
 
-Like the Wakeby distribution, the generalized lambda has no closed-form PDF
-or CDF. Instead, it is defined through its PPF:
+Like the Wakeby distribution, the PDF and CDF of the GPD are not analytically
+expressible. Instead, the GPD is defined through its PPF (quantile function,
+the inverse of the CDF):
 
 \[
-x(F) = \alpha \qlog{1 - \beta}{F} - \gamma \qlog{1 - \delta}{1 - F}
+x(F) = \phi \qlog{1 - \beta}{F} - (1 - \phi) \qlog{1 - \delta}{1 - F}
 \]
 
-Although its central product moments have no closed-form expression, when
-\( \beta > -1 \) and \( \delta > -1 \), the general trimmed L-moments can be
-compactly expressed as:
+The domain is
+
+\[
+\left.
+\begin{array}{l}
+    \text{if } \beta \le 0: & \displaystyle -\infty \\
+    \text{if } 0 < \beta:  & \displaystyle -\frac \phi \beta
+\end{array}
+\right\} \le
+x
+\le \begin{cases}
+    \displaystyle \infty \ , & \text{if } \delta \le 0 \\
+    \displaystyle \frac{1 - \phi}{\phi} \ , & \text{if } 0 < \delta
+\end{cases}
+\]
+
+Unlike GPD's central product-moments, which have no general closed-form
+expression, its trimmed L-moments can be expressed quite elegantly.
+When \( \beta > -1 \) and \( \delta > -1 \), all L-moments are defined for
+\( r \ge 1 \) and \( s, t \ge 0 \) as:
 
 \[
 \begin{equation}
     \tlmoment{s,t}{r}
-        = \alpha
+        = \phi
         \frac
             {\rfact{r + s}{t + 1} \ \ffact{\beta + s}{r + s - 1}}
             {r \ \rfact{\beta}{r + s + t + 1}}
-        + (-1)^r \gamma \
+        + (-1)^r (1 - \phi) \
         \frac
             {\rfact{r + t}{s + t} \ \ffact{\delta + t}{r + t - 1}}
             {r \ \rfact{\delta}{r + s + t + 1}}
         - \underbrace{
             \ffact{1}{r} \left(
-                \frac \alpha \beta - \frac \gamma \delta
+                \frac \phi \beta - \frac{1 - \phi}{\delta}
             \right)
         }_{\text{will be } 0 \text{ if } r>1}
 \end{equation}
 \]
 
-When \( \alpha = \gamma \) and \( \beta = \delta \), this is the
-(non-generalized) Tukey-lambda distribution, which has been implemented as
-[`scipy.stats.tukeylambda`][scipy.stats.tukeylambda]. Currently, this
-4-parameter generalization has no [`scipy.stats`][scipy.stats] implementation.
-
+When \( \phi = 1 - \phi = \frac 1 2 \) and \( \beta = \delta \), GPD is the
+(non-generalized) Tukey-lambda distribution, implemented as
+[`scipy.stats.tukeylambda`][scipy.stats.tukeylambda].
+At the moment, the GPD itself has no Python implementation *yet*.
 
 ## Constants and special functions
 
