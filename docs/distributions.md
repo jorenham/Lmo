@@ -1213,16 +1213,16 @@ There are several notable special cases of the Wakeby distribution:
 
 The GLD [^GLD] is a flexible generalization of the [Tukey lambda distribution
 ](https://wikipedia.org/wiki/Tukey_lambda_distribution).
-Like the Wakeby distribution, Lmo uses an unconventional "standardized"
+Lmo uses an unconventional "standardized"
 paremetrization, with shape parameters \( \beta,\ \delta,\ \phi \), where
-\( \phi \in [0, 1] \) replaces the more commonly used shape parameters
-\( \alpha \) and \( \beta \). Refer to the Wakeby section for details.
+\( \phi \in [-1, 1] \) replaces the more commonly used shape parameters
+\( \alpha \mapsto 1 + \phi \) and \( \gamma \mapsto 1 - \phi \).
 
 Like the Wakeby distribution, the PDF and CDF of the GLD are not analytically
 expressible. Instead, the GLD is defined through its PPF:
 
 \[
-x(F) = \phi \qlog{1 - \beta}{F} - (1 - \phi) \qlog{1 - \delta}{1 - F}
+x(F) = (\phi + 1) \qlog{1 - \beta}{F} + (\phi - 1) \qlog{1 - \delta}{1 - F}
 \]
 
 The domain is
@@ -1231,7 +1231,7 @@ The domain is
 \left.
 \begin{array}{l}
     \text{if } \beta \le 0: & \displaystyle -\infty \\
-    \text{if } \beta > 0:  & \displaystyle -\frac \phi \beta
+    \text{if } \beta > 0:  & \displaystyle -\frac{1 + \phi}{\beta}
 \end{array}
 \right\} \le
 x
@@ -1250,7 +1250,7 @@ When \( \beta > -1 \) and \( \delta > -1 \), all L-moments are defined for
 \[
 \begin{equation}
     \tlmoment{s,t}{r}
-        = \phi
+        = (1 + \phi)
         \frac
             {\rfact{r + s}{t + 1} \ \ffact{\beta + s}{r + s - 1}}
             {r \ \rfact{\beta}{r + s + t + 1}}
@@ -1260,16 +1260,17 @@ When \( \beta > -1 \) and \( \delta > -1 \), all L-moments are defined for
             {r \ \rfact{\delta}{r + s + t + 1}}
         - \underbrace{
             \ffact{1}{r} \left(
-                \frac \phi \beta - \frac{1 - \phi}{\delta}
+                \frac{\phi + 1} \beta + \frac{\phi - 1}{\delta}
             \right)
         }_{\text{will be } 0 \text{ if } r>1}
 \end{equation}
 \]
 
-When \( \phi = 1 - \phi = \frac 1 2 \) and \( \beta = \delta \), GLD is the
-(non-generalized) Tukey-lambda distribution, implemented as
-[`scipy.stats.tukeylambda`][scipy.stats.tukeylambda].
 At the moment, the GPD itself has no Python implementation *yet*.
+But, when \( \beta = \delta \) and \( \phi = 0 \), GLD is the
+regular Tukey-lambda distribution with shape
+\( \lambda \equiv \beta = \delta \), which is implemented as
+[`scipy.stats.tukeylambda`][scipy.stats.tukeylambda].
 
 [^GLD]:
     [J.S. Ramberg & B.W. Schmeiser (1974)
