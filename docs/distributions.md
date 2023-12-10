@@ -24,7 +24,6 @@ likely to include some novel solutions. This is also the reason for the lack
 of references. But this should pose no problems in practise, since Lmo makes
 it trivial to check if they aren't incorrect.
 
-
 ## Simple distributions
 
 /// tip
@@ -32,8 +31,8 @@ Numerical calculation of these L-statistics using [`scipy.stats`][scipy.stats]
 distributions, refer to
 [`rv_continuous.l_stats`][lmo.contrib.scipy_stats.l_rv_generic.l_stats].
 
-For direct calculation of the L-stats from a CDF or PPF (quantile function,
-inverse CDF), see [`l_stats_from_cdf`][lmo.theoretical.l_stats_from_cdf] or
+For direct calculation of the L-stats from a CDF or PPF, see
+[`l_stats_from_cdf`][lmo.theoretical.l_stats_from_cdf] or
 [`l_stats_from_ppf`][lmo.theoretical.l_stats_from_ppf], respectively.
 ///
 
@@ -864,7 +863,6 @@ distribution functions:
     \end{align*}
 \]
 
-
 The L-moments of the GPD exist when \( \alpha < 1 + t \), and can be
 compactly expressed as
 
@@ -972,7 +970,6 @@ The alternative parametrization \( \alpha \mapsto 1 / \gamma \), where
 \( \gamma > 0 \), is known as the (standard) type IV
 [*Pareto distribution*](https://wikipedia.org/wiki/Pareto_distribution)
 
-
 The distribution functions for \( x > 0 \) are defined as:
 
 \[
@@ -1003,7 +1000,7 @@ This distribution is implemented in
 and `d` correspond to  \( \alpha \) and \( \beta \), respectively.
 
 The Burr XII and Burr III distributions are related as \( Y = 1 / X \), where
-\( X \) and \( Y \) are random variables with Burr XII \( (\alpha, \beta) \)
+\( X \) and \( Y \) are RV's with Burr XII \( (\alpha, \beta) \)
 and Burr III \( (1 / \alpha, \beta) \)
 distributions (or vice-versa), respectively.
 
@@ -1093,7 +1090,6 @@ x(F) =
     \frac{\phi}{\beta} (1 - (1 - F)^\beta)
     - \frac{1 - \phi}{\delta} (1 - (1 - F)^{-\delta})
 \]
-
 
 /// note | Alternative parametrization
 This 3-parameter Wakeby distribution is equivalent to the 5-parameter
