@@ -72,7 +72,7 @@ plugins:
 
 markdown_extensions:
   # https://python-markdown.github.io/extensions/
-  - admonition
+  # - admonition
   - extra
   - md_in_html
   - sane_lists
@@ -81,14 +81,17 @@ markdown_extensions:
       permalink: true
 
   # https://facelessuser.github.io/pymdown-extensions/
+  - pymdownx.arithmatex:
+      generic: true
   - pymdownx.betterem
+  - pymdownx.blocks.admonition
+  - pymdownx.blocks.details
   - pymdownx.highlight
   - pymdownx.inlinehilite
+  - pymdownx.striphtml
   - pymdownx.superfences
   - pymdownx.tasklist:
       custom_checkbox: true
-  - pymdownx.arithmatex:
-      generic: true
 
 extra_css:
   - styles/theme.css

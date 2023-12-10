@@ -24,22 +24,24 @@ likely to include some novel solutions. This is also the reason for the lack
 of references. But this should pose no problems in practise, since Lmo makes
 it trivial to check if they aren't incorrect.
 
-!!! tip
 
-    Numerical calculation of these L-statistics using `scipy.stats`
-    distributions, refer to
-    [`rv_continuous.l_stats`][lmo.contrib.scipy_stats.l_rv_generic.l_stats].
+## Simple distributions
 
-    For direct calculation of the L-stats from a CDF or PPF (quantile function,
-    inverse CDF), see [`l_stats_from_cdf`][lmo.theoretical.l_stats_from_cdf] or
-    [`l_stats_from_ppf`][lmo.theoretical.l_stats_from_ppf], respectively.
+/// tip
+Numerical calculation of these L-statistics using [`scipy.stats`][scipy.stats]
+distributions, refer to
+[`rv_continuous.l_stats`][lmo.contrib.scipy_stats.l_rv_generic.l_stats].
 
+For direct calculation of the L-stats from a CDF or PPF (quantile function,
+inverse CDF), see [`l_stats_from_cdf`][lmo.theoretical.l_stats_from_cdf] or
+[`l_stats_from_ppf`][lmo.theoretical.l_stats_from_ppf], respectively.
+///
 
-## L-stats
-
-An overview of the untrimmed L-location, L-scale, L-skewness and L-kurtosis,
+An overview of the L-location, L-scale, L-skewness and L-kurtosis,
 of a bunch of popular univariate probability distributions, for which they
 exist (in closed form).
+
+### L-stats
 
 <table>
 <thead>
@@ -352,10 +354,7 @@ exist (in closed form).
 </tr>
 </table>
 
-## TL-stats
-
-Collection of TL-location, -scale, -skewness, -kurtosis coefficients, with
-symmetric trimming of order 1, i.e. `trim=(1, 1)`.
+### TL-stats
 
 <table>
 <thead>
@@ -895,29 +894,33 @@ where \( H_n \) is a [harmonic number](#def-harmonic).
 See [`scipy.stats.genpareto`][scipy.stats.genpareto] for an Lmo-compatible
 implementation.
 
-!!! info "Special cases"
+/// admonition | Special cases
+    type: info
 
-    There are several notable special cases of the GPD:
+There are several notable special cases of the GPD:
 
-    [\( q \)-Exponential](https://wikipedia.org/wiki/Q-exponential_distribution)
-    :   When \( \alpha > -1 \), GPD is \( q \)-exponential with shape
-        \( q = 2 - 1 / (1 + \alpha) \) and rate (inverse scale)
-        \( \lambda = \alpha + 1 \).
+[\( q \)-Exponential](https://wikipedia.org/wiki/Q-exponential_distribution)
+:   When \( \alpha > -1 \), GPD is \( q \)-exponential with shape
+    \( q = 2 - 1 / (1 + \alpha) \) and rate (inverse scale)
+    \( \lambda = \alpha + 1 \).
 
-    [Exponential](https://wikipedia.org/wiki/Exponential_distribution)
-    :   When \( \alpha = 0 \), GPD is standard exponential.
+[Exponential](https://wikipedia.org/wiki/Exponential_distribution)
+:   When \( \alpha = 0 \), GPD is standard exponential.
 
-    [Uniform](https://wikipedia.org/wiki/Continuous_uniform_distribution)
-    :   When \( \alpha = 1 \) GPD is uniform on \( [0, 1] \).
+[Uniform](https://wikipedia.org/wiki/Continuous_uniform_distribution)
+:   When \( \alpha = 1 \) GPD is uniform on \( [0, 1] \).
+///
 
-!!! info "Generalizations"
+/// admonition | Generalizations
+    type: info
 
-    [Wakeby's distribution](#wakeby)
-    :   Implemented as [`lmo.distributions.wakeby`][lmo.distributions.wakeby].
-        See below for details, including the general L-moments in closed-form.
+[Wakeby's distribution](#wakeby)
+:   Implemented as [`lmo.distributions.wakeby`][lmo.distributions.wakeby].
+    See below for details, including the general L-moments in closed-form.
 
-    [Kappa distribution](https://doi.org/10.1147/rd.383.0251)
-    :   Implemented in as [`scipy.stats.kappa4`][scipy.stats.kappa4].
+[Kappa distribution](https://doi.org/10.1147/rd.383.0251)
+:   Implemented in as [`scipy.stats.kappa4`][scipy.stats.kappa4].
+///
 
 ### Burr III / Dagum
 
@@ -1097,19 +1100,19 @@ x(F) =
 \]
 
 
-!!! note "Alternative parametrization"
+/// note | Alternative parametrization
+This 3-parameter Wakeby distribution is equivalent to the 5-parameter
+variant that is generally used, after scaling by \( \sigma \) and shifting
+by \( \xi \). The shape parameters \( \beta \) and \( \delta \) are
+(intentionally) equivalent, the scale parameters are related by
+\( \alpha \equiv \sigma \phi \) and \( gamma \equiv \sigma (1 - \phi) \),
+and the location parameter is precisely \( \xi \).
 
-    This 3-parameter Wakeby distribution is equivalent to the 5-parameter
-    variant that is generally used, after scaling by \( \sigma \) and shifting
-    by \( \xi \). The shape parameters \( \beta \) and \( \delta \) are
-    (intentionally) equivalent, the scale parameters are related by
-    \( \alpha \equiv \sigma \phi \) and \( gamma \equiv \sigma (1 - \phi) \),
-    and the location parameter is precisely \( \xi \).
-
-    Conversely, Lmo's "standard" Wakeby distribution can by obtained from
-    5-Wakeby, by shifting and scaling s.t. \( \xi = 0 \) and
-    \( \alpha + \gamma = 1 \). Finally, \( \phi \equiv \alpha = 1 - \gamma \)
-    effectively combines the two scale parameters.
+Conversely, Lmo's "standard" Wakeby distribution can by obtained from
+5-Wakeby, by shifting and scaling s.t. \( \xi = 0 \) and
+\( \alpha + \gamma = 1 \). Finally, \( \phi \equiv \alpha = 1 - \gamma \)
+effectively combines the two scale parameters.
+///
 
 Lmo figured out that when \( \delta < t + 1 \), all of Wakeby's (trimmed)
 L-moments can be expressed as
@@ -1155,22 +1158,25 @@ where \( H_n \) is a [harmonic number](#def-harmonic).
 See [`lmo.distributions.wakeby`][lmo.distributions.wakeby] for the
 implementation.
 
-!!! info "Special cases"
+/// admonition | Special cases
+    type: info
+There are several notable special cases of the Wakeby distribution:
 
-    There are several notable special cases of the Wakeby distribution:
+[GPD -- Generalized Pareto](#gpd)
+:   With \( \phi = 0 \), Wakeby is the standard GPD, and
+    \( \delta \) its shape parameter.
 
-    [GPD -- Generalized Pareto](#gpd)
-    :   With \( \phi = 0 \), Wakeby is the standard GPD, and
-        \( \delta \) its shape parameter.
+    Conversely, \( \phi = 1 \) yields a *bounded* GPD variant, with
+    shape parameter \( -\beta \), and \( 1 / \beta \) the upper bound.
 
-        Conversely, \( \phi = 1 \) yields a *bounded* GPD variant, with
-        shape parameter \( -\beta \), and \( 1 / \beta \) the upper bound.
-    [Exponential](https://wikipedia.org/wiki/Exponential_distribution)
-    :   With \( \beta = \delta = 0 \) and \( \phi = 1 \), Wakeby is
-        standard exponential.
-    [Uniform](https://wikipedia.org/wiki/Continuous_uniform_distribution)
-    :   With \( \beta = \phi = 1 \) (and therefore \( \delta = 0 \)) Wakeby
-        is uniform on \( [0, 1] \).
+[Exponential](https://wikipedia.org/wiki/Exponential_distribution)
+:   With \( \beta = \delta = 0 \) and \( \phi = 1 \), Wakeby is
+    standard exponential.
+
+[Uniform](https://wikipedia.org/wiki/Continuous_uniform_distribution)
+:   With \( \beta = \phi = 1 \) (and therefore \( \delta = 0 \)) Wakeby
+    is uniform on \( [0, 1] \).
+///
 
 ### Generalized Lambda
 
