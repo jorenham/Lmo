@@ -1244,7 +1244,7 @@ x
 
 Unlike GLD's central product-moments, which have no general closed-form
 expression, its trimmed L-moments can be expressed quite elegantly.
-When \( \beta > -1 \) and \( \delta > -1 \), all L-moments are defined for
+When \( \beta > -s - 1 \) and \( \delta > -t - 1 \), all L-moments are defined for
 \( r \ge 1 \) and \( s, t \ge 0 \) as:
 
 \[
