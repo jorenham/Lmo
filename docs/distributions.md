@@ -1218,8 +1218,8 @@ paremetrization, with shape parameters \( \beta,\ \delta,\ \phi \), where
 \( \phi \in [-1, 1] \) replaces the more commonly used shape parameters
 \( \alpha \mapsto 1 + \phi \) and \( \gamma \mapsto 1 - \phi \).
 
-Like the Wakeby distribution, the PDF and CDF of the GLD are not analytically
-expressible. Instead, the GLD is defined through its PPF:
+As with the Wakeby distribution, the PDF and CDF of the GLD are not
+analytically expressible. Instead, the GLD is defined through its PPF:
 
 \[
 x(F) = (\phi + 1) \qlog{1 - \beta}{F} + (\phi - 1) \qlog{1 - \delta}{1 - F}
