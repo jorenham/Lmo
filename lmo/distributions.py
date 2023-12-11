@@ -3,6 +3,7 @@ __all__ = (
     'l_rv_nonparametric',
     'kumaraswamy',
     'wakeby',
+    'genlambda',
 )
 
 # pyright: reportIncompatibleMethodOverride=false
@@ -36,7 +37,7 @@ from ._utils import (
 )
 from .diagnostic import l_ratio_bounds
 from .special import harmonic
-from .theoretical import l_moment_from_ppf
+from .theoretical import entropy_from_qdf, l_moment_from_ppf
 from .typing import (
     AnyTrim,
     FloatVector,
@@ -661,7 +662,7 @@ def _wakeby_sf0(  # noqa: C901
         z = .7
 
     eps = 1e-8
-    maxit = 20
+    maxit = 50
     ufl = math.log(math.nextafter(0, 1))
 
     for _ in range(maxit):
@@ -764,6 +765,14 @@ class wakeby_gen(_rv_continuous):  # noqa: N801
             return math.nan, math.nan
 
         return self.a, _wakeby_ub(b, d, f)
+
+    def _fitstart(
+        self,
+        data: npt.NDArray[np.float64],
+        args: tuple[float, float, float] | None = None,
+    ) -> tuple[float, float, float, float, float]:
+        #  Arbitrary, but the default f=1 is a bad start
+        return super()._fitstart(data, args or (1., 1., .5))  # type: ignore
 
     def _pdf(
         self,
@@ -898,5 +907,221 @@ r"""A Wakeby random variable, a generalization of
 
 [`wakeby`][wakeby] takes \( b \), \( d \) and \( f \) as shape parameters.
 
-For details, see [Theoretical L-moments - Wakeby](distributions.md#wakeby).
+For a detailed description of the Wakeby distribution, refer to
+[Distributions - Wakeby](distributions.md#wakeby).
+"""
+
+def _genlambda_support(b: float, d: float, f: float) -> tuple[float, float]:
+    xa = -(1 + f) / b if b > 0 else -math.inf
+    xb = (1 - f) / d if d > 0 else math.inf
+    return xa, xb
+
+def _genlambda_ppf0(q: float, b: float, d: float, f: float) -> float:
+    """PPF of the GLD."""
+    if math.isnan(q):
+        return math.nan
+    if q <= 0:
+        return _genlambda_support(b, d, f)[0]
+    if q >= 1:
+        return _genlambda_support(b, d, f)[1]
+
+    u = math.log(q) if b == 0 else (q**b - 1) / b
+    v = math.log(1 - q) if d == 0 else ((1 - q)**d - 1) / d
+    return (1 + f) * u - (1 - f) * v
+
+_genlambda_ppf = np.vectorize(_genlambda_ppf0, [float])
+
+def _genlambda_qdf(q: V, b: float, d: float, f: float) -> V:
+    return cast(V, (1 + f) * q**(b - 1) - (1 - f) * (1 - q)**(d - 1))
+
+def _genlambda_cdf0(  # noqa: C901
+    x: float,
+    b: float,
+    d: float,
+    f: float,
+    *,
+    ptol: float = 1e-4,
+    xtol: float = 1e-7,
+    maxiter: int = 100,
+) -> float:
+    """
+    Compute the CDF of the GLD using bracketing search with special checks.
+
+    Uses the same (unnamed?) algorithm as `scipy.special.tklmbda`:
+    https://github.com/scipy/scipy/blob/v1.11.4/scipy/special/cephes/tukey.c
+    """
+    if math.isnan(x) or math.isnan(b) or math.isnan(d) or math.isnan(f):
+        return math.nan
+
+    # extrema
+    xa, xb = _genlambda_support(b, d, f)
+    if x <= xa:
+        return 0
+    if x >= xb:
+        return 1
+
+    # special cases
+    if abs(f + 1) < ptol:
+        return 1 - math.exp(-x) if d == 0 else 1 - (1 - d * x)**(1 / d)
+    if abs(f - 1) < ptol:
+        return math.exp(x) if b == 0 else (1 + b * x)**(1 / b)
+    if f < ptol and abs(b) < ptol and abs(d) < ptol:
+        return (1 + np.tanh(x)) / 2
+    if abs(b - 1) < ptol and abs(d - 1) < ptol:
+        assert 0 <= x + f <= 1, (x, f)
+        return x + f
+
+    # bracketing search, using a similar algorithm as `scipy.special.tklmbda`
+    p_min, p_mid, p_max = 0.0, 0.5, 1.0
+    p_low, p_high = p_min, p_max
+    for _ in range(maxiter):
+        x_eval = _genlambda_ppf0(p_mid, b, d, f)
+        if abs(x_eval - x) <= xtol:
+            break
+
+        if x_eval > x:
+            p_high = p_mid
+            p_mid = (p_mid + p_low) / 2
+        else:
+            p_low = p_mid
+            p_mid = (p_mid + p_high) / 2
+
+        if (p_mid - p_low)**2 <= xtol:
+            break
+
+    return p_mid
+
+
+_genlambda_cdf = np.vectorize(
+    _genlambda_cdf0,
+    [float],
+    excluded={'ptol', 'xtol', 'maxiter'},
+)
+
+
+class genlambda_gen(_rv_continuous):  # noqa: N801
+    def _argcheck(self, b: float, d: float, f: float) -> int:
+        return np.isfinite(b) & np.isfinite(d) & (f >= 0) & (f <= 1)
+
+    def _shape_info(self) -> Sequence[_ShapeInfo]:
+        ibeta = _ShapeInfo('b', False, (-np.inf, np.inf), (False, False))
+        idelta = _ShapeInfo('d', False, (-np.inf, np.inf), (False, False))
+        iphi = _ShapeInfo('f', False, (-1, 1), (True, True))
+        return [ibeta, idelta, iphi]
+
+    def _get_support(
+        self,
+        b: float,
+        d: float,
+        f: float,
+    ) -> tuple[float, float]:
+        return _genlambda_support(b, d, f)
+
+    def _fitstart(
+        self,
+        data: npt.NDArray[np.float64],
+        args: tuple[float, float, float] | None = None,
+    ) -> tuple[float, float, float, float, float]:
+        #  Arbitrary, but the default f=1 is a bad start
+        return super()._fitstart(data, args or (1., 1., 0.))  # type: ignore
+
+    def _pdf(
+        self,
+        x: npt.NDArray[np.float64],
+        b: float,
+        d: float,
+        f: float,
+    ) -> npt.NDArray[np.float64]:
+        return 1 / _genlambda_qdf(self._cdf(x, b, d, f), b, d, f)
+
+    def _cdf(
+        self,
+        x: npt.NDArray[np.float64],
+        b: float,
+        d: float,
+        f: float,
+    ) -> npt.NDArray[np.float64]:
+        return _genlambda_cdf(x, b, d, f)
+
+    def _ppf(
+        self,
+        x: npt.NDArray[np.float64],
+        b: float,
+        d: float,
+        f: float,
+    ) -> npt.NDArray[np.float64]:
+        return _genlambda_ppf(x, b, d, f)
+
+    def _stats(self, b: float, d: float, f: float) -> tuple[
+        float | None,
+        float | None,
+        float | None,
+        float | None,
+    ]:
+        if b <= -1 or d <= -1:
+            # hard NaN (not inf); indeterminate integral
+            return math.nan, math.nan, math.nan, math.nan
+
+        a, c = 1 + f, 1 - f
+        b1, d1 = 1 + b + 1, 1 + d
+
+        m1 = c / d1 - a / b1
+
+        if b <= -1 / 2 or d <= -1 / 2:
+            return m1, math.nan, math.nan, math.nan
+
+        if b == d == 0:
+            m2 = 4 * f**2 + math.pi**2 * (1 - f**2) / 3
+        elif b == 0:
+            m2 = (
+                a**2
+                + (c / d1)**2 / (d1 + d)
+                + 2 * a * c / (d * d1) * (1 - cast(float, harmonic(1 + d)))
+            )
+        elif d == 0:
+            m2 = (
+                c**2
+                + (a / b1)**2 / (b1 + b)
+                + 2 * a * c / (b * b1) * (1 - cast(float, harmonic(1 + b)))
+            )
+        else:
+            m2 = (
+                (a / b1)**2 / (b1 + b)
+                + (c / d1)**2 / (d1 + d)
+                + 2 * a * c  / (b * d) * (
+                    1 / (b1 * d1)
+                    - cast(float, sc.beta(b1, d1))  # type: ignore
+                )
+            )
+
+        # Feeling adventurous? You're welcome to contribute these missing
+        # skewness and kurtosis stats here :)
+        if b <= -1 / 3 or d <= -1 / 3:
+            return m1, m2, math.nan, math.nan
+        m3 = None
+
+        if b <= -1 / 4 or d <= -1 / 4:
+            return m1, m2, m3, math.nan
+        m4 = None
+
+        return m1, m2, m3, m4
+
+    def _entropy(self, b: float, d: float, f: float) -> float:
+        return entropy_from_qdf(_genlambda_qdf, b, d, f)
+
+
+genlambda: RVContinuous[float, float, float] = genlambda_gen(
+    name='genlambda',
+)  # type: ignore
+r"""A generalized Tukey-Lambda random variable.
+
+`genlambda` takes `b`, `d` and `f` as shape parameters.
+`b` and `d` can be any float, and `f` requires `-1 <= f <= 1`.
+
+If `f == 0` and `b == d`, `genlambda` is equivalent to
+[`scipy.stats.tukeylambda`][scipy.stats.tukeylambda], with `b` (or `d`) as
+shape parameter.
+
+For a detailed description of the GLD, refer to
+[Distributions - GLD](distributions.md#gld).
 """
