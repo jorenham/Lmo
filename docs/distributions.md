@@ -1252,7 +1252,7 @@ for \( r \ge 1 \) and \( s, t \ge 0 \) as
 \begin{align}
     \tlmoment{s, t}{1}
         &= (\phi + 1) \left( \begin{cases}
-            \displaystyle H_s - H_{s + t + 1}
+            \displaystyle H_s - H_n
                 & \text{if } \beta = 0 \\
             \displaystyle \frac
                 {\ffact{n}{t + 1} \ \ffact{s + \beta}{s}}
@@ -1261,7 +1261,7 @@ for \( r \ge 1 \) and \( s, t \ge 0 \) as
                 & \text{if } \beta \neq 0
         \end{cases} \right)
         + (\phi - 1) \left( \begin{cases}
-            \displaystyle H_t - H_{s + t + 1}
+            \displaystyle H_t - H_n
                 & \text{if } \delta = 0 \\
             \displaystyle \frac
                 {\ffact{n}{s + 1} \ \ffact{t + \beta}{t}}
@@ -1283,7 +1283,7 @@ for \( r \ge 1 \) and \( s, t \ge 0 \) as
 \end{align}
 \]
 
-with \( n = r + s + t \).
+with \( n = r + s + t \), and \( H_k \) a [harmonic number](#def-harmonic).
 
 The GLD is implemented as
 [`lmo.distributions.genlamda`][lmo.distributions.genlambda].
