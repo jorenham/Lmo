@@ -1256,7 +1256,7 @@ When \( \beta > -s - 1 \) and \( \delta > -t - 1 \), all L-moments are defined f
             {r \ \rfact{\beta}{r + s + t + 1}}
         + (-1)^r (1 - \phi) \
         \frac
-            {\rfact{r + t}{s + t} \ \ffact{\delta + t}{r + t - 1}}
+            {\rfact{r + t}{s + 1} \ \ffact{\delta + t}{r + t - 1}}
             {r \ \rfact{\delta}{r + s + t + 1}}
         - \underbrace{
             \ffact{1}{r} \left(
