@@ -1266,9 +1266,11 @@ When \( \beta > -1 \) and \( \delta > -1 \), all L-moments are defined for
 \end{equation}
 \]
 
-At the moment, the GPD itself has no Python implementation *yet*.
-But, when \( \beta = \delta \) and \( \phi = 0 \), GLD is the
-regular Tukey-lambda distribution with shape
+The GLD is implemented as
+[`lmo.distributions.genlamda`][lmo.distributions.genlambda].
+
+When \( \beta = \delta \) and \( \phi = 0 \), GLD is the
+"regular" Tukey-lambda distribution with shape
 \( \lambda \equiv \beta = \delta \), which is implemented as
 [`scipy.stats.tukeylambda`][scipy.stats.tukeylambda].
 
