@@ -19,6 +19,8 @@ __all__ = (
 
     'l_comoment_from_pdf',
     'l_coratio_from_pdf',
+
+    'entropy_from_qdf',
 )
 
 import functools
@@ -1528,3 +1530,48 @@ def l_coratio_from_pdf(
     )
 
     return ll_r / np.expand_dims(ll_r0.diagonal(), -1)
+
+
+def entropy_from_qdf(
+    qdf: Callable[Concatenate[float, Theta], float],
+    /,
+    *args: Theta.args,
+    **kwds: Theta.kwargs,
+) -> float:
+    r"""
+    Evaluate the (differential / continuous) entropy \( H(X) \) of a
+    univariate random variable \( X \), from its *quantile density
+    function* (QDF), \( q(u) = \frac{\mathrm{d} F^{-1}(u)}{\mathrm{d} u} \),
+    with \( F^{-1} \) the inverse of the CDF, i.e. the PPF / quantile function.
+
+    The derivation follows from the identity \( f(x) = 1 / q(F(x)) \) of PDF
+    \( f \), specifically:
+
+    \[
+        h(X)
+            = \E[-\ln f(X)]
+            = \int_\mathbb{R} \ln \frac{1}{f(x)} \mathrm{d} x
+            = \int_1 \ln q(u) \mathrm{d} u
+    \]
+
+    Args:
+        qdf:
+            The quantile distribution function (QDF), with signature
+            `(float, ...) -> float`.
+        *args:
+            Optional additional positional arguments to pass to `qdf`.
+        **kwds:
+            Optional keyword arguments to pass to `qdf`.
+
+    Returns:
+        The differential entropy \( h(X) \).
+
+    See Also:
+        - [Differential entropy - Wikipedia
+        ](https://wikipedia.org/wiki/Differential_entropy)
+
+    """
+    def ic(p: float) -> float:
+        return np.log(qdf(p, *args, **kwds))
+
+    return cast(float, sci.quad(ic, 0, 1, limit=QUAD_LIMIT)[0])
