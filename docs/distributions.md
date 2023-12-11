@@ -1243,47 +1243,49 @@ x
 \]
 
 Unlike GLD's central product-moments, which have no general closed-form
-expression, its trimmed L-moments can be expressed quite elegantly using
-[falling factorials](#def-falling).
-When \( \beta > -s - 1 \) and \( \delta > -t - 1 \), all L-moments are defined
-for \( r \ge 1 \) and \( s, t \ge 0 \) as
+expression, its trimmed L-moments can be compactly expressed.
+When \( \beta > -s - 1 \) and \( \delta > -t - 1 \), the L-moments are defined
+for \( r = 2, 3, \ldots \) and \( s, t \ge 0 \) as
 
 \[
-\begin{align}
-    \tlmoment{s, t}{1}
-        &= (\phi + 1) \left( \begin{cases}
-            \displaystyle H_s - H_n
-                & \text{if } \beta = 0 \\
-            \displaystyle \frac
-                {\ffact{n}{t + 1} \ \ffact{s + \beta}{s}}
-                {\ffact{n + \beta}{n + 1}}
-            - \frac{1}{\beta}
-                & \text{if } \beta \neq 0
-        \end{cases} \right)
-        + (\phi - 1) \left( \begin{cases}
-            \displaystyle H_t - H_n
-                & \text{if } \delta = 0 \\
-            \displaystyle \frac
-                {\ffact{n}{s + 1} \ \ffact{t + \beta}{t}}
-                {\ffact{n + \delta}{n + 1}}
-            - \frac{1}{\delta}
-                & \text{if } \delta \neq 0
-        \end{cases} \right)
-        \\
+\begin{equation}
     r \tlmoment{s, t}{r}
-        &= (\phi + 1)
+        = \frac{(-1)^r \ (1 + \phi)}{r + s + t + \beta}
         \frac
-            {\ffact{n}{t + 1} \ \ffact{s + \beta}{n - t - 1}}
-            {\ffact{n + \beta}{n + 1}}
-        + (-1)^{r-1} (\phi - 1) \
+            {\B(1 + s + \beta ,\ r - 1 - \beta)}
+            {\B(r + s + t + \beta,\ 1 - \beta)}
+        + \frac{1 - \phi}{r + s + t + \delta}
         \frac
-            {\ffact{n}{s + 1} \ \ffact{t + \delta}{n - s - 1}}
-            {\ffact{n + \delta}{n + 1}}
-        \ ,
-\end{align}
+            {\B(1 + t + \delta ,\ r - 1 - \delta)}
+            {\B(r + s + t + \delta,\ 1 - \delta)} \ ,
+\end{equation}
 \]
 
-with \( n = r + s + t \), and \( H_k \) a [harmonic number](#def-harmonic).
+and the arbitrarily-trimmed L-location is
+
+\[
+\begin{equation}
+    \tlmoment{s, t}{1}
+        = (\phi + 1) \mathfrak{L}_{1}^{(s)}(\beta)
+        + (\phi - 1) \mathfrak{L}_{1}^{(t)}(\delta) \,
+\end{equation}
+\]
+
+where
+
+\[
+\mathfrak{L}_{1}^{(k)}(\theta) = \begin{cases}
+    \displaystyle H_k - H_{s + t + 1}
+        & \text{if } \theta = 0 \\
+    \displaystyle \frac{1}{\theta}\left(
+        \frac
+            {\B(1 + k + \theta,\ 2 + s + t)}
+            {\B(1 + k,\ 2 + s + t + \theta)}
+        - 1
+    \right)
+        & \text{otherwise.}
+\end{cases}
+\]
 
 The GLD is implemented as
 [`lmo.distributions.genlamda`][lmo.distributions.genlambda].
