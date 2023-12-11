@@ -1243,28 +1243,47 @@ x
 \]
 
 Unlike GLD's central product-moments, which have no general closed-form
-expression, its trimmed L-moments can be expressed quite elegantly.
-When \( \beta > -s - 1 \) and \( \delta > -t - 1 \), all L-moments are defined for
-\( r \ge 1 \) and \( s, t \ge 0 \) as:
+expression, its trimmed L-moments can be expressed quite elegantly using
+[falling factorials](#def-falling).
+When \( \beta > -s - 1 \) and \( \delta > -t - 1 \), all L-moments are defined
+for \( r \ge 1 \) and \( s, t \ge 0 \) as
 
 \[
-\begin{equation}
-    \tlmoment{s,t}{r}
-        = (1 + \phi)
+\begin{align}
+    \tlmoment{s, t}{1}
+        &= (\phi + 1) \left( \begin{cases}
+            \displaystyle H_s - H_{s + t + 1}
+                & \text{if } \beta = 0 \\
+            \displaystyle \frac
+                {\ffact{n}{t + 1} \ \ffact{s + \beta}{s}}
+                {\ffact{n + \beta}{n + 1}}
+            - \frac{1}{\beta}
+                & \text{if } \beta \neq 0
+        \end{cases} \right)
+        + (\phi - 1) \left( \begin{cases}
+            \displaystyle H_t - H_{s + t + 1}
+                & \text{if } \delta = 0 \\
+            \displaystyle \frac
+                {\ffact{n}{s + 1} \ \ffact{t + \beta}{t}}
+                {\ffact{n + \delta}{n + 1}}
+            - \frac{1}{\delta}
+                & \text{if } \delta \neq 0
+        \end{cases} \right)
+        \\
+    r \tlmoment{s, t}{r}
+        &= (\phi + 1)
         \frac
-            {\rfact{r + s}{t + 1} \ \ffact{\beta + s}{r + s - 1}}
-            {r \ \rfact{\beta}{r + s + t + 1}}
-        + (-1)^r (1 - \phi) \
+            {\ffact{n}{t + 1} \ \ffact{s + \beta}{n - t - 1}}
+            {\ffact{n + \beta}{n + 1}}
+        + (-1)^{r-1} (\phi - 1) \
         \frac
-            {\rfact{r + t}{s + 1} \ \ffact{\delta + t}{r + t - 1}}
-            {r \ \rfact{\delta}{r + s + t + 1}}
-        - \underbrace{
-            \ffact{1}{r} \left(
-                \frac{\phi + 1} \beta + \frac{\phi - 1}{\delta}
-            \right)
-        }_{\text{will be } 0 \text{ if } r>1}
-\end{equation}
+            {\ffact{n}{s + 1} \ \ffact{t + \delta}{n - s - 1}}
+            {\ffact{n + \delta}{n + 1}}
+        \ ,
+\end{align}
 \]
+
+with \( n = r + s + t \).
 
 The GLD is implemented as
 [`lmo.distributions.genlamda`][lmo.distributions.genlambda].
