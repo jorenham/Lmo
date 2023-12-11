@@ -1555,12 +1555,11 @@ def entropy_from_qdf(
     \]
 
     Args:
-        qdf:
-            The quantile distribution function (QDF), with signature
-            `(float, ...) -> float`.
-        *args:
+        qdf ( (float, *Ts, **Ts) -> float):
+            The quantile distribution function (QDF).
+        *args (*Ts):
             Optional additional positional arguments to pass to `qdf`.
-        **kwds:
+        **kwds (**Ts):
             Optional keyword arguments to pass to `qdf`.
 
     Returns:
