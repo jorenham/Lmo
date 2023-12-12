@@ -1294,6 +1294,41 @@ When \( \beta = \delta \) and \( \phi = 0 \), GLD is the
 \( \lambda \equiv \beta = \delta \), which is implemented as
 [`scipy.stats.tukeylambda`][scipy.stats.tukeylambda].
 
+/// admonition | Special cases
+    type: info
+There are several notable special cases of the GLD:
+
+[GPD](#gpd)
+:   With \( \phi = -1 \), GLD is GPD with shape \( \alpha \equiv -\delta \)
+    and scale \( \sigma = 2 \).
+
+[Lomax](https://wikipedia.org/wiki/Lomax_distribution)
+:   With \( \phi = -1 \) and \( \delta < 0 \), GLD is the Lomax distribution
+    with shape \( \alpha = -1 / \delta \) and scale \( \sigma = -2 / \delta \).
+
+[Exponential](https://wikipedia.org/wiki/Logistic_distribution)
+:   With \( \beta = \delta = 0 \) and \( \phi = -1 \), GLD is
+    exponential with rate \( \lambda = \frac 1 2 \), or scale \( \sigma = 2 \).
+
+[Tukey-Lambda](https://wikipedia.org/wiki/Tukey_lambda_distribution)
+:   With \( \lambda \equiv \beta = \delta \) and \( \phi = 0 \), GLD is the
+    standard Tukey-lambda distribution, and \( \lambda \) its shape parameter.
+
+[Logistic](https://wikipedia.org/wiki/Logistic_distribution)
+:   With \( \beta = \delta = 0 \) and \( \phi = 0 \), GLD is
+    standard logistic.
+
+[Uniform](https://wikipedia.org/wiki/Continuous_uniform_distribution)
+:   With \( \beta = \delta = 1 \), GLD is uniform on
+    \( [-1 - \phi,\ 1 - \phi] \).
+
+    With \( \beta = \delta = 2 \) and \( \phi = 0 \) GLD is uniform on
+    \( \left[-\frac 1 2,\ \frac 1 2\right] \).
+
+    With \( \delta = 1 \) and \( \phi = -1 \), GLD is uniform on
+    \( [0,\ 2] \)
+///
+
 [^GLD]:
     [J.S. Ramberg & B.W. Schmeiser (1974)
     ](https://doi.org/10.1145/360827.360840) -- An approximate method for
