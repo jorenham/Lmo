@@ -931,8 +931,9 @@ def _genlambda_ppf0(q: float, b: float, d: float, f: float) -> float:
 
 _genlambda_ppf = np.vectorize(_genlambda_ppf0, [float])
 
+@np.errstate(divide='ignore')
 def _genlambda_qdf(q: V, b: float, d: float, f: float) -> V:
-    return cast(V, (1 + f) * q**(b - 1) - (1 - f) * (1 - q)**(d - 1))
+    return cast(V, (1 + f) * q**(b - 1) + (1 - f) * (1 - q)**(d - 1))
 
 def _genlambda_cdf0(  # noqa: C901
     x: float,
@@ -941,8 +942,8 @@ def _genlambda_cdf0(  # noqa: C901
     f: float,
     *,
     ptol: float = 1e-4,
-    xtol: float = 1e-7,
-    maxiter: int = 100,
+    xtol: float = 1e-14,
+    maxiter: int = 60,
 ) -> float:
     """
     Compute the CDF of the GLD using bracketing search with special checks.
@@ -962,31 +963,31 @@ def _genlambda_cdf0(  # noqa: C901
 
     # special cases
     if abs(f + 1) < ptol:
-        return 1 - math.exp(-x) if d == 0 else 1 - (1 - d * x)**(1 / d)
+        return 1 - math.exp(-x / 2) if d == 0 else 1 - (1 - d * x / 2)**(1 / d)
     if abs(f - 1) < ptol:
-        return math.exp(x) if b == 0 else (1 + b * x)**(1 / b)
-    if f < ptol and abs(b) < ptol and abs(d) < ptol:
-        return (1 + np.tanh(x)) / 2
+        return math.exp(x / 2) if b == 0 else (1 + b * x / 2)**(1 / b)
+    if abs(f) < ptol and abs(b) < ptol and abs(d) < ptol:
+        # logistic
+        if x >= 0:
+            return 1 / (1 + math.exp(-x))
+        return math.exp(x) / (1 + math.exp(x))
     if abs(b - 1) < ptol and abs(d - 1) < ptol:
-        assert 0 <= x + f <= 1, (x, f)
-        return x + f
+        # uniform on [-1 - f, 1 - f]
+        return (x + f + 1) / 2
 
     # bracketing search, using a similar algorithm as `scipy.special.tklmbda`
-    p_min, p_mid, p_max = 0.0, 0.5, 1.0
-    p_low, p_high = p_min, p_max
+    p_low, p_mid, p_high = 0.0, 0.5, 1.0
     for _ in range(maxiter):
         x_eval = _genlambda_ppf0(p_mid, b, d, f)
         if abs(x_eval - x) <= xtol:
             break
 
         if x_eval > x:
-            p_high = p_mid
-            p_mid = (p_mid + p_low) / 2
+            p_mid, p_high = (p_mid + p_low) / 2, p_mid
         else:
-            p_low = p_mid
-            p_mid = (p_mid + p_high) / 2
+            p_mid, p_low = (p_mid + p_high) / 2, p_mid
 
-        if (p_mid - p_low)**2 <= xtol:
+        if abs(p_mid - p_low) <= xtol:
             break
 
     return p_mid
@@ -998,10 +999,42 @@ _genlambda_cdf = np.vectorize(
     excluded={'ptol', 'xtol', 'maxiter'},
 )
 
+def _genlambda_lmo0(
+    r: int,
+    s: float,
+    t: float,
+    b: float,
+    d: float,
+    f: float,
+) -> float:
+    if r == 0:
+        return 1
+
+    if b <= -1 - s and d <= -1 - t:
+        return math.nan
+
+    def _lmo0_partial(trim: float, theta: float) -> float:
+        if r == 1 and theta == 0:
+            return cast(float, harmonic(trim) - harmonic(s + t + 1))
+
+        return (
+            (-1)**r *
+            sc.poch(r + trim, s + t - trim + 1)  # type: ignore
+            * sc.poch(1 - theta, r - 2)  # type: ignore
+            / sc.poch(1 + theta + trim, r + s + t - trim)  # type: ignore
+            - (1 / theta if r == 1 else 0)
+        ) / r
+
+    return (
+        (1 + f) * _lmo0_partial(s, b)
+        + (-1)**r * (1 - f) * _lmo0_partial(t, d)
+    )
+
+_genlambda_lmo = np.vectorize(_genlambda_lmo0, [float], excluded={1, 2})
 
 class genlambda_gen(_rv_continuous):  # noqa: N801
     def _argcheck(self, b: float, d: float, f: float) -> int:
-        return np.isfinite(b) & np.isfinite(d) & (f >= 0) & (f <= 1)
+        return np.isfinite(b) & np.isfinite(d) & (f >= -1) & (f <= 1)
 
     def _shape_info(self) -> Sequence[_ShapeInfo]:
         ibeta = _ShapeInfo('b', False, (-np.inf, np.inf), (False, False))
@@ -1053,8 +1086,8 @@ class genlambda_gen(_rv_continuous):  # noqa: N801
         return _genlambda_ppf(x, b, d, f)
 
     def _stats(self, b: float, d: float, f: float) -> tuple[
-        float | None,
-        float | None,
+        float,
+        float,
         float | None,
         float | None,
     ]:
@@ -1063,9 +1096,9 @@ class genlambda_gen(_rv_continuous):  # noqa: N801
             return math.nan, math.nan, math.nan, math.nan
 
         a, c = 1 + f, 1 - f
-        b1, d1 = 1 + b + 1, 1 + d
+        b1, d1 = 1 + b, 1 + d
 
-        m1 = c / d1 - a / b1
+        m1 = 0 if b == d and f == 0 else _genlambda_lmo0(1, 0, 0, b, d, f)
 
         if b <= -1 / 2 or d <= -1 / 2:
             return m1, math.nan, math.nan, math.nan
@@ -1108,6 +1141,34 @@ class genlambda_gen(_rv_continuous):  # noqa: N801
 
     def _entropy(self, b: float, d: float, f: float) -> float:
         return entropy_from_qdf(_genlambda_qdf, b, d, f)
+
+    def _l_moment(
+        self,
+        r: npt.NDArray[np.int64],
+        b: float,
+        d: float,
+        f: float,
+        trim: tuple[int, int] | tuple[float, float],
+        quad_opts: QuadOptions | None = None,
+    ) -> _ArrF8:
+        s, t = trim
+
+        if quad_opts is not None:
+            # only do numerical integration when quad_opts is passed
+            lmbda_r = cast(
+                float | npt.NDArray[np.float64],
+                l_moment_from_ppf(
+                    functools.partial(self._ppf, b=b, d=d, f=f), # type: ignore
+                    r,
+                    trim=trim,
+                    quad_opts=quad_opts,
+                ),  # type: ignore
+            )
+            return np.asarray(lmbda_r)
+
+        return np.atleast_1d(
+            cast(_ArrF8, _genlambda_lmo(r, s, t, b, d, f)),
+        )
 
 
 genlambda: RVContinuous[float, float, float] = genlambda_gen(
