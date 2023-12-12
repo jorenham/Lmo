@@ -1266,8 +1266,8 @@ and the arbitrarily-trimmed L-location is
 \[
 \begin{equation}
     \tlmoment{s, t}{1}
-        = (\phi + 1) \mathfrak{L}_{1}^{(s)}(\beta)
-        + (\phi - 1) \mathfrak{L}_{1}^{(t)}(\delta) \,
+        = -(1 + \phi) \mathfrak{L}_{1}^{(s)}(\beta)
+        + (1 - \phi) \mathfrak{L}_{1}^{(t)}(\delta) \,
 \end{equation}
 \]
 
@@ -1275,13 +1275,12 @@ where
 
 \[
 \mathfrak{L}_{1}^{(k)}(\theta) = \begin{cases}
-    \displaystyle H_k - H_{s + t + 1}
+    \displaystyle H_{s + t + 1} - H_k
         & \text{if } \theta = 0 \\
     \displaystyle \frac{1}{\theta}\left(
-        \frac
+        1 - \frac
             {\B(1 + k + \theta,\ 2 + s + t)}
             {\B(1 + k,\ 2 + s + t + \theta)}
-        - 1
     \right)
         & \text{otherwise.}
 \end{cases}
