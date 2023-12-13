@@ -24,22 +24,23 @@ likely to include some novel solutions. This is also the reason for the lack
 of references. But this should pose no problems in practise, since Lmo makes
 it trivial to check if they aren't incorrect.
 
-!!! tip
+## Simple distributions
 
-    Numerical calculation of these L-statistics using `scipy.stats`
-    distributions, refer to
-    [`rv_continuous.l_stats`][lmo.contrib.scipy_stats.l_rv_generic.l_stats].
+/// tip
+Numerical calculation of these L-statistics using [`scipy.stats`][scipy.stats]
+distributions, refer to
+[`rv_continuous.l_stats`][lmo.contrib.scipy_stats.l_rv_generic.l_stats].
 
-    For direct calculation of the L-stats from a CDF or PPF (quantile function,
-    inverse CDF), see [`l_stats_from_cdf`][lmo.theoretical.l_stats_from_cdf] or
-    [`l_stats_from_ppf`][lmo.theoretical.l_stats_from_ppf], respectively.
+For direct calculation of the L-stats from a CDF or PPF, see
+[`l_stats_from_cdf`][lmo.theoretical.l_stats_from_cdf] or
+[`l_stats_from_ppf`][lmo.theoretical.l_stats_from_ppf], respectively.
+///
 
-
-## L-stats
-
-An overview of the untrimmed L-location, L-scale, L-skewness and L-kurtosis,
+An overview of the L-location, L-scale, L-skewness and L-kurtosis,
 of a bunch of popular univariate probability distributions, for which they
 exist (in closed form).
+
+### L-stats
 
 <table>
 <thead>
@@ -352,10 +353,7 @@ exist (in closed form).
 </tr>
 </table>
 
-## TL-stats
-
-Collection of TL-location, -scale, -skewness, -kurtosis coefficients, with
-symmetric trimming of order 1, i.e. `trim=(1, 1)`.
+### TL-stats
 
 <table>
 <thead>
@@ -698,8 +696,8 @@ wolfram alpha / mathematica.
 ### Bernoulli
 
 Surprisingly, the L-moments of the discrete
-[Bernoulli distribution](https://wikipedia.org/wiki/Bernoulli_distribution),
-can't be expressed as easily as the distribution itself:
+[Bernoulli distribution](https://wikipedia.org/wiki/Bernoulli_distribution)
+[^BERN], can't be expressed as easily as the distribution itself:
 
 \[
     \begin{equation}
@@ -716,12 +714,15 @@ Here, \( \jacobi{n}{\alpha}{\beta}{x} \) is a
 [Jacobi polynomial](#def-jacobi) (although it's not orthogonal, since
 \( \beta > -1 \) does not hold).
 
+[^BERN]:
+    [J.V. Uspensky (1937)](https://www.worldcat.org/oclc/996937) --
+    Introduction to mathematical probability
 
 ### Gompertz
 
 The [Gompertz distribution](https://wikipedia.org/wiki/Gompertz_distribution)
-with shape parameter \( \alpha > 0 \) and \( x \ge 0 \), has the following CDF
-and PPF:
+[^GOMP] with shape parameter \( \alpha > 0 \) and \( x \ge 0 \), has the
+following CDF and PPF:
 
 
 \[
@@ -747,11 +748,14 @@ The general trimmed L-moments of the Gompertz distribution are:
     \end{equation}
 \]
 
+[^GOMP]:
+    [B. Gompertz (1825)](https://doi.org/10.1098/rstl.1825.0026) -- On the
+    nature of the function expressive of the law of human mortality, and on a
+    new mode of determining the value of life contingencies.
+
 ### GEV
 
-The [*generalized extreme value* (GEV)
-](https://wikipedia.org/wiki/Generalized_extreme_value_distribution)
-distribution unifies the
+The [GEV](https://wikipedia.org/wiki/GEV_distribution) unifies the
 [Gumbel](https://wikipedia.org/wiki/Gumbel_distribution),
 [Fréchet](https://wikipedia.org/wiki/Fr%C3%A9chet_distribution),
 and [Weibull](https://wikipedia.org/wiki/Weibull_distribution) distributions.
@@ -759,10 +763,10 @@ It has one shape parameter \( \alpha \in \mathbb{R} \), and the following
 distribution functions:
 
 \[
-    \begin{align*}
-        F(x) &= e^{-\qexp{1 - \alpha}{-x}} \\
-        x(F) &= -\qlog{1 - \alpha}{-\ln(F)}
-    \end{align*}
+\begin{align*}
+    F(x) &= e^{-\qexp{1 - \alpha}{-x}} \\
+    x(F) &= -\qlog{1 - \alpha}{-\ln(F)}
+\end{align*}
 \]
 
 Here, \( \qexp{q}{y} \) and \( \qlog{q}{y} \) are the
@@ -771,7 +775,7 @@ Here, \( \qexp{q}{y} \) and \( \qlog{q}{y} \) are the
 respectively.
 
 An alternative parametrization is sometimes used, e.g. on
-[Wikipedia](https://wikipedia.org/wiki/Generalized_extreme_value_distribution),
+[Wikipedia](https://wikipedia.org/wiki/GEV_distribution),
 where \( \xi = -\alpha \).
 The convention that is used here, is the same as in
 [`scipy.stats.genextreme`][scipy.stats.genextreme], where `c` corresponds to
@@ -780,7 +784,7 @@ The convention that is used here, is the same as in
 The trimmed L-moments of the GEV are
 
 \[
-    \begin{equation}
+\begin{equation}
     \tlmoment{s, t}{r} =
         \frac{(-1)^{r}}{r}
         \sum_{k = s + 1}^{r + s + t}
@@ -796,7 +800,7 @@ The trimmed L-moments of the GEV are
             \end{cases}
             \right)
     \label{eq:lr_gev}
-    \end{equation}
+\end{equation}
 \]
 
 Note that the GEV is effectively a reparametrized
@@ -804,10 +808,14 @@ Note that the GEV is effectively a reparametrized
 [Tsallis distribution](https://wikipedia.org/wiki/Tsallis_distribution), with
 \( q = 1 - \alpha \).
 
+[^GEV]:
+    [A.F. Jenkinson (1955)](https://doi.org/10.1002/qj.49708134804) --
+    The frequency distribution of the annual maximum (or minimum) values of
+    meteorological elements
+
 ### GLO
 
-The *generalized logistic distribution* (GLO), also known as the [shifted
-log-logistic distribution
+The GLO [^GLO], also known as the [shifted log-logistic distribution
 ](https://wikipedia.org/wiki/Shifted_log-logistic_distribution), with shape
 parameter \( \alpha \in \mathbb{R} \), is characterized by the following
 distribution functions:
@@ -855,11 +863,15 @@ Note that the GLO is effectively a reparametrized
 [Tsallis distribution](https://wikipedia.org/wiki/Tsallis_distribution), with
 \( q = 1 - \alpha \).
 
+[^GLO]:
+    [J.R.M. Hosking (1986)
+    ](https://dominoweb.draco.res.ibm.com/reports/RC12210.pdf) --
+    The theory of probability weighted moments
+
 ### GPD
 
-The [*generalized Pareto distribution*
-](https://wikipedia.org/wiki/Generalized_Pareto_distribution) (GPD), with
-shape parameter \( \alpha \in \mathbb{R} \), has for \( x \ge 0 \) the
+The [GPD](https://wikipedia.org/wiki/Generalized_Pareto_distribution) [^GPD],
+with shape parameter \( \alpha \in \mathbb{R} \), has for \( x \ge 0 \) the
 distribution functions:
 
 \[
@@ -868,7 +880,6 @@ distribution functions:
         x(F) &= -\qlog{1 + \alpha}{1 - F}
     \end{align*}
 \]
-
 
 The L-moments of the GPD exist when \( \alpha < 1 + t \), and can be
 compactly expressed as
@@ -895,33 +906,41 @@ where \( H_n \) is a [harmonic number](#def-harmonic).
 See [`scipy.stats.genpareto`][scipy.stats.genpareto] for an Lmo-compatible
 implementation.
 
-!!! info "Special cases"
+/// admonition | Special cases
+    type: info
+There are several notable special cases of the GPD:
 
-    There are several notable special cases of the GPD:
+[\( q \)-Exponential](https://wikipedia.org/wiki/Q-exponential_distribution)
+:   When \( \alpha > -1 \), GPD is \( q \)-exponential with shape
+    \( q = 2 - 1 / (1 + \alpha) \) and rate (inverse scale)
+    \( \lambda = \alpha + 1 \).
 
-    [\( q \)-Exponential](https://wikipedia.org/wiki/Q-exponential_distribution)
-    :   When \( \alpha > -1 \), GPD is \( q \)-exponential with shape
-        \( q = 2 - 1 / (1 + \alpha) \) and rate (inverse scale)
-        \( \lambda = \alpha + 1 \).
+[Exponential](https://wikipedia.org/wiki/Exponential_distribution)
+:   When \( \alpha = 0 \), GPD is standard exponential.
 
-    [Exponential](https://wikipedia.org/wiki/Exponential_distribution)
-    :   When \( \alpha = 0 \), GPD is standard exponential.
+[Uniform](https://wikipedia.org/wiki/Continuous_uniform_distribution)
+:   When \( \alpha = 1 \) GPD is uniform on \( [0, 1] \).
+///
 
-    [Uniform](https://wikipedia.org/wiki/Continuous_uniform_distribution)
-    :   When \( \alpha = 1 \) GPD is uniform on \( [0, 1] \).
+/// admonition | Generalizations
+    type: info
 
-!!! info "Generalizations"
+[Wakeby's distribution](#wakeby)
+:   Implemented as [`lmo.distributions.wakeby`][lmo.distributions.wakeby].
+    See below for details, including the general L-moments in closed-form.
 
-    [Wakeby's distribution](#wakeby)
-    :   Implemented as [`lmo.distributions.wakeby`][lmo.distributions.wakeby].
-        See below for details, including the general L-moments in closed-form.
+[Kappa distribution](https://doi.org/10.1147/rd.383.0251)
+:   Implemented in as [`scipy.stats.kappa4`][scipy.stats.kappa4].
+///
 
-    [Kappa distribution](https://doi.org/10.1147/rd.383.0251)
-    :   Implemented in as [`scipy.stats.kappa4`][scipy.stats.kappa4].
+[^GPD]:
+    [J.R.M. Hosking & J.R. Wallis (1987)
+    ](https://doi.org/10.1080/00401706.1987.10488243) -- Parameter and
+    Quantile Estimation for the Generalized Pareto Distribution
 
 ### Burr III / Dagum
 
-The *Burr III* distribution, also known as the
+The *Burr III* distribution [^BURR], also known as the
 [*Dagum distribution*](https://wikipedia.org/wiki/Dagum_distribution), has two
 shape parameters \( \alpha \) and \( \beta \), both restricted to the
 positive reals
@@ -967,13 +986,12 @@ distribution
 ### Burr XII / Pareto IV
 
 The
-[*Burr XII distribution*](https://wikipedia.org/wiki/Burr_distribution)
+[*Burr XII distribution*](https://wikipedia.org/wiki/Burr_distribution) [^BURR]
 has two shape parameters \( \alpha \) and \( \beta \), both restricted to the
 positive reals. It is also known as the *Singh-Maddala distribution*.
 The alternative parametrization \( \alpha \mapsto 1 / \gamma \), where
 \( \gamma > 0 \), is known as the (standard) type IV
 [*Pareto distribution*](https://wikipedia.org/wiki/Pareto_distribution)
-
 
 The distribution functions for \( x > 0 \) are defined as:
 
@@ -1005,7 +1023,7 @@ This distribution is implemented in
 and `d` correspond to  \( \alpha \) and \( \beta \), respectively.
 
 The Burr XII and Burr III distributions are related as \( Y = 1 / X \), where
-\( X \) and \( Y \) are random variables with Burr XII \( (\alpha, \beta) \)
+\( X \) and \( Y \) are RV's with Burr XII \( (\alpha, \beta) \)
 and Burr III \( (1 / \alpha, \beta) \)
 distributions (or vice-versa), respectively.
 
@@ -1014,14 +1032,18 @@ In the special case where \( \alpha = 1 \) is known as the
 has been implemented as [scipy.stats.lomax][scipy.stats.lomax], where the
 parameter `c` corresponds to \( \beta \).
 
+[^BURR]:
+    [I.W. Burr (1942)](https://doi.org/10.1214%2Faoms%2F1177731607) --
+    Cumulative Frequency Functions
+
 ### Kumaraswamy
 
 For [Kumaraswamy's distribution
-](https://wikipedia.org/wiki/Kumaraswamy_distribution) with parameters
+](https://wikipedia.org/wiki/Kumaraswamy_distribution) [^KUM1] with parameters
 \( \alpha \in \mathbb{R}_{>0} \) and \( \beta \in \mathbb{R}_{>0} \),
-the general solution for the \( r \)th L-moment has been derived by
-[Jones (2009)](https://doi.org/10.1016/j.stamet.2008.04.001). This can be
-extended for the general trimmed L-moments.
+the general solution for the \( r \)th (untrimmed L-moment has been derived by
+M.C. Jones in 2009 [^KUM2]. Lmo has extended these results for the general
+trimmed L-moments.
 
 The distribution functions are for \( 0 \le x \le 1 \) defined as:
 
@@ -1050,16 +1072,25 @@ Its general \( r \)-th trimmed L-moment are:
 The Kumaraswamy distribution is implemented in
 [`lmo.distributions.kumaraswamy`][lmo.distributions.kumaraswamy].
 
+[^KUM1]:
+    [P. Kumaraswamy](https://doi.org/10.1016/0022-1694(80)90036-0) --
+    A generalized probability density function for double-bounded random
+    processes
+[^KUM2]:
+    [M.C. Jones (2009)](https://doi.org/10.1016/j.stamet.2008.04.001) --
+    Kumaraswamy’s distribution: A beta-type distribution with some
+    tractability advantages
+
 ### Wakeby
 
 The [*Wakeby distribution*](https://wikipedia.org/wiki/Wakeby_distribution)
-is quantile-based -- the CDF and PDF are not analytically expressible for the
+[^WAK] is quantile-based -- the CDF and PDF are not analytically expressible for the
 general case.
 Without loss of generality, Lmo uses a 3-parameter "standardized"
 paremetrization, with shape parameters \( \beta,\ \delta,\ \phi \).
 
-<img src="../gallery/wakeby.svg" width="100%"
-    style="height: auto; aspect-ratio: 16/9;" alt="Wakeby distribution PDF" />
+See [`lmo.distributions.wakeby`][lmo.distributions.wakeby] for the
+implementation.
 
 Each of the following restrictions apply:
 
@@ -1082,7 +1113,7 @@ The domain of the distribution is
 \end{cases}
 \]
 
-The quantile function (PPF) is defined to be
+The PPF is defined to be
 
 \[
 x(F) = -\phi \qlog{1 - \beta}{1 - F} - (1 - \phi) \qlog{1 + \delta}{1 - F}
@@ -1096,20 +1127,22 @@ x(F) =
     - \frac{1 - \phi}{\delta} (1 - (1 - F)^{-\delta})
 \]
 
+<img src="../gallery/wakeby.svg" width="100%"
+    style="height: auto; aspect-ratio: 16/9;" alt="Wakeby distribution PDF" />
 
-!!! note "Alternative parametrization"
+/// note | Alternative parametrization
+This 3-parameter Wakeby distribution is equivalent to the 5-parameter
+variant that is generally used, after scaling by \( \sigma \) and shifting
+by \( \xi \). The shape parameters \( \beta \) and \( \delta \) are
+(intentionally) equivalent, the scale parameters are related by
+\( \alpha \equiv \sigma \phi \) and \( gamma \equiv \sigma (1 - \phi) \),
+and the location parameter is precisely \( \xi \).
 
-    This 3-parameter Wakeby distribution is equivalent to the 5-parameter
-    variant that is generally used, after scaling by \( \sigma \) and shifting
-    by \( \xi \). The shape parameters \( \beta \) and \( \delta \) are
-    (intentionally) equivalent, the scale parameters are related by
-    \( \alpha \equiv \sigma \phi \) and \( gamma \equiv \sigma (1 - \phi) \),
-    and the location parameter is precisely \( \xi \).
-
-    Conversely, Lmo's "standard" Wakeby distribution can by obtained from
-    5-Wakeby, by shifting and scaling s.t. \( \xi = 0 \) and
-    \( \alpha + \gamma = 1 \). Finally, \( \phi \equiv \alpha = 1 - \gamma \)
-    effectively combines the two scale parameters.
+Conversely, Lmo's "standard" Wakeby distribution can by obtained from
+5-Wakeby, by shifting and scaling s.t. \( \xi = 0 \) and
+\( \alpha + \gamma = 1 \). Finally, \( \phi \equiv \alpha = 1 - \gamma \)
+effectively combines the two scale parameters.
+///
 
 Lmo figured out that when \( \delta < t + 1 \), all of Wakeby's (trimmed)
 L-moments can be expressed as
@@ -1152,68 +1185,309 @@ L-moments can be expressed as
 
 where \( H_n \) is a [harmonic number](#def-harmonic).
 
-See [`lmo.distributions.wakeby`][lmo.distributions.wakeby] for the
-implementation.
+/// admonition | Special cases
+    type: info
+There are several notable special cases of the Wakeby distribution:
 
-!!! info "Special cases"
+[GPD -- Generalized Pareto](#gpd)
+:   With \( \phi = 0 \), Wakeby is the standard GPD, and
+    \( \delta \) its shape parameter.
 
-    There are several notable special cases of the Wakeby distribution:
+    Conversely, \( \phi = 1 \) yields a *bounded* GPD variant, with
+    shape parameter \( -\beta \), and \( 1 / \beta \) the upper bound.
 
-    [GPD -- Generalized Pareto](#gpd)
-    :   With \( \phi = 0 \), Wakeby is the standard GPD, and
-        \( \delta \) its shape parameter.
+[Exponential](https://wikipedia.org/wiki/Exponential_distribution)
+:   With \( \beta = \delta = 0 \) and \( \phi = 1 \), Wakeby is
+    standard exponential.
 
-        Conversely, \( \phi = 1 \) yields a *bounded* GPD variant, with
-        shape parameter \( -\beta \), and \( 1 / \beta \) the upper bound.
-    [Exponential](https://wikipedia.org/wiki/Exponential_distribution)
-    :   With \( \beta = \delta = 0 \) and \( \phi = 1 \), Wakeby is
-        standard exponential.
-    [Uniform](https://wikipedia.org/wiki/Continuous_uniform_distribution)
-    :   With \( \beta = \phi = 1 \) (and therefore \( \delta = 0 \)) Wakeby
-        is uniform on \( [0, 1] \).
+[Uniform](https://wikipedia.org/wiki/Continuous_uniform_distribution)
+:   With \( \beta = \phi = 1 \) (and therefore \( \delta = 0 \)) Wakeby
+    is uniform on \( [0, 1] \).
+///
 
-### Generalized Lambda
+[^WAK]:
+    [J.C. Houghton (1978)](https://doi.org/10.1029/WR014i006p01105) -- Birth
+    of a parent: The Wakeby Distribution for modeling flood flows
 
-The [Tukey lambda distribution
-](https://wikipedia.org/wiki/Tukey_lambda_distribution) can be extended to
-the *generalized lambda distribution*, which has two scale parameters
-\( \alpha, \gamma \), and two shape parameters \( \beta, \delta \).
+### GLD
 
-Like the Wakeby distribution, the generalized lambda has no closed-form PDF
-or CDF. Instead, it is defined through its PPF:
+The GLD [^GLD] is a flexible generalization of the [Tukey lambda distribution
+](https://wikipedia.org/wiki/Tukey_lambda_distribution).
+Lmo uses an unconventional "standardized"
+paremetrization, with shape parameters \( \beta,\ \delta,\ \phi \), where
+\( \phi \in [-1, 1] \) replaces the more commonly used shape parameters
+\( \alpha \mapsto 1 + \phi \) and \( \gamma \mapsto 1 - \phi \).
+
+The GLD is implemented as
+[`lmo.distributions.genlamda`][lmo.distributions.genlambda].
+
+As with the Wakeby distribution, the PDF and CDF of the GLD are not
+analytically expressible. Instead, the GLD is defined through its PPF:
 
 \[
-x(F) = \alpha \qlog{1 - \beta}{F} - \gamma \qlog{1 - \delta}{1 - F}
+x(F) = (\phi + 1) \qlog{1 - \beta}{F} + (\phi - 1) \qlog{1 - \delta}{1 - F}
 \]
 
-Although its central product moments have no closed-form expression, when
-\( \beta > -1 \) and \( \delta > -1 \), the general trimmed L-moments can be
-compactly expressed as:
+The domain is
+
+\[
+\left.
+\begin{array}{l}
+    \text{if } \beta \le 0: & \displaystyle -\infty \\
+    \text{if } \beta > 0:  & \displaystyle -\frac{1 + \phi}{\beta}
+\end{array}
+\right\} \le
+x
+\le \left\{ \begin{array}{l}
+    \displaystyle \infty \ , & \text{if } \delta \le 0 \\
+    \displaystyle \frac{1 - \phi}{\delta} \ , & \text{if } \delta > 0
+\end{array}
+\right.
+\]
+
+<img src="../gallery/genlambda.svg" width="100%"
+    style="height: auto; aspect-ratio: 16/9;"
+    alt="Generalized Tukey-Lambda distribution PDF" />
+
+Unlike GLD's central product-moments, which have no general closed-form
+expression, its trimmed L-moments can be compactly expressed.
+When \( \beta > -s - 1 \) and \( \delta > -t - 1 \), the L-moments are defined
+for \( r = 2, 3, \ldots \) and \( s, t \ge 0 \) as
 
 \[
 \begin{equation}
-    \tlmoment{s,t}{r}
-        = \alpha
+    r \tlmoment{s, t}{r}
+        = \frac{(-1)^r \ (1 + \phi)}{r + s + t + \beta}
         \frac
-            {\rfact{r + s}{t + 1} \ \ffact{\beta + s}{r + s - 1}}
-            {r \ \rfact{\beta}{r + s + t + 1}}
-        + (-1)^r \gamma \
+            {\B(1 + s + \beta ,\ r - 1 - \beta)}
+            {\B(r + s + t + \beta,\ 1 - \beta)}
+        + \frac{1 - \phi}{r + s + t + \delta}
         \frac
-            {\rfact{r + t}{s + t} \ \ffact{\delta + t}{r + t - 1}}
-            {r \ \rfact{\delta}{r + s + t + 1}}
-        - \underbrace{
-            \ffact{1}{r} \left(
-                \frac \alpha \beta - \frac \gamma \delta
-            \right)
-        }_{\text{will be } 0 \text{ if } r>1}
+            {\B(1 + t + \delta ,\ r - 1 - \delta)}
+            {\B(r + s + t + \delta,\ 1 - \delta)} \ ,
 \end{equation}
 \]
 
-When \( \alpha = \gamma \) and \( \beta = \delta \), this is the
-(non-generalized) Tukey-lambda distribution, which has been implemented as
-[`scipy.stats.tukeylambda`][scipy.stats.tukeylambda]. Currently, this
-4-parameter generalization has no [`scipy.stats`][scipy.stats] implementation.
+and the arbitrarily-trimmed L-location is
 
+\[
+\begin{equation}
+    \tlmoment{s, t}{1}
+        = -(1 + \phi) \mathfrak{L}_{1}^{(s)}(\beta)
+        + (1 - \phi) \mathfrak{L}_{1}^{(t)}(\delta) \,
+\end{equation}
+\]
+
+where
+
+\[
+\mathfrak{L}_{1}^{(k)}(\theta) = \begin{cases}
+    \displaystyle H_{s + t + 1} - H_k
+        & \text{if } \theta = 0 \\
+    \displaystyle \frac{1}{\theta}\left(
+        1 - \frac
+            {\B(1 + k + \theta,\ 2 + s + t)}
+            {\B(1 + k,\ 2 + s + t + \theta)}
+    \right)
+        & \text{otherwise.}
+\end{cases}
+\]
+
+These equations look scarier that they actually are. To see why, take a look
+at the first 4 L-moment, with 4 styles of trimming:
+
+=== "L-moments"
+    If \( \beta > -1 \) and \( \delta > -1 \):
+
+    \[
+    \begin{align*}
+        \lmoment{1}
+            &= -(1 + \phi) \frac
+                {1}
+                {1 + \beta}
+            &&+ (1 - \phi) \frac
+                {1}
+                {1 + \delta}
+        \\
+        \lmoment{2}
+            &= \hphantom{-}(1 + \phi) \frac
+                {1}
+                {(1 + \beta)(2 + \beta)}
+            &&+ (1 - \phi) \frac
+                {1}
+                {(1 + \delta)(2 + \delta)}
+        \\
+        \lmoment{3}
+            &= -(1 + \phi) \frac
+                {1 - \beta}
+                {(1 + \beta)(2 + \beta)(3 + \beta)}
+            &&+ (1 - \phi) \frac
+                {1 - \delta}
+                {(1 + \delta)(2 + \delta)(3 + \delta)}
+        \\
+        \lmoment{4}
+            &= \hphantom{-}(1 + \phi) \frac
+                {(1 - \beta)(2 - \beta)}
+                {(1 + \beta)(2 + \beta)(3 + \beta)(4 + \beta)}
+            &&+ (1 - \phi) \frac
+                {(1 - \delta)(2 - \delta)}
+                {(1 + \delta)(2 + \delta)(3 + \delta)(4 + \delta)}
+    \end{align*}
+    \]
+=== "LL-moments"
+    If \( \beta > -1 \) and \( \delta > -2 \):
+
+    \[
+    \begin{align*}
+        \tlmoment{0, 1}{1}
+            &= -(1 + \phi) \frac
+                {3 + \beta}
+                {(1 + \beta)(2 + \beta)}
+            &&+ (1 - \phi) \frac
+                {1}
+                {2 + \delta}
+        \\
+        \frac{1}{3}\tlmoment{0, 1}{2}
+            &= \hphantom{-} (1 + \phi) \frac
+                {1}
+                {(1 + \beta)(2 + \beta)(3 + \beta)}
+            &&+ \frac{1 - \phi}{2} \frac
+                {1}
+                {(2 + \delta)(3 + \delta)}
+        \\
+         \frac{1}{4} \tlmoment{0, 1}{3}
+            &= -(1 + \phi) \frac
+                {1 - \beta}
+                {(1 + \beta)(2 + \beta)(3 + \beta)(4 + \beta)}
+            &&+ \frac{1 - \phi}{3} \frac
+                {(1 - \delta)}
+                {(2 + \delta)(3 + \delta)(4 + \delta)}
+        \\
+         \frac{1}{5} \tlmoment{0, 1}{4}
+            &= \hphantom{-} (1 + \phi) \frac
+                {(1 - \beta)(2 - \beta)}
+                {(1 + \beta)(2 + \beta)(3 + \beta)(4 + \beta)(5 + \beta)}
+            &&+ \frac{1 - \phi}{4} \frac
+                {(1 - \delta)(2 - \delta)}
+                {(2 + \delta)(3 + \delta)(4 + \delta)(5 + \delta)}
+    \end{align*}
+    \]
+=== "LH-moments"
+    If \( \beta > -2 \) and \( \delta > -1 \):
+
+    \[
+    \begin{align*}
+        \tlmoment{1, 0}{1}
+            &= -(1 + \phi) \frac
+                {1}
+                {(2 + \beta)}
+            &&+ (1 - \phi) \frac
+                {3 + \beta}
+                {(1 + \delta)(2 + \delta)}
+        \\
+        \frac{1}{3}\tlmoment{1, 0}{2}
+            &= \hphantom{-} \frac{1 + \phi}{2} \frac
+                {1}
+                {(2 + \beta)(3 + \beta)}
+            &&+ (1 - \phi) \frac
+                {1}
+                {(1 + \delta)(2 + \delta)(3 + \delta)}
+        \\
+         \frac{1}{4} \tlmoment{1, 0}{3}
+            &= -\frac{1 + \phi}{3} \frac
+                {1 - \beta}
+                {(2 + \beta)(3 + \beta)(4 + \beta)}
+            &&+ (1 - \phi) \frac
+                {(1 - \delta)}
+                {(1 + \delta)(2 + \delta)(3 + \delta)(4 + \delta)}
+        \\
+         \frac{1}{5} \tlmoment{1, 0}{4}
+            &= \hphantom{-} \frac{1 + \phi}{4} \frac
+                {(1 - \beta)(2 - \beta)}
+                {(2 + \beta)(3 + \beta)(4 + \beta)(5 + \beta)}
+            &&+ (1 - \phi) \frac
+                {(1 - \delta)(2 - \delta)}
+                {(1 + \delta)(2 + \delta)(3 + \delta)(4 + \delta)(5 + \delta)}
+    \end{align*}
+    \]
+=== "TL-moments"
+    If \( \beta > -2 \) and \( \delta > -2 \):
+
+    \[
+    \begin{align*}
+        \tlmoment{1}{1}
+            &= -(1 + \phi) \frac
+                {5 + \beta}
+                {(2 + \beta)(3 + \beta)}
+            &&+ (1 - \phi) \frac
+                {5 + \delta}
+                {(2 + \delta)(3 + \delta)}
+        \\
+        \frac{2}{3 \cdot 4} \tlmoment{1}{2}
+            &= \hphantom{-} (1 + \phi) \frac
+                {1}
+                {(2 + \beta)(3 + \beta)(4 + \beta)}
+            &&+ (1 - \phi) \frac
+                {1}
+                {(2 + \delta)(3 + \delta)(4 + \delta)}
+        \\
+        \frac{3}{4 \cdot 5} \tlmoment{1}{3}
+            &= -(1 + \phi) \frac
+                {(1 - \beta)}
+                {(2 + \beta)(3 + \beta)(4 + \beta)(5 + \beta)}
+            &&+ (1 - \phi)  \frac
+                {(1 - \delta)}
+                {(2 + \delta)(3 + \delta)(4 + \delta)(5 + \delta)}
+        \\
+        \frac{4}{5 \cdot 6} \tlmoment{1}{4}
+            &= \hphantom{-} (1 + \phi) \frac
+                {(1 - \beta)(2 - \beta)}
+                {(2 + \beta)(3 + \beta)(4 + \beta)(5 + \beta)(6 + \beta)}
+            &&+ (1 - \phi) \frac
+                {(1 - \delta)(2 - \delta)}
+                {(2 + \delta)(3 + \delta)(4 + \delta)(5 + \delta)(6 + \delta)}
+    \end{align*}
+    \]
+
+/// admonition | Special cases
+    type: info
+There are several notable special cases of the GLD:
+
+[GPD](#gpd)
+:   With \( \phi = -1 \), GLD is GPD with shape \( \alpha \equiv -\delta \)
+    and scale \( \sigma = 2 \).
+
+[Lomax](https://wikipedia.org/wiki/Lomax_distribution)
+:   With \( \phi = -1 \) and \( \delta < 0 \), GLD is the Lomax distribution
+    with shape \( \alpha = -1 / \delta \) and scale \( \sigma = -2 / \delta \).
+
+[Exponential](https://wikipedia.org/wiki/Logistic_distribution)
+:   With \( \beta = \delta = 0 \) and \( \phi = -1 \), GLD is
+    exponential with rate \( \lambda = \frac 1 2 \), or scale \( \sigma = 2 \).
+
+[Tukey-Lambda](https://wikipedia.org/wiki/Tukey_lambda_distribution)
+:   With \( \lambda \equiv \beta = \delta \) and \( \phi = 0 \), GLD is the
+    standard Tukey-lambda distribution, and \( \lambda \) its shape parameter.
+
+[Logistic](https://wikipedia.org/wiki/Logistic_distribution)
+:   With \( \beta = \delta = 0 \) and \( \phi = 0 \), GLD is
+    standard logistic.
+
+[Uniform](https://wikipedia.org/wiki/Continuous_uniform_distribution)
+:   With \( \beta = \delta = 1 \), GLD is uniform on
+    \( [-1 - \phi,\ 1 - \phi] \).
+
+    With \( \beta = \delta = 2 \) and \( \phi = 0 \) GLD is uniform on
+    \( \left[-\frac 1 2,\ \frac 1 2\right] \).
+
+    With \( \delta = 1 \) and \( \phi = -1 \), GLD is uniform on
+    \( [0,\ 2] \)
+///
+
+[^GLD]:
+    [J.S. Ramberg & B.W. Schmeiser (1974)
+    ](https://doi.org/10.1145/360827.360840) -- An approximate method for
+    generating asymmetric random variables
 
 ## Constants and special functions
 
@@ -1474,3 +1748,17 @@ and constants.
         <td>[`scipy.special.boxcox`][scipy.special.boxcox]</td>
     </tr>
 </table>
+
+
+*[STD]: Standard deviation
+*[MAD]: Median absolute deviation
+*[RV]: Random variable
+*[PMF]: Probability mass function
+*[PDF]: Probability density function
+*[CDF]: Cumulative distribution function
+*[PPF]: Percent point function, inverse of the CDF, a.k.a. quantile function
+*[QDF]: Quantile density function, derivative of the PPF
+*[GEV]: Generalized (maximum) Extreme Value distribution
+*[GLO]: Generalized Logistic distribution
+*[GPD]: Generalized Pareto Distribution
+*[GLD]: Generalized Tukey–Lambda Distribution

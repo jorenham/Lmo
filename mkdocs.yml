@@ -19,7 +19,8 @@ theme:
   logo: img/logo.png
   favicon: img/favicon.ico
   features:
-    # - navigation.sections
+    - content.tabs.link
+    - content.tooltips
     - navigation.path
     - navigation.tabs
     - navigation.tabs.sticky
@@ -72,23 +73,39 @@ plugins:
 
 markdown_extensions:
   # https://python-markdown.github.io/extensions/
-  - admonition
+  - abbr
+  - attr_list
   - extra
   - md_in_html
   - sane_lists
   - smarty
+  - tables
   - toc:
       permalink: true
 
   # https://facelessuser.github.io/pymdown-extensions/
-  - pymdownx.betterem
-  - pymdownx.highlight
-  - pymdownx.inlinehilite
-  - pymdownx.superfences
-  - pymdownx.tasklist:
-      custom_checkbox: true
   - pymdownx.arithmatex:
       generic: true
+  - pymdownx.betterem
+  - pymdownx.blocks.admonition
+  - pymdownx.blocks.definition
+  - pymdownx.blocks.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.snippets:
+  - pymdownx.striphtml
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+      combine_header_slug: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+  - pymdownx.tasklist:
+      custom_checkbox: true
 
 extra_css:
   - styles/theme.css
