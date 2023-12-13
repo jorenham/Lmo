@@ -1242,6 +1242,10 @@ x
 \right.
 \]
 
+<img src="../gallery/genlambda.svg" width="100%"
+    style="height: auto; aspect-ratio: 16/9;"
+    alt="Generalized Tukey-Lambda distribution PDF" />
+
 Unlike GLD's central product-moments, which have no general closed-form
 expression, its trimmed L-moments can be compactly expressed.
 When \( \beta > -s - 1 \) and \( \delta > -t - 1 \), the L-moments are defined
