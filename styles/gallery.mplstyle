@@ -1,0 +1,14 @@
+axes.labelcolor: "#e4e4e9d1"
+axes.spines.top: False
+axes.spines.right: False
+
+lines.linewidth: 3
+
+xtick.color: "#e4e4e9d1"
+ytick.color: "#e4e4e9d1"
+
+text.color: "#e4e4e9d1"
+font.family: sans-serif
+font.sans-serif: Fira Sans
+
+# text.usetex: True

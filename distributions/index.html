@@ -22,7 +22,7 @@
       
       
       <link rel="icon" href="../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.1">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.2">
     
     
       
@@ -30,7 +30,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.45e1311d.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.50c56a3b.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -380,6 +380,16 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#simple-distributions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Simple distributions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Simple distributions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#l-stats" class="md-nav__link">
     <span class="md-ellipsis">
       L-stats
@@ -387,13 +397,18 @@
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#tl-stats" class="md-nav__link">
     <span class="md-ellipsis">
       TL-stats
     </span>
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -489,9 +504,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#generalized-lambda" class="md-nav__link">
+  <a href="#gld" class="md-nav__link">
     <span class="md-ellipsis">
-      Generalized Lambda
+      GLD
     </span>
   </a>
   
@@ -585,7 +600,7 @@ Shifting a distribution only affects the L-location <span class="arithmatex">\( 
 just like the expectation and the median.
 Scaling a distribution simply scales all L-moments
 <span class="arithmatex">\( \tlmoment{s,t}{r}, \; r \ge 1 \)</span> analogous to e.g. the
-standard deviation or MAD.
+standard deviation or <abbr title="Median absolute deviation">MAD</abbr>.
 Note that neither shifting nor scaling affects the L-moment ratio&rsquo;s
  <span class="arithmatex">\( \tlratio{s,t}{r} \)</span>.</p>
 <p>Each of the listed expressions have been validated, both numerically and
@@ -597,19 +612,20 @@ several have been algebraically rearranged.</p>
 likely to include some novel solutions. This is also the reason for the lack
 of references. But this should pose no problems in practise, since Lmo makes
 it trivial to check if they aren&rsquo;t incorrect.</p>
+<h2 id="simple-distributions">Simple distributions<a class="headerlink" href="#simple-distributions" title="Permanent link">&para;</a></h2>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
-<p>Numerical calculation of these L-statistics using <code>scipy.stats</code>
+<p>Numerical calculation of these L-statistics using <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/stats.html#module-scipy.stats"><code>scipy.stats</code></a>
 distributions, refer to
 <a class="autorefs autorefs-internal" href="../api/#lmo.contrib.scipy_stats.l_rv_generic.l_stats"><code>rv_continuous.l_stats</code></a>.</p>
-<p>For direct calculation of the L-stats from a CDF or PPF (quantile function,
-inverse CDF), see <a class="autorefs autorefs-internal" href="../api/#lmo.theoretical.l_stats_from_cdf"><code>l_stats_from_cdf</code></a> or
+<p>For direct calculation of the L-stats from a <abbr title="Cumulative distribution function">CDF</abbr> or <abbr title="Percent point function, inverse of the CDF, a.k.a. quantile function">PPF</abbr>, see
+<a class="autorefs autorefs-internal" href="../api/#lmo.theoretical.l_stats_from_cdf"><code>l_stats_from_cdf</code></a> or
 <a class="autorefs autorefs-internal" href="../api/#lmo.theoretical.l_stats_from_ppf"><code>l_stats_from_ppf</code></a>, respectively.</p>
 </div>
-<h2 id="l-stats">L-stats<a class="headerlink" href="#l-stats" title="Permanent link">&para;</a></h2>
-<p>An overview of the untrimmed L-location, L-scale, L-skewness and L-kurtosis,
+<p>An overview of the L-location, L-scale, L-skewness and L-kurtosis,
 of a bunch of popular univariate probability distributions, for which they
 exist (in closed form).</p>
+<h3 id="l-stats">L-stats<a class="headerlink" href="#l-stats" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -921,9 +937,7 @@ exist (in closed form).</p>
 </tr>
 </table>
 
-<h2 id="tl-stats">TL-stats<a class="headerlink" href="#tl-stats" title="Permanent link">&para;</a></h2>
-<p>Collection of TL-location, -scale, -skewness, -kurtosis coefficients, with
-symmetric trimming of order 1, i.e. <code>trim=(1, 1)</code>.</p>
+<h3 id="tl-stats">TL-stats<a class="headerlink" href="#tl-stats" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
     <tr>
@@ -1262,8 +1276,8 @@ to validate their correctness, e.g. numerically, or symbolically with sympy or
 wolfram alpha / mathematica.</p>
 <h3 id="bernoulli">Bernoulli<a class="headerlink" href="#bernoulli" title="Permanent link">&para;</a></h3>
 <p>Surprisingly, the L-moments of the discrete
-<a href="https://wikipedia.org/wiki/Bernoulli_distribution">Bernoulli distribution</a>,
-can&rsquo;t be expressed as easily as the distribution itself:</p>
+<a href="https://wikipedia.org/wiki/Bernoulli_distribution">Bernoulli distribution</a>
+<sup id="fnref:BERN"><a class="footnote-ref" href="#fn:BERN">1</a></sup>, can&rsquo;t be expressed as easily as the distribution itself:</p>
 <div class="arithmatex">\[
     \begin{equation}
     \tlmoment{s, t}{r} =
@@ -1279,8 +1293,8 @@ can&rsquo;t be expressed as easily as the distribution itself:</p>
 <span class="arithmatex">\( \beta &gt; -1 \)</span> does not hold).</p>
 <h3 id="gompertz">Gompertz<a class="headerlink" href="#gompertz" title="Permanent link">&para;</a></h3>
 <p>The <a href="https://wikipedia.org/wiki/Gompertz_distribution">Gompertz distribution</a>
-with shape parameter <span class="arithmatex">\( \alpha &gt; 0 \)</span> and <span class="arithmatex">\( x \ge 0 \)</span>, has the following CDF
-and PPF:</p>
+<sup id="fnref:GOMP"><a class="footnote-ref" href="#fn:GOMP">2</a></sup> with shape parameter <span class="arithmatex">\( \alpha &gt; 0 \)</span> and <span class="arithmatex">\( x \ge 0 \)</span>, has the
+following <abbr title="Cumulative distribution function">CDF</abbr> and <abbr title="Percent point function, inverse of the CDF, a.k.a. quantile function">PPF</abbr>:</p>
 <div class="arithmatex">\[
     \begin{align*}
         F(x) &amp;= 1 - e^{\alpha (1 - e^x)} \\
@@ -1301,34 +1315,32 @@ and PPF:</p>
     \label{eq:lr_gompertz}
     \end{equation}
 \]</div>
-<h3 id="gev">GEV<a class="headerlink" href="#gev" title="Permanent link">&para;</a></h3>
-<p>The <a href="https://wikipedia.org/wiki/Generalized_extreme_value_distribution"><em>generalized extreme value</em> (GEV)
-</a>
-distribution unifies the
+<h3 id="gev"><abbr title="Generalized (maximum) Extreme Value distribution">GEV</abbr><a class="headerlink" href="#gev" title="Permanent link">&para;</a></h3>
+<p>The <a href="https://wikipedia.org/wiki/GEV_distribution"><abbr title="Generalized (maximum) Extreme Value distribution">GEV</abbr></a> unifies the
 <a href="https://wikipedia.org/wiki/Gumbel_distribution">Gumbel</a>,
 <a href="https://wikipedia.org/wiki/Fr%C3%A9chet_distribution">Fréchet</a>,
 and <a href="https://wikipedia.org/wiki/Weibull_distribution">Weibull</a> distributions.
 It has one shape parameter <span class="arithmatex">\( \alpha \in \mathbb{R} \)</span>, and the following
 distribution functions:</p>
 <div class="arithmatex">\[
-    \begin{align*}
-        F(x) &amp;= e^{-\qexp{1 - \alpha}{-x}} \\
-        x(F) &amp;= -\qlog{1 - \alpha}{-\ln(F)}
-    \end{align*}
+\begin{align*}
+    F(x) &amp;= e^{-\qexp{1 - \alpha}{-x}} \\
+    x(F) &amp;= -\qlog{1 - \alpha}{-\ln(F)}
+\end{align*}
 \]</div>
 <p>Here, <span class="arithmatex">\( \qexp{q}{y} \)</span> and <span class="arithmatex">\( \qlog{q}{y} \)</span> are the
 <a href="https://wikipedia.org/wiki/Tsallis_statistics">Tsallis</a>
 <a href="#def-qexp"><span class="arithmatex">\( q \)</span>-exponential</a> and the <a href="#def-qlog"><span class="arithmatex">\( q \)</span>-logarithm</a>,
 respectively.</p>
 <p>An alternative parametrization is sometimes used, e.g. on
-<a href="https://wikipedia.org/wiki/Generalized_extreme_value_distribution">Wikipedia</a>,
+<a href="https://wikipedia.org/wiki/GEV_distribution">Wikipedia</a>,
 where <span class="arithmatex">\( \xi = -\alpha \)</span>.
 The convention that is used here, is the same as in
 <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.genextreme.html#scipy.stats.genextreme"><code>scipy.stats.genextreme</code></a>, where <code>c</code> corresponds to
 <span class="arithmatex">\( \alpha \)</span>.</p>
-<p>The trimmed L-moments of the GEV are</p>
+<p>The trimmed L-moments of the <abbr title="Generalized (maximum) Extreme Value distribution">GEV</abbr> are</p>
 <div class="arithmatex">\[
-    \begin{equation}
+\begin{equation}
     \tlmoment{s, t}{r} =
         \frac{(-1)^{r}}{r}
         \sum_{k = s + 1}^{r + s + t}
@@ -1344,15 +1356,14 @@ The convention that is used here, is the same as in
             \end{cases}
             \right)
     \label{eq:lr_gev}
-    \end{equation}
+\end{equation}
 \]</div>
-<p>Note that the GEV is effectively a reparametrized
+<p>Note that the <abbr title="Generalized (maximum) Extreme Value distribution">GEV</abbr> is effectively a reparametrized
 <span class="arithmatex">\( q \)</span>-<a href="https://wikipedia.org/wiki/Gumbel_distribution">Gumbel</a>
 <a href="https://wikipedia.org/wiki/Tsallis_distribution">Tsallis distribution</a>, with
 <span class="arithmatex">\( q = 1 - \alpha \)</span>.</p>
-<h3 id="glo">GLO<a class="headerlink" href="#glo" title="Permanent link">&para;</a></h3>
-<p>The <em>generalized logistic distribution</em> (GLO), also known as the <a href="https://wikipedia.org/wiki/Shifted_log-logistic_distribution">shifted
-log-logistic distribution
+<h3 id="glo"><abbr title="Generalized Logistic distribution">GLO</abbr><a class="headerlink" href="#glo" title="Permanent link">&para;</a></h3>
+<p>The <abbr title="Generalized Logistic distribution">GLO</abbr> <sup id="fnref:GLO"><a class="footnote-ref" href="#fn:GLO">4</a></sup>, also known as the <a href="https://wikipedia.org/wiki/Shifted_log-logistic_distribution">shifted log-logistic distribution
 </a>, with shape
 parameter <span class="arithmatex">\( \alpha \in \mathbb{R} \)</span>, is characterized by the following
 distribution functions:</p>
@@ -1362,7 +1373,7 @@ distribution functions:</p>
         x(F) &amp;= -\qlog{1 - \alpha}{\frac{1 - F}{F}}
     \end{align*}
 \]</div>
-<p>For <span class="arithmatex">\( -1 &lt; \alpha &lt; 1 \)</span>, the general trimmed L-moments of the GLO are:</p>
+<p>For <span class="arithmatex">\( -1 &lt; \alpha &lt; 1 \)</span>, the general trimmed L-moments of the <abbr title="Generalized Logistic distribution">GLO</abbr> are:</p>
 <div class="arithmatex">\[
     \begin{equation}
         \tlmoment{s, t}{r} = \begin{cases}
@@ -1389,14 +1400,13 @@ distribution functions:</p>
 <p>The corresponding <code>scipy.stats</code> implementation is
 <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.kappa4.html#scipy.stats.kappa4"><code>kappa4</code></a>, with <code>h = -1</code> and <code>k</code> set to <span class="arithmatex">\( \alpha \)</span>;
 <strong>not</strong> <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.genlogistic.html#scipy.stats.genlogistic"><code>genlogistic</code></a>.</p>
-<p>Note that the GLO is effectively a reparametrized
+<p>Note that the <abbr title="Generalized Logistic distribution">GLO</abbr> is effectively a reparametrized
 <span class="arithmatex">\( q \)</span>-<a href="https://wikipedia.org/wiki/Logistic_distribution">logistic</a>
 <a href="https://wikipedia.org/wiki/Tsallis_distribution">Tsallis distribution</a>, with
 <span class="arithmatex">\( q = 1 - \alpha \)</span>.</p>
-<h3 id="gpd">GPD<a class="headerlink" href="#gpd" title="Permanent link">&para;</a></h3>
-<p>The <a href="https://wikipedia.org/wiki/Generalized_Pareto_distribution"><em>generalized Pareto distribution</em>
-</a> (GPD), with
-shape parameter <span class="arithmatex">\( \alpha \in \mathbb{R} \)</span>, has for <span class="arithmatex">\( x \ge 0 \)</span> the
+<h3 id="gpd"><abbr title="Generalized Pareto Distribution">GPD</abbr><a class="headerlink" href="#gpd" title="Permanent link">&para;</a></h3>
+<p>The <a href="https://wikipedia.org/wiki/Generalized_Pareto_distribution"><abbr title="Generalized Pareto Distribution">GPD</abbr></a> <sup id="fnref:GPD"><a class="footnote-ref" href="#fn:GPD">5</a></sup>,
+with shape parameter <span class="arithmatex">\( \alpha \in \mathbb{R} \)</span>, has for <span class="arithmatex">\( x \ge 0 \)</span> the
 distribution functions:</p>
 <div class="arithmatex">\[
     \begin{align*}
@@ -1404,7 +1414,7 @@ distribution functions:</p>
         x(F) &amp;= -\qlog{1 + \alpha}{1 - F}
     \end{align*}
 \]</div>
-<p>The L-moments of the GPD exist when <span class="arithmatex">\( \alpha &lt; 1 + t \)</span>, and can be
+<p>The L-moments of the <abbr title="Generalized Pareto Distribution">GPD</abbr> exist when <span class="arithmatex">\( \alpha &lt; 1 + t \)</span>, and can be
 compactly expressed as</p>
 <div class="arithmatex">\[
     \begin{equation}
@@ -1427,16 +1437,16 @@ compactly expressed as</p>
 implementation.</p>
 <div class="admonition info">
 <p class="admonition-title">Special cases</p>
-<p>There are several notable special cases of the GPD:</p>
+<p>There are several notable special cases of the <abbr title="Generalized Pareto Distribution">GPD</abbr>:</p>
 <dl>
 <dt><a href="https://wikipedia.org/wiki/Q-exponential_distribution"><span class="arithmatex">\( q \)</span>-Exponential</a></dt>
-<dd>When <span class="arithmatex">\( \alpha &gt; -1 \)</span>, GPD is <span class="arithmatex">\( q \)</span>-exponential with shape
+<dd>When <span class="arithmatex">\( \alpha &gt; -1 \)</span>, <abbr title="Generalized Pareto Distribution">GPD</abbr> is <span class="arithmatex">\( q \)</span>-exponential with shape
 <span class="arithmatex">\( q = 2 - 1 / (1 + \alpha) \)</span> and rate (inverse scale)
 <span class="arithmatex">\( \lambda = \alpha + 1 \)</span>.</dd>
 <dt><a href="https://wikipedia.org/wiki/Exponential_distribution">Exponential</a></dt>
-<dd>When <span class="arithmatex">\( \alpha = 0 \)</span>, GPD is standard exponential.</dd>
+<dd>When <span class="arithmatex">\( \alpha = 0 \)</span>, <abbr title="Generalized Pareto Distribution">GPD</abbr> is standard exponential.</dd>
 <dt><a href="https://wikipedia.org/wiki/Continuous_uniform_distribution">Uniform</a></dt>
-<dd>When <span class="arithmatex">\( \alpha = 1 \)</span> GPD is uniform on <span class="arithmatex">\( [0, 1] \)</span>.</dd>
+<dd>When <span class="arithmatex">\( \alpha = 1 \)</span> <abbr title="Generalized Pareto Distribution">GPD</abbr> is uniform on <span class="arithmatex">\( [0, 1] \)</span>.</dd>
 </dl>
 </div>
 <div class="admonition info">
@@ -1450,7 +1460,7 @@ See below for details, including the general L-moments in closed-form.</dd>
 </dl>
 </div>
 <h3 id="burr-iii-dagum">Burr III / Dagum<a class="headerlink" href="#burr-iii-dagum" title="Permanent link">&para;</a></h3>
-<p>The <em>Burr III</em> distribution, also known as the
+<p>The <em>Burr III</em> distribution <sup id="fnref:BURR"><a class="footnote-ref" href="#fn:BURR">6</a></sup>, also known as the
 <a href="https://wikipedia.org/wiki/Dagum_distribution"><em>Dagum distribution</em></a>, has two
 shape parameters <span class="arithmatex">\( \alpha \)</span> and <span class="arithmatex">\( \beta \)</span>, both restricted to the
 positive reals</p>
@@ -1488,7 +1498,7 @@ setting <code>k</code> and <code>s</code> to <span class="arithmatex">\( \alpha 
 distribution</p>
 <h3 id="burr-xii-pareto-iv">Burr XII / Pareto IV<a class="headerlink" href="#burr-xii-pareto-iv" title="Permanent link">&para;</a></h3>
 <p>The
-<a href="https://wikipedia.org/wiki/Burr_distribution"><em>Burr XII distribution</em></a>
+<a href="https://wikipedia.org/wiki/Burr_distribution"><em>Burr XII distribution</em></a> <sup id="fnref2:BURR"><a class="footnote-ref" href="#fn:BURR">6</a></sup>
 has two shape parameters <span class="arithmatex">\( \alpha \)</span> and <span class="arithmatex">\( \beta \)</span>, both restricted to the
 positive reals. It is also known as the <em>Singh-Maddala distribution</em>.
 The alternative parametrization <span class="arithmatex">\( \alpha \mapsto 1 / \gamma \)</span>, where
@@ -1519,7 +1529,7 @@ The alternative parametrization <span class="arithmatex">\( \alpha \mapsto 1 / \
 <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.burr12.html#scipy.stats.burr12"><code>scipy.stats.burr12</code></a>, where the shape parameters <code>c</code>
 and <code>d</code> correspond to  <span class="arithmatex">\( \alpha \)</span> and <span class="arithmatex">\( \beta \)</span>, respectively.</p>
 <p>The Burr XII and Burr III distributions are related as <span class="arithmatex">\( Y = 1 / X \)</span>, where
-<span class="arithmatex">\( X \)</span> and <span class="arithmatex">\( Y \)</span> are random variables with Burr XII <span class="arithmatex">\( (\alpha, \beta) \)</span>
+<span class="arithmatex">\( X \)</span> and <span class="arithmatex">\( Y \)</span> are <abbr title="Random variable">RV</abbr>&rsquo;s with Burr XII <span class="arithmatex">\( (\alpha, \beta) \)</span>
 and Burr III <span class="arithmatex">\( (1 / \alpha, \beta) \)</span>
 distributions (or vice-versa), respectively.</p>
 <p>In the special case where <span class="arithmatex">\( \alpha = 1 \)</span> is known as the
@@ -1528,11 +1538,11 @@ has been implemented as <a class="autorefs autorefs-external" href="https://docs
 parameter <code>c</code> corresponds to <span class="arithmatex">\( \beta \)</span>.</p>
 <h3 id="kumaraswamy">Kumaraswamy<a class="headerlink" href="#kumaraswamy" title="Permanent link">&para;</a></h3>
 <p>For <a href="https://wikipedia.org/wiki/Kumaraswamy_distribution">Kumaraswamy&rsquo;s distribution
-</a> with parameters
+</a> <sup id="fnref:KUM1"><a class="footnote-ref" href="#fn:KUM1">7</a></sup> with parameters
 <span class="arithmatex">\( \alpha \in \mathbb{R}_{&gt;0} \)</span> and <span class="arithmatex">\( \beta \in \mathbb{R}_{&gt;0} \)</span>,
-the general solution for the <span class="arithmatex">\( r \)</span>th L-moment has been derived by
-<a href="https://doi.org/10.1016/j.stamet.2008.04.001">Jones (2009)</a>. This can be
-extended for the general trimmed L-moments.</p>
+the general solution for the <span class="arithmatex">\( r \)</span>th (untrimmed L-moment has been derived by
+M.C. Jones in 2009 <sup id="fnref:KUM2"><a class="footnote-ref" href="#fn:KUM2">8</a></sup>. Lmo has extended these results for the general
+trimmed L-moments.</p>
 <p>The distribution functions are for <span class="arithmatex">\( 0 \le x \le 1 \)</span> defined as:</p>
 <div class="arithmatex">\[
 \begin{align*}
@@ -1557,12 +1567,12 @@ x(F) &amp;= \bigl(1 - (1 - F)^{1/\beta} \bigr)^{1/\alpha}
 <a class="autorefs autorefs-internal" href="../api/#lmo.distributions.kumaraswamy"><code>lmo.distributions.kumaraswamy</code></a>.</p>
 <h3 id="wakeby">Wakeby<a class="headerlink" href="#wakeby" title="Permanent link">&para;</a></h3>
 <p>The <a href="https://wikipedia.org/wiki/Wakeby_distribution"><em>Wakeby distribution</em></a>
-is quantile-based &ndash; the CDF and PDF are not analytically expressible for the
+<sup id="fnref:WAK"><a class="footnote-ref" href="#fn:WAK">9</a></sup> is quantile-based &ndash; the <abbr title="Cumulative distribution function">CDF</abbr> and <abbr title="Probability density function">PDF</abbr> are not analytically expressible for the
 general case.
 Without loss of generality, Lmo uses a 3-parameter &ldquo;standardized&rdquo;
 paremetrization, with shape parameters <span class="arithmatex">\( \beta,\ \delta,\ \phi \)</span>.</p>
-<p><img src="../gallery/wakeby.svg" width="100%"
-    style="height: auto; aspect-ratio: 16/9;" alt="Wakeby distribution PDF" /></p>
+<p>See <a class="autorefs autorefs-internal" href="../api/#lmo.distributions.wakeby"><code>lmo.distributions.wakeby</code></a> for the
+implementation.</p>
 <p>Each of the following restrictions apply:</p>
 <ul>
 <li><span class="arithmatex">\( \beta + \delta \ge 0 \)</span></li>
@@ -1582,7 +1592,7 @@ paremetrization, with shape parameters <span class="arithmatex">\( \beta,\ \delt
         &amp; \text{otherwise}
 \end{cases}
 \]</div>
-<p>The quantile function (PPF) is defined to be</p>
+<p>The <abbr title="Percent point function, inverse of the CDF, a.k.a. quantile function">PPF</abbr> is defined to be</p>
 <div class="arithmatex">\[
 x(F) = -\phi \qlog{1 - \beta}{1 - F} - (1 - \phi) \qlog{1 + \delta}{1 - F}
 \]</div>
@@ -1592,6 +1602,8 @@ x(F) =
     \frac{\phi}{\beta} (1 - (1 - F)^\beta)
     - \frac{1 - \phi}{\delta} (1 - (1 - F)^{-\delta})
 \]</div>
+<p><img src="../gallery/wakeby.svg" width="100%"
+    style="height: auto; aspect-ratio: 16/9;" alt="Wakeby distribution PDF" /></p>
 <div class="admonition note">
 <p class="admonition-title">Alternative parametrization</p>
 <p>This 3-parameter Wakeby distribution is equivalent to the 5-parameter
@@ -1643,17 +1655,15 @@ L-moments can be expressed as</p>
 \end{align}
 \]</div>
 <p>where <span class="arithmatex">\( H_n \)</span> is a <a href="#def-harmonic">harmonic number</a>.</p>
-<p>See <a class="autorefs autorefs-internal" href="../api/#lmo.distributions.wakeby"><code>lmo.distributions.wakeby</code></a> for the
-implementation.</p>
 <div class="admonition info">
 <p class="admonition-title">Special cases</p>
 <p>There are several notable special cases of the Wakeby distribution:</p>
 <dl>
-<dt><a href="#gpd">GPD &ndash; Generalized Pareto</a></dt>
+<dt><a href="#gpd"><abbr title="Generalized Pareto Distribution">GPD</abbr> &ndash; Generalized Pareto</a></dt>
 <dd>
-<p>With <span class="arithmatex">\( \phi = 0 \)</span>, Wakeby is the standard GPD, and
+<p>With <span class="arithmatex">\( \phi = 0 \)</span>, Wakeby is the standard <abbr title="Generalized Pareto Distribution">GPD</abbr>, and
 <span class="arithmatex">\( \delta \)</span> its shape parameter.</p>
-<p>Conversely, <span class="arithmatex">\( \phi = 1 \)</span> yields a <em>bounded</em> GPD variant, with
+<p>Conversely, <span class="arithmatex">\( \phi = 1 \)</span> yields a <em>bounded</em> <abbr title="Generalized Pareto Distribution">GPD</abbr> variant, with
 shape parameter <span class="arithmatex">\( -\beta \)</span>, and <span class="arithmatex">\( 1 / \beta \)</span> the upper bound.</p>
 </dd>
 <dt><a href="https://wikipedia.org/wiki/Exponential_distribution">Exponential</a></dt>
@@ -1664,41 +1674,264 @@ standard exponential.</dd>
 is uniform on <span class="arithmatex">\( [0, 1] \)</span>.</dd>
 </dl>
 </div>
-<h3 id="generalized-lambda">Generalized Lambda<a class="headerlink" href="#generalized-lambda" title="Permanent link">&para;</a></h3>
-<p>The <a href="https://wikipedia.org/wiki/Tukey_lambda_distribution">Tukey lambda distribution
-</a> can be extended to
-the <em>generalized lambda distribution</em>, which has two scale parameters
-<span class="arithmatex">\( \alpha, \gamma \)</span>, and two shape parameters <span class="arithmatex">\( \beta, \delta \)</span>.</p>
-<p>Like the Wakeby distribution, the generalized lambda has no closed-form PDF
-or CDF. Instead, it is defined through its PPF:</p>
+<h3 id="gld"><abbr title="Generalized Tukey–Lambda Distribution">GLD</abbr><a class="headerlink" href="#gld" title="Permanent link">&para;</a></h3>
+<p>The <abbr title="Generalized Tukey–Lambda Distribution">GLD</abbr> <sup id="fnref:GLD"><a class="footnote-ref" href="#fn:GLD">10</a></sup> is a flexible generalization of the <a href="https://wikipedia.org/wiki/Tukey_lambda_distribution">Tukey lambda distribution
+</a>.
+Lmo uses an unconventional &ldquo;standardized&rdquo;
+paremetrization, with shape parameters <span class="arithmatex">\( \beta,\ \delta,\ \phi \)</span>, where
+<span class="arithmatex">\( \phi \in [-1, 1] \)</span> replaces the more commonly used shape parameters
+<span class="arithmatex">\( \alpha \mapsto 1 + \phi \)</span> and <span class="arithmatex">\( \gamma \mapsto 1 - \phi \)</span>.</p>
+<p>The <abbr title="Generalized Tukey–Lambda Distribution">GLD</abbr> is implemented as
+<a class="autorefs autorefs-internal" href="../api/#lmo.distributions.genlambda"><code>lmo.distributions.genlamda</code></a>.</p>
+<p>As with the Wakeby distribution, the <abbr title="Probability density function">PDF</abbr> and <abbr title="Cumulative distribution function">CDF</abbr> of the <abbr title="Generalized Tukey–Lambda Distribution">GLD</abbr> are not
+analytically expressible. Instead, the <abbr title="Generalized Tukey–Lambda Distribution">GLD</abbr> is defined through its <abbr title="Percent point function, inverse of the CDF, a.k.a. quantile function">PPF</abbr>:</p>
 <div class="arithmatex">\[
-x(F) = \alpha \qlog{1 - \beta}{F} - \gamma \qlog{1 - \delta}{1 - F}
+x(F) = (\phi + 1) \qlog{1 - \beta}{F} + (\phi - 1) \qlog{1 - \delta}{1 - F}
 \]</div>
-<p>Although its central product moments have no closed-form expression, when
-<span class="arithmatex">\( \beta &gt; -1 \)</span> and <span class="arithmatex">\( \delta &gt; -1 \)</span>, the general trimmed L-moments can be
-compactly expressed as:</p>
+<p>The domain is</p>
+<div class="arithmatex">\[
+\left.
+\begin{array}{l}
+    \text{if } \beta \le 0: &amp; \displaystyle -\infty \\
+    \text{if } \beta &gt; 0:  &amp; \displaystyle -\frac{1 + \phi}{\beta}
+\end{array}
+\right\} \le
+x
+\le \left\{ \begin{array}{l}
+    \displaystyle \infty \ , &amp; \text{if } \delta \le 0 \\
+    \displaystyle \frac{1 - \phi}{\delta} \ , &amp; \text{if } \delta &gt; 0
+\end{array}
+\right.
+\]</div>
+<p><img src="../gallery/genlambda.svg" width="100%"
+    style="height: auto; aspect-ratio: 16/9;"
+    alt="Generalized Tukey-Lambda distribution PDF" /></p>
+<p>Unlike <abbr title="Generalized Tukey–Lambda Distribution">GLD</abbr>&rsquo;s central product-moments, which have no general closed-form
+expression, its trimmed L-moments can be compactly expressed.
+When <span class="arithmatex">\( \beta &gt; -s - 1 \)</span> and <span class="arithmatex">\( \delta &gt; -t - 1 \)</span>, the L-moments are defined
+for <span class="arithmatex">\( r = 2, 3, \ldots \)</span> and <span class="arithmatex">\( s, t \ge 0 \)</span> as</p>
 <div class="arithmatex">\[
 \begin{equation}
-    \tlmoment{s,t}{r}
-        = \alpha
+    r \tlmoment{s, t}{r}
+        = \frac{(-1)^r \ (1 + \phi)}{r + s + t + \beta}
         \frac
-            {\rfact{r + s}{t + 1} \ \ffact{\beta + s}{r + s - 1}}
-            {r \ \rfact{\beta}{r + s + t + 1}}
-        + (-1)^r \gamma \
+            {\B(1 + s + \beta ,\ r - 1 - \beta)}
+            {\B(r + s + t + \beta,\ 1 - \beta)}
+        + \frac{1 - \phi}{r + s + t + \delta}
         \frac
-            {\rfact{r + t}{s + t} \ \ffact{\delta + t}{r + t - 1}}
-            {r \ \rfact{\delta}{r + s + t + 1}}
-        - \underbrace{
-            \ffact{1}{r} \left(
-                \frac \alpha \beta - \frac \gamma \delta
-            \right)
-        }_{\text{will be } 0 \text{ if } r&gt;1}
+            {\B(1 + t + \delta ,\ r - 1 - \delta)}
+            {\B(r + s + t + \delta,\ 1 - \delta)} \ ,
 \end{equation}
 \]</div>
-<p>When <span class="arithmatex">\( \alpha = \gamma \)</span> and <span class="arithmatex">\( \beta = \delta \)</span>, this is the
-(non-generalized) Tukey-lambda distribution, which has been implemented as
-<a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.tukeylambda.html#scipy.stats.tukeylambda"><code>scipy.stats.tukeylambda</code></a>. Currently, this
-4-parameter generalization has no <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/stats.html#module-scipy.stats"><code>scipy.stats</code></a> implementation.</p>
+<p>and the arbitrarily-trimmed L-location is</p>
+<div class="arithmatex">\[
+\begin{equation}
+    \tlmoment{s, t}{1}
+        = -(1 + \phi) \mathfrak{L}_{1}^{(s)}(\beta)
+        + (1 - \phi) \mathfrak{L}_{1}^{(t)}(\delta) \,
+\end{equation}
+\]</div>
+<p>where</p>
+<div class="arithmatex">\[
+\mathfrak{L}_{1}^{(k)}(\theta) = \begin{cases}
+    \displaystyle H_{s + t + 1} - H_k
+        &amp; \text{if } \theta = 0 \\
+    \displaystyle \frac{1}{\theta}\left(
+        1 - \frac
+            {\B(1 + k + \theta,\ 2 + s + t)}
+            {\B(1 + k,\ 2 + s + t + \theta)}
+    \right)
+        &amp; \text{otherwise.}
+\end{cases}
+\]</div>
+<p>These equations look scarier that they actually are. To see why, take a look
+at the first 4 L-moment, with 4 styles of trimming:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:4"><input checked="checked" id="gld-l-moments" name="__tabbed_1" type="radio" /><input id="gld-ll-moments" name="__tabbed_1" type="radio" /><input id="gld-lh-moments" name="__tabbed_1" type="radio" /><input id="gld-tl-moments" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="gld-l-moments">L-moments</label><label for="gld-ll-moments">LL-moments</label><label for="gld-lh-moments">LH-moments</label><label for="gld-tl-moments">TL-moments</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p>If <span class="arithmatex">\( \beta &gt; -1 \)</span> and <span class="arithmatex">\( \delta &gt; -1 \)</span>:</p>
+<div class="arithmatex">\[
+\begin{align*}
+    \lmoment{1}
+        &amp;= -(1 + \phi) \frac
+            {1}
+            {1 + \beta}
+        &amp;&amp;+ (1 - \phi) \frac
+            {1}
+            {1 + \delta}
+    \\
+    \lmoment{2}
+        &amp;= \hphantom{-}(1 + \phi) \frac
+            {1}
+            {(1 + \beta)(2 + \beta)}
+        &amp;&amp;+ (1 - \phi) \frac
+            {1}
+            {(1 + \delta)(2 + \delta)}
+    \\
+    \lmoment{3}
+        &amp;= -(1 + \phi) \frac
+            {1 - \beta}
+            {(1 + \beta)(2 + \beta)(3 + \beta)}
+        &amp;&amp;+ (1 - \phi) \frac
+            {1 - \delta}
+            {(1 + \delta)(2 + \delta)(3 + \delta)}
+    \\
+    \lmoment{4}
+        &amp;= \hphantom{-}(1 + \phi) \frac
+            {(1 - \beta)(2 - \beta)}
+            {(1 + \beta)(2 + \beta)(3 + \beta)(4 + \beta)}
+        &amp;&amp;+ (1 - \phi) \frac
+            {(1 - \delta)(2 - \delta)}
+            {(1 + \delta)(2 + \delta)(3 + \delta)(4 + \delta)}
+\end{align*}
+\]</div>
+</div>
+<div class="tabbed-block">
+<p>If <span class="arithmatex">\( \beta &gt; -1 \)</span> and <span class="arithmatex">\( \delta &gt; -2 \)</span>:</p>
+<div class="arithmatex">\[
+\begin{align*}
+    \tlmoment{0, 1}{1}
+        &amp;= -(1 + \phi) \frac
+            {3 + \beta}
+            {(1 + \beta)(2 + \beta)}
+        &amp;&amp;+ (1 - \phi) \frac
+            {1}
+            {2 + \delta}
+    \\
+    \frac{1}{3}\tlmoment{0, 1}{2}
+        &amp;= \hphantom{-} (1 + \phi) \frac
+            {1}
+            {(1 + \beta)(2 + \beta)(3 + \beta)}
+        &amp;&amp;+ \frac{1 - \phi}{2} \frac
+            {1}
+            {(2 + \delta)(3 + \delta)}
+    \\
+     \frac{1}{4} \tlmoment{0, 1}{3}
+        &amp;= -(1 + \phi) \frac
+            {1 - \beta}
+            {(1 + \beta)(2 + \beta)(3 + \beta)(4 + \beta)}
+        &amp;&amp;+ \frac{1 - \phi}{3} \frac
+            {(1 - \delta)}
+            {(2 + \delta)(3 + \delta)(4 + \delta)}
+    \\
+     \frac{1}{5} \tlmoment{0, 1}{4}
+        &amp;= \hphantom{-} (1 + \phi) \frac
+            {(1 - \beta)(2 - \beta)}
+            {(1 + \beta)(2 + \beta)(3 + \beta)(4 + \beta)(5 + \beta)}
+        &amp;&amp;+ \frac{1 - \phi}{4} \frac
+            {(1 - \delta)(2 - \delta)}
+            {(2 + \delta)(3 + \delta)(4 + \delta)(5 + \delta)}
+\end{align*}
+\]</div>
+</div>
+<div class="tabbed-block">
+<p>If <span class="arithmatex">\( \beta &gt; -2 \)</span> and <span class="arithmatex">\( \delta &gt; -1 \)</span>:</p>
+<div class="arithmatex">\[
+\begin{align*}
+    \tlmoment{1, 0}{1}
+        &amp;= -(1 + \phi) \frac
+            {1}
+            {(2 + \beta)}
+        &amp;&amp;+ (1 - \phi) \frac
+            {3 + \beta}
+            {(1 + \delta)(2 + \delta)}
+    \\
+    \frac{1}{3}\tlmoment{1, 0}{2}
+        &amp;= \hphantom{-} \frac{1 + \phi}{2} \frac
+            {1}
+            {(2 + \beta)(3 + \beta)}
+        &amp;&amp;+ (1 - \phi) \frac
+            {1}
+            {(1 + \delta)(2 + \delta)(3 + \delta)}
+    \\
+     \frac{1}{4} \tlmoment{1, 0}{3}
+        &amp;= -\frac{1 + \phi}{3} \frac
+            {1 - \beta}
+            {(2 + \beta)(3 + \beta)(4 + \beta)}
+        &amp;&amp;+ (1 - \phi) \frac
+            {(1 - \delta)}
+            {(1 + \delta)(2 + \delta)(3 + \delta)(4 + \delta)}
+    \\
+     \frac{1}{5} \tlmoment{1, 0}{4}
+        &amp;= \hphantom{-} \frac{1 + \phi}{4} \frac
+            {(1 - \beta)(2 - \beta)}
+            {(2 + \beta)(3 + \beta)(4 + \beta)(5 + \beta)}
+        &amp;&amp;+ (1 - \phi) \frac
+            {(1 - \delta)(2 - \delta)}
+            {(1 + \delta)(2 + \delta)(3 + \delta)(4 + \delta)(5 + \delta)}
+\end{align*}
+\]</div>
+</div>
+<div class="tabbed-block">
+<p>If <span class="arithmatex">\( \beta &gt; -2 \)</span> and <span class="arithmatex">\( \delta &gt; -2 \)</span>:</p>
+<div class="arithmatex">\[
+\begin{align*}
+    \tlmoment{1}{1}
+        &amp;= -(1 + \phi) \frac
+            {5 + \beta}
+            {(2 + \beta)(3 + \beta)}
+        &amp;&amp;+ (1 - \phi) \frac
+            {5 + \delta}
+            {(2 + \delta)(3 + \delta)}
+    \\
+    \frac{2}{3 \cdot 4} \tlmoment{1}{2}
+        &amp;= \hphantom{-} (1 + \phi) \frac
+            {1}
+            {(2 + \beta)(3 + \beta)(4 + \beta)}
+        &amp;&amp;+ (1 - \phi) \frac
+            {1}
+            {(2 + \delta)(3 + \delta)(4 + \delta)}
+    \\
+    \frac{3}{4 \cdot 5} \tlmoment{1}{3}
+        &amp;= -(1 + \phi) \frac
+            {(1 - \beta)}
+            {(2 + \beta)(3 + \beta)(4 + \beta)(5 + \beta)}
+        &amp;&amp;+ (1 - \phi)  \frac
+            {(1 - \delta)}
+            {(2 + \delta)(3 + \delta)(4 + \delta)(5 + \delta)}
+    \\
+    \frac{4}{5 \cdot 6} \tlmoment{1}{4}
+        &amp;= \hphantom{-} (1 + \phi) \frac
+            {(1 - \beta)(2 - \beta)}
+            {(2 + \beta)(3 + \beta)(4 + \beta)(5 + \beta)(6 + \beta)}
+        &amp;&amp;+ (1 - \phi) \frac
+            {(1 - \delta)(2 - \delta)}
+            {(2 + \delta)(3 + \delta)(4 + \delta)(5 + \delta)(6 + \delta)}
+\end{align*}
+\]</div>
+</div>
+</div>
+</div>
+<div class="admonition info">
+<p class="admonition-title">Special cases</p>
+<p>There are several notable special cases of the <abbr title="Generalized Tukey–Lambda Distribution">GLD</abbr>:</p>
+<dl>
+<dt><a href="#gpd"><abbr title="Generalized Pareto Distribution">GPD</abbr></a></dt>
+<dd>With <span class="arithmatex">\( \phi = -1 \)</span>, <abbr title="Generalized Tukey–Lambda Distribution">GLD</abbr> is <abbr title="Generalized Pareto Distribution">GPD</abbr> with shape <span class="arithmatex">\( \alpha \equiv -\delta \)</span>
+and scale <span class="arithmatex">\( \sigma = 2 \)</span>.</dd>
+<dt><a href="https://wikipedia.org/wiki/Lomax_distribution">Lomax</a></dt>
+<dd>With <span class="arithmatex">\( \phi = -1 \)</span> and <span class="arithmatex">\( \delta &lt; 0 \)</span>, <abbr title="Generalized Tukey–Lambda Distribution">GLD</abbr> is the Lomax distribution
+with shape <span class="arithmatex">\( \alpha = -1 / \delta \)</span> and scale <span class="arithmatex">\( \sigma = -2 / \delta \)</span>.</dd>
+<dt><a href="https://wikipedia.org/wiki/Logistic_distribution">Exponential</a></dt>
+<dd>With <span class="arithmatex">\( \beta = \delta = 0 \)</span> and <span class="arithmatex">\( \phi = -1 \)</span>, <abbr title="Generalized Tukey–Lambda Distribution">GLD</abbr> is
+exponential with rate <span class="arithmatex">\( \lambda = \frac 1 2 \)</span>, or scale <span class="arithmatex">\( \sigma = 2 \)</span>.</dd>
+<dt><a href="https://wikipedia.org/wiki/Tukey_lambda_distribution">Tukey-Lambda</a></dt>
+<dd>With <span class="arithmatex">\( \lambda \equiv \beta = \delta \)</span> and <span class="arithmatex">\( \phi = 0 \)</span>, <abbr title="Generalized Tukey–Lambda Distribution">GLD</abbr> is the
+standard Tukey-lambda distribution, and <span class="arithmatex">\( \lambda \)</span> its shape parameter.</dd>
+<dt><a href="https://wikipedia.org/wiki/Logistic_distribution">Logistic</a></dt>
+<dd>With <span class="arithmatex">\( \beta = \delta = 0 \)</span> and <span class="arithmatex">\( \phi = 0 \)</span>, <abbr title="Generalized Tukey–Lambda Distribution">GLD</abbr> is
+standard logistic.</dd>
+<dt><a href="https://wikipedia.org/wiki/Continuous_uniform_distribution">Uniform</a></dt>
+<dd>
+<p>With <span class="arithmatex">\( \beta = \delta = 1 \)</span>, <abbr title="Generalized Tukey–Lambda Distribution">GLD</abbr> is uniform on
+<span class="arithmatex">\( [-1 - \phi,\ 1 - \phi] \)</span>.</p>
+<p>With <span class="arithmatex">\( \beta = \delta = 2 \)</span> and <span class="arithmatex">\( \phi = 0 \)</span> <abbr title="Generalized Tukey–Lambda Distribution">GLD</abbr> is uniform on
+<span class="arithmatex">\( \left[-\frac 1 2,\ \frac 1 2\right] \)</span>.</p>
+<p>With <span class="arithmatex">\( \delta = 1 \)</span> and <span class="arithmatex">\( \phi = -1 \)</span>, <abbr title="Generalized Tukey–Lambda Distribution">GLD</abbr> is uniform on
+<span class="arithmatex">\( [0,\ 2] \)</span></p>
+</dd>
+</dl>
+</div>
 <h2 id="constants-and-special-functions">Constants and special functions<a class="headerlink" href="#constants-and-special-functions" title="Permanent link">&para;</a></h2>
 <p>An overview of the (non-obvious) mathematical notation of special functions
 and constants.</p>
@@ -1956,6 +2189,58 @@ and constants.</p>
         <td><a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.boxcox.html#scipy.special.boxcox"><code>scipy.special.boxcox</code></a></td>
     </tr>
 </table>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:BERN">
+<p><a href="https://www.worldcat.org/oclc/996937">J.V. Uspensky (1937)</a> &ndash;
+Introduction to mathematical probability&#160;<a class="footnote-backref" href="#fnref:BERN" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+<li id="fn:GOMP">
+<p><a href="https://doi.org/10.1098/rstl.1825.0026">B. Gompertz (1825)</a> &ndash; On the
+nature of the function expressive of the law of human mortality, and on a
+new mode of determining the value of life contingencies.&#160;<a class="footnote-backref" href="#fnref:GOMP" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+</li>
+<li id="fn:GEV">
+<p><a href="https://doi.org/10.1002/qj.49708134804">A.F. Jenkinson (1955)</a> &ndash;
+The frequency distribution of the annual maximum (or minimum) values of
+meteorological elements&#160;<a class="footnote-backref" href="#fnref:GEV" title="Jump back to footnote 3 in the text">&#8617;</a></p>
+</li>
+<li id="fn:GLO">
+<p><a href="https://dominoweb.draco.res.ibm.com/reports/RC12210.pdf">J.R.M. Hosking (1986)
+</a> &ndash;
+The theory of probability weighted moments&#160;<a class="footnote-backref" href="#fnref:GLO" title="Jump back to footnote 4 in the text">&#8617;</a></p>
+</li>
+<li id="fn:GPD">
+<p><a href="https://doi.org/10.1080/00401706.1987.10488243">J.R.M. Hosking &amp; J.R. Wallis (1987)
+</a> &ndash; Parameter and
+Quantile Estimation for the Generalized Pareto Distribution&#160;<a class="footnote-backref" href="#fnref:GPD" title="Jump back to footnote 5 in the text">&#8617;</a></p>
+</li>
+<li id="fn:BURR">
+<p><a href="https://doi.org/10.1214%2Faoms%2F1177731607">I.W. Burr (1942)</a> &ndash;
+Cumulative Frequency Functions&#160;<a class="footnote-backref" href="#fnref:BURR" title="Jump back to footnote 6 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:BURR" title="Jump back to footnote 6 in the text">&#8617;</a></p>
+</li>
+<li id="fn:KUM1">
+<p><a href="https://doi.org/10.1016/0022-1694(80)90036-0">P. Kumaraswamy</a> &ndash;
+A generalized probability density function for double-bounded random
+processes&#160;<a class="footnote-backref" href="#fnref:KUM1" title="Jump back to footnote 7 in the text">&#8617;</a></p>
+</li>
+<li id="fn:KUM2">
+<p><a href="https://doi.org/10.1016/j.stamet.2008.04.001">M.C. Jones (2009)</a> &ndash;
+Kumaraswamy’s distribution: A beta-type distribution with some
+tractability advantages&#160;<a class="footnote-backref" href="#fnref:KUM2" title="Jump back to footnote 8 in the text">&#8617;</a></p>
+</li>
+<li id="fn:WAK">
+<p><a href="https://doi.org/10.1029/WR014i006p01105">J.C. Houghton (1978)</a> &ndash; Birth
+of a parent: The Wakeby Distribution for modeling flood flows&#160;<a class="footnote-backref" href="#fnref:WAK" title="Jump back to footnote 9 in the text">&#8617;</a></p>
+</li>
+<li id="fn:GLD">
+<p><a href="https://doi.org/10.1145/360827.360840">J.S. Ramberg &amp; B.W. Schmeiser (1974)
+</a> &ndash; An approximate method for
+generating asymmetric random variables&#160;<a class="footnote-backref" href="#fnref:GLD" title="Jump back to footnote 10 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
 
 
 
@@ -1976,7 +2261,7 @@ and constants.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-12-06</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-12-13</span>
   </span>
 
     
@@ -1994,6 +2279,8 @@ and constants.</p>
             </div>
           
           
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var tab,labels=set.querySelector(".tabbed-labels");for(tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
 <script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
         </div>
         
@@ -2044,7 +2331,7 @@ and constants.</p>
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.path", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.tracking", "toc.follow", "toc.integrate"], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": ["content.tabs.link", "content.tooltips", "navigation.path", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.tracking", "toc.follow", "toc.integrate"], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
       <script src="../assets/javascripts/bundle.d7c377c4.min.js"></script>

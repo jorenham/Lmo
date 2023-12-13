@@ -22,7 +22,7 @@
       
       
       <link rel="icon" href="../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.1">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.2">
     
     
       
@@ -30,7 +30,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.45e1311d.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.50c56a3b.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -657,6 +657,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#lmo.distributions.genlambda" class="md-nav__link">
+    <span class="md-ellipsis">
+      genlambda
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#lmo.distributions.l_rv_nonparametric" class="md-nav__link">
     <span class="md-ellipsis">
       l_rv_nonparametric
@@ -722,6 +731,15 @@
         
       </ul>
     </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.distributions.wakeby_gen" class="md-nav__link">
+    <span class="md-ellipsis">
+      wakeby_gen
+    </span>
+  </a>
   
 </li>
         
@@ -1731,6 +1749,15 @@
   <a href="#lmo.theoretical.l_coratio_from_pdf" class="md-nav__link">
     <span class="md-ellipsis">
       l_coratio_from_pdf()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.theoretical.entropy_from_qdf" class="md-nav__link">
+    <span class="md-ellipsis">
+      entropy_from_qdf()
     </span>
   </a>
   
@@ -3613,7 +3640,37 @@ L-<em>co</em>kurtosis.</p>
       <p>A Wakeby random variable, a generalization of
 <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.genpareto.html#scipy.stats.genpareto"><code>scipy.stats.genpareto</code></a>.</p>
 <p><a class="autorefs autorefs-internal" href="../distributions/#wakeby"><code>wakeby</code></a> takes <span class="arithmatex">\( b \)</span>, <span class="arithmatex">\( d \)</span> and <span class="arithmatex">\( f \)</span> as shape parameters.</p>
-<p>For details, see <a href="../distributions/#wakeby">Theoretical L-moments - Wakeby</a>.</p>
+<p>For a detailed description of the Wakeby distribution, refer to
+<a href="../distributions/#wakeby">Distributions - Wakeby</a>.</p>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+
+<h4 id="lmo.distributions.genlambda" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">genlambda</span><span class="p">:</span> <span class="n">RVContinuous</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">genlambda_gen</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;genlambda&#39;</span><span class="p">)</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+<a href="#lmo.distributions.genlambda" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>A generalized Tukey-Lambda random variable.</p>
+<p><code>genlambda</code> takes <code>b</code>, <code>d</code> and <code>f</code> as shape parameters.
+<code>b</code> and <code>d</code> can be any float, and <code>f</code> requires <code>-1 &lt;= f &lt;= 1</code>.</p>
+<p>If <code>f == 0</code> and <code>b == d</code>, <code>genlambda</code> is equivalent to
+<a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.tukeylambda.html#scipy.stats.tukeylambda"><code>scipy.stats.tukeylambda</code></a>, with <code>b</code> (or <code>d</code>) as
+shape parameter.</p>
+<p>For a detailed description of the GLD, refer to
+<a href="../distributions/#gld">Distributions - GLD</a>.</p>
   </div>
 
 </div>
@@ -4162,6 +4219,44 @@ to the provided <code>l_moments</code>.</p>
   </div>
 
 </div>
+
+
+
+  </div>
+
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+
+<h4 id="lmo.distributions.wakeby_gen" class="doc doc-heading">
+          <code>lmo.distributions.wakeby_gen</code>
+
+
+<a href="#lmo.distributions.wakeby_gen" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+  <div class="doc doc-contents ">
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="scipy.stats.distributions.rv_continuous">_rv_continuous</span></code></p>
+
+
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
 
 
 
@@ -13284,6 +13379,132 @@ probability distribution, using the joint PDF <span class="arithmatex">\(f_{\vec
 </div>
 
 
+<div class="doc doc-object doc-function">
+
+
+
+
+<h4 id="lmo.theoretical.entropy_from_qdf" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">theoretical</span><span class="o">.</span><span class="n">entropy_from_qdf</span><span class="p">(</span><span class="n">qdf</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span></code>
+
+<a href="#lmo.theoretical.entropy_from_qdf" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Evaluate the (differential / continuous) entropy <span class="arithmatex">\( H(X) \)</span> of a
+univariate random variable <span class="arithmatex">\( X \)</span>, from its <em>quantile density
+function</em> (QDF), <span class="arithmatex">\( q(u) = \frac{\mathrm{d} F^{-1}(u)}{\mathrm{d} u} \)</span>,
+with <span class="arithmatex">\( F^{-1} \)</span> the inverse of the CDF, i.e. the PPF / quantile function.</p>
+<p>The derivation follows from the identity <span class="arithmatex">\( f(x) = 1 / q(F(x)) \)</span> of PDF
+<span class="arithmatex">\( f \)</span>, specifically:</p>
+<div class="arithmatex">\[
+    h(X)
+        = \E[-\ln f(X)]
+        = \int_\mathbb{R} \ln \frac{1}{f(x)} \mathrm{d} x
+        = \int_1 \ln q(u) \mathrm{d} u
+\]</div>
+
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>PARAMETER</b></th>
+        <th><b> DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>qdf</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>The quantile distribution function (QDF).</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code> (float, *Ts, **Ts) -&gt; float</code>
+                </span>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td><code>*args</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Optional additional positional arguments to pass to <code>qdf</code>.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code>*Ts</code>
+                </span>
+                <span class="doc-param-default">
+                  <b>DEFAULT:</b> 
+                    <code>()</code>
+                </span>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td><code>**kwds</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Optional keyword arguments to pass to <code>qdf</code>.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code>**Ts</code>
+                </span>
+                <span class="doc-param-default">
+                  <b>DEFAULT:</b> 
+                    <code>{}</code>
+                </span>
+            </p>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>RETURNS</b></th>
+        <th><b>DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+              <span class="doc-returns-annotation">
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>
+              </span>
+          </td>
+          <td class="doc-returns-details">
+            <div class="doc-md-description">
+              <p>The differential entropy <span class="arithmatex">\( h(X) \)</span>.</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <ul>
+<li><a href="https://wikipedia.org/wiki/Differential_entropy">Differential entropy - Wikipedia
+</a></li>
+</ul>
+</details>
+  </div>
+
+</div>
+
+
 
   </div>
 
@@ -13328,6 +13549,8 @@ probability distribution, using the joint PDF <span class="arithmatex">\(f_{\vec
             </div>
           
           
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var tab,labels=set.querySelector(".tabbed-labels");for(tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
 <script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
         </div>
         
@@ -13378,7 +13601,7 @@ probability distribution, using the joint PDF <span class="arithmatex">\(f_{\vec
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.path", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.tracking", "toc.follow", "toc.integrate"], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": ["content.tabs.link", "content.tooltips", "navigation.path", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.tracking", "toc.follow", "toc.integrate"], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
       <script src="../assets/javascripts/bundle.d7c377c4.min.js"></script>
