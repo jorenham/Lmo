@@ -1089,8 +1089,8 @@ general case.
 Without loss of generality, Lmo uses a 3-parameter "standardized"
 paremetrization, with shape parameters \( \beta,\ \delta,\ \phi \).
 
-<img src="../gallery/wakeby.svg" width="100%"
-    style="height: auto; aspect-ratio: 16/9;" alt="Wakeby distribution PDF" />
+See [`lmo.distributions.wakeby`][lmo.distributions.wakeby] for the
+implementation.
 
 Each of the following restrictions apply:
 
@@ -1126,6 +1126,9 @@ x(F) =
     \frac{\phi}{\beta} (1 - (1 - F)^\beta)
     - \frac{1 - \phi}{\delta} (1 - (1 - F)^{-\delta})
 \]
+
+<img src="../gallery/wakeby.svg" width="100%"
+    style="height: auto; aspect-ratio: 16/9;" alt="Wakeby distribution PDF" />
 
 /// note | Alternative parametrization
 This 3-parameter Wakeby distribution is equivalent to the 5-parameter
@@ -1182,9 +1185,6 @@ L-moments can be expressed as
 
 where \( H_n \) is a [harmonic number](#def-harmonic).
 
-See [`lmo.distributions.wakeby`][lmo.distributions.wakeby] for the
-implementation.
-
 /// admonition | Special cases
     type: info
 There are several notable special cases of the Wakeby distribution:
@@ -1217,6 +1217,9 @@ Lmo uses an unconventional "standardized"
 paremetrization, with shape parameters \( \beta,\ \delta,\ \phi \), where
 \( \phi \in [-1, 1] \) replaces the more commonly used shape parameters
 \( \alpha \mapsto 1 + \phi \) and \( \gamma \mapsto 1 - \phi \).
+
+The GLD is implemented as
+[`lmo.distributions.genlamda`][lmo.distributions.genlambda].
 
 As with the Wakeby distribution, the PDF and CDF of the GLD are not
 analytically expressible. Instead, the GLD is defined through its PPF:
@@ -1290,52 +1293,161 @@ where
 \end{cases}
 \]
 
-To illustrate; the first four L-moments of the GLD with
-\( \beta > -1 \) and \( \delta > -1 \), are:
+These equations look scarier that they actually are. To see why, take a look
+at the first 4 L-moment, with 4 styles of trimming:
 
-\[
-\begin{align*}
-    \lmoment{1}
-        &= -(1 + \phi) \frac
-            {1}
-            {1 + \beta}
-        &&+ (1 - \phi) \frac
-            {1}
-            {1 + \delta}
-    \\
-    \lmoment{2}
-        &= \hphantom{-}(1 + \phi) \frac
-            {1}
-            {(1 + \beta)(2 + \beta)}
-        &&+ (1 - \phi) \frac
-            {1}
-            {(1 + \delta)(2 + \delta)}
-    \\
-    \lmoment{3}
-        &= -(1 + \phi) \frac
-            {1 - \beta}
-            {(1 + \beta)(2 + \beta)(3 + \beta)}
-        &&+ (1 - \phi) \frac
-            {(1 - \delta)}
-            {(1 + \delta)(2 + \delta)(3 + \delta)}
-    \\
-    \lmoment{4}
-        &= \hphantom{-}(1 + \phi) \frac
-            {(1 - \beta)(2 - \beta)}
-            {(1 + \beta)(2 + \beta)(3 + \beta)(4 + \beta)}
-        &&+ (1 - \phi) \frac
-            {(1 - \delta)(2 - \delta)}
-            {(1 + \delta)(2 + \delta)(3 + \delta)(4 + \delta)}
-\end{align*}
-\]
+=== "L-moments"
+    If \( \beta > -1 \) and \( \delta > -1 \):
 
-The GLD is implemented as
-[`lmo.distributions.genlamda`][lmo.distributions.genlambda].
+    \[
+    \begin{align*}
+        \lmoment{1}
+            &= -(1 + \phi) \frac
+                {1}
+                {1 + \beta}
+            &&+ (1 - \phi) \frac
+                {1}
+                {1 + \delta}
+        \\
+        \lmoment{2}
+            &= \hphantom{-}(1 + \phi) \frac
+                {1}
+                {(1 + \beta)(2 + \beta)}
+            &&+ (1 - \phi) \frac
+                {1}
+                {(1 + \delta)(2 + \delta)}
+        \\
+        \lmoment{3}
+            &= -(1 + \phi) \frac
+                {1 - \beta}
+                {(1 + \beta)(2 + \beta)(3 + \beta)}
+            &&+ (1 - \phi) \frac
+                {1 - \delta}
+                {(1 + \delta)(2 + \delta)(3 + \delta)}
+        \\
+        \lmoment{4}
+            &= \hphantom{-}(1 + \phi) \frac
+                {(1 - \beta)(2 - \beta)}
+                {(1 + \beta)(2 + \beta)(3 + \beta)(4 + \beta)}
+            &&+ (1 - \phi) \frac
+                {(1 - \delta)(2 - \delta)}
+                {(1 + \delta)(2 + \delta)(3 + \delta)(4 + \delta)}
+    \end{align*}
+    \]
+=== "LL-moments"
+    If \( \beta > -1 \) and \( \delta > -2 \):
 
-When \( \beta = \delta \) and \( \phi = 0 \), GLD is the
-"regular" Tukey-lambda distribution with shape
-\( \lambda \equiv \beta = \delta \), which is implemented as
-[`scipy.stats.tukeylambda`][scipy.stats.tukeylambda].
+    \[
+    \begin{align*}
+        \tlmoment{0, 1}{1}
+            &= -(1 + \phi) \frac
+                {3 + \beta}
+                {(1 + \beta)(2 + \beta)}
+            &&+ (1 - \phi) \frac
+                {1}
+                {2 + \delta}
+        \\
+        \frac{1}{3}\tlmoment{0, 1}{2}
+            &= \hphantom{-} (1 + \phi) \frac
+                {1}
+                {(1 + \beta)(2 + \beta)(3 + \beta)}
+            &&+ \frac{1 - \phi}{2} \frac
+                {1}
+                {(2 + \delta)(3 + \delta)}
+        \\
+         \frac{1}{4} \tlmoment{0, 1}{3}
+            &= -(1 + \phi) \frac
+                {1 - \beta}
+                {(1 + \beta)(2 + \beta)(3 + \beta)(4 + \beta)}
+            &&+ \frac{1 - \phi}{3} \frac
+                {(1 - \delta)}
+                {(2 + \delta)(3 + \delta)(4 + \delta)}
+        \\
+         \frac{1}{5} \tlmoment{0, 1}{4}
+            &= \hphantom{-} (1 + \phi) \frac
+                {(1 - \beta)(2 - \beta)}
+                {(1 + \beta)(2 + \beta)(3 + \beta)(4 + \beta)(5 + \beta)}
+            &&+ \frac{1 - \phi}{4} \frac
+                {(1 - \delta)(2 - \delta)}
+                {(2 + \delta)(3 + \delta)(4 + \delta)(5 + \delta)}
+    \end{align*}
+    \]
+=== "LH-moments"
+    If \( \beta > -2 \) and \( \delta > -1 \):
+
+    \[
+    \begin{align*}
+        \tlmoment{1, 0}{1}
+            &= -(1 + \phi) \frac
+                {1}
+                {(2 + \beta)}
+            &&+ (1 - \phi) \frac
+                {3 + \beta}
+                {(1 + \delta)(2 + \delta)}
+        \\
+        \frac{1}{3}\tlmoment{1, 0}{2}
+            &= \hphantom{-} \frac{1 + \phi}{2} \frac
+                {1}
+                {(2 + \beta)(3 + \beta)}
+            &&+ (1 - \phi) \frac
+                {1}
+                {(1 + \delta)(2 + \delta)(3 + \delta)}
+        \\
+         \frac{1}{4} \tlmoment{1, 0}{3}
+            &= -\frac{1 + \phi}{3} \frac
+                {1 - \beta}
+                {(2 + \beta)(3 + \beta)(4 + \beta)}
+            &&+ (1 - \phi) \frac
+                {(1 - \delta)}
+                {(1 + \delta)(2 + \delta)(3 + \delta)(4 + \delta)}
+        \\
+         \frac{1}{5} \tlmoment{1, 0}{4}
+            &= \hphantom{-} \frac{1 + \phi}{4} \frac
+                {(1 - \beta)(2 - \beta)}
+                {(2 + \beta)(3 + \beta)(4 + \beta)(5 + \beta)}
+            &&+ (1 - \phi) \frac
+                {(1 - \delta)(2 - \delta)}
+                {(1 + \delta)(2 + \delta)(3 + \delta)(4 + \delta)(5 + \delta)}
+    \end{align*}
+    \]
+=== "TL-moments"
+    If \( \beta > -2 \) and \( \delta > -2 \):
+
+    \[
+    \begin{align*}
+        \tlmoment{1}{1}
+            &= -(1 + \phi) \frac
+                {5 + \beta}
+                {(2 + \beta)(3 + \beta)}
+            &&+ (1 - \phi) \frac
+                {5 + \delta}
+                {(2 + \delta)(3 + \delta)}
+        \\
+        \frac{2}{3 \cdot 4} \tlmoment{1}{2}
+            &= \hphantom{-} (1 + \phi) \frac
+                {1}
+                {(2 + \beta)(3 + \beta)(4 + \beta)}
+            &&+ (1 - \phi) \frac
+                {1}
+                {(2 + \delta)(3 + \delta)(4 + \delta)}
+        \\
+        \frac{3}{4 \cdot 5} \tlmoment{1}{3}
+            &= -(1 + \phi) \frac
+                {(1 - \beta)}
+                {(2 + \beta)(3 + \beta)(4 + \beta)(5 + \beta)}
+            &&+ (1 - \phi)  \frac
+                {(1 - \delta)}
+                {(2 + \delta)(3 + \delta)(4 + \delta)(5 + \delta)}
+        \\
+        \frac{4}{5 \cdot 6} \tlmoment{1}{4}
+            &= \hphantom{-} (1 + \phi) \frac
+                {(1 - \beta)(2 - \beta)}
+                {(2 + \beta)(3 + \beta)(4 + \beta)(5 + \beta)(6 + \beta)}
+            &&+ (1 - \phi) \frac
+                {(1 - \delta)(2 - \delta)}
+                {(2 + \delta)(3 + \delta)(4 + \delta)(5 + \delta)(6 + \delta)}
+    \end{align*}
+    \]
 
 /// admonition | Special cases
     type: info

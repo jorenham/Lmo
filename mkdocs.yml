@@ -19,6 +19,7 @@ theme:
   logo: img/logo.png
   favicon: img/favicon.ico
   features:
+    - content.tabs.link
     - content.tooltips
     - navigation.path
     - navigation.tabs
@@ -97,6 +98,12 @@ markdown_extensions:
   - pymdownx.snippets:
   - pymdownx.striphtml
   - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+      combine_header_slug: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
   - pymdownx.tasklist:
       custom_checkbox: true
 
