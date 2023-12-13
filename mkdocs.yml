@@ -78,6 +78,7 @@ markdown_extensions:
   - md_in_html
   - sane_lists
   - smarty
+  - tables
   - toc:
       permalink: true
 
