@@ -1290,6 +1290,45 @@ where
 \end{cases}
 \]
 
+To illustrate; the first four L-moments of the GLD with
+\( \beta > -1 \) and \( \delta > -1 \), are:
+
+\[
+\begin{align*}
+    \lmoment{1}
+        &= -(1 + \phi) \frac
+            {1}
+            {1 + \beta}
+        &&+ (1 - \phi) \frac
+            {1}
+            {1 + \delta}
+    \\
+    \lmoment{2}
+        &= \hphantom{-}(1 + \phi) \frac
+            {1}
+            {(1 + \beta)(2 + \beta)}
+        &&+ (1 - \phi) \frac
+            {1}
+            {(1 + \delta)(2 + \delta)}
+    \\
+    \lmoment{3}
+        &= -(1 + \phi) \frac
+            {1 - \beta}
+            {(1 + \beta)(2 + \beta)(3 + \beta)}
+        &&+ (1 - \phi) \frac
+            {(1 - \delta)}
+            {(1 + \delta)(2 + \delta)(3 + \delta)}
+    \\
+    \lmoment{4}
+        &= \hphantom{-}(1 + \phi) \frac
+            {(1 - \beta)(2 - \beta)}
+            {(1 + \beta)(2 + \beta)(3 + \beta)(4 + \beta)}
+        &&+ (1 - \phi) \frac
+            {(1 - \delta)(2 - \delta)}
+            {(1 + \delta)(2 + \delta)(3 + \delta)(4 + \delta)}
+\end{align*}
+\]
+
 The GLD is implemented as
 [`lmo.distributions.genlamda`][lmo.distributions.genlambda].
 
