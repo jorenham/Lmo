@@ -3700,13 +3700,16 @@ with the (shifted) Jacobi orthogonal polynomials as basis, and the (scaled)
 L-moments as coefficients.</p>
 <p>The <em>corrected</em> version of theorem 3 from Hosking (2007) states that</p>
 <div class="arithmatex">\[
-\hat{Q}(q) = \sum_{r=1}^{R}
-    \frac{(r + 1) (2r + s + t - 1)}{r + s + t + 1}
+\widehat{Q}(u) = \sum_{r=1}^{R}
+    \frac{r}{r + s + t} (2r + s + t - 1)
     \lambda^{(s, t)}_r
-    P^{(t, s)}_{r - 1}(2u - 1) \; ,
+    \shjacobi{r - 1}{t}{s}{2u - 1} \ ,
 \]</div>
-<p>converges almost everywhere as <span class="arithmatex">\(R \rightarrow \infty\)</span>, for any
-sufficiently smooth (quantile) function <span class="arithmatex">\(Q(u)\)</span> with <span class="arithmatex">\(0 &lt; u &lt; 1\)</span>.</p>
+<p>converges almost everywhere as <span class="arithmatex">\( R \rightarrow \infty \)</span>, for any
+sufficiently smooth quantile function (PPF) <span class="arithmatex">\( Q(u) \)</span> on
+<span class="arithmatex">\( u \in (0, 1) \)</span>.
+Here, <span class="arithmatex">\( \shjacobi n \alpha \beta x = \jacobi{n}{\alpha}{\beta}{2x - 1} \)</span>
+is a shifted Jacobi polynomial.</p>
 
 <details class="references" open>
   <summary>References</summary>
@@ -3719,6 +3722,7 @@ sufficiently smooth (quantile) function <span class="arithmatex">\(Q(u)\)</span>
 <details class="see-also" open>
   <summary>See Also</summary>
   <ul>
+<li><a href="https://wikipedia.org/wiki/Jacobi_polynomials">Jacobi Polynomials - Wikipedia</a></li>
 <li><a href="https://wikipedia.org/wiki/Generalized_Fourier_series">Generalized Fourier series - Wikipedia</a></li>
 </ul>
 </details>  
