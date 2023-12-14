@@ -489,13 +489,25 @@ class kumaraswamy_gen(_rv_continuous):  # noqa: N801
     ) -> npt.NDArray[np.float64]:
         return (1 - q**(1 / b))**(1 / a)
 
-    def _ppf(
+    def _qdf(
         self,
-        q: npt.NDArray[np.float64],
+        u: npt.NDArray[np.float64],
         a: float,
         b: float,
     ) -> npt.NDArray[np.float64]:
-        return (1 - (1 - q)**(1 / b))**(1 / a)
+        return (
+            (1 - u)**(1 / (b - 1))
+            * (1 - (1 - u)**(1 / b))**(1 / (a - 1))
+            / (a * b)
+        )
+
+    def _ppf(
+        self,
+        u: npt.NDArray[np.float64],
+        a: float,
+        b: float,
+    ) -> npt.NDArray[np.float64]:
+        return (1 - (1 - u)**(1 / b))**(1 / a)
 
     def _entropy(self, a: float, b: float) -> float:
         # https://en.wikipedia.org/wiki/Kumaraswamy_distribution
@@ -787,7 +799,7 @@ class wakeby_gen(_rv_continuous):  # noqa: N801
         f: float,
     ) -> npt.NDArray[np.float64]:
         # application of the inverse function theorem
-        return 1 / _wakeby_qdf(self._cdf(x, b, d, f), b, d, f)
+        return 1 / self._qdf(self._cdf(x, b, d, f), b, d, f)
 
     def _cdf(
         self,
@@ -797,6 +809,15 @@ class wakeby_gen(_rv_continuous):  # noqa: N801
         f: float,
     ) -> npt.NDArray[np.float64]:
         return 1 - _wakeby_sf(x, b, d, f)
+
+    def _qdf(
+        self,
+        u: npt.NDArray[np.float64],
+        b: float,
+        d: float,
+        f: float,
+    ) -> npt.NDArray[np.float64]:
+        return _wakeby_qdf(u, b, d, f)
 
     def _ppf(
         self,
@@ -1070,7 +1091,7 @@ class genlambda_gen(_rv_continuous):  # noqa: N801
         d: float,
         f: float,
     ) -> npt.NDArray[np.float64]:
-        return 1 / _genlambda_qdf(self._cdf(x, b, d, f), b, d, f)
+        return 1 / self._qdf(self._cdf(x, b, d, f), b, d, f)
 
     def _cdf(
         self,
@@ -1081,14 +1102,23 @@ class genlambda_gen(_rv_continuous):  # noqa: N801
     ) -> npt.NDArray[np.float64]:
         return _genlambda_cdf(x, b, d, f)
 
-    def _ppf(
+    def _qdf(
         self,
-        x: npt.NDArray[np.float64],
+        u: npt.NDArray[np.float64],
         b: float,
         d: float,
         f: float,
     ) -> npt.NDArray[np.float64]:
-        return _genlambda_ppf(x, b, d, f)
+        return _genlambda_qdf(u, b, d, f)
+
+    def _ppf(
+        self,
+        u: npt.NDArray[np.float64],
+        b: float,
+        d: float,
+        f: float,
+    ) -> npt.NDArray[np.float64]:
+        return _genlambda_ppf(u, b, d, f)
 
     def _stats(self, b: float, d: float, f: float) -> tuple[
         float,
