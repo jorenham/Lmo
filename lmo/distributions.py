@@ -112,14 +112,17 @@ class l_rv_nonparametric(_rv_continuous):  # noqa: N801
     The *corrected* version of theorem 3 from Hosking (2007) states that
 
     $$
-    \hat{Q}(q) = \sum_{r=1}^{R}
-        \frac{(r + 1) (2r + s + t - 1)}{r + s + t + 1}
+    \widehat{Q}(u) = \sum_{r=1}^{R}
+        \frac{r}{r + s + t} (2r + s + t - 1)
         \lambda^{(s, t)}_r
-        P^{(t, s)}_{r - 1}(2u - 1) \; ,
+        \shjacobi{r - 1}{t}{s}{2u - 1} \ ,
     $$
 
-    converges almost everywhere as $R \rightarrow \infty$, for any
-    sufficiently smooth (quantile) function $Q(u)$ with $0 < u < 1$.
+    converges almost everywhere as \( R \rightarrow \infty \), for any
+    sufficiently smooth quantile function (PPF) \( Q(u) \) on
+    \( u \in (0, 1) \).
+    Here, \( \shjacobi n \alpha \beta x = \jacobi{n}{\alpha}{\beta}{2x - 1} \)
+    is a shifted Jacobi polynomial.
 
     References:
         - [J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
@@ -128,6 +131,8 @@ class l_rv_nonparametric(_rv_continuous):  # noqa: N801
             http://functions.wolfram.com/05.06.25.0007.01)
 
     See Also:
+        - [Jacobi Polynomials - Wikipedia](
+            https://wikipedia.org/wiki/Jacobi_polynomials)
         - [Generalized Fourier series - Wikipedia](
             https://wikipedia.org/wiki/Generalized_Fourier_series)
     """
