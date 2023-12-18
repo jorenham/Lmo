@@ -26,7 +26,7 @@ C_EXAMPLES = [
 ]
 
 @pytest.mark.parametrize('c', C_EXAMPLES)
-def test_fourier_legendre(c: float | list[float]):
+def test_fourier_legendre(c: list[float]):
     y_expect = legval(X, c)
     y_true = fourier_jacobi(X, c, 0, 0)
 
@@ -36,7 +36,7 @@ def test_fourier_legendre(c: float | list[float]):
 @pytest.mark.parametrize('a', [0, 1, 1/2, -1/2, 42])
 @pytest.mark.parametrize('b', [0, 1, 1/2, -1/2, 42])
 @pytest.mark.parametrize('c', C_EXAMPLES)
-def test_fourier_jacobi(a: float, b: float, c: float | list[float]):
+def test_fourier_jacobi(a: float, b: float, c: list[float]):
     y_expect = np.sum([
         cn * eval_jacobi(n, a, b, X)
         for n, cn in enumerate(c)
