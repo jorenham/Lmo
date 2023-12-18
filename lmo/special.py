@@ -2,7 +2,7 @@
 
 __all__ = ('fpow', 'gamma2', 'harmonic', 'eval_sh_jacobi', 'fourier_jacobi')
 
-from typing import cast, overload
+from typing import Any, cast, overload
 
 import numpy as np
 import numpy.typing as npt
@@ -277,9 +277,40 @@ def fourier_jacobi(
     a: float,
     b: float,
 ) -> float | npt.NDArray[np.float64]:
-    """
+    r"""
     Evaluate the Fourier-Jacobi series, using the Clenshaw summation
     algorithm.
+
+    If \( c \) is of length \( n + 1 \), this function returns the value:
+
+    \[
+        c_0 \cdot \jacobi{0}{a}{b}{x} +
+        c_1 \cdot \jacobi{1}{a}{b}{x} +
+        \ldots +
+        c_n \cdot \jacobi{n}{a}{b}{x}
+    \]
+
+    Here, \( \jacobi{n}{a}{b}{x} \) is a Jacobi polynomial of degree
+    \( n = |\vec{c}| \), which is orthogonal iff
+    \( (a, b) \in (-1,\ \infty)^2 \) and \( x \in [0,\ 1] \).
+
+    Tip:
+        Trailing zeros in the coefficients will be used in the evaluation,
+        so they should be avoided if efficiency is a concern.
+
+    Args:
+        x: Scalar or array-like with input data.
+        c:
+            Array-like of coefficients, ordered from low to high. All
+            coefficients to the right are considered zero.
+
+            For instance, `[4, 3, 2]` gives \( 4 \jacobi{0}{a}{b}{x} +
+            3 \jacobi{1}{a}{b}{x} + 2 \jacobi{2}{a}{b}{x} \).
+        a: Jacobi parameter \( a > -1 \).
+        b: Jacobi parameter \( a > -1 \).
+
+    Returns:
+        out: Scalar or array of same shape as `x`.
 
     See Also:
         - [Generalized Fourier series - Wikipedia](
@@ -289,6 +320,7 @@ def fourier_jacobi(
         - [Jacobi Polynomial - Worlfram Mathworld](
         https://mathworld.wolfram.com/JacobiPolynomial.html)
     """
+    _c: npt.NDArray[np.integer[Any] | np.floating[Any]]
     _c = np.array(c, ndmin=1, copy=False)
     if _c.dtype.char in '?bBhHiIlLqQpP':
         _c = _c.astype(np.float64)
@@ -298,10 +330,13 @@ def fourier_jacobi(
     if len(_c) == 0:
         return 0. * _x
 
+    # temporarily replace inf's with abs(_) > 1, and track the sign
+    if hasinfs := np.any(infs := np.isinf(_x)):
+        _x = np.where(infs,  10 * np.sign(_x), _x)
 
     # "backwards" recursion (left-reduction)
     # y[k+2] and y[k+1]
-    y2, y1 = 0, 0
+    y2, y1 = 0., 0.
     # continue until y[0]
     for k in range(len(_c) - 1, 0, -1):
         # Jacobi recurrence terms
@@ -335,4 +370,11 @@ def fourier_jacobi(
     )
 
     # Behold! The magic of Clenshaw's algorithm:
-    return _c[0] * f0 + y1 * f1 + y2 * q1 * f0
+    out: npt.NDArray[np.float64] = _c[0] * f0 + y1 * f1 + y2 * q1 * f0
+
+    # propagation of 'inf' values, ensuring correct sign
+    if hasinfs:
+        out[infs] = np.inf * np.sign(out[infs] - _c[0] * f0)
+
+    # unpack array iff `x` is scalar; 0-d arrays will pass through
+    return out[()] if np.isscalar(x) else out
