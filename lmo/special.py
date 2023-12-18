@@ -1,6 +1,6 @@
 """Mathematical "special" functions, extending `scipy.special`."""
 
-__all__ = ('fpow', 'gamma2', 'harmonic', 'eval_sh_jacobi')
+__all__ = ('fpow', 'gamma2', 'harmonic', 'eval_sh_jacobi', 'fourier_jacobi')
 
 from typing import cast, overload
 
@@ -269,3 +269,70 @@ def eval_sh_jacobi(
 
     y = 2 * np.asanyarray(x) - 1
     return _special.eval_jacobi(n, alpha, beta, y, out)  # type: ignore
+
+
+def fourier_jacobi(
+    x: npt.ArrayLike,
+    c: npt.ArrayLike,
+    a: float,
+    b: float,
+) -> float | npt.NDArray[np.float64]:
+    """
+    Evaluate the Fourier-Jacobi series, using the Clenshaw summation
+    algorithm.
+
+    See Also:
+        - [Generalized Fourier series - Wikipedia](
+        https://wikipedia.org/wiki/Generalized_Fourier_series)
+        - [Clenshaw Recurrence Formula - Wolfram MathWorld](
+        https://mathworld.wolfram.com/ClenshawRecurrenceFormula.html)
+        - [Jacobi Polynomial - Worlfram Mathworld](
+        https://mathworld.wolfram.com/JacobiPolynomial.html)
+    """
+    _c = np.array(c, ndmin=1, copy=False)
+    if _c.dtype.char in '?bBhHiIlLqQpP':
+        _c = _c.astype(np.float64)
+
+    _x = np.asanyarray(x)
+
+    if len(_c) == 0:
+        return 0. * _x
+
+
+    # "backwards" recursion (left-reduction)
+    # y[k+2] and y[k+1]
+    y2, y1 = 0, 0
+    # continue until y[0]
+    for k in range(len(_c) - 1, 0, -1):
+        # Jacobi recurrence terms
+        u, v = a + k, b + k
+        w = u + v  # = a + b + 2*k
+        # alpha[k]
+        p1 = (
+            (w + 1) * (
+                2 * k * (v - u)
+                - w * (v - u + (w + 2) * _x)
+            )
+            / (2 * w * (k + 1) * (w - k + 1))
+        )
+        # beta[k+1]
+        q2 = -(
+            (u + 1) * (v + 1) * (w + 4)
+            / ((w + 2) * (k + 2) * (w - k + 2))
+        )
+
+        # update the state; "forget" y[k+2]
+        y1, y2 = _c[k] + p1 * y1 + q2 * y2, y1
+
+    # results of jacobi polynomial for n=0 and n=1
+    f0 = 1
+    f1 = a + 1 + (a + b + 2) * (_x - 1) / 2
+
+    # beta[1]
+    q1 = -(
+        (a + 1) * (b + 1) * (a + b + 4)
+        / (2 * (a + b + 2)**2)
+    )
+
+    # Behold! The magic of Clenshaw's algorithm:
+    return _c[0] * f0 + y1 * f1 + y2 * q1 * f0
