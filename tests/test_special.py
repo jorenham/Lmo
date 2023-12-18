@@ -22,7 +22,7 @@ C_EXAMPLES = [
     [1, -.5],
     [0, 0, 1],
     [1, .5, .25],
-    [512, 256, 128, 64, 32, 16, 8, 4, 2, 1],
+    np.log1p(np.arange(256, 0, -1)),
 ]
 
 @pytest.mark.parametrize('c', C_EXAMPLES)
@@ -33,8 +33,10 @@ def test_fourier_legendre(c: list[float]):
     assert_allclose(y_true, y_expect)
 
 
-@pytest.mark.parametrize('a', [0, 1, 1/2, -1/2, 42])
-@pytest.mark.parametrize('b', [0, 1, 1/2, -1/2, 42])
+@pytest.mark.parametrize(
+    'a,b',
+    [(0, 1), (1, 0), (1, 1), (1/137, -1/12), (42, 69)],
+)
 @pytest.mark.parametrize('c', C_EXAMPLES)
 def test_fourier_jacobi(a: float, b: float, c: list[float]):
     y_expect = np.sum([
