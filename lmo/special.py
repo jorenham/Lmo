@@ -311,7 +311,7 @@ def fourier_jacobi(
         p1 = (
             (w + 1) * (
                 2 * k * (v - u)
-                - w * (v - u + (w + 2) * _x)
+                + w * (u - v + (w + 2) * _x)
             )
             / (2 * w * (k + 1) * (w - k + 1))
         )
@@ -326,7 +326,7 @@ def fourier_jacobi(
 
     # results of jacobi polynomial for n=0 and n=1
     f0 = 1
-    f1 = a + 1 + (a + b + 2) * (_x - 1) / 2
+    f1 = (a - b + (a + b + 2) * _x) / 2
 
     # beta[1]
     q1 = -(
