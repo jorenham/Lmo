@@ -1,14 +1,22 @@
 """Mathematical "special" functions, extending `scipy.special`."""
 
-__all__ = ('fpow', 'gamma2', 'harmonic', 'eval_sh_jacobi', 'fourier_jacobi')
+__all__ = (
+    'fpow',
+    'gamma2',
+    'harmonic',
+    'eval_sh_jacobi',
+    'norm_sh_jacobi',
+    'fourier_jacobi',
+)
 
 from typing import Any, cast, overload
 
 import numpy as np
 import numpy.typing as npt
-import scipy.special as _special  # type: ignore
+import scipy.special as sc  # type: ignore
 
-from .typing import AnyNDArray, AnyScalar
+from ._utils import clean_orders
+from .typing import AnyNDArray, AnyScalar, IntVector
 
 
 @overload
@@ -74,7 +82,7 @@ def fpow(
     _x, _n = np.asanyarray(x), np.asanyarray(n)
     res = cast(
         npt.NDArray[np.float64],
-        _special.poch(_x - _n + 1, _n, out=out),  # type: ignore
+        sc.poch(_x - _n + 1, _n, out=out),  # type: ignore
     )
     if res.ndim == 0 and np.isscalar(x) and np.isscalar(n):
         return res[()]
@@ -139,14 +147,14 @@ def gamma2(
     if a == 0:
         return cast(
             float | npt.NDArray[np.float64],
-            _special.exp1(x, out=out),  # type: ignore
+            sc.exp1(x, out=out),  # type: ignore
         )
 
     res = cast(
         float | npt.NDArray[np.float64],
-        _special.gammaincc(a, x, out=out),  # type: ignore
+        sc.gammaincc(a, x, out=out),  # type: ignore
     )
-    res *= cast(float, _special.gamma(a))  # type: ignore
+    res *= cast(float, sc.gamma(a))  # type: ignore
     return res
 
 
@@ -190,7 +198,7 @@ def harmonic(
 
     _out = cast(
         npt.NDArray[np.float64] | npt.NDArray[np.complex128],
-        _special.digamma(_n + 1, out),  # type: ignore
+        sc.digamma(_n + 1, out),  # type: ignore
     )
     _out += np.euler_gamma
 
@@ -265,10 +273,82 @@ def eval_sh_jacobi(
     the relevant issue.
     """
     if alpha == beta == 0:
-        return _special.eval_sh_legendre(n, x, out)  # type: ignore
+        return sc.eval_sh_legendre(n, x, out)  # type: ignore
 
     y = 2 * np.asanyarray(x) - 1
-    return _special.eval_jacobi(n, alpha, beta, y, out)  # type: ignore
+    return sc.eval_jacobi(n, alpha, beta, y, out)  # type: ignore
+
+
+@overload
+def norm_sh_jacobi(n: int, alpha: float, beta: float) -> float: ...
+
+@overload
+def norm_sh_jacobi(
+    n: IntVector,
+    alpha: float,
+    beta: float,
+) -> npt.NDArray[np.float64]: ...
+
+def norm_sh_jacobi(
+    n: int | IntVector,
+    alpha: float,
+    beta: float,
+) -> float | npt.NDArray[np.float64]:
+    r"""
+    Evaluate the (weighted) \( L^2 \)-norm of a shifted Jacobi polynomial.
+
+    Specifically,
+
+    \[
+        \| p_n \|^2
+        = \braket{p_n | p_n}
+        = \int_0^1 |p_n|^2 \mathrm{d}x
+        = \frac{1}{2 n + \alpha + \beta + 1} \frac
+            {\Gamma(n + \alpha + 1) \Gamma(n + \beta + 1)}
+            {n! \ \Gamma(n + \alpha + \beta + 1)}
+    \]
+
+    with
+
+    \[
+        p_n(x) \equiv
+            \sqrt{(1 - x)^\alpha x^\beta}
+            \shjacobi{n}{\alpha}{\beta}{x}
+    \]
+
+    the weighed shifted Jacobi polynomial.
+
+
+    """
+    if alpha <= -1:
+        msg = f'alpha must be > -1, got {alpha}'
+        raise ValueError(msg)
+    if beta <= -1:
+        msg = f'beta must be > -1, got {beta}'
+        raise ValueError(msg)
+
+    r = clean_orders(n, 'n') + 1
+
+    if alpha == beta == 0:
+        # shifted Legendre
+        c = np.ones(r.shape)
+    elif alpha == beta == -1 / 2:
+        # shifted Chebychev of the first kind
+        c = np.exp(2 * (
+            sc.gammaln(r - 1 / 2) - sc.gammaln(r)  # type: ignore
+        )) / 2
+    elif alpha == beta == 1 / 2:
+        # shifted Chebychev of the second kind
+        c = np.exp(2 * (
+            sc.gammaln(r + 1 / 2) - sc.gammaln(r + 1)  # type: ignore
+        )) / 2
+    else:
+        p, q = r + alpha, r + beta
+        c = np.exp(
+            sc.betaln(p, q) - sc.betaln(r, p + beta),  # type: ignore
+        ) / (p + q - 1)
+
+    return c[()] if np.isscalar(n) else c
 
 
 def fourier_jacobi(
