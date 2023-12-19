@@ -349,6 +349,21 @@ def norm_sh_jacobi(
 
     return c[()] if np.isscalar(n) else c
 
+@overload
+def fourier_jacobi(
+    x: AnyScalar,
+    c: npt.ArrayLike,
+    a: float,
+    b: float,
+) -> float: ...
+
+@overload
+def fourier_jacobi(
+    x: AnyNDArray[np.generic],
+    c: npt.ArrayLike,
+    a: float,
+    b: float,
+) -> npt.NDArray[np.float64]: ...
 
 def fourier_jacobi(
     x: npt.ArrayLike,
