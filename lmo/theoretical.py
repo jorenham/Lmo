@@ -31,6 +31,7 @@ from typing import (
     Concatenate,
     Final,
     ParamSpec,
+    Protocol,
     TypeAlias,
     TypeVar,
     cast,
@@ -58,7 +59,16 @@ from ._utils import (
     moments_to_stats_cov,
     round0,
 )
-from .typing import AnyFloat, AnyInt, AnyTrim, IntVector, QuadOptions
+from .special import fourier_jacobi
+from .typing import (
+    AnyFloat,
+    AnyInt,
+    AnyNDArray,
+    AnyScalar,
+    AnyTrim,
+    IntVector,
+    QuadOptions,
+)
 
 T = TypeVar('T')
 V = TypeVar('V', bound=float | npt.NDArray[np.float64])
@@ -1574,3 +1584,87 @@ def entropy_from_qdf(
         return np.log(qdf(p, *args, **kwds))
 
     return cast(float, sci.quad(ic, 0, 1, limit=QUAD_LIMIT)[0])
+
+
+class _VectorizedPPF(Protocol):
+    @overload
+    def __call__(self, __u: AnyScalar) -> float: ...
+    @overload
+    def __call__(self, __u: AnyNDArray[Any]) -> npt.NDArray[np.float64]: ...
+
+    def __call__(self, __u: npt.ArrayLike) -> float | npt.NDArray[np.float64]:
+        ...
+
+
+def ppf_from_l_moments(
+    lmbda: npt.ArrayLike,
+    /,
+    trim: AnyTrim = (0, 0),
+    x_min: float = -np.inf,
+    x_max: float = np.inf,
+) -> _VectorizedPPF:
+    r"""
+    Return a PPF (quantile function, or inverse CDF), with the specified.
+    L-moments \( \tlmoment{s, t}{1}, \tlmoment{s, t}{2}, \ldots,
+    \tlmoment{s, t}{R} \). Other L-moments are considered zero.
+
+    For \( R \) L-moments, this function returns
+
+    \[
+        \hat{Q}_R(u) = \sum_{r=1}^{R}
+            r \frac{2r + s + t - 1}{r + s + t}
+            \tlmoment{s, t}{r}
+            \shjacobi{r - 1}{t}{s}{u},
+    \]
+
+    where \( \shjacobi{n}{a}{b}{x} \) is an \( n \)-th degree shifted Jacobi
+    polynomial, which is orthogonal for \( (a, b) \in (-1, \infty)^2 \) on
+    \( u \in [0, 1] \).
+
+    This *nonparametric* quantile function estimation method was first
+    described by
+    [J.R.M. Hosking in 2007](https://doi.org/10.1016/j.jspi.2006.12.002).
+    However, his derivation contains a small, but obvious error, resulting
+    in zero-division for \( r = 1 \).
+    So Lmo derived this correct version  himself, by using the fact that
+    L-moments are the disguised coefficients of the PPF's generalized
+    Fourier-Jacobi series expansion.
+
+    With Parseval's theorem it can be shown that, if the probability-weighted
+    moment \( M_{2,s,t} \) (which is the variance if \( s = t = 0 \)) is
+    finite, then \( \hat{Q}_R(u) = Q(u) \) as \( R \to \infty \).
+
+    Todo:
+        - if `validate=True` (default):
+            - raise if L-ratio's above Hosking's bounds
+            - check if QDF > 0 for 0 < u < 1
+                - otherwise: warn if L-ratio's violate Cauchy-Schwartz
+
+    """
+    l_r = np.asarray(lmbda)
+    if (rmax := len(l_r)) < 2:
+        msg = f'at least 2 L-moments required, got len(lmbda) = {rmax}'
+        raise ValueError(msg)
+
+    if (l2 := l_r[1]) <= 0:
+        msg = f'L-scale must be >0, got lmda[1] = {l2}'
+        raise ValueError(msg)
+
+    s, t = clean_trim(trim)
+
+    r = np.arange(1, rmax + 1)
+    _rst = r + s + t
+    c = (r + _rst - 1) * (r / _rst) * l_r
+
+    @overload
+    def ppf(u: AnyScalar) -> float: ...
+    @overload
+    def ppf(u: AnyNDArray[Any]) -> npt.NDArray[np.float64]: ...
+
+    def ppf(u: npt.ArrayLike) -> float | npt.NDArray[np.float64]:
+        y = np.asarray(u)
+        y = np.where((y < 0) | (y > 1), np.nan, 2 * y - 1)
+
+        return np.clip(fourier_jacobi(y, c, t, s), x_min, x_max)[()]
+
+    return ppf
