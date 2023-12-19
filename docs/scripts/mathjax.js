@@ -1,10 +1,16 @@
 window.MathJax = {
+    loader: {
+        load: ["[tex]/braket"]
+    },
     tex: {
         inlineMath: [["\\(", "\\)"]],
         displayMath: [["\\[", "\\]"], ["$$", "$$"]],
         processEscapes: true,
         processEnvironments: true,
         tags: "ams",
+        packages: {
+            "[+]": ["braket"]
+        },
         macros: {
             // Expectation operator
             E: "\\mathop{\\mathbb{E}}",
