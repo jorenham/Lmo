@@ -312,13 +312,12 @@ def norm_sh_jacobi(
 
     \[
         p_n(x) \equiv
-            \sqrt{(1 - x)^\alpha x^\beta}
+            x^{\beta / 2} \
+            (1 - x)^{\alpha / 2} \
             \shjacobi{n}{\alpha}{\beta}{x}
     \]
 
-    the weighed shifted Jacobi polynomial.
-
-
+    the normalized Jacobi polynomial on \( [0, 1] \).
     """
     if alpha <= -1:
         msg = f'alpha must be > -1, got {alpha}'
