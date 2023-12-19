@@ -1600,8 +1600,8 @@ def ppf_from_l_moments(
     lmbda: npt.ArrayLike,
     /,
     trim: AnyTrim = (0, 0),
-    x_min: float = -np.inf,
-    x_max: float = np.inf,
+    *,
+    support: Pair[float] = (-np.inf, np.inf),
 ) -> _VectorizedPPF:
     r"""
     Return a PPF (quantile function, or inverse CDF), with the specified.
@@ -1652,6 +1652,11 @@ def ppf_from_l_moments(
 
     s, t = clean_trim(trim)
 
+    a, b = support
+    if a >= b:
+        msg = f'invalid support; expected a < b, got a, b = {a}, {b}'
+        raise ValueError(msg)
+
     r = np.arange(1, rmax + 1)
     _rst = r + s + t
     c = (r + _rst - 1) * (r / _rst) * l_r
@@ -1665,6 +1670,6 @@ def ppf_from_l_moments(
         y = np.asarray(u)
         y = np.where((y < 0) | (y > 1), np.nan, 2 * y - 1)
 
-        return np.clip(fourier_jacobi(y, c, t, s), x_min, x_max)[()]
+        return np.clip(fourier_jacobi(y, c, t, s), *support)[()]
 
     return ppf
