@@ -41,7 +41,6 @@ from typing import (
 import numpy as np
 import numpy.typing as npt
 import scipy.integrate as sci  # type: ignore
-import scipy.special as scs  # type: ignore
 from scipy.stats.distributions import (  # type: ignore
     rv_continuous,
     rv_discrete,
@@ -59,7 +58,7 @@ from ._utils import (
     moments_to_stats_cov,
     round0,
 )
-from .special import fourier_jacobi
+from .special import fourier_jacobi, fpow
 from .typing import (
     AnyFloat,
     AnyInt,
@@ -298,11 +297,13 @@ def l_moment_from_cdf(
     rs = clean_orders(np.asanyarray(r))
     s, t = clean_trim(trim)
 
+    from scipy.special import betainc  # type: ignore
+
     def integrand(x: float, _r: int) -> float:
         p = cdf(x)
         if _r == 1:
             if s or t:  # noqa: SIM108
-                v = cast(float, scs.betainc(s + 1, t + 1, p))  # type: ignore
+                v = cast(float, betainc(s + 1, t + 1, p))  # type: ignore
             else:
                 v = p
             return np.heaviside(x, .5) - v
@@ -1541,51 +1542,6 @@ def l_coratio_from_pdf(
 
     return ll_r / np.expand_dims(ll_r0.diagonal(), -1)
 
-
-def entropy_from_qdf(
-    qdf: Callable[Concatenate[float, Theta], float],
-    /,
-    *args: Theta.args,
-    **kwds: Theta.kwargs,
-) -> float:
-    r"""
-    Evaluate the (differential / continuous) entropy \( H(X) \) of a
-    univariate random variable \( X \), from its *quantile density
-    function* (QDF), \( q(u) = \frac{\mathrm{d} F^{-1}(u)}{\mathrm{d} u} \),
-    with \( F^{-1} \) the inverse of the CDF, i.e. the PPF / quantile function.
-
-    The derivation follows from the identity \( f(x) = 1 / q(F(x)) \) of PDF
-    \( f \), specifically:
-
-    \[
-        h(X)
-            = \E[-\ln f(X)]
-            = \int_\mathbb{R} \ln \frac{1}{f(x)} \mathrm{d} x
-            = \int_1 \ln q(u) \mathrm{d} u
-    \]
-
-    Args:
-        qdf ( (float, *Ts, **Ts) -> float):
-            The quantile distribution function (QDF).
-        *args (*Ts):
-            Optional additional positional arguments to pass to `qdf`.
-        **kwds (**Ts):
-            Optional keyword arguments to pass to `qdf`.
-
-    Returns:
-        The differential entropy \( h(X) \).
-
-    See Also:
-        - [Differential entropy - Wikipedia
-        ](https://wikipedia.org/wiki/Differential_entropy)
-
-    """
-    def ic(p: float) -> float:
-        return np.log(qdf(p, *args, **kwds))
-
-    return cast(float, sci.quad(ic, 0, 1, limit=QUAD_LIMIT)[0])
-
-
 class _VectorizedPPF(Protocol):
     @overload
     def __call__(self, __u: AnyScalar) -> float: ...
@@ -1595,13 +1551,13 @@ class _VectorizedPPF(Protocol):
     def __call__(self, __u: npt.ArrayLike) -> float | npt.NDArray[np.float64]:
         ...
 
-
 def ppf_from_l_moments(
     lmbda: npt.ArrayLike,
     /,
     trim: AnyTrim = (0, 0),
     *,
     support: Pair[float] = (-np.inf, np.inf),
+    validate: bool = True,
 ) -> _VectorizedPPF:
     r"""
     Return a PPF (quantile function, or inverse CDF), with the specified.
@@ -1645,19 +1601,38 @@ def ppf_from_l_moments(
     if (rmax := len(l_r)) < 2:
         msg = f'at least 2 L-moments required, got len(lmbda) = {rmax}'
         raise ValueError(msg)
-
     if (l2 := l_r[1]) <= 0:
         msg = f'L-scale must be >0, got lmda[1] = {l2}'
         raise ValueError(msg)
 
     s, t = clean_trim(trim)
 
+    r = np.arange(1, rmax + 1)
+
+    if validate and rmax > 2:
+        # enforce the (non-strict) L-ratio bounds, from Hosking (2007) eq. 14,
+        # but rewritten using falling factorials, to avoid potential overflows
+        tau = l_r[2:] / l2
+
+        _r = r[2:]
+        m = max(s, t) + 1
+        tau_absmax = 2 * fpow(_r + s + t, m) / (_r * fpow(2 + s + t, m))
+
+        if np.any(invalid := abs(tau) > tau_absmax):
+            r_invalid = list(np.argwhere(invalid) + 3)
+            if len(r_invalid) == 1:
+                r_invalid = r_invalid[0]
+            msg = (
+                f'L-moment(s) with r = {r_invalid}) are not within the valid'
+                f'range'
+            )
+            raise ValueError(msg)
+
     a, b = support
     if a >= b:
         msg = f'invalid support; expected a < b, got a, b = {a}, {b}'
         raise ValueError(msg)
 
-    r = np.arange(1, rmax + 1)
     _rst = r + s + t
     c = (r + _rst - 1) * (r / _rst) * l_r
 
@@ -1673,3 +1648,46 @@ def ppf_from_l_moments(
         return np.clip(fourier_jacobi(y, c, t, s), *support)[()]
 
     return ppf
+
+def entropy_from_qdf(
+    qdf: Callable[Concatenate[float, Theta], float],
+    /,
+    *args: Theta.args,
+    **kwds: Theta.kwargs,
+) -> float:
+    r"""
+    Evaluate the (differential / continuous) entropy \( H(X) \) of a
+    univariate random variable \( X \), from its *quantile density
+    function* (QDF), \( q(u) = \frac{\mathrm{d} F^{-1}(u)}{\mathrm{d} u} \),
+    with \( F^{-1} \) the inverse of the CDF, i.e. the PPF / quantile function.
+
+    The derivation follows from the identity \( f(x) = 1 / q(F(x)) \) of PDF
+    \( f \), specifically:
+
+    \[
+        h(X)
+            = \E[-\ln f(X)]
+            = \int_\mathbb{R} \ln \frac{1}{f(x)} \mathrm{d} x
+            = \int_1 \ln q(u) \mathrm{d} u
+    \]
+
+    Args:
+        qdf ( (float, *Ts, **Ts) -> float):
+            The quantile distribution function (QDF).
+        *args (*Ts):
+            Optional additional positional arguments to pass to `qdf`.
+        **kwds (**Ts):
+            Optional keyword arguments to pass to `qdf`.
+
+    Returns:
+        The differential entropy \( h(X) \).
+
+    See Also:
+        - [Differential entropy - Wikipedia
+        ](https://wikipedia.org/wiki/Differential_entropy)
+
+    """
+    def ic(p: float) -> float:
+        return np.log(qdf(p, *args, **kwds))
+
+    return cast(float, sci.quad(ic, 0, 1, limit=QUAD_LIMIT)[0])
