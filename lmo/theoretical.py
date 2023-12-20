@@ -1551,6 +1551,57 @@ class _VectorizedPPF(Protocol):
     def __call__(self, __u: npt.ArrayLike) -> float | npt.NDArray[np.float64]:
         ...
 
+def _validate_l_bounds(
+    l_r: npt.NDArray[np.float64],
+    s: float,
+    t: float,
+) -> None:
+    if (l2 := l_r[1]) <= 0:
+        msg = f'L-scale must be >0, got lmda[1] = {l2}'
+        raise ValueError(msg)
+
+    if len(l_r) <= 2:
+        return
+
+    # enforce the (non-strict) L-ratio bounds, from Hosking (2007) eq. 14,
+    # but rewritten using falling factorials, to avoid potential overflows
+    tau = l_r[2:] / l2
+
+    _r = np.arange(3, len(l_r) - 2)
+    m = max(s, t) + 1
+    tau_absmax = 2 * fpow(_r + s + t, m) / (_r * fpow(2 + s + t, m))
+
+    if np.any(invalid := abs(tau) > tau_absmax):
+        r_invalid = list(np.argwhere(invalid) + 3)
+        if len(r_invalid) == 1:
+            r_invalid = r_invalid[0]
+        msg = (
+            f'L-moment(s) with r = {r_invalid}) are not within the valid'
+            f'range'
+        )
+        raise ValueError(msg)
+
+    # validate an l-skewness / l-kurtosis relative inequality that is
+    # a pre-condition for the PPF to be strictly monotonically increasing
+    t3 = tau[0]
+    t4 = tau[1] if len(tau) > 1 else 0
+
+    m = 2 + (s if t3 > 0 else t)
+    u = 3 + s + t
+    t3_max = 2 * (u / m + (m + 1) * (u + 4) * t4) / (3 * (u + 2))
+
+    if abs(t3) >= t3_max:
+        if t3 < 0:
+            msg_t3_size, msg_t3_trim = 'small', 's'
+        else:
+            msg_t3_size, msg_t3_trim = 'large', 't'
+
+        msg = (
+            f'L-skewness is too {msg_t3_size} ({t3:.4f}); consider '
+            f'increasing {msg_t3_trim}'
+        )
+        raise ValueError(msg)
+
 def ppf_from_l_moments(
     lmbda: npt.ArrayLike,
     /,
@@ -1592,49 +1643,27 @@ def ppf_from_l_moments(
 
     Todo:
         - if `validate=True` (default):
-            - raise if L-ratio's above Hosking's bounds
             - check if QDF > 0 for 0 < u < 1
-                - otherwise: warn if L-ratio's violate Cauchy-Schwartz
 
     """
     l_r = np.asarray(lmbda)
     if (rmax := len(l_r)) < 2:
         msg = f'at least 2 L-moments required, got len(lmbda) = {rmax}'
         raise ValueError(msg)
-    if (l2 := l_r[1]) <= 0:
-        msg = f'L-scale must be >0, got lmda[1] = {l2}'
-        raise ValueError(msg)
 
     s, t = clean_trim(trim)
 
-    r = np.arange(1, rmax + 1)
-
-    if validate and rmax > 2:
-        # enforce the (non-strict) L-ratio bounds, from Hosking (2007) eq. 14,
-        # but rewritten using falling factorials, to avoid potential overflows
-        tau = l_r[2:] / l2
-
-        _r = r[2:]
-        m = max(s, t) + 1
-        tau_absmax = 2 * fpow(_r + s + t, m) / (_r * fpow(2 + s + t, m))
-
-        if np.any(invalid := abs(tau) > tau_absmax):
-            r_invalid = list(np.argwhere(invalid) + 3)
-            if len(r_invalid) == 1:
-                r_invalid = r_invalid[0]
-            msg = (
-                f'L-moment(s) with r = {r_invalid}) are not within the valid'
-                f'range'
-            )
-            raise ValueError(msg)
+    if validate:
+        _validate_l_bounds(l_r, s, t)
 
     a, b = support
     if a >= b:
         msg = f'invalid support; expected a < b, got a, b = {a}, {b}'
         raise ValueError(msg)
 
-    _rst = r + s + t
-    c = (r + _rst - 1) * (r / _rst) * l_r
+    r = np.arange(1, rmax + 1)
+    rst = r + s + t
+    c = (r + rst - 1) * (r / rst) * l_r
 
     @overload
     def ppf(u: AnyScalar) -> float: ...
