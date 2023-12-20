@@ -1655,11 +1655,6 @@ def ppf_from_l_moments(
     With Parseval's theorem it can be shown that, if the probability-weighted
     moment \( M_{2,s,t} \) (which is the variance if \( s = t = 0 \)) is
     finite, then \( \hat{Q}_R(u) = Q(u) \) as \( R \to \infty \).
-
-    Todo:
-        - if `validate=True` (default):
-            - check if QDF > 0 for 0 < u < 1
-
     """
     l_r = np.asarray(lmbda)
     if (rmax := len(l_r)) < 2:
