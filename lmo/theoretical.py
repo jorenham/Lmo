@@ -1544,11 +1544,21 @@ def l_coratio_from_pdf(
 
 class _VectorizedPPF(Protocol):
     @overload
-    def __call__(self, __u: AnyScalar) -> float: ...
+    def __call__(self, __u: AnyScalar, *, r_max: int = ...) -> float: ...
     @overload
-    def __call__(self, __u: AnyNDArray[Any]) -> npt.NDArray[np.float64]: ...
+    def __call__(
+        self,
+        __u: AnyNDArray[Any],
+        *,
+        r_max: int = ...,
+    ) -> npt.NDArray[np.float64]: ...
 
-    def __call__(self, __u: npt.ArrayLike) -> float | npt.NDArray[np.float64]:
+    def __call__(
+        self,
+        __u: npt.ArrayLike,
+        *,
+        r_max: int = ...,
+    ) -> float | npt.NDArray[np.float64]:
         ...
 
 def _validate_l_bounds(
@@ -1657,8 +1667,8 @@ def ppf_from_l_moments(
     finite, then \( \hat{Q}_R(u) = Q(u) \) as \( R \to \infty \).
     """
     l_r = np.asarray(lmbda)
-    if (rmax := len(l_r)) < 2:
-        msg = f'at least 2 L-moments required, got len(lmbda) = {rmax}'
+    if (_r_max := len(l_r)) < 2:
+        msg = f'at least 2 L-moments required, got len(lmbda) = {_r_max}'
         raise ValueError(msg)
 
     s, t = clean_trim(trim)
@@ -1671,20 +1681,30 @@ def ppf_from_l_moments(
         msg = f'invalid support; expected a < b, got a, b = {a}, {b}'
         raise ValueError(msg)
 
-    r = np.arange(1, rmax + 1)
+    r = np.arange(1, _r_max + 1)
     rst = r + s + t
     c = (r + rst - 1) * (r / rst) * l_r
 
     @overload
-    def ppf(u: AnyScalar) -> float: ...
+    def ppf(u: AnyScalar, *, r_max: int = ...) -> float: ...
     @overload
-    def ppf(u: AnyNDArray[Any]) -> npt.NDArray[np.float64]: ...
+    def ppf(
+        u: AnyNDArray[Any],
+        *,
+        r_max: int = ...,
+    ) -> npt.NDArray[np.float64]: ...
 
-    def ppf(u: npt.ArrayLike) -> float | npt.NDArray[np.float64]:
+    def ppf(
+        u: npt.ArrayLike,
+        *,
+        r_max: int = -1,
+    ) -> float | npt.NDArray[np.float64]:
         y = np.asarray(u)
         y = np.where((y < 0) | (y > 1), np.nan, 2 * y - 1)
 
-        return np.clip(fourier_jacobi(y, c, t, s), *support)[()]
+        _c = c[:r_max] if 0 < r_max < len(c) else c
+
+        return np.clip(fourier_jacobi(y, _c, t, s), *support)[()]
 
     if validate and not _monotonic(ppf, 0, 1):
         msg = (
