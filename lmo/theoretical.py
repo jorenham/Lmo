@@ -1567,11 +1567,11 @@ def _validate_l_bounds(
     # but rewritten using falling factorials, to avoid potential overflows
     tau = l_r[2:] / l2
 
-    _r = np.arange(3, len(l_r) - 2)
+    _r = np.arange(3, len(l_r) + 1)
     m = max(s, t) + 1
     tau_absmax = 2 * fpow(_r + s + t, m) / (_r * fpow(2 + s + t, m))
 
-    if np.any(invalid := abs(tau) > tau_absmax):
+    if np.any(invalid := np.abs(tau) > tau_absmax):
         r_invalid = list(np.argwhere(invalid) + 3)
         if len(r_invalid) == 1:
             r_invalid = r_invalid[0]
