@@ -1602,6 +1602,21 @@ def _validate_l_bounds(
         )
         raise ValueError(msg)
 
+def _monotonic(
+    f: Callable[[npt.NDArray[np.float64]], npt.NDArray[np.float64]],
+    a: float,
+    b: float,
+    n: int = 100,
+    strict: bool = False,
+) -> bool:
+    """Numeric validation of the monotinicity of a function on [a, b]."""
+    x = np.linspace(a, b, n + 1)
+    y = f(x)
+    #dy = np.gradient(y)
+    dy = np.ediff1d(y)
+
+    return bool(np.all(dy > 0 if strict else dy >= 0))
+
 def ppf_from_l_moments(
     lmbda: npt.ArrayLike,
     /,
@@ -1675,6 +1690,13 @@ def ppf_from_l_moments(
         y = np.where((y < 0) | (y > 1), np.nan, 2 * y - 1)
 
         return np.clip(fourier_jacobi(y, c, t, s), *support)[()]
+
+    if validate and not _monotonic(ppf, 0, 1):
+        msg = (
+            'PPF is not monotonically increasing (not invertable); '
+            'consider increasing the trim'
+        )
+        raise ValueError(msg)
 
     return ppf
 
