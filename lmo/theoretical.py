@@ -1634,6 +1634,7 @@ def ppf_from_l_moments(
     *,
     support: Pair[float] = (-np.inf, np.inf),
     validate: bool = True,
+    extrapolate: bool = False,
 ) -> _VectorizedPPF:
     r"""
     Return a PPF (quantile function, or inverse CDF), with the specified.
@@ -1665,6 +1666,33 @@ def ppf_from_l_moments(
     With Parseval's theorem it can be shown that, if the probability-weighted
     moment \( M_{2,s,t} \) (which is the variance if \( s = t = 0 \)) is
     finite, then \( \hat{Q}_R(u) = Q(u) \) as \( R \to \infty \).
+
+    Args:
+        lmbda:
+            1-d array-like of L-moments \( \tlmoment{s,t}{r} \) for
+            \( r = 1, 2, \ldots, R \). At least 2 L-moments are required.
+            All remaining L-moments with \( r > R \) are considered zero.
+        trim:
+            The trim-length(s) of L-moments `lmbda`.
+        support:
+            A tuple like `(x_min, x_max)`. If provided, the PPF results
+            will be clipped to within this interval.
+        validate:
+            If `True` (default), a `ValueError` will be raised if the
+            resulting PPF is invalid (non-monotonic), which can be solved by
+            increasing  the `trim`.
+        extrapolate:
+            If set to `True`, a simple moving average of \( R \) and
+            \( R - 1 \) will be returned. This generally results in a smoother
+            and more accurate PPF, but its L-moments will not be equal to
+            `lmda`. Defaults to `False`.
+
+    Returns:
+        ppf:
+            A vectorized PPF (quantile function). Its extra optional
+            keyword argument `r_max: int` can be used to "censor" trailing
+            L-moments, i.e. truncating the degree of the polynomial.
+
     """
     l_r = np.asarray(lmbda)
     if (_r_max := len(l_r)) < 2:
@@ -1704,7 +1732,11 @@ def ppf_from_l_moments(
 
         _c = c[:r_max] if 0 < r_max < len(c) else c
 
-        return np.clip(fourier_jacobi(y, _c, t, s), *support)[()]
+        x = fourier_jacobi(y, _c, t, s)
+        if extrapolate and len(_c) > 2:
+            x = (x + fourier_jacobi(y, _c[:-1], t, s)) / 2
+
+        return np.clip(x, *support)[()]
 
     if validate and not _monotonic(ppf, 0, 1):
         msg = (
