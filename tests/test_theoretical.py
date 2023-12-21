@@ -1,37 +1,62 @@
-import functools
+# pyright: reportUnknownVariableType=false
+# pyright: reportMissingTypeStubs=false
+# pyright: reportUnknownArgumentType=false
 
-import numpy as np
+import functools
+from typing import Callable, cast
+from numpy.testing import assert_allclose
+
+import pytest
 from hypothesis import (
     given,
+    settings,
     strategies as st,
 )
+
+import numpy as np
+from scipy.special import ndtr, ndtri
 from lmo.theoretical import (
     l_moment_from_cdf,
     l_moment_from_ppf,
     l_moment_cov_from_cdf,
     l_stats_cov_from_cdf,
+    ppf_from_l_moments,
 )
 
+
+norm_cdf = cast(Callable[[float], float], ndtr)
+norm_ppf = cast(Callable[[float], float], ndtri)
 
 def cauchy_cdf(x: float) -> float:
     return np.arctan(x) / np.pi + 1 / 2
 
-
 def cauchy_ppf(p: float) -> float:
     return np.tan(np.pi * (p - 1 / 2))
-
 
 def expon_cdf(x: float, a: float = 1) -> float:
     return 1 - np.exp(-x / a) if x >= 0 else 0.0
 
-
 def expon_ppf(p: float, a: float = 1) -> float:
     return -a * np.log(1 - p)
-
 
 @np.errstate(over='ignore', under='ignore')
 def gumbel_cdf(x: float, loc: float = 0, scale: float = 1) -> float:
     return np.exp(-np.exp(-(x - loc) / scale))
+
+def gumbel_ppf(p: float, loc: float = 0, scale: float = 1) -> float:
+    return loc - scale * np.log(-np.log(p))
+
+def rayleigh_cdf(x: float) -> float:
+    return -np.expm1(-x**2 / 2)
+
+def rayleigh_ppf(p: float) -> float:
+    return np.sqrt(-2 * np.log1p(-p))
+
+def uniform_cdf(x: float) -> float:
+    return np.clip(x, 0, 1)
+
+def uniform_ppf(p: float) -> float:
+    return np.clip(p, 0, 1)
 
 
 @given(a=st.floats(0.1, 10))
@@ -205,3 +230,33 @@ def test_ls_cov_uniform():
     k4_hat = l_stats_cov_from_cdf(lambda x: x)
 
     assert np.allclose(k4, k4_hat)
+
+
+@settings(deadline=1_000)
+@given(
+    ppf=st.one_of(*map(st.just, [
+        uniform_ppf,
+        norm_ppf,
+        gumbel_ppf,
+        rayleigh_ppf,
+        expon_ppf,
+    ])),
+    rmax=st.integers(2, 8),
+    trim=st.tuples(st.integers(0, 1), st.integers(0, 3))
+)
+def test_ppf_from_l_moments_identity(
+    ppf: Callable[[float], float],
+    rmax: int,
+    trim: tuple[int, int] | int,
+):
+    r = np.mgrid[1: rmax + 1]
+    l_r = l_moment_from_ppf(ppf, r, trim)
+
+    ppf_hat = ppf_from_l_moments(l_r, trim=trim, validate=False)
+    l_r_hat = l_moment_from_ppf(ppf_hat, r, trim)
+    assert_allclose(l_r_hat, l_r)
+
+    l_0 = np.zeros(4)
+    l_0_hat = l_moment_from_ppf(ppf_hat, np.mgrid[rmax + 1: rmax + 5], trim)
+    assert_allclose(l_0_hat, l_0)
+
