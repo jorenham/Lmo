@@ -1,6 +1,9 @@
 window.MathJax = {
     loader: {
-        load: ["[tex]/braket"]
+        load: [
+            "[tex]/braket",
+            "[tex]/physics"
+        ]
     },
     tex: {
         inlineMath: [["\\(", "\\)"]],
@@ -9,7 +12,7 @@ window.MathJax = {
         processEnvironments: true,
         tags: "ams",
         packages: {
-            "[+]": ["braket"]
+            "[+]": ["braket", "physics"]
         },
         macros: {
             // Expectation operator
