@@ -1620,7 +1620,7 @@ class _VectorizedPPF(Protocol):
         *,
         r_max: int = ...,
     ) -> npt.NDArray[np.float64]: ...
-
+    @overload
     def __call__(
         self,
         __u: npt.ArrayLike,
@@ -1784,15 +1784,6 @@ def ppf_from_l_moments(
         w -= st * np.arange(_n) / np.arange(st + 1, _n + st + 1)
     c = w * l_r
 
-    @overload
-    def ppf(u: AnyScalar, *, r_max: int = ...) -> float: ...
-    @overload
-    def ppf(
-        u: AnyNDArray[Any],
-        *,
-        r_max: int = ...,
-    ) -> npt.NDArray[np.float64]: ...
-
     def ppf(
         u: npt.ArrayLike,
         *,
@@ -1809,14 +1800,14 @@ def ppf_from_l_moments(
 
         return np.clip(x, *support)[()]
 
-    if validate and not _monotonic(ppf, 0, 1):
+    if validate and not _monotonic(ppf, 0, 1):  # type: ignore
         msg = (
             'PPF is not monotonically increasing (not invertable); '
             'consider increasing the trim'
         )
         raise ValueError(msg)
 
-    return ppf
+    return ppf  # type: ignore
 
 def qdf_from_l_moments(
     lmbda: npt.ArrayLike,
@@ -1870,15 +1861,6 @@ def qdf_from_l_moments(
     )[1:]
     alpha, beta = t + 1, s + 1
 
-    @overload
-    def qdf(u: AnyScalar, *, r_max: int = ...) -> float: ...
-    @overload
-    def qdf(
-        u: AnyNDArray[Any],
-        *,
-        r_max: int = ...,
-    ) -> npt.NDArray[np.float64]: ...
-
     def qdf(
         u: npt.ArrayLike,
         *,
@@ -1899,7 +1881,7 @@ def qdf_from_l_moments(
         msg = 'QDF is not positive; consider increasing the trim'
         raise ValueError(msg)
 
-    return qdf
+    return qdf  # type: ignore
 
 def entropy_from_qdf(
     qdf: Callable[Concatenate[float, Theta], float],
