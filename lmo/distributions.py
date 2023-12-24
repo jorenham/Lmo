@@ -1,5 +1,6 @@
 """Probability distributions, compatible with [`scipy.stats`][scipy.stats]."""
 __all__ = (
+    'l_poly',
     'l_rv_nonparametric',
     'kumaraswamy',
     'wakeby',
@@ -75,9 +76,7 @@ class l_poly:  # noqa: N801
     Polynomial quantile distribution with (only) the given L-moments.
 
     Todo:
-        - method docstrings
         - method `@overload`'s
-        - memory-safe @functools.cache for methods
         - lmo contrib methods
     """
     _l_moments: Final[_ArrF8]
@@ -94,6 +93,17 @@ class l_poly:  # noqa: N801
         /,
         trim: AnyTrim = (0, 0),
     ) -> None:
+        r"""
+        Create a new `l_poly` instance.
+
+        Args:
+            lmbda:
+                1-d array-like of L-moments \( \tlmoment{s,t}{r} \) for
+                \( r = 1, 2, \ldots, R \). At least 2 L-moments are required.
+                All remaining L-moments with \( r > R \) are considered zero.
+            trim:
+                The trim-length(s) of L-moments `lmbda`.
+        """
         _lmbda = np.asarray(lmbda)
         if (_n := len(_lmbda)) < 2:
             msg = f'at least 2 L-moments required, got len(lmbda) = {_n}'
@@ -179,18 +189,73 @@ class l_poly:  # noqa: N801
         raise NotImplementedError
 
     def ppf(self, p: npt.ArrayLike) -> float | _ArrF8:
+        r"""
+        [Percent point function](https://w.wiki/8cQU) \( Q(p) \) (inverse of
+        [CDF][lmo.distributions.l_poly.cdf], a.k.a. the quantile function) at
+        \( p \) of the given distribution.
+
+        Args:
+            p:
+                Scalar or array-like of lower tail probability values in
+                \( [0, 1] \).
+
+        See Also:
+            - [`ppf_from_l_moments`][lmo.theoretical.ppf_from_l_moments]
+        """
         return self._ppf(p)
 
     def qdf(self, p: npt.ArrayLike) -> float | _ArrF8:
+        r"""
+        Quantile density function \( q \equiv \dv{Q}{p} \) (derivative of the
+        [PPF][lmo.distributions.l_poly.ppf]) at \( p \) of the given
+        distribution.
+
+        Args:
+            p:
+                Scalar or array-like of lower tail probability values in
+                \( [0, 1] \).
+
+        See Also:
+            - [`qdf_from_l_moments`][lmo.theoretical.ppf_from_l_moments]
+        """
         return self._qdf(p)
 
     def cdf(self, x: npt.ArrayLike) -> float | _ArrF8:
+        r"""
+        [Cumulative distribution function](https://w.wiki/3ota) \( F(x) \) at
+        \( x \) of the given distribution.
+
+        Note:
+            Because the CDF of `l_poly` is not analytically expressible, it
+            is evaluated numerically using a root-finding algorithm.
+
+        Args:
+            x: Scalar or array-like of quantiles.
+        """
         return self._cdf(x)
 
     def pdf(self, x: npt.ArrayLike) -> float | _ArrF8:
+        r"""
+        Probability density function \( f \equiv \dv{F}{x} \) (derivative of
+        the [CDF][lmo.distributions.l_poly.cdf]) at \( x \).
+
+        By applying the [inverse function rule](https://w.wiki/8cQS), the PDF
+        can also defined using the [QDF][lmo.distributions.l_poly.qdf] as
+        \(  f(x) = 1 / q(F(x)) \).
+
+        Args:
+            x: Scalar or array-like of quantiles.
+        """
         return 1 / self._qdf(self._cdf(x))
 
     def median(self) -> float:
+        r"""
+        [Median](https://w.wiki/3oaw) (50th percentile) of the distribution.
+        Alias for `ppf(1 / 2)`.
+
+        See Also:
+            - [`l_poly.ppf`][lmo.distributions.l_poly.ppf]
+        """
         return self._ppf(.5)
 
     @functools.cached_property
@@ -198,6 +263,11 @@ class l_poly:  # noqa: N801
         return self.moment(1)
 
     def mean(self) -> float:
+        r"""
+        The [mean](https://w.wiki/8cQe) \( \mu = \E[X] \) of random varianble
+        \( X \) of the relevant distribution.
+        """
+        # TODO: See Also: l_loc
         if self._trim == (0, 0):
             return self._l_moments[0]
 
@@ -208,9 +278,24 @@ class l_poly:  # noqa: N801
         return self.moment(2) - self._mean**2
 
     def var(self) -> float:
+        r"""
+        The [variance](https://w.wiki/3jNh)
+        \( \Var[X] = \E\bigl[(X - \E[X])^2\bigr] =
+        \E\bigl[X^2\bigr] - \E[X]^2 = \sigma^2 \) (2nd central product moment)
+        of random varianble \( X \) of the relevant distribution.
+
+        See Also:
+            - [`l_poly.moment`][lmo.distributions.l_poly.moment]
+        """
         return self._var
 
     def std(self) -> float:
+        r"""
+        The [standard deviation](https://w.wiki/3hwM)
+        \( \Std[X] = \sqrt{\Var[X]} = \sigma \) of random varianble \( X \) of
+        the relevant distribution.
+        """
+        # TODO: See Also: l_scale
         return np.sqrt(self._var)
 
     @functools.cached_property
@@ -218,9 +303,33 @@ class l_poly:  # noqa: N801
         return entropy_from_qdf(self._qdf)
 
     def entropy(self) -> float:
+        r"""
+        [Differential entropy](https://w.wiki/8cR3) \( \mathrm{H}[X] \) of
+        random varianble \( X \) of the relevant distribution.
+
+        It is defined as
+
+        \[
+        \mathrm{H}[X]
+            = \E \bigl[ -\ln f(X) \bigr]
+            = -\int_{Q(0)}^{Q(1)} \ln f(x) \dd x
+            = \int_0^1 \ln q(p) \dd p ,
+        \]
+
+        with \( f(x) \) the [PDF][lmo.distributions.l_poly.pdf], \( Q(p) \)
+        the [PPF][lmo.distributions.l_poly.ppf], and \( q(p) = Q'(p) \) the
+        [QDF][lmo.distributions.l_poly.qdf].
+
+        See Also:
+            - [`entropy_from_qdf`][lmo.theoretical.entropy_from_qdf]
+        """
         return self._entropy
 
     def support(self) -> tuple[float, float]:
+        r"""
+        The support \( (Q(0), Q(1)) \) of the distribution, where \( Q(p) \)
+        is the [PPF][lmo.distributions.l_poly.ppf].
+        """
         return self._support
 
     def interval(
@@ -228,6 +337,28 @@ class l_poly:  # noqa: N801
         confidence: npt.ArrayLike,
         /,
     ) -> tuple[float, float] | tuple[_ArrF8, _ArrF8]:
+        r"""
+        [Confidence interval](https://w.wiki/3kdb) with equal areas around
+        the [median][lmo.distributions.l_poly.median].
+
+        For `confidence` level \( \alpha \in [0, 1] \), this function evaluates
+
+        \[
+            \left[
+                Q\left( \frac{1 - \alpha}{2} \right) ,
+                Q\left( \frac{1 + \alpha}{2} \right)
+            \right],
+        \]
+
+        where \( Q(p) \) is the [PPF][lmo.distributions.l_poly.ppf].
+
+        Args:
+            confidence:
+                Scalar or array-like. The Probability that a random
+                varianble will be drawn from the returned range.
+
+                Each confidence value should be between 0 and 1.
+        """
         alpha = np.asarray(confidence)
         if np.any((alpha > 1) | (alpha < 0)):
             msg = 'confidence must be between 0 and 1 inclusive'
@@ -237,7 +368,7 @@ class l_poly:  # noqa: N801
 
     def moment(self, n: float, /) -> float:
         r"""
-        Non-central product moment \( \E[X] \) of \( X \) of specified
+        Non-central product moment \( \E[X^n] \) of \( X \) of specified
         order \( n \).
 
         Note:
@@ -248,9 +379,6 @@ class l_poly:  # noqa: N801
 
         Args:
             n: Order \( n \ge 0 \) of the moment.
-
-        Returns:
-            A scalar.
         """
         if n < 0:
             msg = f'expected n >= 0, got {n}'
@@ -274,16 +402,18 @@ class l_poly:  # noqa: N801
         random variable \( X \) is defined as
 
         \[
-        \begin{align*}
             \E\left[ g(X) \right]
-                &= \int_{Q_X(0)}^{Q_X(1)} g(x) f_X(x) \ \mathrm{d} x \\
-                &= \int_0^1 g\big(Q_X(u)\big) \ \mathrm{d} u ,
-        \end{align*}
+                = \int_{Q(0)}^{Q(1)} g(x) f(x) \dd x
+                = \int_0^1 g\big(Q(u)\big) \dd u ,
         \]
 
-        with \( f_X(x) \) the PDF, and \( Q_X \) the PPF (quantile function,
-        inverse CDF).
+        with \( f(x) \) the [PDF][lmo.distributions.l_poly.pdf], and
+        \( Q \) the [PPF][lmo.distributions.l_poly.ppf].
 
+        Args:
+            g ( (float) -> float ):
+                Continuous and deterministic function
+                \( g: \reals \mapsto \reals \).
         """
         ppf = self._ppf
 
