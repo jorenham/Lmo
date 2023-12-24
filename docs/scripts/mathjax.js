@@ -17,6 +17,8 @@ window.MathJax = {
         macros: {
             // Expectation operator
             E: "\\mathop{\\mathbb{E}}",
+            Var: "\\mathop{\\rm{Var}}",
+            Cov: "\\mathop{\\rm{Cov}}",
             // Beta function
             B: "\\mathop{\\mathrm{B}}",
             // Tsallis' q-log and q-exp
