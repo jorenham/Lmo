@@ -21,6 +21,7 @@ from typing import (
     TypeAlias,
     TypeVar,
     cast,
+    overload,
 )
 
 import numpy as np
@@ -34,8 +35,11 @@ from scipy.stats.distributions import (  # type: ignore
 
 from ._poly import jacobi_series, roots
 from ._utils import (
+    broadstack,
     clean_order,
     clean_trim,
+    l_stats_orders,
+    moments_to_ratio,
 )
 from .diagnostic import l_ratio_bounds
 from .special import harmonic
@@ -47,8 +51,10 @@ from .theoretical import (
     qdf_from_l_moments,
 )
 from .typing import (
+    AnyInt,
     AnyTrim,
     FloatVector,
+    IntVector,
     PolySeries,
     QuadOptions,
     RVContinuous,
@@ -266,8 +272,10 @@ class l_poly:  # noqa: N801
         r"""
         The [mean](https://w.wiki/8cQe) \( \mu = \E[X] \) of random varianble
         \( X \) of the relevant distribution.
+
+        See Also:
+            - [`l_poly.l_loc`][lmo.distributions.l_poly.l_loc]
         """
-        # TODO: See Also: l_loc
         if self._trim == (0, 0):
             return self._l_moments[0]
 
@@ -294,8 +302,10 @@ class l_poly:  # noqa: N801
         The [standard deviation](https://w.wiki/3hwM)
         \( \Std[X] = \sqrt{\Var[X]} = \sigma \) of random varianble \( X \) of
         the relevant distribution.
+
+        See Also:
+            - [`l_poly.l_scale`][lmo.distributions.l_poly.l_scale]
         """
-        # TODO: See Also: l_scale
         return np.sqrt(self._var)
 
     @functools.cached_property
@@ -379,6 +389,9 @@ class l_poly:  # noqa: N801
 
         Args:
             n: Order \( n \ge 0 \) of the moment.
+
+        See Also:
+            - [`l_poly.l_moment`][lmo.distributions.l_poly.l_moment]
         """
         if n < 0:
             msg = f'expected n >= 0, got {n}'
@@ -431,6 +444,140 @@ class l_poly:  # noqa: N801
             quad(i, a, b)[0] + quad(i, b, c)[0] + quad(i, c, d)[0],
         )
 
+    @overload
+    def l_moment(self, r: AnyInt, /, trim: AnyTrim | None = ...) -> np.float64:
+        ...
+
+    @overload
+    def l_moment(self, r: IntVector, /, trim: AnyTrim | None = ...) -> _ArrF8:
+        ...
+
+    def l_moment(
+        self,
+        r: AnyInt | IntVector,
+        /,
+        trim: AnyTrim | None = None,
+    ) -> np.float64 | _ArrF8:
+        r"""
+        Evaluate the population L-moment(s) $\lambda^{(s,t)}_r$.
+
+        Args:
+            r:
+                L-moment order(s), non-negative integer or array-like of
+                integers.
+            trim:
+                Left- and right- trim. Can be scalar or 2-tuple of
+                non-negative int or float.
+        """
+        _trim = self._trim if trim is None else clean_trim(trim)
+        return l_moment_from_ppf(self._ppf, r, trim=_trim)
+
+    @overload
+    def l_ratio(
+        self,
+        r: AnyInt,
+        k: AnyInt,
+        /,
+        trim: AnyTrim | None = ...,
+    ) -> np.float64: ...
+
+    @overload
+    def l_ratio(
+        self,
+        r: IntVector,
+        k: AnyInt | IntVector,
+        /,
+        trim: AnyTrim | None = ...,
+    ) -> _ArrF8: ...
+
+    @overload
+    def l_ratio(
+        self,
+        r: AnyInt | IntVector,
+        k: IntVector,
+        /,
+        trim: AnyTrim | None = ...,
+    ) -> _ArrF8: ...
+
+    def l_ratio(
+        self,
+        r: AnyInt | IntVector,
+        k: AnyInt | IntVector,
+        /,
+        trim: AnyTrim | None = None,
+    ) -> np.float64 | _ArrF8:
+        r"""
+        Evaluate the population L-moment ratio('s) $\tau^{(s,t)}_{r,k}$.
+
+        Args:
+            r:
+                L-moment order(s), non-negative integer or array-like of
+                integers.
+            k:
+                L-moment order of the denominator, e.g. 2.
+            trim:
+                Left- and right- trim. Can be scalar or 2-tuple of
+                non-negative int or float.
+        """
+        rs = broadstack(r, k)
+        lms = self.l_moment(rs, trim=trim)
+        return moments_to_ratio(rs, lms)
+
+    def l_stats(self, trim: AnyTrim | None = None, moments: int = 4) -> _ArrF8:
+        r"""
+        Evaluate the L-moments (for $r \le 2$) and L-ratio's (for $r > 2$).
+
+        Args:
+            trim:
+                Left- and right- trim. Can be scalar or 2-tuple of
+                non-negative int or float.
+            moments:
+                The amount of L-moments to return. Defaults to 4.
+        """
+        r, s = l_stats_orders(moments)
+        return self.l_ratio(r, s, trim=trim)
+
+    def l_loc(self, trim: AnyTrim | None = None) -> float:
+        """
+        L-location of the distribution, i.e. the 1st L-moment.
+
+        Alias for `l_poly.l_moment(1, ...)`.
+
+        See Also:
+            - [`l_poly.l_moment`][lmo.distributions.l_poly.l_moment]
+        """
+        return float(self.l_moment(1, trim=trim))
+
+    def l_scale(self, trim: AnyTrim | None = None) -> float:
+        """
+        L-scale of the distribution, i.e. the 2nd L-moment.
+
+        Alias for `l_poly.l_moment(2, ...)`.
+
+        See Also:
+            - [`l_poly.l_moment`][lmo.distributions.l_poly.l_moment]
+        """
+        return float(self.l_moment(2, trim=trim))
+
+    def l_skew(self, trim: AnyTrim | None = None) -> float:
+        """L-skewness coefficient of the distribution; the 3rd L-moment ratio.
+
+        Alias for `l_poly.l_ratio(3, 2, ...)`.
+
+        See Also:
+            - [`l_poly.l_ratio`][lmo.distributions.l_poly.l_ratio]
+        """
+        return float(self.l_ratio(3, 2, trim=trim))
+
+    def l_kurtosis(self, trim: AnyTrim | None = None) -> float:
+        """L-kurtosis coefficient of the distribution; the 4th L-moment ratio.
+
+        Alias for `l_poly.l_ratio(4, 2, ...)`.
+
+        See Also:
+            - [`l_poly.l_ratio`][lmo.distributions.l_poly.l_ratio]
+        """
+        return float(self.l_ratio(4, 2, trim=trim))
 
 def _check_lmoments(
     l_r: npt.NDArray[np.floating[Any]],
@@ -794,7 +941,6 @@ class l_rv_nonparametric(_rv_continuous):  # noqa: N801
         return cls(l_r, trim=_trim, a=a, b=b)
 
 # Parametric
-
 
 def _kumaraswamy_lmo0(
     r: int,
