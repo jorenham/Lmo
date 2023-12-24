@@ -1616,7 +1616,7 @@ class _VectorizedPPF(Protocol):
     @overload
     def __call__(
         self,
-        __u: AnyNDArray[Any],
+        __u: AnyNDArray[Any] | Sequence[Any],
         *,
         r_max: int = ...,
     ) -> npt.NDArray[np.float64]: ...
