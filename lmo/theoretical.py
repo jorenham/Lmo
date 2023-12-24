@@ -1914,7 +1914,7 @@ def entropy_from_qdf(
             Optional keyword arguments to pass to `qdf`.
 
     Returns:
-        The differential entropy \( h(X) \).
+        The differential entropy \( H(X) \).
 
     See Also:
         - [Differential entropy - Wikipedia
