@@ -15,10 +15,17 @@ window.MathJax = {
             "[+]": ["braket", "physics"]
         },
         macros: {
-            // Expectation operator
+            // Statistical operators
             E: "\\mathop{\\mathbb{E}}",
             Var: "\\mathop{\\rm{Var}}",
+            Std: "\\mathop{\\rm{Std}}",
             Cov: "\\mathop{\\rm{Cov}}",
+            // Number sets
+            naturals: "\\mathbb{N}",
+            integers: "\\mathbb{Z}",
+            rationals: "\\mathbb{Q}",
+            reals: "\\mathbb{R}",
+            complexes: "\\mathbb{C}",
             // Beta function
             B: "\\mathop{\\mathrm{B}}",
             // Tsallis' q-log and q-exp
