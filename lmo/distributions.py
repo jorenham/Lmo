@@ -10,6 +10,7 @@ __all__ = (
 
 import functools
 import math
+import sys
 import warnings
 from collections.abc import Callable, Mapping, Sequence
 from typing import (
@@ -37,7 +38,13 @@ from ._utils import (
 )
 from .diagnostic import l_ratio_bounds
 from .special import harmonic
-from .theoretical import entropy_from_qdf, l_moment_from_ppf
+from .theoretical import (
+    _VectorizedPPF,  # type: ignore [reportPrivateUsage]
+    entropy_from_qdf,
+    l_moment_from_ppf,
+    ppf_from_l_moments,
+    qdf_from_l_moments,
+)
 from .typing import (
     AnyTrim,
     FloatVector,
@@ -46,28 +53,271 @@ from .typing import (
     RVContinuous,
 )
 
+if sys.version_info < (3, 11):
+    from typing_extensions import Self
+else:
+    from typing import Self
+
 T = TypeVar('T')
 X = TypeVar('X', bound='l_rv_nonparametric')
 F = TypeVar('F', bound=np.floating[Any])
 M = TypeVar('M', bound=Callable[..., Any])
 V = TypeVar('V', bound=float | npt.NDArray[np.float64])
 
+_ArrF8: TypeAlias = npt.NDArray[np.float64]
 
 _F_EPS: Final[np.float64] = np.finfo(float).eps
 
-
 # Non-parametric
 
-def _check_lmoments(l_r: npt.NDArray[np.floating[Any]], s: float, t: float):
+class l_poly:  # noqa: N801
+    """
+    Polynomial quantile distribution with (only) the given L-moments.
+
+    Todo:
+        - method docstrings
+        - method `@overload`'s
+        - memory-safe @functools.cache for methods
+        - lmo contrib methods
+    """
+    _l_moments: Final[_ArrF8]
+    _trim: Final[tuple[float, float] | tuple[int, int]]
+    _support: Final[tuple[float, float]]
+
+    _ppf: Final[_VectorizedPPF]
+    _qdf: Final[_VectorizedPPF]
+    _cdf: Final[_VectorizedPPF]
+
+    def __init__(
+        self,
+        lmbda: npt.ArrayLike,
+        /,
+        trim: AnyTrim = (0, 0),
+    ) -> None:
+        _lmbda = np.asarray(lmbda)
+        if (_n := len(_lmbda)) < 2:
+            msg = f'at least 2 L-moments required, got len(lmbda) = {_n}'
+            raise ValueError(msg)
+        self._l_moments = _lmbda
+
+        self._trim = _trim = clean_trim(trim)
+
+        self._ppf = ppf_from_l_moments(_lmbda, trim=_trim)
+        self._qdf = qdf_from_l_moments(_lmbda, trim=_trim, validate=False)
+
+        a, b = self._ppf([0, 1])
+        self._support = a, b
+
+        self._cdf = np.vectorize(self._cdf_single, [float])
+
+    @classmethod
+    def fit(
+        cls,
+        data: npt.ArrayLike,
+        moments: int | None = None,
+        trim: AnyTrim = (0, 0),
+    ) -> Self:
+        r"""
+        Fit distribution using the (trimmed) L-moment estimates of the given
+        data.
+
+        Args:
+            data:
+                1-d array-like with sample observations.
+            moments:
+                How many sample L-moments to use, `2 <= moments < len(data)`.
+                Defaults to $\sqrt[3]{n}$, where $n$ is `len(data)`.
+            trim:
+                The left and right trim-lengths $(s, t)$ to use. Defaults
+                to $(0, 0)$.
+
+        Returns:
+            A fitted `l_poly` instance.
+
+        Raises:
+            TypeError: Invalid `data` shape.
+            ValueError: Not enough `moments`.
+            ValueError: If the L-moments of the data do not result in strictly
+                monotinically increasing quantile function (PPF).
+
+                This generally means that either the left, the right, or both
+                `trim`-orders are too small.
+        """
+        x = np.asarray_chkfinite(data)
+        if x.ndim != 1:
+            msg = 'expected 1-d data, got shape {{x,shape}}'
+            raise TypeError(msg)
+
+        n = len(x)
+        if n < 2 or np.all(x == x[0]):
+            msg = f'expected at least two unique samples, got {min(n, 1)}'
+            raise ValueError(msg)
+
+        if moments is None:
+            r_max = round(np.clip(np.cbrt(n), 2, 128))
+        else:
+            r_max = moments
+
+        if r_max < 2:
+            msg = f'expected >1 moments, got {moments}'
+            raise ValueError(msg)
+
+        from ._lm import l_moment
+
+        l_r = l_moment(x, np.arange(1, r_max + 1), trim=trim)
+        return cls(l_r, trim=trim)
+
+    def _cdf_single(self, x: float) -> float:
+        a, b = self._support
+        if np.isnan(x):
+            return np.nan
+        if x <= a:
+            return 0.
+        if x >= b:
+            return 1.
+
+        raise NotImplementedError
+
+    def ppf(self, p: npt.ArrayLike) -> float | _ArrF8:
+        return self._ppf(p)
+
+    def qdf(self, p: npt.ArrayLike) -> float | _ArrF8:
+        return self._qdf(p)
+
+    def cdf(self, x: npt.ArrayLike) -> float | _ArrF8:
+        return self._cdf(x)
+
+    def pdf(self, x: npt.ArrayLike) -> float | _ArrF8:
+        return 1 / self._qdf(self._cdf(x))
+
+    def median(self) -> float:
+        return self._ppf(.5)
+
+    @functools.cached_property
+    def _mean(self) -> float:
+        return self.moment(1)
+
+    def mean(self) -> float:
+        if self._trim == (0, 0):
+            return self._l_moments[0]
+
+        return self._mean
+
+    @functools.cached_property
+    def _var(self) -> float:
+        return self.moment(2) - self._mean**2
+
+    def var(self) -> float:
+        return self._var
+
+    def std(self) -> float:
+        return np.sqrt(self._var)
+
+    @functools.cached_property
+    def _entropy(self) -> float:
+        return entropy_from_qdf(self._qdf)
+
+    def entropy(self) -> float:
+        return self._entropy
+
+    def support(self) -> tuple[float, float]:
+        return self._support
+
+    def interval(
+        self,
+        confidence: npt.ArrayLike,
+        /,
+    ) -> tuple[float, float] | tuple[_ArrF8, _ArrF8]:
+        alpha = np.asarray(confidence)
+        if np.any((alpha > 1) | (alpha < 0)):
+            msg = 'confidence must be between 0 and 1 inclusive'
+            raise ValueError(msg)
+
+        return self._ppf((1 - alpha) / 2), self._ppf((1 + alpha) / 2)
+
+    def moment(self, n: float, /) -> float:
+        r"""
+        Non-central product moment \( \E[X] \) of \( X \) of specified
+        order \( n \).
+
+        Note:
+            The product moment is evaluated using numerical integration
+            ([`scipy.integrate.quad`][scipy.integrate.quad]), which cannot
+            check whether the product-moment actually exists for the
+            distribution, in which case an invalid result will be returned.
+
+        Args:
+            n: Order \( n \ge 0 \) of the moment.
+
+        Returns:
+            A scalar.
+        """
+        if n < 0:
+            msg = f'expected n >= 0, got {n}'
+            raise ValueError(msg)
+        if n == 0:
+            return 1.
+
+        def _integrand(u: float) -> float:
+            return self._ppf(u)**n
+
+        from scipy.integrate import quad  # type: ignore
+
+        return cast(float, quad(_integrand, 0, 1)[0])
+
+    def expect(self, g: Callable[[float], float], /) -> float:
+        r"""
+        Calculate expected value of a function with respect to the
+        distribution by numerical integration.
+
+        The expected value of a function \( g(x) \) with respect to a
+        random variable \( X \) is defined as
+
+        \[
+        \begin{align*}
+            \E\left[ g(X) \right]
+                &= \int_{Q_X(0)}^{Q_X(1)} g(x) f_X(x) \ \mathrm{d} x \\
+                &= \int_0^1 g\big(Q_X(u)\big) \ \mathrm{d} u ,
+        \end{align*}
+        \]
+
+        with \( f_X(x) \) the PDF, and \( Q_X \) the PPF (quantile function,
+        inverse CDF).
+
+        """
+        ppf = self._ppf
+
+        def i(u: float) -> float:
+            return g(ppf(u))
+
+        from scipy.integrate import quad  # type: ignore
+
+        a = 0
+        b = 0.05
+        c = 1 - b
+        d = 1
+        return cast(
+            float,
+            quad(i, a, b)[0] + quad(i, b, c)[0] + quad(i, c, d)[0],
+        )
+
+
+def _check_lmoments(
+    l_r: npt.NDArray[np.floating[Any]],
+    trim: AnyTrim = (0, 0),
+    name: str = 'lmbda',
+):
     if (n := len(l_r)) < 2:
         msg = f'at least 2 L-moments required, got {n}'
         raise ValueError(msg)
+    if l_r[1] <= 0:
+        msg = f'L-scale must be positive, got {name}[1] = {l_r[1]}'
     if n == 2:
         return
 
     r = np.arange(1, n + 1)
     t_r = l_r[2:] / l_r[1]
-    t_r_max = l_ratio_bounds(r[2:], (s, t))
+    t_r_max = l_ratio_bounds(r[2:], trim, has_variance=False)
     if np.any(rs0_oob := np.abs(t_r) > t_r_max):
         r_oob = np.argwhere(rs0_oob)[0] + 3
         t_oob = t_r[rs0_oob][0]
@@ -101,6 +351,10 @@ def _ppf_poly_series(
 
 class l_rv_nonparametric(_rv_continuous):  # noqa: N801
     r"""
+    Warning:
+        `l_rv_nonparametric` is depcrecated, and will be removed in version
+        `0.13`. Use `l_poly` instead.
+
     Estimate a distribution using the given L-moments.
     See [`scipy.stats.rv_continuous`][scipy.stats.rv_continuous] for the
     available method.
@@ -190,9 +444,9 @@ class l_rv_nonparametric(_rv_continuous):  # noqa: N801
         l_r = np.asarray_chkfinite(l_moments)
         l_r.setflags(write=False)
 
-        self._trim = (s, t) = clean_trim(trim)
+        self._trim = _trim = (s, t) = clean_trim(trim)
 
-        _check_lmoments(l_r, s, t)
+        _check_lmoments(l_r, _trim)
         self._lm = l_r
 
         # quantile function (inverse of cdf)
@@ -409,11 +663,8 @@ class l_rv_nonparametric(_rv_continuous):  # noqa: N801
 
         return cls(l_r, trim=_trim, a=a, b=b)
 
-
 # Parametric
 
-
-_ArrF8: TypeAlias = npt.NDArray[np.float64]
 
 def _kumaraswamy_lmo0(
     r: int,
