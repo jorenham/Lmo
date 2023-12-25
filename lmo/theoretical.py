@@ -30,7 +30,7 @@ __all__ = (
 
 import functools
 from collections.abc import Callable, Sequence
-from math import exp, factorial, gamma, lgamma
+from math import exp, factorial, gamma, lgamma, log
 from typing import (
     Any,
     Concatenate,
@@ -109,15 +109,24 @@ def _nquad(
 
 @functools.cache
 def _l_moment_const(r: int, s: float, t: float, k: int = 0) -> float:
-    if r <= k:
+    if r <= k or s == t == 0:
         return 1.0
 
     # math.lgamma is faster (and has better type annotations) than
     # scipy.special.loggamma.
     if r + s + t <= 20:
         v = gamma(r + s + t + 1) / (gamma(r + s) * gamma(r + t))
-    else:
+    elif r + s + t <= 128:
         v = exp(lgamma(r + s + t + 1) - lgamma(r + s) - lgamma(r + t))
+    else:
+        return exp(
+            + lgamma(r + s + t + 1)
+            - lgamma(r + s)
+            - lgamma(r + t)
+            + lgamma(r - k)
+            - log(r)  # noqa: COM812
+        )
+
     return factorial(r - 1 - k) / r * v
 
 
