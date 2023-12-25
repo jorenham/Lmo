@@ -332,8 +332,8 @@ def l_moment_from_cdf(
             return np.heaviside(x, .5) - v
 
         return (
-            p ** (s + 1)
-            * (1 - p) ** (t + 1)
+            np.sqrt(2 * _r - 1)
+            * p ** (s + 1) * (1 - p) ** (t + 1)
             * eval_sh_jacobi(_r - 2, t + 1, s + 1, p)
         )
 
@@ -355,7 +355,7 @@ def l_moment_from_cdf(
             (sci.quad(integrand, a, b, (_r,), **kwds)[0] if a < b else 0) +
             sci.quad(integrand, b, c, (_r,), **kwds)[0] +
             (sci.quad(integrand, c, d, (_r,), **kwds)[0] if c < d else 0),
-        ) + loc0 * (_r == 1)
+        ) / np.sqrt(2 * _r - 1) + loc0 * (_r == 1)
 
     l_r_cache: dict[int, float] = {}
     l_r = np.empty_like(rs, dtype=np.float64)
@@ -366,7 +366,7 @@ def l_moment_from_cdf(
         else:
             l_r[i] = l_r_cache[_k] = _l_moment_single(_k)
 
-    return round0(l_r)[()]  # convert back to scalar if needed
+    return round0(l_r, 1e-15)[()]  # convert back to scalar if needed
 
 
 @overload
