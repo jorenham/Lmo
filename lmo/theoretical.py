@@ -24,6 +24,7 @@ __all__ = (
     'ppf_from_l_moments',
     'qdf_from_l_moments',
 
+    'cdf_from_ppf',
     'entropy_from_qdf',
 )
 
@@ -1882,6 +1883,31 @@ def qdf_from_l_moments(
         raise ValueError(msg)
 
     return qdf  # type: ignore
+
+def cdf_from_ppf(
+    ppf: Callable[Concatenate[float, Theta], float],
+    /,
+) -> Callable[Concatenate[float, Theta], float]:
+    """Numerical inversion of the PPF."""
+    from scipy.optimize import root_scalar  # type: ignore
+
+    def cdf(x: float, *args: Theta.args, **kwds: Theta.kwargs) -> float:
+        if np.isnan(x):
+            return np.nan
+        if x <= ppf(0, *args, **kwds):
+            return 0.
+        if x >= ppf(1, *args, **kwds):
+            return 1.
+
+        def _ppf_to_solve(p: float) -> float:
+            return ppf(p, *args, **kwds) - x
+
+        return cast(
+            float,
+            root_scalar(_ppf_to_solve, bracket=[0, 1], method='brentq').root,
+        )
+
+    return cdf
 
 def entropy_from_qdf(
     qdf: Callable[Concatenate[float, Theta], float],
