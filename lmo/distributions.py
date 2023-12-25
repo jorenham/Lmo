@@ -17,6 +17,7 @@ from collections.abc import Callable, Mapping, Sequence
 from typing import (
     Any,
     Final,
+    Literal,
     SupportsIndex,
     TypeAlias,
     TypeVar,
@@ -94,11 +95,15 @@ class l_poly:  # noqa: N801
     _qdf: Final[_VectorizedPPF]
     _cdf: Final[_VectorizedPPF]
 
+    _random_state: np.random.Generator
+
     def __init__(
         self,
         lmbda: npt.ArrayLike,
         /,
         trim: AnyTrim = (0, 0),
+        *,
+        seed: np.random.Generator | AnyInt | None = None,
     ) -> None:
         r"""
         Create a new `l_poly` instance.
@@ -110,6 +115,8 @@ class l_poly:  # noqa: N801
                 All remaining L-moments with \( r > R \) are considered zero.
             trim:
                 The trim-length(s) of L-moments `lmbda`.
+            seed:
+                Random number generator.
         """
         _lmbda = np.asarray(lmbda)
         if (_n := len(_lmbda)) < 2:
@@ -127,6 +134,17 @@ class l_poly:  # noqa: N801
 
         self._cdf_single = cdf_from_ppf(self._ppf)
         self._cdf = np.vectorize(self._cdf_single, [float])
+
+        self._random_state = np.random.default_rng(seed)
+
+    @property
+    def random_state(self) -> np.random.Generator:
+        """The random number generator of the distribution."""
+        return self._random_state
+
+    @random_state.setter
+    def random_state(self, seed: int | np.random.Generator):
+        self._random_state = np.random.default_rng(seed)
 
     @classmethod
     def fit(
@@ -184,6 +202,47 @@ class l_poly:  # noqa: N801
 
         l_r = l_moment(x, np.arange(1, r_max + 1), trim=trim)
         return cls(l_r, trim=trim)
+
+    @overload
+    def rvs(
+        self,
+        size: Literal[1] | None = ...,
+        random_state: np.random.Generator | AnyInt | None = ...,
+    ) -> float: ...
+
+    @overload
+    def rvs(
+        self,
+        size: int | tuple[int, ...],
+        random_state: np.random.Generator | AnyInt | None = ...,
+    ) -> _ArrF8: ...
+
+    def rvs(
+        self,
+        size: int | tuple[int, ...] | None = None,
+        random_state: np.random.Generator | AnyInt | None = None,
+    ) -> float | _ArrF8:
+        """
+        Draw random variates from the relevant distribution.
+
+        Args:
+            size:
+                Defining number of random variates, defaults to 1.
+            random_state:
+                Seed or [`numpy.random.Generator`][numpy.random.Generator]
+                instance. Defaults to
+                [`l_poly.random_state`][lmo.distributions.l_poly.random_state].
+
+        Returns:
+            A scalar or array with shape like `size`.
+        """
+        if random_state is None:
+            rng = self._random_state
+        else:
+            rng = np.random.default_rng(random_state)
+
+        return self._ppf(rng.uniform(size=size))
+
 
     def ppf(self, p: npt.ArrayLike) -> float | _ArrF8:
         r"""
