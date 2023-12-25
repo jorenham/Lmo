@@ -88,10 +88,6 @@ class l_poly:  # noqa: N801
     Todo:
         - Examples
         - `stats(moments='mv')`
-        - `logcdf(x)`
-        - `logsf(x)`
-        - `sf(x)`
-        - `isf(q)`
     """
 
     _l_moments: Final[_ArrF8]
@@ -271,6 +267,23 @@ class l_poly:  # noqa: N801
         return self._ppf(p)
 
     @overload
+    def isf(self, q: AnyScalar) -> float: ...
+    @overload
+    def isf(self, q: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
+    def isf(self, q: npt.ArrayLike) -> float | _ArrF8:
+        r"""
+        Inverse survival function \( \bar{Q}(q) = Q(1 - q) \) (inverse of
+        [`sf`][lmo.distributions.l_poly.sf]) at \( q \).
+
+        Args:
+            q:
+                Scalar or array-like of upper tail probability values in
+                \( [0, 1] \).
+        """
+        p = 1 - np.asarray(q)
+        return self._ppf(p[()] if np.isscalar(q) else p)
+
+    @overload
     def qdf(self, p: AnyScalar) -> float: ...
     @overload
     def qdf(self, p: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
@@ -296,8 +309,8 @@ class l_poly:  # noqa: N801
     def cdf(self, x: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
     def cdf(self, x: npt.ArrayLike) -> float | _ArrF8:
         r"""
-        [Cumulative distribution function](https://w.wiki/3ota) \( F(x) \) at
-        \( x \) of the given distribution.
+        [Cumulative distribution function](https://w.wiki/3ota)
+        \( F(x) = \mathrm{P}(X \le x) \) at \( x \) of the given distribution.
 
         Note:
             Because the CDF of `l_poly` is not analytically expressible, it
@@ -307,6 +320,51 @@ class l_poly:  # noqa: N801
             x: Scalar or array-like of quantiles.
         """
         return self._cdf(x)
+
+    @overload
+    def logcdf(self, x: AnyScalar) -> float: ...
+    @overload
+    def logcdf(self, x: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
+    @np.errstate(divide='ignore')
+    def logcdf(self, x: npt.ArrayLike) -> float | _ArrF8:
+        r"""
+        Logarithm of the cumulative distribution function (CDF) at \( x \),
+        i.e. \( \ln F(x) \).
+
+        Args:
+            x: Scalar or array-like of quantiles.
+        """
+        return np.log(self._cdf(x))
+
+    @overload
+    def sf(self, x: AnyScalar) -> float: ...
+    @overload
+    def sf(self, x: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
+    def sf(self, x: npt.ArrayLike) -> float | _ArrF8:
+        r"""
+        Survival function \(S(x) = \mathrm{P}(X > x) =
+        1 - \mathrm{P}(X \le x) = 1 - F(x) \) (the complement of the
+        [CDF][lmo.distributions.l_poly.cdf]).
+
+        Args:
+            x: Scalar or array-like of quantiles.
+        """
+        return 1 - self._cdf(x)
+
+    @overload
+    def logsf(self, x: AnyScalar) -> float: ...
+    @overload
+    def logsf(self, x: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
+    @np.errstate(divide='ignore')
+    def logsf(self, x: npt.ArrayLike) -> float | _ArrF8:
+        r"""
+        Logarithm of the survical function (SF) at \( x \), i.e.
+        \( \ln \left( S(x) \right) \).
+
+        Args:
+            x: Scalar or array-like of quantiles.
+        """
+        return np.log(self._cdf(x))
 
     @overload
     def pdf(self, x: AnyScalar) -> float: ...
@@ -319,12 +377,30 @@ class l_poly:  # noqa: N801
 
         By applying the [inverse function rule](https://w.wiki/8cQS), the PDF
         can also defined using the [QDF][lmo.distributions.l_poly.qdf] as
-        \(  f(x) = 1 / q(F(x)) \).
+        \(  f(x) = 1 / q\big(F(x)\big) \).
 
         Args:
             x: Scalar or array-like of quantiles.
         """
         return 1 / self._qdf(self._cdf(x))
+
+    @overload
+    def hf(self, x: AnyScalar) -> float: ...
+    @overload
+    def hf(self, x: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
+    def hf(self, x: npt.ArrayLike) -> float | _ArrF8:
+        r"""
+        [Hazard function
+        ](https://w.wiki/8cWL#Failure_rate_in_the_continuous_sense)
+        \( h(x) = f(x) / S(x) \) at \( x \), with \( f \) and \( S \) the
+        [PDF][lmo.distributions.l_poly.pdf] and
+        [SF][lmo.distributions.l_poly.sf], respectively.
+
+        Args:
+            x: Scalar or array-like of quantiles.
+        """
+        p = self._cdf(x)
+        return 1 / (self._qdf(p) * (1 - p))
 
     def median(self) -> float:
         r"""
