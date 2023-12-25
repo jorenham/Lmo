@@ -54,6 +54,8 @@ from .theoretical import (
 )
 from .typing import (
     AnyInt,
+    AnyNDArray,
+    AnyScalar,
     AnyTrim,
     FloatVector,
     IntVector,
@@ -84,9 +86,14 @@ class l_poly:  # noqa: N801
     Polynomial quantile distribution with (only) the given L-moments.
 
     Todo:
-        - method `@overload`'s
-        - lmo contrib methods
+        - Examples
+        - `stats(moments='mv')`
+        - `logcdf(x)`
+        - `logsf(x)`
+        - `sf(x)`
+        - `isf(q)`
     """
+
     _l_moments: Final[_ArrF8]
     _trim: Final[tuple[float, float] | tuple[int, int]]
     _support: Final[tuple[float, float]]
@@ -243,7 +250,10 @@ class l_poly:  # noqa: N801
 
         return self._ppf(rng.uniform(size=size))
 
-
+    @overload
+    def ppf(self, p: AnyScalar) -> float: ...
+    @overload
+    def ppf(self, p: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
     def ppf(self, p: npt.ArrayLike) -> float | _ArrF8:
         r"""
         [Percent point function](https://w.wiki/8cQU) \( Q(p) \) (inverse of
@@ -260,6 +270,10 @@ class l_poly:  # noqa: N801
         """
         return self._ppf(p)
 
+    @overload
+    def qdf(self, p: AnyScalar) -> float: ...
+    @overload
+    def qdf(self, p: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
     def qdf(self, p: npt.ArrayLike) -> float | _ArrF8:
         r"""
         Quantile density function \( q \equiv \dv{Q}{p} \) (derivative of the
@@ -276,6 +290,10 @@ class l_poly:  # noqa: N801
         """
         return self._qdf(p)
 
+    @overload
+    def cdf(self, x: AnyScalar) -> float: ...
+    @overload
+    def cdf(self, x: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
     def cdf(self, x: npt.ArrayLike) -> float | _ArrF8:
         r"""
         [Cumulative distribution function](https://w.wiki/3ota) \( F(x) \) at
@@ -290,6 +308,10 @@ class l_poly:  # noqa: N801
         """
         return self._cdf(x)
 
+    @overload
+    def pdf(self, x: AnyScalar) -> float: ...
+    @overload
+    def pdf(self, x: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
     def pdf(self, x: npt.ArrayLike) -> float | _ArrF8:
         r"""
         Probability density function \( f \equiv \dv{F}{x} \) (derivative of
@@ -392,6 +414,15 @@ class l_poly:  # noqa: N801
         """
         return self._support
 
+    @overload
+    def interval(self, confidence: AnyScalar, /) -> tuple[float, float]: ...
+    @overload
+    def interval(
+        self,
+        confidence: AnyNDArray[Any] | Sequence[Any],
+        /,
+    ) -> tuple[_ArrF8, _ArrF8]:
+        ...
     def interval(
         self,
         confidence: npt.ArrayLike,
