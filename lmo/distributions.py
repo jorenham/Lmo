@@ -41,6 +41,7 @@ from ._utils import (
     clean_trim,
     l_stats_orders,
     moments_to_ratio,
+    round0,
 )
 from .diagnostic import l_ratio_bounds
 from .special import harmonic
@@ -76,6 +77,13 @@ M = TypeVar('M', bound=Callable[..., Any])
 V = TypeVar('V', bound=float | npt.NDArray[np.float64])
 
 _ArrF8: TypeAlias = npt.NDArray[np.float64]
+
+_STATS0: TypeAlias = Literal['']
+_STATS1: TypeAlias = Literal['m', 'v', 's', 'k']
+_STATS2: TypeAlias = Literal['mv', 'ms', 'mk', 'vs', 'vk', 'sk']
+_STATS3: TypeAlias = Literal['mvs', 'mvk', 'msk' , 'vsk']
+_STATS4: TypeAlias = Literal['mvsk']
+_STATS: TypeAlias = _STATS0 | _STATS1 | _STATS2 | _STATS3 | _STATS4
 
 _F_EPS: Final[np.float64] = np.finfo(float).eps
 
@@ -414,7 +422,51 @@ class l_poly:  # noqa: N801
 
     @functools.cached_property
     def _mean(self) -> float:
+        """Mean; 1st raw product-moment."""
         return self.moment(1)
+
+    @functools.cached_property
+    def _var(self) -> float:
+        """Variance; 2nd central product-moment."""
+        if not np.isfinite(m1 := self._mean):
+            return np.nan
+
+        m1_2 = m1 * m1
+        m2 = self.moment(2)
+
+        if m2 <= m1_2 or np.isnan(m2):
+            return np.nan
+
+        return m2 - m1_2
+
+    @functools.cached_property
+    def _skew(self) -> float:
+        """Skewness; 3rd standardized central product-moment."""
+        if np.isnan(ss := self._var) or ss <= 0:
+            return np.nan
+        if np.isnan(m3 := self.moment(3)):
+            return np.nan
+
+        m = self._mean
+        s = np.sqrt(ss)
+        u = m / s
+
+        return m3 / s**3 - u**3 - 3 * u
+
+    @functools.cached_property
+    def _kurtosis(self) -> float:
+        """Ex. kurtosis; 4th standardized central product-moment minus 3."""
+        if np.isnan(ss := self._var) or ss <= 0:
+            return np.nan
+        if np.isnan(m3 := self.moment(3)):
+            return np.nan
+        if np.isnan(m4 := self.moment(4)):
+            return np.nan
+
+        m1 = self._mean
+        uu = m1**2 / ss
+
+        return (m4 - 4 * m1 * m3) / ss**2 + 6 * uu + 3 * uu**2 - 3
 
     def mean(self) -> float:
         r"""
@@ -428,10 +480,6 @@ class l_poly:  # noqa: N801
             return self._l_moments[0]
 
         return self._mean
-
-    @functools.cached_property
-    def _var(self) -> float:
-        return self.moment(2) - self._mean**2
 
     def var(self) -> float:
         r"""
@@ -549,6 +597,10 @@ class l_poly:  # noqa: N801
 
         See Also:
             - [`l_poly.l_moment`][lmo.distributions.l_poly.l_moment]
+
+        Todo:
+            - For n>=2, attempt tot infer from `_l_moments` if the 2nd moment
+                condition holds, using `diagnostics.l_moment_bounds`.
         """
         if n < 0:
             msg = f'expected n >= 0, got {n}'
@@ -562,6 +614,51 @@ class l_poly:  # noqa: N801
         from scipy.integrate import quad  # type: ignore
 
         return cast(float, quad(_integrand, 0, 1)[0])
+
+    @overload
+    def stats(self, moments: _STATS0) -> tuple[()]: ...
+    @overload
+    def stats(self, moments: _STATS1) -> tuple[float]: ...
+    @overload
+    def stats(self, moments: _STATS2 = ...) -> tuple[float, float]: ...
+    @overload
+    def stats(self, moments: _STATS3) -> tuple[float, float, float]: ...
+    @overload
+    def stats(self, moments: _STATS4) -> tuple[float, float, float, float]: ...
+
+    def stats(self, moments: _STATS = 'mv') -> tuple[float, ...]:
+        r"""
+        Some product-moment statistics of the given distribution.
+
+        Args:
+            moments:
+                Composed of letters `mvsk` defining which product-moment
+                statistic to compute:
+
+                `'m'`:
+                :   Mean \( \mu = \E[X] \)
+
+                `'v'`:
+                :   Variance \( \sigma^2 = \E[(X - \mu)^2] \)
+
+                `'s'`:
+                :   Skewness \( \E[(X - \mu)^3] / \sigma^3 \)
+
+                `'k'`:
+                :   Ex. Kurtosis \( \E[(X - \mu)^4] / \sigma^4 - 3 \)
+        """
+        out: list[float] = []
+        if 'm' in moments:
+            out.append(self._mean)
+        if 'v' in moments:
+            out.append(self._var)
+        if 's' in moments:
+            out.append(self._skew)
+        if 'k' in moments:
+            out.append(self._kurtosis)
+
+        return tuple(round0(np.array(out), 1e-15))
+
 
     def expect(self, g: Callable[[float], float], /) -> float:
         r"""
@@ -786,7 +883,7 @@ def _ppf_poly_series(
 class l_rv_nonparametric(_rv_continuous):  # noqa: N801
     r"""
     Warning:
-        `l_rv_nonparametric` is depcrecated, and will be removed in version
+        `l_rv_nonparametric` is deprecated, and will be removed in version
         `0.13`. Use `l_poly` instead.
 
     Estimate a distribution using the given L-moments.
