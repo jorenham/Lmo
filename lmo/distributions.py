@@ -45,6 +45,7 @@ from .diagnostic import l_ratio_bounds
 from .special import harmonic
 from .theoretical import (
     _VectorizedPPF,  # type: ignore [reportPrivateUsage]
+    cdf_from_ppf,
     entropy_from_qdf,
     l_moment_from_ppf,
     ppf_from_l_moments,
@@ -124,6 +125,7 @@ class l_poly:  # noqa: N801
         a, b = self._ppf([0, 1])
         self._support = a, b
 
+        self._cdf_single = cdf_from_ppf(self._ppf)
         self._cdf = np.vectorize(self._cdf_single, [float])
 
     @classmethod
@@ -182,17 +184,6 @@ class l_poly:  # noqa: N801
 
         l_r = l_moment(x, np.arange(1, r_max + 1), trim=trim)
         return cls(l_r, trim=trim)
-
-    def _cdf_single(self, x: float) -> float:
-        a, b = self._support
-        if np.isnan(x):
-            return np.nan
-        if x <= a:
-            return 0.
-        if x >= b:
-            return 1.
-
-        raise NotImplementedError
 
     def ppf(self, p: npt.ArrayLike) -> float | _ArrF8:
         r"""
