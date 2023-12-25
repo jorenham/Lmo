@@ -109,8 +109,15 @@ def _nquad(
 
 @functools.cache
 def _l_moment_const(r: int, s: float, t: float, k: int = 0) -> float:
-    if r <= k or s == t == 0:
+    assert k >= 0
+
+    if r <= k:
         return 1.0
+    if s == t == 0:
+        if k == 0:
+            return 1.0
+        if k == 1:
+            return 1 / (r - 1)
 
     # math.lgamma is faster (and has better type annotations) than
     # scipy.special.loggamma.
