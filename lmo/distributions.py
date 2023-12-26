@@ -81,7 +81,7 @@ _ArrF8: TypeAlias = npt.NDArray[np.float64]
 _STATS0: TypeAlias = Literal['']
 _STATS1: TypeAlias = Literal['m', 'v', 's', 'k']
 _STATS2: TypeAlias = Literal['mv', 'ms', 'mk', 'vs', 'vk', 'sk']
-_STATS3: TypeAlias = Literal['mvs', 'mvk', 'msk' , 'vsk']
+_STATS3: TypeAlias = Literal['mvs', 'mvk', 'msk', 'vsk']
 _STATS4: TypeAlias = Literal['mvsk']
 _STATS: TypeAlias = _STATS0 | _STATS1 | _STATS2 | _STATS3 | _STATS4
 
@@ -1106,7 +1106,7 @@ class l_rv_nonparametric(_rv_continuous):  # noqa: N801
             return self.badvalue
         if n > 1:
             warnings.warn(
-                f'multiple fixed points at {x = :.6f}: '
+                f'multiple fixed points at {x = :.6f}: '  # noqa: E203
                 f'{list(np.round(q0, 6))}',
                 stacklevel=3,
             )
@@ -1669,7 +1669,12 @@ class wakeby_gen(_rv_continuous):  # noqa: N801
             lmbda_r = cast(
                 float | npt.NDArray[np.float64],
                 l_moment_from_ppf(
-                    functools.partial(self._ppf, b=b, d=d, f=f), # type: ignore
+                    functools.partial(
+                        self._ppf,
+                        b=b,
+                        d=d,
+                        f=f,
+                    ),  # type: ignore
                     r,
                     trim=trim,
                     quad_opts=quad_opts,
@@ -1937,7 +1942,7 @@ class genlambda_gen(_rv_continuous):  # noqa: N801
             m2 = (
                 (a / b1)**2 / (b1 + b)
                 + (c / d1)**2 / (d1 + d)
-                + 2 * a * c  / (b * d) * (
+                + 2 * a * c / (b * d) * (
                     1 / (b1 * d1)
                     - cast(float, sc.beta(b1, d1))  # type: ignore
                 )
@@ -1974,7 +1979,12 @@ class genlambda_gen(_rv_continuous):  # noqa: N801
             lmbda_r = cast(
                 float | npt.NDArray[np.float64],
                 l_moment_from_ppf(
-                    functools.partial(self._ppf, b=b, d=d, f=f), # type: ignore
+                    functools.partial(
+                        self._ppf,
+                        b=b,
+                        d=d,
+                        f=f,
+                    ),  # type: ignore
                     r,
                     trim=trim,
                     quad_opts=quad_opts,

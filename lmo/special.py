@@ -426,7 +426,7 @@ def fourier_jacobi(
 
     # temporarily replace inf's with abs(_) > 1, and track the sign
     if hasinfs := np.any(infs := np.isinf(_x)):
-        _x = np.where(infs,  10 * np.sign(_x), _x)
+        _x = np.where(infs, 10 * np.sign(_x), _x)
 
     # "backwards" recursion (left-reduction)
     # y[k+2] and y[k+1]
