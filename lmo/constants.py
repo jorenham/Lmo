@@ -15,7 +15,7 @@ See also:
     - https://wikipedia.org/wiki/Magic_angle
 """
 
-theta_m_bar: Final[float] = 0.221389709640985827437970269154380360
+theta_m_bar: Final[float] = 0.152043361992348182457286110194392272
 r"""
 Magic number of turns \( \bar{\theta}_m = \theta_m / (2 \pi) \approx 0.2214 \)
 
