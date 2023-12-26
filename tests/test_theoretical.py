@@ -111,7 +111,7 @@ def test_lm_normal():
     r = [1, 2, 3, 4]
 
     l2 = sigma / np.sqrt(np.pi)
-    l = np.array([mu, l2, 0, l2 * (30 * constants.theta_m / np.pi - 9)])
+    l = np.array([mu, l2, 0, l2 * (60 * constants.theta_m_bar - 9)])
 
     l_ppf = l_moment_from_ppf(IQ.inv_cdf, r)
     assert_allclose(l_ppf, l)
@@ -132,7 +132,7 @@ def test_tlm_normal():
 
     r = [1, 2, 3, 4]
 
-    tl2 = 6 * sigma / np.sqrt(np.pi) * (1 - 3 * constants.theta_m / np.pi)
+    tl2 = 6 * sigma / np.sqrt(np.pi) * (1 - 6 * constants.theta_m_bar)
     tl = np.array([mu, tl2, 0, tl2 * 0.06247999167])
 
     tl_ppf = l_moment_from_ppf(IQ.inv_cdf, r, trim=1)
