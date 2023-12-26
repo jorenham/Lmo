@@ -5,13 +5,48 @@ from numpy.testing import assert_allclose
 
 import pytest
 
-from lmo.distributions import wakeby, genlambda
-from lmo.typing import RVContinuous
+from lmo.distributions import genlambda, l_poly, wakeby
+from lmo.typing import AnyTrim, RVContinuous
 
-from scipy.stats.distributions import tukeylambda  # type: ignore
+from scipy.stats.distributions import tukeylambda, uniform  # type: ignore
 
 ATOL = 1e-10
 Q = np.linspace(1 / 100, 1, 99, endpoint=False)
+
+@pytest.mark.parametrize(
+    'trim',
+    [0, 1, (0, 1), (1, 0), (13, 17), (2 / 3, 3 / 4)],
+)
+def test_l_poly_eq_uniform(trim: AnyTrim):
+    p0 = x0 = np.linspace(0, 1)
+
+    X = cast('RVContinuous[()]', uniform())
+    X_hat = l_poly(X.l_moment([1, 2], trim=trim), trim=trim)
+
+    t4 = X.l_stats(trim=trim)
+    t4_hat = X_hat.l_stats(trim=trim)
+    assert_allclose(t4_hat, t4, atol=ATOL)
+
+    mvsk = X.stats(moments='mvsk')
+    mvsk_hat = X_hat.stats(moments='mvsk')
+    assert_allclose(mvsk_hat, mvsk, atol=ATOL)
+
+    x = X.ppf(p0)
+    x_hat = X_hat.ppf(p0)
+    assert_allclose(x_hat, x, atol=ATOL)
+
+    F = X.cdf(p0)
+    F_hat = X_hat.cdf(p0)
+    assert_allclose(F_hat, F, atol=ATOL)
+
+    f = X.pdf(x0)
+    f_hat = X_hat.pdf(x0)
+    assert_allclose(f_hat, f)
+
+    H = X.entropy()
+    H_hat = X_hat.entropy()
+    assert_allclose(H_hat, H, atol=ATOL)
+
 
 @pytest.mark.parametrize('scale', [1, .5, 2])
 @pytest.mark.parametrize('loc', [0, 1, -1])
@@ -144,4 +179,3 @@ def test_genlambda(b: float, d: float, f: float, loc: float, scale: float):
     assert tl_tau_quad[1] > 0 or np.isnan(tl_tau_quad[1])
     tl_tau_theo = X.l_stats(trim=1)
     assert_allclose(tl_tau_theo, tl_tau_quad, atol=1e-7)
-
