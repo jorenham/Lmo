@@ -113,6 +113,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
     shapes: str
 
     _argcheck: Callable[..., int]
+    _logpxf: DistributionFunction[...]
     _cdf: DistributionFunction[...]
     _fitstart: Callable[..., tuple[float, ...]]
     _get_support: Callable[..., tuple[float, float]]
@@ -180,6 +181,28 @@ class l_rv_generic(PatchClass):  # noqa: N801
 
         # re-wrap scalars in 0-d arrays (lmo.theoretical unpacks them)
         return np.asarray(lmbda_r)
+
+    def _logqdf(
+        self,
+        u: npt.NDArray[np.float64],
+        *args: Any,
+    ) -> npt.NDArray[np.float64]:
+        """Overridable log quantile distribution function (QDF)."""
+        with np.errstate(divide='ignore'):
+            return -self._logpxf(self._ppf(u, *args), *args)
+
+    def _qdf(
+        self,
+        u: npt.NDArray[np.float64],
+        *args: Any,
+    ) -> npt.NDArray[np.float64]:
+        r"""
+        Overridable quantile distribution function (QDF).
+
+        Defaults to \( q(u) = 1 / f(Q(u)) \), with \( Q(u) \) the PPF
+        (quantile function, inverse CDF), and \( f(x) \) the PDF or PMF.
+        """
+        return np.exp(self._logqdf(u, *args))
 
     @overload
     def l_moment(

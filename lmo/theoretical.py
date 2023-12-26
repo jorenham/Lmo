@@ -6,6 +6,7 @@ distributions.
 __all__ = (
     'l_moment_from_cdf',
     'l_moment_from_ppf',
+    'l_moment_from_qdf',
     'l_ratio_from_cdf',
     'l_ratio_from_ppf',
     'l_stats_from_cdf',
@@ -20,17 +21,22 @@ __all__ = (
     'l_comoment_from_pdf',
     'l_coratio_from_pdf',
 
+    'ppf_from_l_moments',
+    'qdf_from_l_moments',
+
+    'cdf_from_ppf',
     'entropy_from_qdf',
 )
 
 import functools
 from collections.abc import Callable, Sequence
-from math import exp, factorial, gamma, lgamma
+from math import exp, factorial, gamma, lgamma, log
 from typing import (
     Any,
     Concatenate,
     Final,
     ParamSpec,
+    Protocol,
     TypeAlias,
     TypeVar,
     cast,
@@ -40,7 +46,6 @@ from typing import (
 import numpy as np
 import numpy.typing as npt
 import scipy.integrate as sci  # type: ignore
-import scipy.special as scs  # type: ignore
 from scipy.stats.distributions import (  # type: ignore
     rv_continuous,
     rv_discrete,
@@ -56,9 +61,19 @@ from ._utils import (
     l_stats_orders,
     moments_to_ratio,
     moments_to_stats_cov,
+    plotting_positions,
     round0,
 )
-from .typing import AnyFloat, AnyInt, AnyTrim, IntVector, QuadOptions
+from .special import fourier_jacobi, fpow
+from .typing import (
+    AnyFloat,
+    AnyInt,
+    AnyNDArray,
+    AnyScalar,
+    AnyTrim,
+    IntVector,
+    QuadOptions,
+)
 
 T = TypeVar('T')
 V = TypeVar('V', bound=float | npt.NDArray[np.float64])
@@ -67,7 +82,8 @@ Theta = ParamSpec('Theta')
 Pair: TypeAlias = tuple[T, T]
 
 UnivariateCDF: TypeAlias = Callable[[float], float]
-UnivariatePPF: TypeAlias = Callable[[float], float]
+UnivariatePPF: TypeAlias = UnivariateCDF
+UnivariateQDF: TypeAlias = UnivariatePPF
 UnivariateRV: TypeAlias = rv_continuous | rv_discrete | rv_frozen
 
 ALPHA: Final[float] = 0.1
@@ -93,15 +109,31 @@ def _nquad(
 
 @functools.cache
 def _l_moment_const(r: int, s: float, t: float, k: int = 0) -> float:
+    assert k >= 0
+
     if r <= k:
         return 1.0
+    if s == t == 0:
+        if k == 0:
+            return 1.0
+        if k == 1:
+            return 1 / (r - 1)
 
     # math.lgamma is faster (and has better type annotations) than
     # scipy.special.loggamma.
     if r + s + t <= 20:
         v = gamma(r + s + t + 1) / (gamma(r + s) * gamma(r + t))
-    else:
+    elif r + s + t <= 128:
         v = exp(lgamma(r + s + t + 1) - lgamma(r + s) - lgamma(r + t))
+    else:
+        return exp(
+            + lgamma(r + s + t + 1)
+            - lgamma(r + s)
+            - lgamma(r + t)
+            + lgamma(r - k)
+            - log(r)  # noqa: COM812
+        )
+
     return factorial(r - 1 - k) / r * v
 
 
@@ -288,18 +320,20 @@ def l_moment_from_cdf(
     rs = clean_orders(np.asanyarray(r))
     s, t = clean_trim(trim)
 
+    from scipy.special import betainc  # type: ignore
+
     def integrand(x: float, _r: int) -> float:
         p = cdf(x)
         if _r == 1:
             if s or t:  # noqa: SIM108
-                v = cast(float, scs.betainc(s + 1, t + 1, p))  # type: ignore
+                v = cast(float, betainc(s + 1, t + 1, p))  # type: ignore
             else:
                 v = p
             return np.heaviside(x, .5) - v
 
         return (
-            p ** (s + 1)
-            * (1 - p) ** (t + 1)
+            np.sqrt(2 * _r - 1)
+            * p ** (s + 1) * (1 - p) ** (t + 1)
             * eval_sh_jacobi(_r - 2, t + 1, s + 1, p)
         )
 
@@ -321,7 +355,7 @@ def l_moment_from_cdf(
             (sci.quad(integrand, a, b, (_r,), **kwds)[0] if a < b else 0) +
             sci.quad(integrand, b, c, (_r,), **kwds)[0] +
             (sci.quad(integrand, c, d, (_r,), **kwds)[0] if c < d else 0),
-        ) + loc0 * (_r == 1)
+        ) / np.sqrt(2 * _r - 1) + loc0 * (_r == 1)
 
     l_r_cache: dict[int, float] = {}
     l_r = np.empty_like(rs, dtype=np.float64)
@@ -332,7 +366,7 @@ def l_moment_from_cdf(
         else:
             l_r[i] = l_r_cache[_k] = _l_moment_single(_k)
 
-    return round0(l_r)[()]  # convert back to scalar if needed
+    return round0(l_r, 1e-12)[()]  # convert back to scalar if needed
 
 
 @overload
@@ -497,6 +531,68 @@ def l_moment_from_ppf(
             l_r[i] = l_r_cache[_k] = _l_moment_single(_k)
 
     return round0(l_r)[()]  # convert back to scalar if needed
+
+@overload
+def l_moment_from_qdf(
+    qdf: UnivariateQDF,
+    r: AnyInt,
+    /,
+    trim: AnyTrim = ...,
+    *,
+    support: Pair[float] = ...,
+    quad_opts: QuadOptions | None = ...,
+    alpha: float = ...,
+) -> np.float64:
+    ...
+
+@overload
+def l_moment_from_qdf(
+    qdf: UnivariateQDF,
+    r: IntVector,
+    /,
+    trim: AnyTrim = ...,
+    *,
+    support: Pair[float] = ...,
+    quad_opts: QuadOptions | None = ...,
+    alpha: float = ...,
+) -> npt.NDArray[np.float64]:
+    ...
+
+def l_moment_from_qdf(
+    qdf: UnivariateQDF,
+    r: AnyInt | IntVector,
+    /,
+    trim: AnyTrim = (0, 0),
+    *,
+    support: Pair[float] = (0, 1),
+    quad_opts: QuadOptions | None = None,
+    alpha: float = ALPHA,
+) -> np.float64 | npt.NDArray[np.float64]:
+    r"""
+    Evaluate the population L-moments \( \tlmoment{s, t}{r} \) for \( r > 1 \)
+    from the quantile distribution function (QDF), which is the derivative of
+    the PPF (quantile function).
+    """
+    r_qd = clean_orders(np.asanyarray(r), rmin=2)[()]
+    r_pp = r_qd - 1
+
+    s_qd, t_qd = clean_trim(trim)
+    s_pp, t_pp = s_qd + 1, t_qd + 1
+
+    out = l_moment_from_ppf(
+        qdf,
+        r_pp,
+        trim=(s_pp, t_pp),
+        support=support,
+        quad_opts=quad_opts,
+        alpha=alpha,
+    )
+
+    # correction of the L-moment constant, which follows from the recurrence
+    # relations of the gamma (or beta) functions
+    c_scale = r_pp / (r_qd * (r_pp + s_pp + t_pp))
+
+    return out * c_scale
 
 
 @overload
@@ -1531,6 +1627,303 @@ def l_coratio_from_pdf(
 
     return ll_r / np.expand_dims(ll_r0.diagonal(), -1)
 
+class _VectorizedPPF(Protocol):
+    @overload
+    def __call__(self, __u: AnyScalar, *, r_max: int = ...) -> float: ...
+    @overload
+    def __call__(
+        self,
+        __u: AnyNDArray[Any] | Sequence[Any],
+        *,
+        r_max: int = ...,
+    ) -> npt.NDArray[np.float64]: ...
+    @overload
+    def __call__(
+        self,
+        __u: npt.ArrayLike,
+        *,
+        r_max: int = ...,
+    ) -> float | npt.NDArray[np.float64]:
+        ...
+
+def _validate_l_bounds(
+    l_r: npt.NDArray[np.float64],
+    s: float,
+    t: float,
+) -> None:
+    if (l2 := l_r[1]) <= 0:
+        msg = f'L-scale must be >0, got lmda[1] = {l2}'
+        raise ValueError(msg)
+
+    if len(l_r) <= 2:
+        return
+
+    # enforce the (non-strict) L-ratio bounds, from Hosking (2007) eq. 14,
+    # but rewritten using falling factorials, to avoid potential overflows
+    tau = l_r[2:] / l2
+
+    _r = np.arange(3, len(l_r) + 1)
+    m = max(s, t) + 1
+    tau_absmax = 2 * fpow(_r + s + t, m) / (_r * fpow(2 + s + t, m))
+
+    if np.any(invalid := np.abs(tau) > tau_absmax):
+        r_invalid = list(np.argwhere(invalid) + 3)
+        if len(r_invalid) == 1:
+            r_invalid = r_invalid[0]
+        msg = (
+            f'L-moment(s) with r = {r_invalid}) are not within the valid'
+            f'range'
+        )
+        raise ValueError(msg)
+
+    # validate an l-skewness / l-kurtosis relative inequality that is
+    # a pre-condition for the PPF to be strictly monotonically increasing
+    t3 = tau[0]
+    t4 = tau[1] if len(tau) > 1 else 0
+
+    m = 2 + (s if t3 > 0 else t)
+    u = 3 + s + t
+    t3_max = 2 * (u / m + (m + 1) * (u + 4) * t4) / (3 * (u + 2))
+
+    if abs(t3) >= t3_max:
+        if t3 < 0:
+            msg_t3_size, msg_t3_trim = 'small', 's'
+        else:
+            msg_t3_size, msg_t3_trim = 'large', 't'
+
+        msg = (
+            f'L-skewness is too {msg_t3_size} ({t3:.4f}); consider '
+            f'increasing {msg_t3_trim}'
+        )
+        raise ValueError(msg)
+
+def _monotonic(
+    f: Callable[[npt.NDArray[np.float64]], npt.NDArray[np.float64]],
+    a: float,
+    b: float,
+    n: int = 100,
+    strict: bool = False,
+) -> bool:
+    """Numeric validation of the monotinicity of a function on [a, b]."""
+    x = np.linspace(a, b, n + 1)
+    y = f(x)
+    #dy = np.gradient(y)
+    dy = np.ediff1d(y)
+
+    return bool(np.all(dy > 0 if strict else dy >= 0))
+
+def ppf_from_l_moments(
+    lmbda: npt.ArrayLike,
+    /,
+    trim: AnyTrim = (0, 0),
+    *,
+    support: Pair[float] = (-np.inf, np.inf),
+    validate: bool = True,
+    extrapolate: bool = False,
+) -> _VectorizedPPF:
+    r"""
+    Return a PPF (quantile function, or inverse CDF), with the specified.
+    L-moments \( \tlmoment{s, t}{1}, \tlmoment{s, t}{2}, \ldots,
+    \tlmoment{s, t}{R} \). Other L-moments are considered zero.
+
+    For \( R \) L-moments, this function returns
+
+    \[
+        \hat{Q}_R(u) = \sum_{r=1}^{R}
+            r \frac{2r + s + t - 1}{r + s + t}
+            \tlmoment{s, t}{r}
+            \shjacobi{r - 1}{t}{s}{u},
+    \]
+
+    where \( \shjacobi{n}{a}{b}{x} \) is an \( n \)-th degree shifted Jacobi
+    polynomial, which is orthogonal for \( (a, b) \in (-1, \infty)^2 \) on
+    \( u \in [0, 1] \).
+
+    This *nonparametric* quantile function estimation method was first
+    described by
+    [J.R.M. Hosking in 2007](https://doi.org/10.1016/j.jspi.2006.12.002).
+    However, his derivation contains a small, but obvious error, resulting
+    in zero-division for \( r = 1 \).
+    So Lmo derived this correct version  himself, by using the fact that
+    L-moments are the disguised coefficients of the PPF's generalized
+    Fourier-Jacobi series expansion.
+
+    With Parseval's theorem it can be shown that, if the probability-weighted
+    moment \( M_{2,s,t} \) (which is the variance if \( s = t = 0 \)) is
+    finite, then \( \hat{Q}_R(u) = Q(u) \) as \( R \to \infty \).
+
+    Args:
+        lmbda:
+            1-d array-like of L-moments \( \tlmoment{s,t}{r} \) for
+            \( r = 1, 2, \ldots, R \). At least 2 L-moments are required.
+            All remaining L-moments with \( r > R \) are considered zero.
+        trim:
+            The trim-length(s) of L-moments `lmbda`.
+        support:
+            A tuple like `(x_min, x_max)`. If provided, the PPF results
+            will be clipped to within this interval.
+        validate:
+            If `True` (default), a `ValueError` will be raised if the
+            resulting PPF is invalid (non-monotonic), which can be solved by
+            increasing  the `trim`.
+        extrapolate:
+            If set to `True`, a simple moving average of \( R \) and
+            \( R - 1 \) will be returned. This generally results in a smoother
+            and more accurate PPF, but its L-moments will not be equal to
+            `lmda`. Defaults to `False`.
+
+    Returns:
+        ppf:
+            A vectorized PPF (quantile function). Its extra optional
+            keyword argument `r_max: int` can be used to "censor" trailing
+            L-moments, i.e. truncating the degree of the polynomial.
+
+    """
+    l_r = np.asarray(lmbda)
+    if (_n := len(l_r)) < 2:
+        msg = f'at least 2 L-moments required, got len(lmbda) = {_n}'
+        raise ValueError(msg)
+
+    s, t = clean_trim(trim)
+
+    if validate:
+        _validate_l_bounds(l_r, s, t)
+
+    a, b = support
+    if a >= b:
+        msg = f'invalid support; expected a < b, got a, b = {a}, {b}'
+        raise ValueError(msg)
+
+    # r = np.arange(1, _n + 1)
+    # c = (2 * r + s + t - 1) * (r / (r + s + t)) * l_r
+    w = np.arange(1, 2 * _n + 1, 2, dtype=float)
+    if (st := s + t) != 0:
+        w -= st * np.arange(_n) / np.arange(st + 1, _n + st + 1)
+    c = w * l_r
+
+    def ppf(
+        u: npt.ArrayLike,
+        *,
+        r_max: int = -1,
+    ) -> float | npt.NDArray[np.float64]:
+        y = np.asarray(u)
+        y = np.where((y < 0) | (y > 1), np.nan, 2 * y - 1)
+
+        _c = c[:r_max] if 0 < r_max < len(c) else c
+
+        x = fourier_jacobi(y, _c, t, s)
+        if extrapolate and _n > 2:
+            x = (x + fourier_jacobi(y, _c[:-1], t, s)) / 2
+
+        return np.clip(x, *support)[()]
+
+    if validate and not _monotonic(ppf, 0, 1):  # type: ignore
+        msg = (
+            'PPF is not monotonically increasing (not invertable); '
+            'consider increasing the trim'
+        )
+        raise ValueError(msg)
+
+    return ppf  # type: ignore
+
+def qdf_from_l_moments(
+    lmbda: npt.ArrayLike,
+    /,
+    trim: AnyTrim = (0, 0),
+    *,
+    validate: bool = True,
+    extrapolate: bool = False,
+) -> _VectorizedPPF:
+    r"""
+    Return the QDF (quantile density function, the derivative of the PPF),
+    with the specified L-moments \( \tlmoment{s, t}{1}, \tlmoment{s, t}{2},
+    \ldots, \tlmoment{s, t}{R} \). Other L-moments are considered zero.
+
+    This function returns
+
+    \[
+    \begin{align*}
+        \hat{q}_R(u)
+            &= \dv{u} \hat{Q}_R(u) \\
+            &= \sum_{r=2}^{R}
+                r (2r + s + t - 1)
+                \tlmoment{s, t}{r}
+                \shjacobi{r - 2}{t + 1}{s + 1}{u},
+    \end{align*}
+    \]
+
+    where \( \shjacobi{n}{a}{b}{x} \) is an \( n \)-th degree shifted Jacobi
+    polynomial, which is orthogonal for \( (a, b) \in (-1, \infty)^2 \) on
+    \( u \in [0, 1] \).
+
+    See [`ppf_from_l_moments`][lmo.theoretical.ppf_from_l_moments] for options.
+    """
+    l_r = np.asarray(lmbda)
+    if (_n := len(l_r)) < 2:
+        msg = f'at least 2 L-moments required, got len(lmbda) = {_n}'
+        raise ValueError(msg)
+
+    s, t = clean_trim(trim)
+
+    if validate:
+        _validate_l_bounds(l_r, s, t)
+
+    # r = np.arange(2, _n + 1)
+    # c = (2 * r + s + t - 1) * r * l_r[1:]
+    st = s + t
+    c = (
+        np.arange(1 + st, 2 * _n + st + 1, 2, dtype=float)
+        * np.arange(1, _n + 1)
+        * l_r
+    )[1:]
+    alpha, beta = t + 1, s + 1
+
+    def qdf(
+        u: npt.ArrayLike,
+        *,
+        r_max: int = -1,
+    ) -> float | npt.NDArray[np.float64]:
+        y = np.asarray(u)
+        y = np.where((y < 0) | (y > 1), np.nan, 2 * y - 1)
+
+        _c = c[:r_max] if 0 < r_max < len(c) else c
+
+        x = fourier_jacobi(y, _c, alpha, beta)
+        if extrapolate and _n > 2:
+            x = (x + fourier_jacobi(y, _c[:-1], alpha, beta)) / 2
+
+        return x[()]
+
+    if validate and np.any(qdf(plotting_positions(100)) < 0):
+        msg = 'QDF is not positive; consider increasing the trim'
+        raise ValueError(msg)
+
+    return qdf  # type: ignore
+
+def cdf_from_ppf(
+    ppf: Callable[Concatenate[float, Theta], float],
+    /,
+) -> Callable[Concatenate[float, Theta], float]:
+    """Numerical inversion of the PPF."""
+    from scipy.optimize import root_scalar  # type: ignore
+
+    def cdf(x: float, *args: Theta.args, **kwds: Theta.kwargs) -> float:
+        if np.isnan(x):
+            return np.nan
+        if x <= ppf(0, *args, **kwds):
+            return 0.
+        if x >= ppf(1, *args, **kwds):
+            return 1.
+
+        def _ppf_to_solve(p: float) -> float:
+            return ppf(p, *args, **kwds) - x
+
+        return cast(
+            float,
+            root_scalar(_ppf_to_solve, bracket=[0, 1], method='brentq').root,
+        )
+
+    return cdf
 
 def entropy_from_qdf(
     qdf: Callable[Concatenate[float, Theta], float],
@@ -1551,7 +1944,7 @@ def entropy_from_qdf(
         h(X)
             = \E[-\ln f(X)]
             = \int_\mathbb{R} \ln \frac{1}{f(x)} \mathrm{d} x
-            = \int_1 \ln q(u) \mathrm{d} u
+            = \int_0^1 \ln q(u) \mathrm{d} u
     \]
 
     Args:
@@ -1563,7 +1956,7 @@ def entropy_from_qdf(
             Optional keyword arguments to pass to `qdf`.
 
     Returns:
-        The differential entropy \( h(X) \).
+        The differential entropy \( H(X) \).
 
     See Also:
         - [Differential entropy - Wikipedia

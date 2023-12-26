@@ -1,5 +1,6 @@
 """Probability distributions, compatible with [`scipy.stats`][scipy.stats]."""
 __all__ = (
+    'l_poly',
     'l_rv_nonparametric',
     'kumaraswamy',
     'wakeby',
@@ -10,15 +11,18 @@ __all__ = (
 
 import functools
 import math
+import sys
 import warnings
 from collections.abc import Callable, Mapping, Sequence
 from typing import (
     Any,
     Final,
+    Literal,
     SupportsIndex,
     TypeAlias,
     TypeVar,
     cast,
+    overload,
 )
 
 import numpy as np
@@ -32,19 +36,39 @@ from scipy.stats.distributions import (  # type: ignore
 
 from ._poly import jacobi_series, roots
 from ._utils import (
+    broadstack,
     clean_order,
     clean_trim,
+    l_stats_orders,
+    moments_to_ratio,
+    round0,
 )
 from .diagnostic import l_ratio_bounds
 from .special import harmonic
-from .theoretical import entropy_from_qdf, l_moment_from_ppf
+from .theoretical import (
+    _VectorizedPPF,  # type: ignore [reportPrivateUsage]
+    cdf_from_ppf,
+    entropy_from_qdf,
+    l_moment_from_ppf,
+    ppf_from_l_moments,
+    qdf_from_l_moments,
+)
 from .typing import (
+    AnyInt,
+    AnyNDArray,
+    AnyScalar,
     AnyTrim,
     FloatVector,
+    IntVector,
     PolySeries,
     QuadOptions,
     RVContinuous,
 )
+
+if sys.version_info < (3, 11):
+    from typing_extensions import Self
+else:
+    from typing import Self
 
 T = TypeVar('T')
 X = TypeVar('X', bound='l_rv_nonparametric')
@@ -52,22 +76,779 @@ F = TypeVar('F', bound=np.floating[Any])
 M = TypeVar('M', bound=Callable[..., Any])
 V = TypeVar('V', bound=float | npt.NDArray[np.float64])
 
+_ArrF8: TypeAlias = npt.NDArray[np.float64]
+
+_STATS0: TypeAlias = Literal['']
+_STATS1: TypeAlias = Literal['m', 'v', 's', 'k']
+_STATS2: TypeAlias = Literal['mv', 'ms', 'mk', 'vs', 'vk', 'sk']
+_STATS3: TypeAlias = Literal['mvs', 'mvk', 'msk' , 'vsk']
+_STATS4: TypeAlias = Literal['mvsk']
+_STATS: TypeAlias = _STATS0 | _STATS1 | _STATS2 | _STATS3 | _STATS4
 
 _F_EPS: Final[np.float64] = np.finfo(float).eps
 
-
 # Non-parametric
 
-def _check_lmoments(l_r: npt.NDArray[np.floating[Any]], s: float, t: float):
+class l_poly:  # noqa: N801
+    """
+    Polynomial quantile distribution with (only) the given L-moments.
+
+    Todo:
+        - Examples
+        - `stats(moments='mv')`
+    """
+
+    _l_moments: Final[_ArrF8]
+    _trim: Final[tuple[float, float] | tuple[int, int]]
+    _support: Final[tuple[float, float]]
+
+    _ppf: Final[_VectorizedPPF]
+    _qdf: Final[_VectorizedPPF]
+    _cdf: Final[_VectorizedPPF]
+
+    _random_state: np.random.Generator
+
+    def __init__(
+        self,
+        lmbda: npt.ArrayLike,
+        /,
+        trim: AnyTrim = (0, 0),
+        *,
+        seed: np.random.Generator | AnyInt | None = None,
+    ) -> None:
+        r"""
+        Create a new `l_poly` instance.
+
+        Args:
+            lmbda:
+                1-d array-like of L-moments \( \tlmoment{s,t}{r} \) for
+                \( r = 1, 2, \ldots, R \). At least 2 L-moments are required.
+                All remaining L-moments with \( r > R \) are considered zero.
+            trim:
+                The trim-length(s) of L-moments `lmbda`.
+            seed:
+                Random number generator.
+        """
+        _lmbda = np.asarray(lmbda)
+        if (_n := len(_lmbda)) < 2:
+            msg = f'at least 2 L-moments required, got len(lmbda) = {_n}'
+            raise ValueError(msg)
+        self._l_moments = _lmbda
+
+        self._trim = _trim = clean_trim(trim)
+
+        self._ppf = ppf_from_l_moments(_lmbda, trim=_trim)
+        self._qdf = qdf_from_l_moments(_lmbda, trim=_trim, validate=False)
+
+        a, b = self._ppf([0, 1])
+        self._support = a, b
+
+        self._cdf_single = cdf_from_ppf(self._ppf)
+        self._cdf = np.vectorize(self._cdf_single, [float])
+
+        self._random_state = np.random.default_rng(seed)
+
+    @property
+    def random_state(self) -> np.random.Generator:
+        """The random number generator of the distribution."""
+        return self._random_state
+
+    @random_state.setter
+    def random_state(self, seed: int | np.random.Generator):
+        self._random_state = np.random.default_rng(seed)
+
+    @classmethod
+    def fit(
+        cls,
+        data: npt.ArrayLike,
+        moments: int | None = None,
+        trim: AnyTrim = (0, 0),
+    ) -> Self:
+        r"""
+        Fit distribution using the (trimmed) L-moment estimates of the given
+        data.
+
+        Args:
+            data:
+                1-d array-like with sample observations.
+            moments:
+                How many sample L-moments to use, `2 <= moments < len(data)`.
+                Defaults to $\sqrt[3]{n}$, where $n$ is `len(data)`.
+            trim:
+                The left and right trim-lengths $(s, t)$ to use. Defaults
+                to $(0, 0)$.
+
+        Returns:
+            A fitted `l_poly` instance.
+
+        Raises:
+            TypeError: Invalid `data` shape.
+            ValueError: Not enough `moments`.
+            ValueError: If the L-moments of the data do not result in strictly
+                monotinically increasing quantile function (PPF).
+
+                This generally means that either the left, the right, or both
+                `trim`-orders are too small.
+        """
+        x = np.asarray_chkfinite(data)
+        if x.ndim != 1:
+            msg = 'expected 1-d data, got shape {{x,shape}}'
+            raise TypeError(msg)
+
+        n = len(x)
+        if n < 2 or np.all(x == x[0]):
+            msg = f'expected at least two unique samples, got {min(n, 1)}'
+            raise ValueError(msg)
+
+        if moments is None:
+            r_max = round(np.clip(np.cbrt(n), 2, 128))
+        else:
+            r_max = moments
+
+        if r_max < 2:
+            msg = f'expected >1 moments, got {moments}'
+            raise ValueError(msg)
+
+        from ._lm import l_moment
+
+        l_r = l_moment(x, np.arange(1, r_max + 1), trim=trim)
+        return cls(l_r, trim=trim)
+
+    @overload
+    def rvs(
+        self,
+        size: Literal[1] | None = ...,
+        random_state: np.random.Generator | AnyInt | None = ...,
+    ) -> float: ...
+
+    @overload
+    def rvs(
+        self,
+        size: int | tuple[int, ...],
+        random_state: np.random.Generator | AnyInt | None = ...,
+    ) -> _ArrF8: ...
+
+    def rvs(
+        self,
+        size: int | tuple[int, ...] | None = None,
+        random_state: np.random.Generator | AnyInt | None = None,
+    ) -> float | _ArrF8:
+        """
+        Draw random variates from the relevant distribution.
+
+        Args:
+            size:
+                Defining number of random variates, defaults to 1.
+            random_state:
+                Seed or [`numpy.random.Generator`][numpy.random.Generator]
+                instance. Defaults to
+                [`l_poly.random_state`][lmo.distributions.l_poly.random_state].
+
+        Returns:
+            A scalar or array with shape like `size`.
+        """
+        if random_state is None:
+            rng = self._random_state
+        else:
+            rng = np.random.default_rng(random_state)
+
+        return self._ppf(rng.uniform(size=size))
+
+    @overload
+    def ppf(self, p: AnyScalar) -> float: ...
+    @overload
+    def ppf(self, p: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
+    def ppf(self, p: npt.ArrayLike) -> float | _ArrF8:
+        r"""
+        [Percent point function](https://w.wiki/8cQU) \( Q(p) \) (inverse of
+        [CDF][lmo.distributions.l_poly.cdf], a.k.a. the quantile function) at
+        \( p \) of the given distribution.
+
+        Args:
+            p:
+                Scalar or array-like of lower tail probability values in
+                \( [0, 1] \).
+
+        See Also:
+            - [`ppf_from_l_moments`][lmo.theoretical.ppf_from_l_moments]
+        """
+        return self._ppf(p)
+
+    @overload
+    def isf(self, q: AnyScalar) -> float: ...
+    @overload
+    def isf(self, q: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
+    def isf(self, q: npt.ArrayLike) -> float | _ArrF8:
+        r"""
+        Inverse survival function \( \bar{Q}(q) = Q(1 - q) \) (inverse of
+        [`sf`][lmo.distributions.l_poly.sf]) at \( q \).
+
+        Args:
+            q:
+                Scalar or array-like of upper tail probability values in
+                \( [0, 1] \).
+        """
+        p = 1 - np.asarray(q)
+        return self._ppf(p[()] if np.isscalar(q) else p)
+
+    @overload
+    def qdf(self, p: AnyScalar) -> float: ...
+    @overload
+    def qdf(self, p: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
+    def qdf(self, p: npt.ArrayLike) -> float | _ArrF8:
+        r"""
+        Quantile density function \( q \equiv \dv{Q}{p} \) (derivative of the
+        [PPF][lmo.distributions.l_poly.ppf]) at \( p \) of the given
+        distribution.
+
+        Args:
+            p:
+                Scalar or array-like of lower tail probability values in
+                \( [0, 1] \).
+
+        See Also:
+            - [`qdf_from_l_moments`][lmo.theoretical.ppf_from_l_moments]
+        """
+        return self._qdf(p)
+
+    @overload
+    def cdf(self, x: AnyScalar) -> float: ...
+    @overload
+    def cdf(self, x: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
+    def cdf(self, x: npt.ArrayLike) -> float | _ArrF8:
+        r"""
+        [Cumulative distribution function](https://w.wiki/3ota)
+        \( F(x) = \mathrm{P}(X \le x) \) at \( x \) of the given distribution.
+
+        Note:
+            Because the CDF of `l_poly` is not analytically expressible, it
+            is evaluated numerically using a root-finding algorithm.
+
+        Args:
+            x: Scalar or array-like of quantiles.
+        """
+        return self._cdf(x)
+
+    @overload
+    def logcdf(self, x: AnyScalar) -> float: ...
+    @overload
+    def logcdf(self, x: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
+    @np.errstate(divide='ignore')
+    def logcdf(self, x: npt.ArrayLike) -> float | _ArrF8:
+        r"""
+        Logarithm of the cumulative distribution function (CDF) at \( x \),
+        i.e. \( \ln F(x) \).
+
+        Args:
+            x: Scalar or array-like of quantiles.
+        """
+        return np.log(self._cdf(x))
+
+    @overload
+    def sf(self, x: AnyScalar) -> float: ...
+    @overload
+    def sf(self, x: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
+    def sf(self, x: npt.ArrayLike) -> float | _ArrF8:
+        r"""
+        Survival function \(S(x) = \mathrm{P}(X > x) =
+        1 - \mathrm{P}(X \le x) = 1 - F(x) \) (the complement of the
+        [CDF][lmo.distributions.l_poly.cdf]).
+
+        Args:
+            x: Scalar or array-like of quantiles.
+        """
+        return 1 - self._cdf(x)
+
+    @overload
+    def logsf(self, x: AnyScalar) -> float: ...
+    @overload
+    def logsf(self, x: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
+    @np.errstate(divide='ignore')
+    def logsf(self, x: npt.ArrayLike) -> float | _ArrF8:
+        r"""
+        Logarithm of the survical function (SF) at \( x \), i.e.
+        \( \ln \left( S(x) \right) \).
+
+        Args:
+            x: Scalar or array-like of quantiles.
+        """
+        return np.log(self._cdf(x))
+
+    @overload
+    def pdf(self, x: AnyScalar) -> float: ...
+    @overload
+    def pdf(self, x: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
+    def pdf(self, x: npt.ArrayLike) -> float | _ArrF8:
+        r"""
+        Probability density function \( f \equiv \dv{F}{x} \) (derivative of
+        the [CDF][lmo.distributions.l_poly.cdf]) at \( x \).
+
+        By applying the [inverse function rule](https://w.wiki/8cQS), the PDF
+        can also defined using the [QDF][lmo.distributions.l_poly.qdf] as
+        \(  f(x) = 1 / q\big(F(x)\big) \).
+
+        Args:
+            x: Scalar or array-like of quantiles.
+        """
+        return 1 / self._qdf(self._cdf(x))
+
+    @overload
+    def hf(self, x: AnyScalar) -> float: ...
+    @overload
+    def hf(self, x: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
+    def hf(self, x: npt.ArrayLike) -> float | _ArrF8:
+        r"""
+        [Hazard function
+        ](https://w.wiki/8cWL#Failure_rate_in_the_continuous_sense)
+        \( h(x) = f(x) / S(x) \) at \( x \), with \( f \) and \( S \) the
+        [PDF][lmo.distributions.l_poly.pdf] and
+        [SF][lmo.distributions.l_poly.sf], respectively.
+
+        Args:
+            x: Scalar or array-like of quantiles.
+        """
+        p = self._cdf(x)
+        return 1 / (self._qdf(p) * (1 - p))
+
+    def median(self) -> float:
+        r"""
+        [Median](https://w.wiki/3oaw) (50th percentile) of the distribution.
+        Alias for `ppf(1 / 2)`.
+
+        See Also:
+            - [`l_poly.ppf`][lmo.distributions.l_poly.ppf]
+        """
+        return self._ppf(.5)
+
+    @functools.cached_property
+    def _mean(self) -> float:
+        """Mean; 1st raw product-moment."""
+        return self.moment(1)
+
+    @functools.cached_property
+    def _var(self) -> float:
+        """Variance; 2nd central product-moment."""
+        if not np.isfinite(m1 := self._mean):
+            return np.nan
+
+        m1_2 = m1 * m1
+        m2 = self.moment(2)
+
+        if m2 <= m1_2 or np.isnan(m2):
+            return np.nan
+
+        return m2 - m1_2
+
+    @functools.cached_property
+    def _skew(self) -> float:
+        """Skewness; 3rd standardized central product-moment."""
+        if np.isnan(ss := self._var) or ss <= 0:
+            return np.nan
+        if np.isnan(m3 := self.moment(3)):
+            return np.nan
+
+        m = self._mean
+        s = np.sqrt(ss)
+        u = m / s
+
+        return m3 / s**3 - u**3 - 3 * u
+
+    @functools.cached_property
+    def _kurtosis(self) -> float:
+        """Ex. kurtosis; 4th standardized central product-moment minus 3."""
+        if np.isnan(ss := self._var) or ss <= 0:
+            return np.nan
+        if np.isnan(m3 := self.moment(3)):
+            return np.nan
+        if np.isnan(m4 := self.moment(4)):
+            return np.nan
+
+        m1 = self._mean
+        uu = m1**2 / ss
+
+        return (m4 - 4 * m1 * m3) / ss**2 + 6 * uu + 3 * uu**2 - 3
+
+    def mean(self) -> float:
+        r"""
+        The [mean](https://w.wiki/8cQe) \( \mu = \E[X] \) of random varianble
+        \( X \) of the relevant distribution.
+
+        See Also:
+            - [`l_poly.l_loc`][lmo.distributions.l_poly.l_loc]
+        """
+        if self._trim == (0, 0):
+            return self._l_moments[0]
+
+        return self._mean
+
+    def var(self) -> float:
+        r"""
+        The [variance](https://w.wiki/3jNh)
+        \( \Var[X] = \E\bigl[(X - \E[X])^2\bigr] =
+        \E\bigl[X^2\bigr] - \E[X]^2 = \sigma^2 \) (2nd central product moment)
+        of random varianble \( X \) of the relevant distribution.
+
+        See Also:
+            - [`l_poly.moment`][lmo.distributions.l_poly.moment]
+        """
+        return self._var
+
+    def std(self) -> float:
+        r"""
+        The [standard deviation](https://w.wiki/3hwM)
+        \( \Std[X] = \sqrt{\Var[X]} = \sigma \) of random varianble \( X \) of
+        the relevant distribution.
+
+        See Also:
+            - [`l_poly.l_scale`][lmo.distributions.l_poly.l_scale]
+        """
+        return np.sqrt(self._var)
+
+    @functools.cached_property
+    def _entropy(self) -> float:
+        return entropy_from_qdf(self._qdf)
+
+    def entropy(self) -> float:
+        r"""
+        [Differential entropy](https://w.wiki/8cR3) \( \mathrm{H}[X] \) of
+        random varianble \( X \) of the relevant distribution.
+
+        It is defined as
+
+        \[
+        \mathrm{H}[X]
+            = \E \bigl[ -\ln f(X) \bigr]
+            = -\int_{Q(0)}^{Q(1)} \ln f(x) \dd x
+            = \int_0^1 \ln q(p) \dd p ,
+        \]
+
+        with \( f(x) \) the [PDF][lmo.distributions.l_poly.pdf], \( Q(p) \)
+        the [PPF][lmo.distributions.l_poly.ppf], and \( q(p) = Q'(p) \) the
+        [QDF][lmo.distributions.l_poly.qdf].
+
+        See Also:
+            - [`entropy_from_qdf`][lmo.theoretical.entropy_from_qdf]
+        """
+        return self._entropy
+
+    def support(self) -> tuple[float, float]:
+        r"""
+        The support \( (Q(0), Q(1)) \) of the distribution, where \( Q(p) \)
+        is the [PPF][lmo.distributions.l_poly.ppf].
+        """
+        return self._support
+
+    @overload
+    def interval(self, confidence: AnyScalar, /) -> tuple[float, float]: ...
+    @overload
+    def interval(
+        self,
+        confidence: AnyNDArray[Any] | Sequence[Any],
+        /,
+    ) -> tuple[_ArrF8, _ArrF8]:
+        ...
+    def interval(
+        self,
+        confidence: npt.ArrayLike,
+        /,
+    ) -> tuple[float, float] | tuple[_ArrF8, _ArrF8]:
+        r"""
+        [Confidence interval](https://w.wiki/3kdb) with equal areas around
+        the [median][lmo.distributions.l_poly.median].
+
+        For `confidence` level \( \alpha \in [0, 1] \), this function evaluates
+
+        \[
+            \left[
+                Q\left( \frac{1 - \alpha}{2} \right) ,
+                Q\left( \frac{1 + \alpha}{2} \right)
+            \right],
+        \]
+
+        where \( Q(p) \) is the [PPF][lmo.distributions.l_poly.ppf].
+
+        Args:
+            confidence:
+                Scalar or array-like. The Probability that a random
+                varianble will be drawn from the returned range.
+
+                Each confidence value should be between 0 and 1.
+        """
+        alpha = np.asarray(confidence)
+        if np.any((alpha > 1) | (alpha < 0)):
+            msg = 'confidence must be between 0 and 1 inclusive'
+            raise ValueError(msg)
+
+        return self._ppf((1 - alpha) / 2), self._ppf((1 + alpha) / 2)
+
+    def moment(self, n: float, /) -> float:
+        r"""
+        Non-central product moment \( \E[X^n] \) of \( X \) of specified
+        order \( n \).
+
+        Note:
+            The product moment is evaluated using numerical integration
+            ([`scipy.integrate.quad`][scipy.integrate.quad]), which cannot
+            check whether the product-moment actually exists for the
+            distribution, in which case an invalid result will be returned.
+
+        Args:
+            n: Order \( n \ge 0 \) of the moment.
+
+        See Also:
+            - [`l_poly.l_moment`][lmo.distributions.l_poly.l_moment]
+
+        Todo:
+            - For n>=2, attempt tot infer from `_l_moments` if the 2nd moment
+                condition holds, using `diagnostics.l_moment_bounds`.
+        """
+        if n < 0:
+            msg = f'expected n >= 0, got {n}'
+            raise ValueError(msg)
+        if n == 0:
+            return 1.
+
+        def _integrand(u: float) -> float:
+            return self._ppf(u)**n
+
+        from scipy.integrate import quad  # type: ignore
+
+        return cast(float, quad(_integrand, 0, 1)[0])
+
+    @overload
+    def stats(self, moments: _STATS0) -> tuple[()]: ...
+    @overload
+    def stats(self, moments: _STATS1) -> tuple[float]: ...
+    @overload
+    def stats(self, moments: _STATS2 = ...) -> tuple[float, float]: ...
+    @overload
+    def stats(self, moments: _STATS3) -> tuple[float, float, float]: ...
+    @overload
+    def stats(self, moments: _STATS4) -> tuple[float, float, float, float]: ...
+
+    def stats(self, moments: _STATS = 'mv') -> tuple[float, ...]:
+        r"""
+        Some product-moment statistics of the given distribution.
+
+        Args:
+            moments:
+                Composed of letters `mvsk` defining which product-moment
+                statistic to compute:
+
+                `'m'`:
+                :   Mean \( \mu = \E[X] \)
+
+                `'v'`:
+                :   Variance \( \sigma^2 = \E[(X - \mu)^2] \)
+
+                `'s'`:
+                :   Skewness \( \E[(X - \mu)^3] / \sigma^3 \)
+
+                `'k'`:
+                :   Ex. Kurtosis \( \E[(X - \mu)^4] / \sigma^4 - 3 \)
+        """
+        out: list[float] = []
+        if 'm' in moments:
+            out.append(self._mean)
+        if 'v' in moments:
+            out.append(self._var)
+        if 's' in moments:
+            out.append(self._skew)
+        if 'k' in moments:
+            out.append(self._kurtosis)
+
+        return tuple(round0(np.array(out), 1e-15))
+
+
+    def expect(self, g: Callable[[float], float], /) -> float:
+        r"""
+        Calculate expected value of a function with respect to the
+        distribution by numerical integration.
+
+        The expected value of a function \( g(x) \) with respect to a
+        random variable \( X \) is defined as
+
+        \[
+            \E\left[ g(X) \right]
+                = \int_{Q(0)}^{Q(1)} g(x) f(x) \dd x
+                = \int_0^1 g\big(Q(u)\big) \dd u ,
+        \]
+
+        with \( f(x) \) the [PDF][lmo.distributions.l_poly.pdf], and
+        \( Q \) the [PPF][lmo.distributions.l_poly.ppf].
+
+        Args:
+            g ( (float) -> float ):
+                Continuous and deterministic function
+                \( g: \reals \mapsto \reals \).
+        """
+        ppf = self._ppf
+
+        def i(u: float) -> float:
+            return g(ppf(u))
+
+        from scipy.integrate import quad  # type: ignore
+
+        a = 0
+        b = 0.05
+        c = 1 - b
+        d = 1
+        return cast(
+            float,
+            quad(i, a, b)[0] + quad(i, b, c)[0] + quad(i, c, d)[0],
+        )
+
+    @overload
+    def l_moment(self, r: AnyInt, /, trim: AnyTrim | None = ...) -> np.float64:
+        ...
+
+    @overload
+    def l_moment(self, r: IntVector, /, trim: AnyTrim | None = ...) -> _ArrF8:
+        ...
+
+    def l_moment(
+        self,
+        r: AnyInt | IntVector,
+        /,
+        trim: AnyTrim | None = None,
+    ) -> np.float64 | _ArrF8:
+        r"""
+        Evaluate the population L-moment(s) $\lambda^{(s,t)}_r$.
+
+        Args:
+            r:
+                L-moment order(s), non-negative integer or array-like of
+                integers.
+            trim:
+                Left- and right- trim. Can be scalar or 2-tuple of
+                non-negative int or float.
+        """
+        _trim = self._trim if trim is None else clean_trim(trim)
+        return l_moment_from_ppf(self._ppf, r, trim=_trim)
+
+    @overload
+    def l_ratio(
+        self,
+        r: AnyInt,
+        k: AnyInt,
+        /,
+        trim: AnyTrim | None = ...,
+    ) -> np.float64: ...
+
+    @overload
+    def l_ratio(
+        self,
+        r: IntVector,
+        k: AnyInt | IntVector,
+        /,
+        trim: AnyTrim | None = ...,
+    ) -> _ArrF8: ...
+
+    @overload
+    def l_ratio(
+        self,
+        r: AnyInt | IntVector,
+        k: IntVector,
+        /,
+        trim: AnyTrim | None = ...,
+    ) -> _ArrF8: ...
+
+    def l_ratio(
+        self,
+        r: AnyInt | IntVector,
+        k: AnyInt | IntVector,
+        /,
+        trim: AnyTrim | None = None,
+    ) -> np.float64 | _ArrF8:
+        r"""
+        Evaluate the population L-moment ratio('s) $\tau^{(s,t)}_{r,k}$.
+
+        Args:
+            r:
+                L-moment order(s), non-negative integer or array-like of
+                integers.
+            k:
+                L-moment order of the denominator, e.g. 2.
+            trim:
+                Left- and right- trim. Can be scalar or 2-tuple of
+                non-negative int or float.
+        """
+        rs = broadstack(r, k)
+        lms = self.l_moment(rs, trim=trim)
+        return moments_to_ratio(rs, lms)
+
+    def l_stats(self, trim: AnyTrim | None = None, moments: int = 4) -> _ArrF8:
+        r"""
+        Evaluate the L-moments (for $r \le 2$) and L-ratio's (for $r > 2$).
+
+        Args:
+            trim:
+                Left- and right- trim. Can be scalar or 2-tuple of
+                non-negative int or float.
+            moments:
+                The amount of L-moments to return. Defaults to 4.
+        """
+        r, s = l_stats_orders(moments)
+        return self.l_ratio(r, s, trim=trim)
+
+    def l_loc(self, trim: AnyTrim | None = None) -> float:
+        """
+        L-location of the distribution, i.e. the 1st L-moment.
+
+        Alias for `l_poly.l_moment(1, ...)`.
+
+        See Also:
+            - [`l_poly.l_moment`][lmo.distributions.l_poly.l_moment]
+        """
+        return float(self.l_moment(1, trim=trim))
+
+    def l_scale(self, trim: AnyTrim | None = None) -> float:
+        """
+        L-scale of the distribution, i.e. the 2nd L-moment.
+
+        Alias for `l_poly.l_moment(2, ...)`.
+
+        See Also:
+            - [`l_poly.l_moment`][lmo.distributions.l_poly.l_moment]
+        """
+        return float(self.l_moment(2, trim=trim))
+
+    def l_skew(self, trim: AnyTrim | None = None) -> float:
+        """L-skewness coefficient of the distribution; the 3rd L-moment ratio.
+
+        Alias for `l_poly.l_ratio(3, 2, ...)`.
+
+        See Also:
+            - [`l_poly.l_ratio`][lmo.distributions.l_poly.l_ratio]
+        """
+        return float(self.l_ratio(3, 2, trim=trim))
+
+    def l_kurtosis(self, trim: AnyTrim | None = None) -> float:
+        """L-kurtosis coefficient of the distribution; the 4th L-moment ratio.
+
+        Alias for `l_poly.l_ratio(4, 2, ...)`.
+
+        See Also:
+            - [`l_poly.l_ratio`][lmo.distributions.l_poly.l_ratio]
+        """
+        return float(self.l_ratio(4, 2, trim=trim))
+
+def _check_lmoments(
+    l_r: npt.NDArray[np.floating[Any]],
+    trim: AnyTrim = (0, 0),
+    name: str = 'lmbda',
+):
     if (n := len(l_r)) < 2:
         msg = f'at least 2 L-moments required, got {n}'
         raise ValueError(msg)
+    if l_r[1] <= 0:
+        msg = f'L-scale must be positive, got {name}[1] = {l_r[1]}'
     if n == 2:
         return
 
     r = np.arange(1, n + 1)
     t_r = l_r[2:] / l_r[1]
-    t_r_max = l_ratio_bounds(r[2:], (s, t))
+    t_r_max = l_ratio_bounds(r[2:], trim, has_variance=False)
     if np.any(rs0_oob := np.abs(t_r) > t_r_max):
         r_oob = np.argwhere(rs0_oob)[0] + 3
         t_oob = t_r[rs0_oob][0]
@@ -101,6 +882,10 @@ def _ppf_poly_series(
 
 class l_rv_nonparametric(_rv_continuous):  # noqa: N801
     r"""
+    Warning:
+        `l_rv_nonparametric` is deprecated, and will be removed in version
+        `0.13`. Use `l_poly` instead.
+
     Estimate a distribution using the given L-moments.
     See [`scipy.stats.rv_continuous`][scipy.stats.rv_continuous] for the
     available method.
@@ -190,9 +975,9 @@ class l_rv_nonparametric(_rv_continuous):  # noqa: N801
         l_r = np.asarray_chkfinite(l_moments)
         l_r.setflags(write=False)
 
-        self._trim = (s, t) = clean_trim(trim)
+        self._trim = _trim = (s, t) = clean_trim(trim)
 
-        _check_lmoments(l_r, s, t)
+        _check_lmoments(l_r, _trim)
         self._lm = l_r
 
         # quantile function (inverse of cdf)
@@ -409,11 +1194,7 @@ class l_rv_nonparametric(_rv_continuous):  # noqa: N801
 
         return cls(l_r, trim=_trim, a=a, b=b)
 
-
 # Parametric
-
-
-_ArrF8: TypeAlias = npt.NDArray[np.float64]
 
 def _kumaraswamy_lmo0(
     r: int,
@@ -489,13 +1270,25 @@ class kumaraswamy_gen(_rv_continuous):  # noqa: N801
     ) -> npt.NDArray[np.float64]:
         return (1 - q**(1 / b))**(1 / a)
 
-    def _ppf(
+    def _qdf(
         self,
-        q: npt.NDArray[np.float64],
+        u: npt.NDArray[np.float64],
         a: float,
         b: float,
     ) -> npt.NDArray[np.float64]:
-        return (1 - (1 - q)**(1 / b))**(1 / a)
+        return (
+            (1 - u)**(1 / (b - 1))
+            * (1 - (1 - u)**(1 / b))**(1 / (a - 1))
+            / (a * b)
+        )
+
+    def _ppf(
+        self,
+        u: npt.NDArray[np.float64],
+        a: float,
+        b: float,
+    ) -> npt.NDArray[np.float64]:
+        return (1 - (1 - u)**(1 / b))**(1 / a)
 
     def _entropy(self, a: float, b: float) -> float:
         # https://en.wikipedia.org/wiki/Kumaraswamy_distribution
@@ -787,7 +1580,7 @@ class wakeby_gen(_rv_continuous):  # noqa: N801
         f: float,
     ) -> npt.NDArray[np.float64]:
         # application of the inverse function theorem
-        return 1 / _wakeby_qdf(self._cdf(x, b, d, f), b, d, f)
+        return 1 / self._qdf(self._cdf(x, b, d, f), b, d, f)
 
     def _cdf(
         self,
@@ -797,6 +1590,15 @@ class wakeby_gen(_rv_continuous):  # noqa: N801
         f: float,
     ) -> npt.NDArray[np.float64]:
         return 1 - _wakeby_sf(x, b, d, f)
+
+    def _qdf(
+        self,
+        u: npt.NDArray[np.float64],
+        b: float,
+        d: float,
+        f: float,
+    ) -> npt.NDArray[np.float64]:
+        return _wakeby_qdf(u, b, d, f)
 
     def _ppf(
         self,
@@ -1070,7 +1872,7 @@ class genlambda_gen(_rv_continuous):  # noqa: N801
         d: float,
         f: float,
     ) -> npt.NDArray[np.float64]:
-        return 1 / _genlambda_qdf(self._cdf(x, b, d, f), b, d, f)
+        return 1 / self._qdf(self._cdf(x, b, d, f), b, d, f)
 
     def _cdf(
         self,
@@ -1081,14 +1883,23 @@ class genlambda_gen(_rv_continuous):  # noqa: N801
     ) -> npt.NDArray[np.float64]:
         return _genlambda_cdf(x, b, d, f)
 
-    def _ppf(
+    def _qdf(
         self,
-        x: npt.NDArray[np.float64],
+        u: npt.NDArray[np.float64],
         b: float,
         d: float,
         f: float,
     ) -> npt.NDArray[np.float64]:
-        return _genlambda_ppf(x, b, d, f)
+        return _genlambda_qdf(u, b, d, f)
+
+    def _ppf(
+        self,
+        u: npt.NDArray[np.float64],
+        b: float,
+        d: float,
+        f: float,
+    ) -> npt.NDArray[np.float64]:
+        return _genlambda_ppf(u, b, d, f)
 
     def _stats(self, b: float, d: float, f: float) -> tuple[
         float,

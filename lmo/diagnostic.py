@@ -41,7 +41,6 @@ from scipy.stats.distributions import (  # type: ignore
     rv_frozen,
 )
 
-from . import theoretical as _theo
 from ._lm import l_ratio
 from ._utils import clean_orders, clean_trim
 from .typing import AnyInt, AnyTrim, IntVector
@@ -276,9 +275,11 @@ def l_moment_gof(
         lambda_r = rv.l_moment(r, trim=trim, **kwargs)
         lambda_rr = rv.l_moments_cov(n, trim=trim, **kwargs)
     else:
+        from .theoretical import l_moment_cov_from_cdf, l_moment_from_cdf
+
         cdf = cast(Callable[[float], float], rv_or_cdf)
-        lambda_r = _theo.l_moment_from_cdf(cdf, r, trim, **kwargs)
-        lambda_rr = _theo.l_moment_cov_from_cdf(cdf, n, trim, **kwargs)
+        lambda_r = l_moment_from_cdf(cdf, r, trim, **kwargs)
+        lambda_rr = l_moment_cov_from_cdf(cdf, n, trim, **kwargs)
 
     stat = n_obs * _gof_stat(l_r.T, lambda_r, lambda_rr).T[()]
     pval = cast(float | npt.NDArray[np.float64], chdtrc(n, stat))
@@ -308,9 +309,11 @@ def l_stats_gof(
         tau_r = rv.l_stats(moments=n, trim=trim, **kwargs)
         tau_rr = rv.l_stats_cov(moments=n, trim=trim, **kwargs)
     else:
+        from .theoretical import l_stats_cov_from_cdf, l_stats_from_cdf
+
         cdf = cast(Callable[[float], float], rv_or_cdf)
-        tau_r = _theo.l_stats_from_cdf(cdf, n, trim, **kwargs)
-        tau_rr = _theo.l_stats_cov_from_cdf(cdf, n, trim, **kwargs)
+        tau_r = l_stats_from_cdf(cdf, n, trim, **kwargs)
+        tau_rr = l_stats_cov_from_cdf(cdf, n, trim, **kwargs)
 
     stat = n_obs * _gof_stat(t_r.T, tau_r, tau_rr).T[()]
     pval = cast(float | npt.NDArray[np.float64], chdtrc(n, stat))
