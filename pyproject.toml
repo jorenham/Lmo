@@ -191,7 +191,45 @@ ignore = [
 preview = true
 explicit-preview-rules = true
 extend-select = [
-    "NPY201",  # numpy2-deprecation
+    "E111",     # indentation-with-invalid-multiple
+    "E112",     # no-indented-block
+    "E113",     # unexpected-indentation
+    "E114",     # indentation-with-invalid-multiple-comment
+    "E115",     # no-indented-block-comment
+    "E116",     # unexpected-indentation-comment
+    "E117",     # over-indented
+    "E201",     # whitespace-after-open-bracket
+    "E202",     # whitespace-before-open-bracket
+    "E203",     # whitespace-before-punctuation
+    "E211",     # whitespace-before-parameters
+    "E221",     # multiple-spaces-before-operator
+    "E222",     # multiple-spaces-after-operator
+    "E223",     # tab-before-operator
+    "E224",     # tab-after-operator
+    "E225",     # missing-whitespace-around-operator
+    "E226",     # missing-whitespace-around-arithmetic-operator
+    "E227",     # missing-whitespace-around-bitwise-or-shift-operator
+    "E228",     # missing-whitespace-around-modulo-operator
+    "E231",     # missing-whitespace
+    "E241",     # multiple-spaces-after-comma
+    "E242",     # tab-after-comma
+    "E251",     # unexpected-spaces-around-keyword-parameter-equals
+    "E252",     # missing-whitespace-around-parameter-equals
+    "E261",     # too-few-spaces-before-inline-comment
+    "E262",     # no-space-after-inline-comment
+    "E265",     # no-space-after-block-comment
+    "E266",     # multiple-leading-hashes-for-block-comment
+    "E271",     # multiple-spaces-after-keyword
+    "E272",     # multiple-spaces-before-keyword
+    "E273",     # tab-after-keyword
+    "E274",     # tab-before-keyword
+    "E275",     # missing-whitespace-after-keyword
+    "Q004",     # unnecessary-escaped-quote
+    "NPY201",   # numpy2-deprecation
+    "PERF403",  # manual-dict-comprehension
+    "RUF017",   # quadratic-list-summation
+    "RUF018",   # assignment-in-assert
+    "RUF019",   # unnecessary-key-check
 ]
 
 [tool.ruff.lint.pydocstyle]
