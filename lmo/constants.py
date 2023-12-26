@@ -17,7 +17,7 @@ See also:
 
 theta_m_bar: Final[float] = 0.152043361992348182457286110194392272
 r"""
-Magic number of turns \( \bar{\theta}_m = \theta_m / (2 \pi) \approx 0.2214 \)
+Magic number of turns \( \bar{\theta}_m = \theta_m / (2 \pi) \approx 0.1520 \)
 
 See also:
     - [theta_m][lmo.constants.theta_m]
