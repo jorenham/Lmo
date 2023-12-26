@@ -70,7 +70,7 @@ if not TYPE_CHECKING:
     _install()
 
 __version__: Final[str] = _get_version()
-__author__ : Final[str] = 'Joren Hammdugolu'
+__author__: Final[str] = 'Joren Hammdugolu'
 __email__: Final[str] = 'jhammudoglu@gmail.com'
 __description__: Final[str] = (
     'Robust statistics with trimmed L-moments and L-comoments.'

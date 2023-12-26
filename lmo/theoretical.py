@@ -978,7 +978,7 @@ def l_moment_cov_from_cdf(
 
     def integrand(x: float, y: float, k: int, r: int) -> float:
         u, v = _cdf(x), _cdf(y)
-        return  c_n[k] * c_n[r] * (
+        return c_n[k] * c_n[r] * (
             (
                 eval_sh_jacobi(k, t, s, u)
                 * eval_sh_jacobi(r, t, s, v)
@@ -1707,7 +1707,7 @@ def _monotonic(
     """Numeric validation of the monotinicity of a function on [a, b]."""
     x = np.linspace(a, b, n + 1)
     y = f(x)
-    #dy = np.gradient(y)
+    # dy = np.gradient(y)
     dy = np.ediff1d(y)
 
     return bool(np.all(dy > 0 if strict else dy >= 0))

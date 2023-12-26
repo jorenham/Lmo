@@ -184,7 +184,7 @@ _gof_stat = cast(
     np.vectorize(
         _gof_stat_single,
         otypes=[float],
-        excluded={1,2},
+        excluded={1, 2},
         signature='(n)->()',
     ),
 )
@@ -753,7 +753,7 @@ def error_sensitivity(
             cast(str, res.message),  # type: ignore
             OptimizeWarning,
             stacklevel=1,
-        ) # type: ignore
+        )  # type: ignore
 
     return -cast(float, res.fun)  # type: ignore
 
@@ -840,6 +840,6 @@ def shift_sensitivity(
             cast(str, res.message),  # type: ignore
             OptimizeWarning,
             stacklevel=1,
-        ) # type: ignore
+        )  # type: ignore
 
     return -cast(float, res.fun)  # type: ignore
