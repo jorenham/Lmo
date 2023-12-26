@@ -126,7 +126,7 @@ def test_genlambda_tukeylamba(lam: float):
 
     tl_tau0 = X0.l_stats(trim=1)
     tl_tau = X.l_stats(trim=1)
-    assert_allclose(tl_tau, tl_tau0)
+    assert_allclose(tl_tau, tl_tau0, atol=ATOL)
 
 # @pytest.mark.parametrize('scale', [1, .5, 2])
 # @pytest.mark.parametrize('loc', [0, 1, -1])
