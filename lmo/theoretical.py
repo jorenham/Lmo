@@ -366,7 +366,7 @@ def l_moment_from_cdf(
         else:
             l_r[i] = l_r_cache[_k] = _l_moment_single(_k)
 
-    return round0(l_r, 1e-15)[()]  # convert back to scalar if needed
+    return round0(l_r, 1e-12)[()]  # convert back to scalar if needed
 
 
 @overload
