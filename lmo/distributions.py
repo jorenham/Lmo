@@ -1018,7 +1018,7 @@ class l_rv_nonparametric(_rv_continuous):  # noqa: N801
 
         Note:
             Converges to the "true" PPF in the mean-squared sense, with
-            weight function $q^s (1 - q)^t$ of quantile $q \in \[0, 1\]$,
+            weight function $q^s (1 - q)^t$ of quantile $q \in [0, 1]$,
             and trim-lengths $(t_1, t_2) \in \mathbb{R^+} \times \mathbb{R^+}$.
 
         Returns:
