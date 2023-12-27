@@ -302,8 +302,6 @@ exist (in closed form).
         </a>
         <br>
         <code>gumbel_r</code>
-        <br>
-        see eq. \( \eqref{eq:lr_gev} \) for \( \lmoment{r} \)
     </td>
     <td></td>
     <td>
@@ -334,8 +332,6 @@ exist (in closed form).
         </a>
         <br>
         <code>pareto</code>
-        <br>
-        see eq. \( \eqref{eq:lr_burr12} \) for \( \lmoment{r} \)
     </td>
     <td>\( \alpha > 0  \)</td>
     <td>
@@ -649,8 +645,6 @@ exist (in closed form).
         </a>
         <br>
         <code>gumbel_r</code>
-        <br>
-        see eq. \( \eqref{eq:lr_gev} \) for \( \tlmoment{s,t}{r} \)
     </td>
     <td></td>
     <td>
@@ -700,14 +694,11 @@ Surprisingly, the L-moments of the discrete
 [^BERN], can't be expressed as easily as the distribution itself:
 
 \[
-    \begin{equation}
-    \tlmoment{s, t}{r} =
-        \frac{(-1)^r}{r}
-        (1 - p)^{s + 1}
-        \jacobi{r + t - 1}{s + 1}{-t - 1}{2p - 1}
-        + \ffact{1}{r}
-    \label{eq:lr_bernoulli}
-    \end{equation}
+\tlmoment{s, t}{r} =
+    \frac{(-1)^r}{r}
+    (1 - p)^{s + 1}
+    \jacobi{r + t - 1}{s + 1}{-t - 1}{2p - 1}
+    + \ffact{1}{r}
 \]
 
 Here, \( \jacobi{n}{\alpha}{\beta}{x} \) is a
@@ -726,26 +717,23 @@ following CDF and PPF:
 
 
 \[
-    \begin{align*}
-        F(x) &= 1 - e^{\alpha (1 - e^x)} \\
-        x(F) &= \ln\left( 1 - \frac{\ln(1-F)}{\alpha} \right)
-    \end{align*}
+\begin{align*}
+    F(x) &= 1 - e^{\alpha (1 - e^x)} \\
+    x(F) &= \ln\left( 1 - \frac{\ln(1-F)}{\alpha} \right)
+\end{align*}
 \]
 
 The general trimmed L-moments of the Gompertz distribution are:
 
 \[
-    \begin{equation}
-    \tlmoment{s, t}{r} =
-        \frac{1}{r}
-        \sum_{k = t + 1}^{r + s + t}
-            (-1)^{k - t - 1}
-            \binom{r + k - 2}{r + t - 1}
-            \binom{r + s + t}{k}
-            e^{\alpha k} \
-            \Gamma_{\alpha k}(0)
-    \label{eq:lr_gompertz}
-    \end{equation}
+\tlmoment{s, t}{r} =
+    \frac{1}{r}
+    \sum_{k = t + 1}^{r + s + t}
+        (-1)^{k - t - 1}
+        \binom{r + k - 2}{r + t - 1}
+        \binom{r + s + t}{k}
+        e^{\alpha k} \
+        \Gamma_{\alpha k}(0)
 \]
 
 [^GOMP]:
@@ -784,23 +772,20 @@ The convention that is used here, is the same as in
 The trimmed L-moments of the GEV are
 
 \[
-\begin{equation}
-    \tlmoment{s, t}{r} =
-        \frac{(-1)^{r}}{r}
-        \sum_{k = s + 1}^{r + s + t}
-            (-1)^{k - s}
-            \binom{r + k - 2}{r + s - 1}
-            \binom{r + s + t}{k}
-            \left(
-            \begin{cases}
-                \gamma_e + \ln(k)
-                    & \text{if } \alpha = 0 \\
-                1 / \alpha - \Gamma(\alpha) \ k^{-\alpha}
-                    & \text{if } \alpha \neq 0
-            \end{cases}
-            \right)
-    \label{eq:lr_gev}
-\end{equation}
+\tlmoment{s, t}{r} =
+    \frac{(-1)^{r}}{r}
+    \sum_{k = s + 1}^{r + s + t}
+        (-1)^{k - s}
+        \binom{r + k - 2}{r + s - 1}
+        \binom{r + s + t}{k}
+        \left(
+        \begin{cases}
+            \gamma_e + \ln(k)
+                & \text{if } \alpha = 0 \\
+            1 / \alpha - \Gamma(\alpha) \ k^{-\alpha}
+                & \text{if } \alpha \neq 0
+        \end{cases}
+        \right)
 \]
 
 Note that the GEV is effectively a reparametrized
@@ -821,35 +806,32 @@ parameter \( \alpha \in \mathbb{R} \), is characterized by the following
 distribution functions:
 
 \[
-    \begin{align*}
-        F(x) &= \frac{1}{1 + \qexp{1 - \alpha}{x}} \\
-        x(F) &= -\qlog{1 - \alpha}{\frac{1 - F}{F}}
-    \end{align*}
+\begin{align*}
+    F(x) &= \frac{1}{1 + \qexp{1 - \alpha}{x}} \\
+    x(F) &= -\qlog{1 - \alpha}{\frac{1 - F}{F}}
+\end{align*}
 \]
 
 For \( -1 < \alpha < 1 \), the general trimmed L-moments of the GLO are:
 
 \[
-    \begin{equation}
-        \tlmoment{s, t}{r} = \begin{cases}
-            \displaystyle
-                \digamma(s + 1) - \digamma(t + 1)
-            & \text{if } \alpha = 0 \wedge r = 1 \\
-            \displaystyle
-                \frac{(-1)^r}{r} \B(r - 1,\ s + 1)
-                + \frac 1 r \B(r - 1,\ t + 1)
-            & \text{if } \alpha = 0 \\
-            \displaystyle
-                \frac{\ffact{1}{r}}{\alpha}
-                + \sum_{k = s + 1}^{r + s + t}
-                    (-1)^{r + s - k }
-                    \binom{r + k - 2}{r + s - 1}
-                    \binom{r + s + t}{k}
-                    \B(\alpha,\ k - \alpha)
-            & \text{if } -1 < \alpha < 1
-        \end{cases}
-    \label{eq:lr_glo}
-    \end{equation}
+\tlmoment{s, t}{r} = \begin{cases}
+    \displaystyle
+        \digamma(s + 1) - \digamma(t + 1)
+    & \text{if } \alpha = 0 \wedge r = 1 \\
+    \displaystyle
+        \frac{(-1)^r}{r} \B(r - 1,\ s + 1)
+        + \frac 1 r \B(r - 1,\ t + 1)
+    & \text{if } \alpha = 0 \\
+    \displaystyle
+        \frac{\ffact{1}{r}}{\alpha}
+        + \sum_{k = s + 1}^{r + s + t}
+            (-1)^{r + s - k }
+            \binom{r + k - 2}{r + s - 1}
+            \binom{r + s + t}{k}
+            \B(\alpha,\ k - \alpha)
+    & \text{if } -1 < \alpha < 1
+\end{cases}
 \]
 
 Where \( \digamma(z) \) is the [digamma function](#def-digamma).
@@ -875,30 +857,27 @@ with shape parameter \( \alpha \in \mathbb{R} \), has for \( x \ge 0 \) the
 distribution functions:
 
 \[
-    \begin{align*}
-        F(x) &= 1 - \qexp{1 + \alpha}{-x} \\
-        x(F) &= -\qlog{1 + \alpha}{1 - F}
-    \end{align*}
+\begin{align*}
+    F(x) &= 1 - \qexp{1 + \alpha}{-x} \\
+    x(F) &= -\qlog{1 + \alpha}{1 - F}
+\end{align*}
 \]
 
 The L-moments of the GPD exist when \( \alpha < 1 + t \), and can be
 compactly expressed as
 
 \[
-    \begin{equation}
-        \tlmoment{s,t}{r} = \begin{cases}
-            \displaystyle H_{s + t + 1} - H_t
-                & \text{if } \alpha = 0 \wedge r = 1 \\
-            \displaystyle \frac{1}{\alpha r} \left[
-                \frac
-                    {\B(t + 1 - \alpha,\ r - 1 + \alpha)}
-                    {\B(r + s + t - 1 - \alpha,\ \alpha)}
-                - \ffact{1}{r}
-            \right]
-                & \text{otherwise,}
-        \end{cases}
-        \label{eq:lr_gpd}
-    \end{equation}
+\tlmoment{s,t}{r} = \begin{cases}
+    \displaystyle H_{s + t + 1} - H_t
+        & \text{if } \alpha = 0 \wedge r = 1 \\
+    \displaystyle \frac{1}{\alpha r} \left[
+        \frac
+            {\B(t + 1 - \alpha,\ r - 1 + \alpha)}
+            {\B(r + s + t - 1 - \alpha,\ \alpha)}
+        - \ffact{1}{r}
+    \right]
+        & \text{otherwise,}
+\end{cases}
 \]
 
 where \( H_n \) is a [harmonic number](#def-harmonic).
@@ -959,18 +938,15 @@ For \( x > 0 \), the distribution functions are:
 For \( \alpha > 1 \), the general L-moments are:
 
 \[
-\begin{equation}
-    \tlmoment{s,t}{r} =
-        (-1)^{t - 1 / \alpha} \
-        \beta \
-        \frac{r + s + t}{r}
-        \sum_{k = s}^{r + s + t - 1}
-            (-1)^{k}
-            \binom{k + r - 1}{k - s}
-            \binom{r + s + t - 1}{k}
-            \B(1 - 1 / \alpha, -\beta - k \beta)
-    \label{eq:lr_burr3}
-\end{equation}
+\tlmoment{s,t}{r} =
+    (-1)^{t - 1 / \alpha} \
+    \beta \
+    \frac{r + s + t}{r}
+    \sum_{k = s}^{r + s + t - 1}
+        (-1)^{k}
+        \binom{k + r - 1}{k - s}
+        \binom{r + s + t - 1}{k}
+        \B(1 - 1 / \alpha, -\beta - k \beta)
 \]
 
 The Burr III distribution is implemented in
@@ -1005,17 +981,14 @@ The distribution functions for \( x > 0 \) are defined as:
 When \( \beta > 1 / \alpha \), the general \( r \)-th trimmed L-moment is:
 
 \[
-\begin{equation}
-    \tlmoment{s,t}{r} =
-        \beta \
-        \frac{r + s + t}{r}
-        \sum_{k = t}^{r + s + t - 1}
-            (-1)^k
-            \binom{k + r - 1}{k - t}
-            \binom{r + s + t - 1}{k}
-            \B\bigl(1 + 1 / \alpha,\ \beta + k \beta - 1 / \alpha \bigr)
-        \label{eq:lr_burr12}
-\end{equation}
+\tlmoment{s,t}{r} =
+    \beta \
+    \frac{r + s + t}{r}
+    \sum_{k = t}^{r + s + t - 1}
+        (-1)^k
+        \binom{k + r - 1}{k - t}
+        \binom{r + s + t - 1}{k}
+        \B\bigl(1 + 1 / \alpha,\ \beta + k \beta - 1 / \alpha \bigr)
 \]
 
 This distribution is implemented in
@@ -1049,24 +1022,21 @@ The distribution functions are for \( 0 \le x \le 1 \) defined as:
 
 \[
 \begin{align*}
-F(x) &= 1 - (1 - x^\alpha)^\beta \\
-x(F) &= \bigl(1 - (1 - F)^{1/\beta} \bigr)^{1/\alpha}
+    F(x) &= 1 - (1 - x^\alpha)^\beta \\
+    x(F) &= \bigl(1 - (1 - F)^{1/\beta} \bigr)^{1/\alpha}
 \end{align*}
 \]
 
 Its general \( r \)-th trimmed L-moment are:
 
 \[
-    \begin{equation}
-        \tlmoment{s,t}{r} =
-            \frac{1}{r}
-            \sum_{k = t + 1}^{r + s + t}
-                (-1)^{k - 1}
-                \binom{r + k - 2}{r + t - 1}
-                \binom{r + s + t}{k}
-                \frac{\B\bigl(1 / \alpha,\ 1 + k \beta \bigr)}{\alpha}
-            \label{eq:lr_kum}
-    \end{equation}
+\tlmoment{s,t}{r} =
+    \frac{1}{r}
+    \sum_{k = t + 1}^{r + s + t}
+        (-1)^{k - 1}
+        \binom{r + k - 2}{r + t - 1}
+        \binom{r + s + t}{k}
+        \frac{\B\bigl(1 / \alpha,\ 1 + k \beta \bigr)}{\alpha}
 \]
 
 The Kumaraswamy distribution is implemented in
@@ -1078,7 +1048,7 @@ The Kumaraswamy distribution is implemented in
     processes
 [^KUM2]:
     [M.C. Jones (2009)](https://doi.org/10.1016/j.stamet.2008.04.001) --
-    Kumaraswamy’s distribution: A beta-type distribution with some
+    Kumaraswamy's distribution: A beta-type distribution with some
     tractability advantages
 
 ### Wakeby
@@ -1148,7 +1118,7 @@ Lmo figured out that when \( \delta < t + 1 \), all of Wakeby's (trimmed)
 L-moments can be expressed as
 
 \[
-\begin{align}
+\begin{align*}
     \tlmoment{s,t}{1}
     &= \phi \left(
     \begin{cases}
@@ -1180,7 +1150,7 @@ L-moments can be expressed as
             {\rfact{1 + \delta}{r - 2}}
             {\rfact{1 - \delta + t}{r + s}}
     \right) \quad \text{for } r > 1
-\end{align}
+\end{align*}
 \]
 
 where \( H_n \) is a [harmonic number](#def-harmonic).
@@ -1232,13 +1202,13 @@ The domain is
 
 \[
 \left.
-\begin{array}{l}
+\begin{array}{ll}
     \text{if } \beta \le 0: & \displaystyle -\infty \\
     \text{if } \beta > 0:  & \displaystyle -\frac{1 + \phi}{\beta}
 \end{array}
 \right\} \le
 x
-\le \left\{ \begin{array}{l}
+\le \left\{ \begin{array}{ll}
     \displaystyle \infty \ , & \text{if } \delta \le 0 \\
     \displaystyle \frac{1 - \phi}{\delta} \ , & \text{if } \delta > 0
 \end{array}
@@ -1255,27 +1225,23 @@ When \( \beta > -s - 1 \) and \( \delta > -t - 1 \), the L-moments are defined
 for \( r = 2, 3, \ldots \) and \( s, t \ge 0 \) as
 
 \[
-\begin{equation}
-    r \tlmoment{s, t}{r}
-        = \frac{(-1)^r \ (1 + \phi)}{r + s + t + \beta}
-        \frac
-            {\B(1 + s + \beta ,\ r - 1 - \beta)}
-            {\B(r + s + t + \beta,\ 1 - \beta)}
-        + \frac{1 - \phi}{r + s + t + \delta}
-        \frac
-            {\B(1 + t + \delta ,\ r - 1 - \delta)}
-            {\B(r + s + t + \delta,\ 1 - \delta)} \ ,
-\end{equation}
+r \tlmoment{s, t}{r}
+    = \frac{(-1)^r \ (1 + \phi)}{r + s + t + \beta}
+    \frac
+        {\B(1 + s + \beta ,\ r - 1 - \beta)}
+        {\B(r + s + t + \beta,\ 1 - \beta)}
+    + \frac{1 - \phi}{r + s + t + \delta}
+    \frac
+        {\B(1 + t + \delta ,\ r - 1 - \delta)}
+        {\B(r + s + t + \delta,\ 1 - \delta)} \ ,
 \]
 
 and the arbitrarily-trimmed L-location is
 
 \[
-\begin{equation}
-    \tlmoment{s, t}{1}
-        = -(1 + \phi) \mathfrak{L}_{1}^{(s)}(\beta)
-        + (1 - \phi) \mathfrak{L}_{1}^{(t)}(\delta) \,
-\end{equation}
+\tlmoment{s, t}{1}
+    = -(1 + \phi) \mathfrak{L}_{1}^{(s)}(\beta)
+    + (1 - \phi) \mathfrak{L}_{1}^{(t)}(\delta) \,
 \]
 
 where
