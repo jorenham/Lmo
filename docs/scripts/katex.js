@@ -9,10 +9,10 @@ document$.subscribe(({ body }) => {
         throwOnError: false,
         macros: {
             // Statistical operators
-            "\\E": "\\mathop{\\mathbb{E}}",
-            "\\Var": "\\mathop{\\rm{Var}}",
-            "\\Std": "\\mathop{\\rm{Std}}",
-            "\\Cov": "\\mathop{\\rm{Cov}}",
+            "\\E": "\\mathop{\\mathrm{E}}",
+            "\\Var": "\\mathop{\\mathrm{Var}}",
+            "\\Std": "\\mathop{\\mathrm{Std}}",
+            "\\Cov": "\\mathop{\\mathrm{Cov}}",
 
             // Number sets
             "\\naturals": "\\mathbb{N}",
@@ -22,7 +22,8 @@ document$.subscribe(({ body }) => {
             "\\complexes": "\\mathbb{C}",
 
             // Beta function
-            "\\B": "\\mathop{\\mathrm{B}}",
+            // "\\B": "\\mathop{\\mathrm{B}}",
+            "\\B": "\\mathop{\\Beta}",
 
             // Tsallis' q-log and q-exp
             "\\qexp": "e_{#1}^{#2}",
@@ -43,6 +44,9 @@ document$.subscribe(({ body }) => {
             // (shifted) Jacobi polynomial
             "\\jacobi": "P_{#1}^{(#2, #3)}\\left(#4\\right)",
             "\\shjacobi": "\\widetilde{P}_{#1}^{(#2, #3)}\\left(#4\\right)",
+
+            // some missing "physics" tex package commands
+            "\\dd": "\,\\mathrm{d}{#1}",
         }
     })
 })
