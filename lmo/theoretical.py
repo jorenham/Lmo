@@ -1844,7 +1844,7 @@ def qdf_from_l_moments(
     \[
     \begin{align*}
         \hat{q}_R(u)
-            &= \dv{u} \hat{Q}_R(u) \\
+            &= \frac{\dd{\hat{Q}_R(u)}}{\dd{u}}  \\
             &= \sum_{r=2}^{R}
                 r (2r + s + t - 1)
                 \tlmoment{s, t}{r}

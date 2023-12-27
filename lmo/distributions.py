@@ -297,9 +297,9 @@ class l_poly:  # noqa: N801
     def qdf(self, p: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
     def qdf(self, p: npt.ArrayLike) -> float | _ArrF8:
         r"""
-        Quantile density function \( q \equiv \dv{Q}{p} \) (derivative of the
-        [PPF][lmo.distributions.l_poly.ppf]) at \( p \) of the given
-        distribution.
+        Quantile density function \( q \equiv \frac{\dd{Q}}{\dd{p}} \) (
+        derivative of the [PPF][lmo.distributions.l_poly.ppf]) at \( p \) of
+        the given distribution.
 
         Args:
             p:
@@ -380,8 +380,8 @@ class l_poly:  # noqa: N801
     def pdf(self, x: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
     def pdf(self, x: npt.ArrayLike) -> float | _ArrF8:
         r"""
-        Probability density function \( f \equiv \dv{F}{x} \) (derivative of
-        the [CDF][lmo.distributions.l_poly.cdf]) at \( x \).
+        Probability density function \( f \equiv \frac{\dd{F}}{\dd{x}} \)
+        (derivative of the [CDF][lmo.distributions.l_poly.cdf]) at \( x \).
 
         By applying the [inverse function rule](https://w.wiki/8cQS), the PDF
         can also defined using the [QDF][lmo.distributions.l_poly.qdf] as
