@@ -46,7 +46,7 @@ document$.subscribe(({ body }) => {
             "\\shjacobi": "\\widetilde{P}_{#1}^{(#2, #3)}\\left(#4\\right)",
 
             // some missing "physics" tex package commands
-            "\\dd": "\,\\mathrm{d}{#1}",
+            "\\dd": "\\,\\mathrm{d}{#1}",
         }
     })
 })
