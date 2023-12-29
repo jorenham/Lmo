@@ -4,7 +4,6 @@ __all__ = (
     'fpow',
     'gamma2',
     'harmonic',
-    'eval_sh_jacobi',
     'norm_sh_jacobi',
     'fourier_jacobi',
 )
@@ -203,81 +202,6 @@ def harmonic(
     _out += np.euler_gamma
 
     return _out[()] if np.isscalar(n) else _out
-
-@overload
-def eval_sh_jacobi(
-    n: int,
-    alpha: float,
-    beta: float,
-    x: AnyScalar,
-    out: None = ...,
-) -> float: ...
-
-@overload
-def eval_sh_jacobi(
-    n: int,
-    alpha: float,
-    beta: float,
-    x: AnyNDArray[np.generic],
-    out: npt.NDArray[np.float64] | None = ...,
-) -> npt.NDArray[np.float64]: ...
-
-@overload
-def eval_sh_jacobi(
-    n: int,
-    alpha: float,
-    beta: float,
-    x: npt.ArrayLike,
-    out: npt.NDArray[np.float64],
-) -> npt.NDArray[np.float64]: ...
-
-@overload
-def eval_sh_jacobi(
-    n: int,
-    alpha: float,
-    beta: float,
-    x: npt.ArrayLike,
-    out: npt.NDArray[np.float64] | None = ...,
-) -> float | npt.NDArray[np.float64]: ...
-
-def eval_sh_jacobi(
-    n: int,
-    alpha: float,
-    beta: float,
-    x: npt.ArrayLike,
-    out: npt.NDArray[np.float64] | None = None,
-) -> float | npt.NDArray[np.float64]:
-    r"""
-    Evaluate the (correct) shifted Jacobi Polynomial
-    \( \shjacobi{n}{\alpha}{\beta}{u} \) on \( x \in [0, 1] \), i.e.
-    the Jacobi Polynomial with mapped argument as \( x \mapsto 2x - 1 \).
-
-    It is well known that the "shifted Legendre" polynomial is the Legendre
-    polynomial with \( 2x - 1 \) as mapped argument, which is correctly
-    implemented in
-    [`scipy.special.eval_sh_legendre`][scipy.special.eval_sh_legendre].
-    Any textbook on orthogonal
-    polynomials will tell you that the generalization of Legendre are the
-    Jacobi polynomials. Hence, the only valid interpretation of the
-    "shifted Jacobi polynomials", should be the analogue (homomorphism) of
-    the shifted Legendre polynomials.
-
-    However, [`scipy.special.eval_sh_jacobi`][scipy.special.eval_sh_jacobi]
-    are **not** the shifted Jacobi polynomials!.
-    Instead, the method evaluates the *generalized Gegenbauer polynomials*.
-    The Jacobi-, and Legendre polynomials are denoted
-    with a "P", which stands for "polynomial". In the `eval_sh_jacobi`
-    docstring, the notation \( G_n^{p,q} \) is used. Clearly, the "G" stands
-    for "Gegenbauer".
-    See [scipy/scipy#18988](https://github.com/scipy/scipy/issues/18988) for
-    the relevant issue.
-    """
-    if alpha == beta == 0:
-        return sc.eval_sh_legendre(n, x, out)  # type: ignore
-
-    y = 2 * np.asanyarray(x) - 1
-    return sc.eval_jacobi(n, alpha, beta, y, out)  # type: ignore
-
 
 @overload
 def norm_sh_jacobi(n: int, alpha: float, beta: float) -> float: ...
