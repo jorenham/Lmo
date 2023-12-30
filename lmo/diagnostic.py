@@ -41,11 +41,10 @@ from scipy.stats.distributions import (  # type: ignore
     rv_frozen,
 )
 
-from .special import fpow
-
 from ._lm import l_ratio
 from ._poly import extrema_jacobi
 from ._utils import clean_orders, clean_trim
+from .special import fpow
 from .typing import AnyInt, AnyTrim, IntVector
 
 if TYPE_CHECKING:
@@ -477,9 +476,22 @@ def l_moment_bounds(
     return scale * np.sqrt(_lm2_bounds(_r, _trim))[()]
 
 @overload
-def l_ratio_bounds(r: AnyInt, /, trim: AnyTrim = ...) -> float: ...
+def l_ratio_bounds(
+    r: AnyInt,
+    /,
+    trim: AnyTrim = ...,
+    *,
+    legacy: bool = ...,
+) -> tuple[float, float]: ...
+
 @overload
-def l_ratio_bounds(r: IntVector, /, trim: AnyTrim = ...) -> _ArrF8: ...
+def l_ratio_bounds(
+    r: IntVector,
+    /,
+    trim: AnyTrim = ...,
+    *,
+    legacy: bool = ...,
+) -> tuple[_ArrF8, _ArrF8]: ...
 
 def l_ratio_bounds(
     r: IntVector | AnyInt,
@@ -524,9 +536,53 @@ def l_ratio_bounds(
             \frac{\B(r - 1,\ r + s + t + 1)}{r \B(r + s,\ r + t)}.
     \]
 
+    Examples:
+        Without trim, the lower- and upper-bounds of the L-skewness and
+        L-kurtosis are:
+
+        >>> l_ratio_bounds(3)
+        (-1.0, 1.0)
+        >>> l_ratio_bounds(4)
+        (-0.25, 1.0)
+
+        For the L-kurtosis, the "legacy" bounds by Hosking (2007) are clearly
+        looser:
+
+        >>> l_ratio_bounds(4, legacy=True)
+        (-1.0, 1.0)
+
+        For the symmetrically trimmed TL-moment ratio's:
+
+        >>> l_ratio_bounds(3, trim=3)
+        (-1.2, 1.2)
+        >>> l_ratio_bounds(4, trim=3)
+        (-0.15, 1.5)
+
+        Simiarly, those of the LL-ratio's are
+
+        >>> l_ratio_bounds(3, trim=(0, 3))
+        (-0.8, 2.0)
+        >>> l_ratio_bounds(4, trim=(0, 3))
+        (-0.2333..., 3.5)
+
+        The LH-skewness bounds are "flipped" w.r.t to the LL-skewness,
+        but they are the same for the L*-kurtosis:
+
+        >>> l_ratio_bounds(3, trim=(3, 0))
+        (-2.0, 0.8)
+        >>> l_ratio_bounds(4, trim=(3, 0))
+        (-0.2333..., 3.5)
+
+        The bounds of multiple L-ratio's can be calculated in one shot:
+        >>> l_ratio_bounds([3, 4, 5, 6], trim=(1, 2))
+        (array([-1.        , -0.194..., -1.12      , -0.149...]),
+         array([1.333..., 1.75      , 2.24      , 2.8       ]))
+
+
     Args:
         r: Scalar or array-like with the L-moment ratio order(s).
         trim: L-moment ratio trim-length(s).
+        legacy: If set to `True`, will use the (looser) by Hosking (2007).
 
     Returns:
         A 2-tuple with arrays or scalars, of the lower- and upper bounds.
@@ -539,15 +595,6 @@ def l_ratio_bounds(
     References:
         - [J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
         L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
-
-    Todo:
-        - Fix the use in `distributions.py`
-        - Document `legacy` kwarg
-        - Examples
-            - Compare Hosking's (legacy) bounds with these ones
-            - Compare with L-stats of distributions, e.g. GPD with k < -35/9,
-            like mentioned by Hosking (2007).
-        - Some notes on how to find the extrema (i.e. d/du P = 0)
 
     """
     _r = clean_orders(r)
@@ -598,7 +645,7 @@ def l_ratio_bounds(
 
         _cache[_ri] = t_min[i], t_max[i]
 
-    return t_min[()], t_max[()]
+    return t_min.round(12)[()], t_max.round(12)[()]
 
 
 def rejection_point(
