@@ -15,9 +15,6 @@ __all__ = (
     'jacobi',
     'jacobi_series',
     'roots',
-    'extrema',
-    'minima',
-    'maxima',
 )
 
 from typing import Any, TypeVar, cast, overload
@@ -369,41 +366,3 @@ def roots(
         return x[(x >= a) & (x <= b)]
 
     return x
-
-
-def integrate(p: PolySeries, /, a: float | None = None) -> PolySeries:
-    r"""Calculate the anti-derivative: $P(x) = \int_a^x p(u) \, du$."""
-    return p.integ(lbnd=p.domain[0] if a is None else a)
-
-
-def extrema(
-    p: PolySeries,
-    /,
-    outside: bool = False,
-) -> npt.NDArray[np.inexact[Any]]:
-    """Return the $x$ in the domain of $p$, where $p'(x) = 0$."""
-    return roots(p.deriv(), outside=outside)
-
-
-def minima(
-    p: PolySeries,
-    /,
-    outside: bool = False,
-) -> npt.NDArray[np.inexact[Any]]:
-    """
-    Return the $x$ in the domain of $p$, where $p'(x) = 0$ and $p''(x) > 0$.
-    """  # noqa: D200
-    x = extrema(p, outside=outside)
-    return x[p.deriv(2)(x) > 0] if len(x) else x
-
-
-def maxima(
-    p: PolySeries,
-    /,
-    outside: bool = False,
-) -> npt.NDArray[np.inexact[Any]]:
-    """
-    Return the $x$ in the domain of $p$, where $p'(x) = 0$ and $p''(x) < 0$.
-    """  # noqa: D200
-    x = extrema(p, outside=outside)
-    return x[p.deriv(2)(x) < 0] if len(x) else x
