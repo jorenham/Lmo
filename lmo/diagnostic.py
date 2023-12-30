@@ -41,7 +41,10 @@ from scipy.stats.distributions import (  # type: ignore
     rv_frozen,
 )
 
+from .special import fpow
+
 from ._lm import l_ratio
+from ._poly import extrema_jacobi
 from ._utils import clean_orders, clean_trim
 from .typing import AnyInt, AnyTrim, IntVector
 
@@ -51,6 +54,8 @@ if TYPE_CHECKING:
 T = TypeVar('T', bound=np.floating[Any])
 
 AnyRV: TypeAlias = rv_continuous | rv_discrete
+
+_ArrF8: TypeAlias = npt.NDArray[np.float64]
 
 
 class HypothesisTestResult(NamedTuple):
@@ -66,8 +71,8 @@ class HypothesisTestResult(NamedTuple):
             hypothesis, $H_0$.
     """
 
-    statistic: float | npt.NDArray[np.float64]
-    pvalue: float | npt.NDArray[np.float64]
+    statistic: float | _ArrF8
+    pvalue: float | _ArrF8
 
     @property
     def is_valid(self) -> bool | npt.NDArray[np.bool_]:
@@ -165,22 +170,14 @@ def normaltest(
     return HypothesisTestResult(k2, p_value)
 
 
-def _gof_stat_single(
-    l_obs: npt.NDArray[np.float64],
-    l_exp: npt.NDArray[np.float64],
-    cov: npt.NDArray[np.float64],
-) -> float:
+def _gof_stat_single(l_obs: _ArrF8, l_exp: _ArrF8, cov: _ArrF8) -> float:
     err = l_obs - l_exp
     prec = np.linalg.inv(cov)  # precision matrix
     return cast(float, err.T @ prec @ err)
 
 
 _gof_stat = cast(
-    Callable[[
-        npt.NDArray[np.float64],
-        npt.NDArray[np.float64],
-        npt.NDArray[np.float64],
-    ], npt.NDArray[np.float64]],
+    Callable[[_ArrF8, _ArrF8, _ArrF8], _ArrF8],
     np.vectorize(
         _gof_stat_single,
         otypes=[float],
@@ -192,7 +189,7 @@ _gof_stat = cast(
 
 def l_moment_gof(
     rv_or_cdf: AnyRV | Callable[[float], float],
-    l_moments: npt.NDArray[np.float64],
+    l_moments: _ArrF8,
     n_obs: int,
     /,
     trim: AnyTrim = (0, 0),
@@ -282,13 +279,13 @@ def l_moment_gof(
         lambda_rr = l_moment_cov_from_cdf(cdf, n, trim, **kwargs)
 
     stat = n_obs * _gof_stat(l_r.T, lambda_r, lambda_rr).T[()]
-    pval = cast(float | npt.NDArray[np.float64], chdtrc(n, stat))
+    pval = cast(float | _ArrF8, chdtrc(n, stat))
     return HypothesisTestResult(stat, pval)
 
 
 def l_stats_gof(
     rv_or_cdf: AnyRV | Callable[[float], float],
-    l_stats: npt.NDArray[np.float64],
+    l_stats: _ArrF8,
     n_obs: int,
     /,
     trim: AnyTrim = (0, 0),
@@ -316,7 +313,7 @@ def l_stats_gof(
         tau_rr = l_stats_cov_from_cdf(cdf, n, trim, **kwargs)
 
     stat = n_obs * _gof_stat(t_r.T, tau_r, tau_rr).T[()]
-    pval = cast(float | npt.NDArray[np.float64], chdtrc(n, stat))
+    pval = cast(float | _ArrF8, chdtrc(n, stat))
     return HypothesisTestResult(stat, pval)
 
 
@@ -348,7 +345,7 @@ def _lm2_bounds_single(r: int, trim: tuple[float, float]) -> float:
             ) / (np.pi * 2 * r**2)
 
 _lm2_bounds = cast(
-    Callable[[IntVector, tuple[float, float]], npt.NDArray[np.float64]],
+    Callable[[IntVector, tuple[float, float]], _ArrF8],
     np.vectorize(
         _lm2_bounds_single,
         otypes=[float],
@@ -356,17 +353,6 @@ _lm2_bounds = cast(
         signature='()->()',
     ),
 )
-
-
-@overload
-def l_moment_bounds(
-    r: IntVector,
-    /,
-    trim: AnyTrim = ...,
-    scale: float = ...,
-) -> npt.NDArray[np.float64]:
-    ...
-
 
 @overload
 def l_moment_bounds(
@@ -378,12 +364,22 @@ def l_moment_bounds(
     ...
 
 
+@overload
 def l_moment_bounds(
-    r: IntVector | AnyInt,
+    r: IntVector,
+    /,
+    trim: AnyTrim = ...,
+    scale: float = ...,
+) -> _ArrF8:
+    ...
+
+
+def l_moment_bounds(
+    r: AnyInt | IntVector,
     /,
     trim: AnyTrim = (0, 0),
     scale: float = 1.0,
-) -> float | npt.NDArray[np.float64]:
+) -> float | _ArrF8:
     r"""
     Returns the absolute upper bounds $L^{(s,t)}_r$ on L-moments
     $\lambda^{(s,t)}_r$, proportional to the scale $\sigma_X$ (standard
@@ -480,109 +476,129 @@ def l_moment_bounds(
     _trim = clean_trim(trim)
     return scale * np.sqrt(_lm2_bounds(_r, _trim))[()]
 
-
 @overload
-def l_ratio_bounds(
-    r: IntVector,
-    /,
-    trim: AnyTrim = ...,
-    *,
-    has_variance: bool = ...,
-) -> npt.NDArray[np.float64]:
-    ...
-
-
+def l_ratio_bounds(r: AnyInt, /, trim: AnyTrim = ...) -> float: ...
 @overload
-def l_ratio_bounds(
-    r: AnyInt,
-    /,
-    trim: AnyTrim = ...,
-    *,
-    has_variance: bool = ...,
-) -> float:
-    ...
-
+def l_ratio_bounds(r: IntVector, /, trim: AnyTrim = ...) -> _ArrF8: ...
 
 def l_ratio_bounds(
     r: IntVector | AnyInt,
     /,
     trim: AnyTrim = (0, 0),
     *,
-    has_variance: bool = True,
-) -> float | npt.NDArray[np.float64]:
+    legacy: bool = False,
+) -> tuple[float | _ArrF8, float | _ArrF8]:
     r"""
-    Returns the absolute upper bounds $T^{(s,t)}_r$ on L-moment ratio's
-    $\tau^{(s,t)}_r = \lambda^{(s,t)}_r / \lambda^{(s,t)}_r$, for $r \ge 2$.
-    So $\left| \tau^{(s,t)}_r(X) \right| \le T^{(s,t)}_r$, given that
-    $\mathrm{Var}[X] = \sigma^2_X$ exists.
+    Unlike the standardized product-moments, the L-moment ratio's with
+    \( r \ge 2 \) are bounded above and below.
 
-    If the variance of the distribution is not defined, e.g. in case of the
-    [Cauchy distribution](https://wikipedia.org/wiki/Cauchy_distribution),
-    this method will not work. In this case, the looser bounds from
-    Hosking (2007) can be used instead, by passing `has_variance=False`.
+    Specifically, Hosking derived in 2007 that
 
-    Examples:
-        Calculate the bounds for different degrees of trimming:
+    \[
+        | \tlratio{r}{s,t}| \le
+            \frac 2 r
+            \frac{\ffact{r + s + t}{r - 2}}{\ffact{r - 1 + s \wedge t}{r - 2}}
+            .
+    \]
 
-        >>> l_ratio_bounds([1, 2, 3, 4])
-        array([       inf, 1.        , 0.77459667, 0.65465367])
-        >>> # the bounds for r=1,2 are the same for all trimmings; skip them
-        >>> l_ratio_bounds([3, 4], trim=(1, 1))
-        array([0.61475926, 0.4546206 ])
-        >>> l_ratio_bounds([3, 4], trim=(.5, 1.5))
-        array([0.65060005, 0.49736473])
+    But this derivation relies on unnecessarily loose Jacobi polynomial bounds.
+    If the actual min and max of the Jacobi polynomials are used instead,
+    the following (tighter) inequality is obtained:
 
-        In case of undefined variance, the bounds become a lot looser:
+    \[
+        \frac{\dot{w}_r^{(s, t)}}{\dot{w}_2^{(s, t)}}
+        \min_{u \in [0, 1]} \left[ \shjacobi{r - 1}{t + 1}{s + 1}{u} \right]
+        \le
+        \tlratio{s, t}{r}
+        \le
+        \frac{\dot{w}_r^{(s, t)}}{\dot{w}_2^{(s, t)}}
+        \max_{0 \le u \le 1} \left[ \shjacobi{r - 1}{t + 1}{s + 1}{u} \right],
+    \]
 
-        >>> l_ratio_bounds([3, 4], has_variance=False)
-        array([1., 1.])
-        >>> l_ratio_bounds([3, 4], trim=(1, 1), has_variance=False)
-        array([1.11111111, 1.25      ])
-        >>> l_ratio_bounds([3, 4], trim=(.5, 1.5), has_variance=False)
-        array([1.33333333, 1.71428571])
+    where
+
+    \[
+        \dot{w}_r^{(s, t)} =
+            % \frac{r + s + t}{r (r - 1)}
+            % \frac{\B(r,\ r + s + t)}{\B(r + s,\ r + t)}.
+            \frac{\B(r - 1,\ r + s + t + 1)}{r \B(r + s,\ r + t)}.
+    \]
 
     Args:
-        r: Order of the L-moment ratio(s), as positive integer scalar or
-            array-like.
-        trim: Tuple of left- and right- trim-lengths, matching those of the
-            relevant L-moment ratio's.
-        has_variance:
-            Set to False if the distribution has undefined variance, in which
-            case the (looser) bounds from J.R.M. Hosking (2007) will be used.
+        r: Scalar or array-like with the L-moment ratio order(s).
+        trim: L-moment ratio trim-length(s).
 
     Returns:
-        Array or scalar with shape like $r$.
+        A 2-tuple with arrays or scalars, of the lower- and upper bounds.
 
     See Also:
         - [`l_ratio`][lmo.l_ratio]
         - [`l_ratio_se`][lmo.l_ratio_se]
+        - [`diagnostic.l_moment_bounds`][lmo.diagnostic.l_moment_bounds]
 
     References:
         - [J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
         L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
 
+    Todo:
+        - Fix the use in `distributions.py`
+        - Document `legacy` kwarg
+        - Examples
+            - Compare Hosking's (legacy) bounds with these ones
+            - Compare with L-stats of distributions, e.g. GPD with k < -35/9,
+            like mentioned by Hosking (2007).
+        - Some notes on how to find the extrema (i.e. d/du P = 0)
+
     """
-    if has_variance:
-        return l_moment_bounds(r, trim) / l_moment_bounds(2, trim)
-
-    # otherwise, fall back to the (very) loose bounds from Hosking
-    _r = clean_orders(r, rmin=1)
-    _n = cast(int, np.max(_r)) + 1
-
+    _r = clean_orders(r)
     s, t = clean_trim(trim)
 
-    out = np.ones(_n)
-    if _n > 1:
-        # `L-loc / L-scale (= 1 / CV)` is unbounded
-        out[1] = np.inf
+    t_min = np.empty(_r.shape)
+    t_max = np.empty(_r.shape)
 
-    if _n > 3 and s and t:
-        # if not trimmed, then the bounds are simply 1
-        p, q = s + t, min(s, t)
-        for _k in range(3, _n):
-            out[_k] = out[_k - 1] * (1 + p / _k) / (1 + q / (_k - 1))
+    _cache: dict[int, tuple[float, float]] = {}
+    for i, ri in np.ndenumerate(_r):
+        _ri = cast(int, ri)
+        if _ri in _cache:
+            t_min[i], t_max[i] = _cache[_ri]
 
-    return out[_r]
+        if _ri == 1:
+            # L-loc / L-scale; unbounded
+            t_min[i], t_max[i] = -np.inf, np.inf
+        elif _ri in (0, 2):  # or s == t == 0:
+            t_min[i] = t_max[i] = 1
+        elif legacy:
+            t_absmax = (
+                2
+                * fpow(_ri + s + t, _ri - 2)
+                / fpow(_ri + min(s, t) - 1, _ri - 2)
+                / _ri
+            )
+            t_min[i] = -t_absmax
+            t_max[i] = t_absmax
+        else:
+            cr_c2 = 2 * (
+                np.exp(
+                    lgamma(_ri - 1)
+                    - np.log(_ri)
+                    + lgamma(s + 2)
+                    - lgamma(_ri + s)
+                    + lgamma(t + 2)
+                    - lgamma(_ri + t)
+                    + lgamma(_ri + s + t + 1)
+                    - lgamma(s + t + 3)  # noqa: COM812
+                )
+            )
+
+            p_min, p_max = extrema_jacobi(_ri - 2, t + 1, s + 1)
+            assert p_min < 0 < p_max, (p_min, p_max)
+
+            t_min[i] = cr_c2 * p_min
+            t_max[i] = cr_c2 * p_max
+
+        _cache[_ri] = t_min[i], t_max[i]
+
+    return t_min[()], t_max[()]
 
 
 def rejection_point(
@@ -668,7 +684,7 @@ def rejection_point(
     def integrand(x: float) -> float:
         return max(abs(influence_fn(-x)), abs(influence_fn(x)))
 
-    def obj(r: npt.NDArray[np.float64]) -> float:
+    def obj(r: _ArrF8) -> float:
         return quad(integrand, r[0], np.inf)[0]  # type: ignore
 
     res = cast(
@@ -734,7 +750,7 @@ def error_sensitivity(
     if np.isinf(influence_fn(a)) or np.isinf(influence_fn(b)):
         return np.inf
 
-    def obj(xs: npt.NDArray[np.float64]) -> float:
+    def obj(xs: _ArrF8) -> float:
         return -abs(influence_fn(xs[0]))
 
     bounds = None if np.isneginf(a) and np.isposinf(b) else [(a, b)]
@@ -817,7 +833,7 @@ def shift_sensitivity(
 
     """
 
-    def obj(xs: npt.NDArray[np.float64]) -> float:
+    def obj(xs: _ArrF8) -> float:
         x, y = xs
         if y == x:
             return 0
