@@ -558,7 +558,7 @@ def l_ratio_bounds(
         >>> l_ratio_bounds(4, trim=3)
         (-0.15, 1.5)
 
-        Simiarly, those of the LL-ratio's are
+        Similarly, those of the LL-ratio's are
 
         >>> l_ratio_bounds(3, trim=(0, 3))
         (-0.8, 2.0)

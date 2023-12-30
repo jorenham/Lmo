@@ -129,7 +129,7 @@ def peaks_jacobi(n: int, a: float, b: float) -> npt.NDArray[np.float64]:
         array([-1., 1.])
 
         For \( n > 1 \), the effects of the choices for \( a \) and \( b \)
-        become apparant, e.g. for \( n = 4 \):
+        become apparent, e.g. for \( n = 4 \):
 
         >>> peaks_jacobi(4, 0, 0).round(5)
         array([-1.     , -0.65465,  0.     ,  0.65465,  1.     ])
