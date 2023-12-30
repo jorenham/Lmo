@@ -17,7 +17,7 @@ __all__ = (
     'roots',
 )
 
-from typing import Any, TypeVar, cast, overload
+from typing import TypeVar, cast, overload
 
 import numpy as np
 import numpy.polynomial as npp
