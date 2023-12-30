@@ -848,7 +848,7 @@ def _check_lmoments(
 
     r = np.arange(1, n + 1)
     t_r = l_r[2:] / l_r[1]
-    t_r_max = l_ratio_bounds(r[2:], trim, has_variance=False)
+    t_r_max = l_ratio_bounds(r[2:], trim, legacy=True)[1]
     if np.any(rs0_oob := np.abs(t_r) > t_r_max):
         r_oob = np.argwhere(rs0_oob)[0] + 3
         t_oob = t_r[rs0_oob][0]
