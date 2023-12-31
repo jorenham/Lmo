@@ -42,311 +42,184 @@ exist (in closed form).
 
 ### L-stats
 
-<table>
-<thead>
-<tr>
-    <th>Name /<br> <code>scipy.stats</code></th>
-    <th>Shape</th>
-    <th>\( \lmoment{1} \)</th>
-    <th>\( \lmoment{2} \)</th>
-    <th>\( \lratio{3} = \lmoment{3}/\lmoment{2} \)</th>
-    <th>\( \lratio{4} = \lmoment{4}/\lmoment{2} \)</th>
-</tr>
-</thead>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Continuous_uniform_distribution"
-            target="_blank"
-            title="Continuous uniform distribution - Wikipedia"
-        >
-            Uniform
-        </a>
-        \( [0, 1] \)
-        <br>
-        <code>uniform</code>
-    </td>
-    <td></td>
-    <td>\[ \frac 1 2 \]</td>
-    <td>\[ \frac 1 6 \]</td>
-    <td>\( 0 \)</td>
-    <td>\( 0 \)</td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Normal_distribution"
-            target="_blank"
-            title="Normal distribution - Wikipedia"
-        >
-            Normal
-        </a>
-        <br>
-        <code>norm</code>
-    </td>
-    <td></td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ \frac{1}{\sqrt \pi} \]
-        \( \approx 0.5642 \)
-    </td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ 30 \ \frac{\theta_m}{\pi} - 9 \]
-        \( \approx 0.1226 \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Logistic_distribution"
-            target="_blank"
-            title="Logistic distribution - Wikipedia"
-        >
-            Logistic
-        </a>
-        <br>
-        <code>logistic</code>
-    </td>
-    <td></td>
-    <td>\( 0 \)</td>
-    <td>\( 1 \)</td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ 1 / 6 \]
-        \( = 0.16\overline{6}\dots \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Laplace_distribution"
-            target="_blank"
-            title="Laplace distribution - Wikipedia"
-        >
-            Laplace
-        </a>
-        <br>
-        <code>laplace</code>
-    </td>
-    <td></td>
-    <td>\( 0 \)</td>
-    <td>\[ \frac 3 4 \]</td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ \frac{17}{72} \]
-        \( \approx 0.2361 \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Student%27s_t-distribution"
-            target="_blank"
-            title="Student's t-distribution - Wikipedia"
-        >
-            Student's <i>t</i>
-        </a>
-        <br>
-        <code>t(2)</code>
-    </td>
-    <td>\( \nu = 2 \)</td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ \frac{\pi}{2 \sqrt{2}} \]
-        \( \approx 1.1107 \)
-    </td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ \frac 3 8 \]
-        \( = 0.375 \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Student%27s_t-distribution"
-            target="_blank"
-            title="Student's t-distribution - Wikipedia"
-        >
-            Student's <i>t</i>
-        </a>
-        <br>
-        <code>t(3)</code>
-    </td>
-    <td>\( \nu = 3 \)</td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ \frac{3 \sqrt 3}{\vphantom{\pi^2}2 \pi} \]
-        \( \approx 0.8270 \)
-    </td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ 1 - \frac{\vphantom{\sqrt 3}175}{24 \pi^2} \]
-        \( \approx 0.2612 \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Student%27s_t-distribution"
-            target="_blank"
-            title="Student's t-distribution - Wikipedia"
-        >
-            Student's <i>t</i>
-        </a>
-        <br>
-        <code>t(4)</code>
-    </td>
-    <td>\( \nu = 4 \)</td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ \frac{15}{64} \pi \]
-        \( \approx 0.7363 \)
-    </td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ \frac{111}{512} \]
-        \( \approx 0.2168 \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Exponential_distribution"
-            target="_blank"
-            title="Exponential distribution - Wikipedia"
-        >
-            Exponential
-        </a>
-        <br>
-        <code>expon</code>
-    </td>
-    <td></td>
-    <td>\( 1 \)</td>
-    <td>\[ \frac 1 2 \]</td>
-    <td>
-        \[ \frac 1 3 \]
-        \( = 0.3\overline{3}\dots \)
-    </td>
-    <td>
-        \[ \frac 1 6 \]
-        \( = 0.16\overline{6}\dots \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Half-normal_distribution"
-            target="_blank"
-            title="Half-normal distribution - Wikipedia"
-        >
-            Half-normal
-        </a>
-        <br>
-        <code>halfnorm</code>
-    </td>
-    <td></td>
-    <td>\( 1 \)</td>
-    <td>
-        \[ \sqrt 2 - 1 \]<br>
-        \( \approx 0.4142 \)
-    </td>
-    <td>
-        \[ \frac 1 3 \]
-        \( = 0.3\overline{3}\dots \)
-    </td>
-    <td>
-        \[ \frac 1 6 \]
-        \( = 0.16\overline{6}\dots \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Rayleigh_distribution"
-            target="_blank"
-            title="Rayleigh distribution - Wikipedia"
-        >
-            Rayleigh
-        </a>
-        <br>
-        <code>rayleigh</code>
-    </td>
-    <td></td>
-    <td>
-        \[ \frac 1 2 \sqrt{2 \pi} \]
-        \( \approx 1.253 \)
-    </td>
-    <td>
-        \[ \frac {\sqrt 2 - 1}{2} \sqrt{\pi} \]
-        \( \approx 0.3671 \)
-    </td>
-    <td>
-        \[ 2 \frac{2 + \sqrt 2}{\sqrt 3} - \frac{4 + \sqrt{2}}{\sqrt 2} \]
-        \( \approx 0.1140 \)
-    </td>
-    <td>
-        \[ 10 \frac{2 + \sqrt 2}{\sqrt 3} - 3 \frac{5 + 3 \sqrt 2}{\sqrt 2} \]
-        \( \approx 0.1054 \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Gumbel_distribution"
-            target="_blank"
-            title="Gumbel distribution - Wikipedia"
-        >
-            Gumbel
-        </a>
-        <br>
-        <code>gumbel_r</code>
-    </td>
-    <td></td>
-    <td>
-        \[ \gamma_e \]
-        \( \approx 0.5772 \)
-    </td>
-    <td>
-        \[ \ln{2} \]
-        \( \approx 0.6931 \)
-    </td>
-    <td>
-        \[ 2 \log_2(3) - 3 \]
-        \( \approx 0.1699 \)
-    </td>
-    <td>
-        \[ 16 - 10 \log_2(3) \]
-        \( \approx 0.1504 \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Pareto_distribution"
-            target="_blank"
-            title="Pareto distribution - Wikipedia"
-        >
-            Pareto
-        </a>
-        <br>
-        <code>pareto</code>
-    </td>
-    <td>\( \alpha > 0  \)</td>
-    <td>
-        \[ \frac{\alpha}{\alpha - 1} \]
-    </td>
-    <td>
-        \[ \frac{\alpha}{\alpha - 1} \frac{1}{2 \alpha - 1} \]
-    </td>
-    <td>
-        \[ \frac{\alpha + 1}{3 \alpha - 1} \]
-    </td>
-    <td>
-        \[ \frac{\alpha + 1}{3 \alpha - 1} \frac{2 \alpha + 1}{4 \alpha - 1} \]
-    </td>
-</tr>
+<table markdown="span">
+    <tr>
+        <th></th>
+        <th>Shape</th>
+        <th>\( \lmoment{1} \)</th>
+        <th>\( \lmoment{2} \)</th>
+        <th>\( \lratio{3} = \lmoment{3}/\lmoment{2} \)</th>
+        <th>\( \lratio{4} = \lmoment{4}/\lmoment{2} \)</th>
+    </tr>
+    <tr>
+        <td>
+            [Uniform](https://w.wiki/8gGh)<br>
+            [`uniform`][scipy.stats.uniform]
+        </td>
+        <td>\( [0, 1] \)</td>
+        <td>\( \displaystyle \frac 1 2 \)</td>
+        <td>\( \displaystyle \frac 1 6 \)</td>
+        <td>\( 0 \)</td>
+        <td>\( 0 \)</td>
+    </tr>
+    <tr>
+        <td>
+            [Normal](https://w.wiki/3hoJ)<br>
+            [`norm`][scipy.stats.norm]
+        </td>
+        <td></td>
+        <td>\( 0 \)</td>
+        <td>\( \displaystyle \frac{1}{\sqrt \pi} \\ \approx 0.5642 \)</td>
+        <td>\( 0 \)</td>
+        <td>
+            \(
+                \displaystyle 30 \ \frac{\theta_m}{\pi} - 9 \\
+                \approx 0.1226
+            \)
+        </td>
+    </tr>
+    <tr>
+        <td>
+            [Logistic](https://w.wiki/8gGn)<br>
+            [`logistic`][scipy.stats.logistic]
+        </td>
+        <td></td>
+        <td>\( 0 \)</td>
+        <td>\( 1 \)</td>
+        <td>\( 0 \)</td>
+        <td>\( \displaystyle 1 / 6 \)<br></td>
+    </tr>
+    <tr>
+        <td>
+            [Laplace](https://w.wiki/8EYL)<br>
+            [`laplace`][scipy.stats.laplace]
+        </td>
+        <td></td>
+        <td>\( 0 \)</td>
+        <td>\( \displaystyle \frac 3 4 \)</td>
+        <td>\( 0 \)</td>
+        <td>\( \displaystyle \frac{17}{72} \\ \approx 0.2361 \)</td>
+    </tr>
+    <tr>
+        <td>
+            [Student's *t*](https://w.wiki/3r3U)<br>
+            [`t(2)`][scipy.stats.t]
+        </td>
+        <td>\( \nu = 2 \)</td>
+        <td>\( 0 \)</td>
+        <td>\( \displaystyle \frac{\pi}{2 \sqrt 2} \\ \approx 1.1107 \)</td>
+        <td>\( 0 \)</td>
+        <td>\( \displaystyle \frac 3 8 \\ = 0.375 \)</td>
+    </tr>
+    <tr>
+        <td>
+            [Student's *t*](https://w.wiki/3r3U)<br>
+            [`t(3)`][scipy.stats.t]
+        </td>
+        <td>\( \nu = 3 \)</td>
+        <td>\( 0 \)</td>
+        <td>
+            \(
+                \displaystyle \frac{3 \sqrt 3}{\vphantom{\pi^2}2 \pi} \\
+                \approx 0.8270
+            \)
+        </td>
+        <td>\( 0 \)</td>
+        <td>
+            \(
+                \displaystyle 1 - \frac{\vphantom{\sqrt 3}175}{24 \pi^2} \\
+                \approx 0.2612
+            \)
+        </td>
+    </tr>
+    <tr>
+        <td>
+            [Student's *t*](https://w.wiki/3r3U)<br>
+            [`t(4)`][scipy.stats.t]
+        </td>
+        <td>\( \nu = 4 \)</td>
+        <td>\( 0 \)</td>
+        <td>\( \displaystyle \frac{15}{64} \pi \\ \approx 0.7363 \)</td>
+        <td>\( 0 \)</td>
+        <td>\( \displaystyle \frac{111}{512} \\ \approx 0.2168 \)</td>
+    </tr>
+    <tr>
+        <td>
+            [Exponential](https://w.wiki/3jXu)<br>
+            [`expon`][scipy.stats.expon]
+        </td>
+        <td></td>
+        <td>\( \displaystyle 1 \)</td>
+        <td>\( \displaystyle \frac 1 2 \)</td>
+        <td>\( \displaystyle \frac 1 3 \)</td>
+        <td>\( \displaystyle \frac 1 6 \)</td>
+    </tr>
+    <tr>
+        <td>
+            [Half-normal](https://w.wiki/8gG$)<br>
+            [`halfnorm`][scipy.stats.halfnorm]
+        </td>
+        <td></td>
+        <td>\( 1 \)</td>
+        <td>\( \sqrt 2 - 1 \\ \approx 0.4142 \)</td>
+        <td>
+            \(
+                \displaystyle
+                7 + 4 \sqrt 2 - 12 (2 - \sqrt 2) \frac{\theta_m}{\pi} \\
+                \approx 0.1983
+            \)
+        </td>
+        <td>\( \approx 0.097\ 317\ 159 \)</td>
+    </tr>
+    <tr>
+        <td>
+            [Rayleigh](https://w.wiki/8gH3)<br>
+            [`rayleigh`][scipy.stats.rayleigh]
+        </td>
+        <td></td>
+        <td>
+            \(
+                \displaystyle
+                \frac 1 2 \sqrt{2 \pi}  \\
+                \approx 1.253
+            \)
+        </td>
+        <td>
+            \(
+                \displaystyle
+                \frac {\sqrt 2 - 1}{2} \sqrt{\pi} \\
+                \approx 0.3671
+            \)
+        </td>
+        <td>
+            \(
+                \displaystyle
+                \frac{2 + \sqrt 2}{\sqrt 3}
+                - \frac{4 + \sqrt{2}}{\sqrt 2} \\
+                \approx 0.1140
+            \)
+        </td>
+        <td>
+            \(
+                \displaystyle
+                10 \frac{2 + \sqrt 2}{\sqrt 3}
+                - 3 \frac{5 + 3 \sqrt 2}{\sqrt 2} \\
+                \approx 0.1054
+            \)
+        </td>
+    </tr>
+    <tr>
+        <td>
+            [Gumbel](https://w.wiki/8gHD)<br>
+            [`gumbel_r`][scipy.stats.gumbel_r]
+        </td>
+        <td></td>
+        <td>\( \gamma_e \\ \approx 0.5772 \)</td>
+        <td>\( \ln{2} \\ \approx 0.6931 \)</td>
+        <td>\( 2 \log_2(3) - 3 \\ \approx 0.1699 \)</td>
+        <td>\( 16 - 10 \log_2(3) \\ \approx 0.1504 \)</td>
+    </tr>
+
 </table>
 
 ### TL-stats
