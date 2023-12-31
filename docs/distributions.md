@@ -44,7 +44,7 @@ exist (in closed form).
 
 <table markdown="span">
     <tr>
-        <th></th>
+        <th>Distribution</th>
         <th>Shape</th>
         <th>\( \lmoment{1} \)</th>
         <th>\( \lmoment{2} \)</th>
@@ -73,7 +73,8 @@ exist (in closed form).
         <td>\( 0 \)</td>
         <td>
             \(
-                \displaystyle 30 \ \frac{\theta_m}{\pi} - 9 \\
+                \displaystyle 30 \
+                \frac{\href{#const-theta_m}{\theta_m}}{\pi} - 9 \\
                 \approx 0.1226
             \)
         </td>
@@ -165,7 +166,10 @@ exist (in closed form).
         <td>
             \(
                 \displaystyle
-                7 + 4 \sqrt 2 - 12 (2 - \sqrt 2) \frac{\theta_m}{\pi} \\
+                7 + 4 \sqrt 2 - 12 (2 - \sqrt 2) \frac
+                    {\href{#const-theta_m}{\theta_m}}
+                    {\pi}
+                \\
                 \approx 0.1983
             \)
         </td>
@@ -214,7 +218,7 @@ exist (in closed form).
             [`gumbel_r()`][scipy.stats.gumbel_r]
         </td>
         <td></td>
-        <td>\( \gamma_e \\ \approx 0.5772 \)</td>
+        <td>\( \href{#const-euler}{\gamma_e} \\ \approx 0.5772 \)</td>
         <td>\( \ln{2} \\ \approx 0.6931 \)</td>
         <td>\( 2 \log_2(3) - 3 \\ \approx 0.1699 \)</td>
         <td>\( 16 - 10 \log_2(3) \\ \approx 0.1504 \)</td>
@@ -224,333 +228,186 @@ exist (in closed form).
 
 ### TL-stats
 
-<table>
-<thead>
+Symmetrically trimmed
+[L-stats][lmo.contrib.scipy_stats.l_rv_generic.l_stats] of symmetric
+distributions.
+
+<table markdown="span">
     <tr>
-        <th>Name / <br><code>scipy.stats</code></th>
+        <th>Distribution</th>
         <th>Shape</th>
         <th>\( \tlmoment{1}{1} \)</th>
         <th>\( \tlmoment{1}{2} \)</th>
         <th>\( \tlratio{1}{3} \)</th>
         <th>\( \tlratio{1}{4} \)</th>
     </tr>
-</thead>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Continuous_uniform_distribution"
-            target="_blank"
-            title="Continuous uniform distribution - Wikipedia"
-        >
-            Uniform
-        </a>
-        \( [0, 1] \)
-        <br>
-        <code>uniform</code>
-    </td>
-    <td></td>
-    <td>\[ \frac 1 2 \]</td>
-    <td>\[ \frac{1}{10} \]</td>
-    <td>\( 0 \)</td>
-    <td>\( 0 \)</td>
-    <td></td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Normal_distribution"
-            target="_blank"
-            title="Normal distribution - Wikipedia"
-        >
-            Normal
-        </a>
-        <br>
-        <code>norm</code>
-    </td>
-    <td></td>
-    <td>\( 0 \)</td>
-    <td>
-        \[
-            \frac{6}{\sqrt \pi} \left(
-                1
-                - 3 \frac{\theta_m}{\pi}
-            \right)
-        \]
-        \( \approx 0.2970 \)
-    </td>
-    <td>\( 0 \)</td>
-    <td>
-        \( \approx 0.06248 \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Logistic_distribution"
-            target="_blank"
-            title="Logistic distribution - Wikipedia"
-        >
-            Logistic
-        </a>
-        <br>
-        <code>logistic(μ, s)</code>
-    </td>
-    <td></td>
-    <td>0</td>
-    <td>\[ \frac 1 2 \]</td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ \frac{1}{12} \]
-        \( = 0.083\overline{3} \dots \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Laplace_distribution"
-            target="_blank"
-            title="Laplace distribution - Wikipedia"
-        >
-            Laplace
-        </a>
-        <br>
-        <code>laplace</code>
-    </td>
-    <td></td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ \frac{11}{32} \]
-        \( = 0.34375 \)
-    </td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ \frac{3}{22} \]
-        \( = 0.136\overline{36} \dots \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://en.wikipedia.org/wiki/Cauchy_distribution"
-            target="_blank"
-            title="Cauchy distribution - Wikipedia"
-        >
-            Cauchy
-        </a>
-        /
-        <br>
-        <a
-            href="https://wikipedia.org/wiki/Student%27s_t-distribution"
-            target="_blank"
-            title="Student's t-distribution - Wikipedia"
-        >
-            Student's <i>t</i>
-        </a>
-        <br>
-        <code>cauchy</code>
-        /
-        <code>t(2)</code>
-    </td>
-    <td>\( \nu = 1 \)</td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ \frac{18 \vphantom{)}}{\pi^3 \vphantom{)}} \ \zeta(3) \]
-        \( \approx 0.6978 \)
-    </td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ \frac{25}{6} - \frac{175}{4 \pi^2} \frac{\zeta(5)}{\zeta(3)} \]
-        \( \approx 0.3428 \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Student%27s_t-distribution"
-            target="_blank"
-            title="Student's t-distribution - Wikipedia"
-        >
-            Student's <i>t</i>
-        </a>
-        <br>
-        <code>t(2)</code>
-    </td>
-    <td>\( \nu = 2 \)</td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ \frac{3 \pi}{16 \sqrt{2}} \]
-        \( \approx 0.4165 \)
-    </td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ \frac{5}{32} \]
-        \( = 0.15625 \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Student%27s_t-distribution"
-            target="_blank"
-            title="Student's t-distribution - Wikipedia"
-        >
-            Student's <i>t</i>
-        </a>
-        <br>
-        <code>t(3)</code>
-    </td>
-    <td>\( \nu = 3 \)</td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ \frac{105 \sqrt 3}{16 \pi^3} \]
-        \( \approx 0.3666 \)
-    </td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ \frac{25}{6} -  \frac{23 \ 023}{(24 \pi)^2} \]
-        \( \approx 0.1168 \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Student%27s_t-distribution"
-            target="_blank"
-            title="Student's t-distribution - Wikipedia"
-        >
-            Student's <i>t</i>
-        </a>
-        <br>
-        <code>t(4)</code>
-    </td>
-    <td>\( \nu = 4 \)</td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ \frac{3 \ 609 \ \pi}{32 \ 768} \]
-        \( \approx 0.3460 \)
-    </td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ \frac{164 \ 975}{1 \ 642 \ 496} \]
-        \( \approx 0.1004 \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Exponential_distribution"
-            target="_blank"
-            title="Exponential distribution - Wikipedia"
-        >
-            Exponential
-        </a>
-        <br>
-        <code>expon</code>
-    </td>
-    <td></td>
-    <td>\[ \frac 5 6 \]</td>
-    <td>\[ \frac 1 4 \]</td>
-    <td>
-        \[ \frac 2 9 \]
-        \( = 0.2\overline{2}\dots \)
-    </td>
-    <td>
-        \[ \frac{1}{12} \]
-        \( = 0.083\overline{3}\dots \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Rayleigh_distribution"
-            target="_blank"
-            title="Rayleigh distribution - Wikipedia"
-        >
-            Rayleigh
-        </a>
-        <br>
-        <code>rayleigh</code>
-    </td>
-    <td></td>
-    <td>
-        \[
-            \frac{\sqrt \pi}{6}
-            \bigl( 9 - 2 \sqrt 6 \bigr)
-        \]
-        \( \approx 1.211  \)
-    </td>
-    <td>
-        \[
-            \frac{\sqrt \pi}{4}
-            \bigl( 6 - 4 \sqrt 6 + 3 \sqrt 2 \bigr)
-        \]
-        \( \approx 0.1970 \)
-    </td>
-    <td>
-        \[
-            \frac{10}{9}
-            - \frac{8}{9}
-            \frac
-                {3 \sqrt{10} + 5 \sqrt 6 - 15 \sqrt 2}
-                {6 - 4 \sqrt 6 + 3 \sqrt 2}
-        \]
-        \( \approx 0.06951 \)
-    </td>
-    <td>
-        \[
-            \frac 5 4
-            - \frac 7 6
-            \frac
-                {18 \sqrt{10} + 10 \sqrt 6 - 10 \sqrt 3 - 45 \sqrt 2}
-                {6 - 4 \sqrt 6 + 3 \sqrt 2}
-        \]
-        \( \approx 0.05422 \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Gumbel_distribution"
-            target="_blank"
-            title="Gumbel distribution - Wikipedia"
-        >
-            Gumbel
-        </a>
-        <br>
-        <code>gumbel_r</code>
-    </td>
-    <td></td>
-    <td>
-        \[ \gamma_e + 3 \ln{2} - 2 \ln{3} \]
-        \( \approx 0.4594 \)
-    </td>
-    <td>
-        \[ 6 \ln{3} - 9 \ln{2} \]
-        \( \approx 0.3533 \)
-    </td>
-    <td>
-        \[
-            -\frac{10}{9}
-            \frac
-                {2 \log_2(5) - 5}
-                {2 \log_2(3) - 3}
-            -
-            \frac{20}{9}
-        \]
-        \( \approx 0.1065 \)
-    </td>
-    <td>
-        \[
-            \frac{35}{6}
-            \frac
-                {3 \log_2(5) - 7}
-                {2 \log_2(3) - 3}
-            +
-            \frac{5}{4}
-        \]
-        \( \approx 0.07541 \)
-    </td>
-</tr>
+    <tr>
+        <td>
+            [Uniform](https://w.wiki/8gGh)<br>
+            [`uniform()`][scipy.stats.uniform]
+        </td>
+        <td>\( [0, 1] \)</td>
+        <td>\( \displaystyle \frac 1 2 \)</td>
+        <td>\( \displaystyle \frac{1}{10} \)</td>
+        <td>\( 0 \)</td>
+        <td>\( 0 \)</td>
+    </tr>
+    <tr>
+        <td>
+            [Normal](https://w.wiki/3hoJ)<br>
+            [`norm()`][scipy.stats.norm]
+        </td>
+        <td></td>
+        <td>\( 0 \)</td>
+        <td>
+            \(
+                \displaystyle
+                \frac{6}{\sqrt \pi}
+                \left(
+                    1 - 3 \frac{\href{#const-theta_m}{\theta_m}}{\pi}
+                \right) \\
+                \approx 0.2970
+            \)
+        </td>
+        <td>\( 0 \)</td>
+        <td>\( \approx 0.06248 \)</td>
+    </tr>
+    <tr>
+        <td>
+            [Logistic](https://w.wiki/8gGn)<br>
+            [`logistic()`][scipy.stats.logistic]
+        </td>
+        <td></td>
+        <td>\( 0 \)</td>
+        <td>\( \displaystyle \frac 1 2 \)</td>
+        <td>\( 0 \)</td>
+        <td>\( \displaystyle \frac{1}{12} \\ = 0.083\overline{3} \dots \)</td>
+    </tr>
+    <tr>
+        <td>
+            [Laplace](https://w.wiki/8EYL)<br>
+            [`laplace()`][scipy.stats.laplace]
+        </td>
+        <td></td>
+        <td>\( 0 \)</td>
+        <td>\( \displaystyle \frac{11}{32} \\ = 0.34375 \)</td>
+        <td>\( 0 \)</td>
+        <td>\( \displaystyle \frac{3}{22} \\ = 0.136\overline{36} \dots \)</td>
+    </tr>
+    <tr>
+        <td>
+            [Cauchy](https://w.wiki/8gHv)<br>
+            [`cauchy()`][scipy.stats.cauchy]
+        </td>
+        <td></td>
+        <td>\( 0 \)</td>
+        <td>
+            \(
+                \displaystyle
+                \frac{18}{\pi^3} \ \href{#const-zeta}{\zeta}(3) \\
+                \approx 0.6978
+            \)
+        </td>
+        <td>\( 0 \)</td>
+        <td>
+            \(
+                \displaystyle
+                \frac{25}{6} - \frac{175}{4 \pi^2} \frac
+                    {\href{#const-zeta}{\zeta}(5)}
+                    {\href{#const-zeta}{\zeta}(3)}
+                \\
+                \approx 0.3428
+            \)
+        </td>
+    </tr>
+    <tr>
+        <td>
+            [Student's *t*](https://w.wiki/3r3U)<br>
+            [`t(2)`][scipy.stats.t]
+        </td>
+        <td>\( \nu = 2 \)</td>
+        <td>\( 0 \)</td>
+        <td>\( \displaystyle \frac{3 \pi}{16 \sqrt 2} \\ \approx 0.4165 \)</td>
+        <td>\( 0 \)</td>
+        <td>\( \displaystyle \frac{5}{32} \\ = 0.15625 \)</td>
+    </tr>
+    <tr>
+        <td>
+            [Student's *t*](https://w.wiki/3r3U)<br>
+            [`t(3)`][scipy.stats.t]
+        </td>
+        <td>\( \nu = 3 \)</td>
+        <td>\( 0 \)</td>
+        <td>
+            \(
+                \displaystyle
+                \frac{105 \sqrt 3}{16 \pi^3} \\
+                \approx 0.3666
+            \)
+        </td>
+        <td>\( 0 \)</td>
+        <td>
+            \(
+                \displaystyle
+                \frac{25}{6} -  \frac{23 \ 023}{(24 \pi)^2} \\
+                \approx 0.1168
+            \)
+        </td>
+    </tr>
+    <tr>
+        <td>
+            [Student's *t*](https://w.wiki/3r3U)<br>
+            [`t(4)`][scipy.stats.t]
+        </td>
+        <td>\( \nu = 4 \)</td>
+        <td>\( 0 \)</td>
+        <td>
+            \(
+                \displaystyle
+                \frac{3\ 609\ \pi}{32\ 768} \\
+                \approx 0.3460
+            \)
+        </td>
+        <td>\( 0 \)</td>
+        <td>
+            \(
+                \displaystyle
+                \frac{164 \ 975}{1 \ 642 \ 496} \\
+                \approx 0.1004
+            \)
+        </td>
+    </tr>
+    <tr>
+        <td>
+            [Gumbel](https://w.wiki/8gHD)<br>
+            [`gumbel_r()`][scipy.stats.gumbel_r]
+        </td>
+        <td></td>
+        <td>
+            \(
+                \displaystyle
+                \href{#const-euler}{\gamma_e} - 2 \ln 3 + 3 \ln 2 \\
+                \approx 0.4594
+            \)
+        </td>
+        <td>\( \displaystyle 6 \ln 3 - 9 \ln 2 \\ \approx 0.3533 \)</td>
+        <td>
+            \(
+                \displaystyle
+                -\frac{10}{9}
+                \frac{5 - 2 \log_2(5)}{3 - 2 \log_2(3)} - \frac{20}{9} \\
+                \approx 0.1065
+            \)
+        </td>
+        <td>
+            \(
+                \displaystyle
+                \frac{35}{6}
+                \frac{7 - 3 \log_2(5)}{3 - 2 \log_2(3)} + \frac{5}{4} \\
+                \approx 0.07541
+            \)
+        </td>
+    </tr>
 </table>
 
 ## General distribution L-moments
