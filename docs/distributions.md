@@ -228,9 +228,7 @@ exist (in closed form).
 
 ### TL-stats
 
-Symmetrically trimmed
-[L-stats][lmo.contrib.scipy_stats.l_rv_generic.l_stats] of symmetric
-distributions.
+Symmetrically trimmed TL-stats of some symmetric distributions.
 
 <table markdown="span">
     <tr>
@@ -410,7 +408,125 @@ distributions.
     </tr>
 </table>
 
-## General distribution L-moments
+### LL-stats
+
+Right-trimmed LL-stats of some simple left-bound distributions, using
+**L**inear combinations of **L**ower order statistics.
+
+<table markdown="span">
+    <tr>
+        <th>Distribution</th>
+        <th>\( \tlmoment{0, 1}{1} \)</th>
+        <th>\( \tlmoment{0, 1}{2} \)</th>
+        <th>\( \tlratio{0, 1}{3} \)</th>
+        <th>\( \tlratio{0, 1}{4} \)</th>
+    </tr>
+    <tr>
+        <td>
+            [Exponential](https://w.wiki/3jXu)<br>
+            [`expon()`][scipy.stats.expon]
+        </td>
+        <td>\( \displaystyle \frac 1 2 \)</td>
+        <td>\( \displaystyle \frac 1 4 \)</td>
+        <td>\( \displaystyle \frac 2 9 \\ = 0.2\overline{2} \dots  \)</td>
+        <td>\( \displaystyle \frac{1}{12} \\ = 0.083\overline{3} \dots  \)</td>
+    </tr>
+    <tr>
+        <td>
+            [Half-normal](https://w.wiki/8gG$)<br>
+            [`halfnorm()`][scipy.stats.halfnorm]
+        </td>
+        <td>\( 2 - \sqrt 2 \\ \approx 0.5858 \)</td>
+        <td>
+            \(
+                \displaystyle
+                9 \sqrt 2 \ \frac{\href{#const-theta_m}{\theta_m}}{\pi}
+                - 3 \frac{1 + \sqrt 2}{2} \\
+                \approx 0.2491
+            \)
+        </td>
+        <td>\( \approx 0.1119 \)</td>
+        <td>\( \approx 0.04489 \)</td>
+    </tr>
+    <tr>
+        <td>
+            [Rayleigh](https://w.wiki/8gH3)<br>
+            [`rayleigh()`][scipy.stats.rayleigh]
+        </td>
+        <td>\( \displaystyle \frac{\sqrt \pi}{2} \\ \approx 0.8862 \)</td>
+        <td>
+            \(
+                \displaystyle
+                \frac{3 - \sqrt 6}{4} \sqrt \pi \\
+                \approx 0.2439
+            \)
+        </td>
+        <td>
+            \(
+                \displaystyle
+                \frac{10}{9} \left(
+                    3 \sqrt 2 + 2 \sqrt 3 - 2 \sqrt 6
+                \right) - \frac{28}{9}  \\
+                \approx 0.008\ 625
+            \)
+        </td>
+        <td>
+            \(
+                \displaystyle
+                \frac{1}{4} \frac
+                    {80 - 75 \sqrt 2 + 14 \sqrt{10}}
+                    {\sqrt 6 - 3}
+                + \frac{25}{3} \\
+                \approx 0.06561
+            \)
+        </td>
+    </tr>
+    <tr>
+        <td>
+            [Gumbel](https://w.wiki/8gHD)<br>
+            [`gumbel_r()`][scipy.stats.gumbel_r]
+        </td>
+        <td>
+            \(
+                \displaystyle
+                \href{#const-euler}{\gamma_e} - \ln 2 \\
+                \approx -0.1159
+            \)
+        </td>
+        <td>
+            \(
+                \displaystyle
+                3 \ln 2 - \frac{3}{2} \ln 3 \\
+                \approx 0.4315
+            \)
+        </td>
+        <td>
+            \(
+                \displaystyle
+                \frac{4}{9} \left(
+                    \frac{5}{2 - \log_2(3)} - 12
+                \right) \\
+                \approx 0.02094
+            \)
+        </td>
+        <td>
+            \(
+                \displaystyle
+                \frac{5}{6} \left(
+                    \frac{8 - 7 \log_2(5)}{2 - \hphantom{1}\log_2(3)} + 20
+                \right) \\
+                \approx 0.09488
+            \)
+        </td>
+    </tr>
+</table>
+
+<!-- TODO: Half-logistic -->
+<!-- TODO: Log-normal -->
+<!-- TODO: Chi2 (specific df)?  -->
+<!-- TODO: F (specific df)?  -->
+
+## General L-moments
 
 Lmo derived a bunch of closed-form solutions for L-moments of several
 distributions. The proofs are not published, but it isn't difficult
@@ -432,8 +548,8 @@ Surprisingly, the L-moments of the discrete
 \]
 
 Here, \( \jacobi{n}{\alpha}{\beta}{x} \) is a
-[Jacobi polynomial](#def-jacobi) (although it's not orthogonal, since
-\( \beta > -1 \) does not hold).
+[Jacobi polynomial](#def-jacobi) (although it's not orthogonal for
+\( t >= 0 \), since \( \beta > -1 \) does not hold).
 
 [^BERN]:
     [J.V. Uspensky (1937)](https://www.worldcat.org/oclc/996937) --
