@@ -207,17 +207,6 @@ class l_rv_generic(PatchClass):  # noqa: N801
     @overload
     def l_moment(
         self,
-        r: AnyInt,
-        /,
-        *args: Any,
-        trim: AnyTrim = ...,
-        quad_opts: QuadOptions | None = ...,
-        **kwds: Any,
-    ) -> np.float64: ...
-
-    @overload
-    def l_moment(
-        self,
         r: IntVector,
         /,
         *args: Any,
@@ -225,6 +214,17 @@ class l_rv_generic(PatchClass):  # noqa: N801
         quad_opts: QuadOptions | None = ...,
         **kwds: Any,
     ) -> npt.NDArray[np.float64]: ...
+
+    @overload
+    def l_moment(
+        self,
+        r: AnyInt,
+        /,
+        *args: Any,
+        trim: AnyTrim = ...,
+        quad_opts: QuadOptions | None = ...,
+        **kwds: Any,
+    ) -> np.float64: ...
 
     def l_moment(
         self,
@@ -334,18 +334,6 @@ class l_rv_generic(PatchClass):  # noqa: N801
     @overload
     def l_ratio(
         self,
-        order: AnyInt,
-        order_denom: AnyInt | IntVector,
-        /,
-        *args: Any,
-        trim: AnyTrim = ...,
-        quad_opts: QuadOptions | None = ...,
-        **kwds: Any,
-    ) -> np.float64: ...
-
-    @overload
-    def l_ratio(
-        self,
         order: IntVector,
         order_denom: AnyInt | IntVector,
         /,
@@ -354,6 +342,18 @@ class l_rv_generic(PatchClass):  # noqa: N801
         quad_opts: QuadOptions | None = ...,
         **kwds: Any,
     ) -> npt.NDArray[np.float64]: ...
+
+    @overload
+    def l_ratio(
+        self,
+        order: AnyInt,
+        order_denom: AnyInt | IntVector,
+        /,
+        *args: Any,
+        trim: AnyTrim = ...,
+        quad_opts: QuadOptions | None = ...,
+        **kwds: Any,
+    ) -> np.float64: ...
 
     def l_ratio(
         self,
@@ -1340,20 +1340,20 @@ class l_rv_frozen(PatchClass):  # noqa: N801, D101
     @overload
     def l_moment(
         self,
-        order: AnyInt,
-        /,
-        trim: AnyTrim = ...,
-        quad_opts: QuadOptions | None = ...,
-    ) -> np.float64: ...
-
-    @overload
-    def l_moment(
-        self,
         order: IntVector,
         /,
         trim: AnyTrim = ...,
         quad_opts: QuadOptions | None = ...,
     ) -> npt.NDArray[np.float64]: ...
+
+    @overload
+    def l_moment(
+        self,
+        order: AnyInt,
+        /,
+        trim: AnyTrim = ...,
+        quad_opts: QuadOptions | None = ...,
+    ) -> np.float64: ...
 
     def l_moment(  # noqa: D102
         self,
@@ -1373,22 +1373,22 @@ class l_rv_frozen(PatchClass):  # noqa: N801, D101
     @overload
     def l_ratio(
         self,
-        order: AnyInt,
-        order_denom: AnyInt | IntVector,
-        /,
-        trim: AnyTrim = ...,
-        quad_opts: QuadOptions | None = ...,
-    ) -> np.float64: ...
-
-    @overload
-    def l_ratio(
-        self,
         order: IntVector,
         order_denom: AnyInt | IntVector,
         /,
         trim: AnyTrim = ...,
         quad_opts: QuadOptions | None = ...,
     ) -> npt.NDArray[np.float64]: ...
+
+    @overload
+    def l_ratio(
+        self,
+        order: AnyInt,
+        order_denom: AnyInt | IntVector,
+        /,
+        trim: AnyTrim = ...,
+        quad_opts: QuadOptions | None = ...,
+    ) -> np.float64: ...
 
     def l_ratio(  # noqa: D102
         self,
