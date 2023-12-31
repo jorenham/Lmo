@@ -355,23 +355,19 @@ _lm2_bounds = cast(
 
 @overload
 def l_moment_bounds(
-    r: AnyInt,
-    /,
-    trim: AnyTrim = ...,
-    scale: float = ...,
-) -> float:
-    ...
-
-
-@overload
-def l_moment_bounds(
     r: IntVector,
     /,
     trim: AnyTrim = ...,
     scale: float = ...,
-) -> _ArrF8:
-    ...
+) -> _ArrF8: ...
 
+@overload
+def l_moment_bounds(
+    r: AnyInt,
+    /,
+    trim: AnyTrim = ...,
+    scale: float = ...,
+) -> float: ...
 
 def l_moment_bounds(
     r: AnyInt | IntVector,
@@ -477,21 +473,21 @@ def l_moment_bounds(
 
 @overload
 def l_ratio_bounds(
-    r: AnyInt,
-    /,
-    trim: AnyTrim = ...,
-    *,
-    legacy: bool = ...,
-) -> tuple[float, float]: ...
-
-@overload
-def l_ratio_bounds(
     r: IntVector,
     /,
     trim: AnyTrim = ...,
     *,
     legacy: bool = ...,
 ) -> tuple[_ArrF8, _ArrF8]: ...
+
+@overload
+def l_ratio_bounds(
+    r: AnyInt,
+    /,
+    trim: AnyTrim = ...,
+    *,
+    legacy: bool = ...,
+) -> tuple[float, float]: ...
 
 def l_ratio_bounds(
     r: IntVector | AnyInt,
