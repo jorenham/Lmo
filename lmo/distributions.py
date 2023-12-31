@@ -255,9 +255,9 @@ class l_poly:  # noqa: N801
         return self._ppf(rng.uniform(size=size))
 
     @overload
-    def ppf(self, p: AnyScalar) -> float: ...
-    @overload
     def ppf(self, p: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
+    @overload
+    def ppf(self, p: AnyScalar) -> float: ...
     def ppf(self, p: npt.ArrayLike) -> float | _ArrF8:
         r"""
         [Percent point function](https://w.wiki/8cQU) \( Q(p) \) (inverse of
@@ -275,9 +275,9 @@ class l_poly:  # noqa: N801
         return self._ppf(p)
 
     @overload
-    def isf(self, q: AnyScalar) -> float: ...
-    @overload
     def isf(self, q: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
+    @overload
+    def isf(self, q: AnyScalar) -> float: ...
     def isf(self, q: npt.ArrayLike) -> float | _ArrF8:
         r"""
         Inverse survival function \( \bar{Q}(q) = Q(1 - q) \) (inverse of
@@ -292,9 +292,9 @@ class l_poly:  # noqa: N801
         return self._ppf(p[()] if np.isscalar(q) else p)
 
     @overload
-    def qdf(self, p: AnyScalar) -> float: ...
-    @overload
     def qdf(self, p: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
+    @overload
+    def qdf(self, p: AnyScalar) -> float: ...
     def qdf(self, p: npt.ArrayLike) -> float | _ArrF8:
         r"""
         Quantile density function \( q \equiv \frac{\dd{Q}}{\dd{p}} \) (
@@ -312,9 +312,9 @@ class l_poly:  # noqa: N801
         return self._qdf(p)
 
     @overload
-    def cdf(self, x: AnyScalar) -> float: ...
-    @overload
     def cdf(self, x: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
+    @overload
+    def cdf(self, x: AnyScalar) -> float: ...
     def cdf(self, x: npt.ArrayLike) -> float | _ArrF8:
         r"""
         [Cumulative distribution function](https://w.wiki/3ota)
@@ -330,9 +330,9 @@ class l_poly:  # noqa: N801
         return self._cdf(x)
 
     @overload
-    def logcdf(self, x: AnyScalar) -> float: ...
-    @overload
     def logcdf(self, x: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
+    @overload
+    def logcdf(self, x: AnyScalar) -> float: ...
     @np.errstate(divide='ignore')
     def logcdf(self, x: npt.ArrayLike) -> float | _ArrF8:
         r"""
@@ -345,9 +345,9 @@ class l_poly:  # noqa: N801
         return np.log(self._cdf(x))
 
     @overload
-    def sf(self, x: AnyScalar) -> float: ...
-    @overload
     def sf(self, x: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
+    @overload
+    def sf(self, x: AnyScalar) -> float: ...
     def sf(self, x: npt.ArrayLike) -> float | _ArrF8:
         r"""
         Survival function \(S(x) = \mathrm{P}(X > x) =
@@ -360,9 +360,9 @@ class l_poly:  # noqa: N801
         return 1 - self._cdf(x)
 
     @overload
-    def logsf(self, x: AnyScalar) -> float: ...
-    @overload
     def logsf(self, x: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
+    @overload
+    def logsf(self, x: AnyScalar) -> float: ...
     @np.errstate(divide='ignore')
     def logsf(self, x: npt.ArrayLike) -> float | _ArrF8:
         r"""
@@ -375,9 +375,9 @@ class l_poly:  # noqa: N801
         return np.log(self._cdf(x))
 
     @overload
-    def pdf(self, x: AnyScalar) -> float: ...
-    @overload
     def pdf(self, x: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
+    @overload
+    def pdf(self, x: AnyScalar) -> float: ...
     def pdf(self, x: npt.ArrayLike) -> float | _ArrF8:
         r"""
         Probability density function \( f \equiv \frac{\dd{F}}{\dd{x}} \)
@@ -393,9 +393,9 @@ class l_poly:  # noqa: N801
         return 1 / self._qdf(self._cdf(x))
 
     @overload
-    def hf(self, x: AnyScalar) -> float: ...
-    @overload
     def hf(self, x: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
+    @overload
+    def hf(self, x: AnyScalar) -> float: ...
     def hf(self, x: npt.ArrayLike) -> float | _ArrF8:
         r"""
         [Hazard function
@@ -539,14 +539,13 @@ class l_poly:  # noqa: N801
         return self._support
 
     @overload
-    def interval(self, confidence: AnyScalar, /) -> tuple[float, float]: ...
-    @overload
     def interval(
         self,
         confidence: AnyNDArray[Any] | Sequence[Any],
         /,
-    ) -> tuple[_ArrF8, _ArrF8]:
-        ...
+    ) -> tuple[_ArrF8, _ArrF8]: ...
+    @overload
+    def interval(self, confidence: AnyScalar, /) -> tuple[float, float]: ...
     def interval(
         self,
         confidence: npt.ArrayLike,
@@ -659,7 +658,6 @@ class l_poly:  # noqa: N801
 
         return tuple(round0(np.array(out), 1e-15))
 
-
     def expect(self, g: Callable[[float], float], /) -> float:
         r"""
         Calculate expected value of a function with respect to the
@@ -699,12 +697,20 @@ class l_poly:  # noqa: N801
         )
 
     @overload
-    def l_moment(self, r: AnyInt, /, trim: AnyTrim | None = ...) -> np.float64:
-        ...
+    def l_moment(
+        self,
+        r: IntVector,
+        /,
+        trim: AnyTrim | None = ...,
+    ) -> _ArrF8: ...
 
     @overload
-    def l_moment(self, r: IntVector, /, trim: AnyTrim | None = ...) -> _ArrF8:
-        ...
+    def l_moment(
+        self,
+        r: AnyInt,
+        /,
+        trim: AnyTrim | None = ...,
+    ) -> np.float64: ...
 
     def l_moment(
         self,
@@ -729,15 +735,6 @@ class l_poly:  # noqa: N801
     @overload
     def l_ratio(
         self,
-        r: AnyInt,
-        k: AnyInt,
-        /,
-        trim: AnyTrim | None = ...,
-    ) -> np.float64: ...
-
-    @overload
-    def l_ratio(
-        self,
         r: IntVector,
         k: AnyInt | IntVector,
         /,
@@ -752,6 +749,15 @@ class l_poly:  # noqa: N801
         /,
         trim: AnyTrim | None = ...,
     ) -> _ArrF8: ...
+
+    @overload
+    def l_ratio(
+        self,
+        r: AnyInt,
+        k: AnyInt,
+        /,
+        trim: AnyTrim | None = ...,
+    ) -> np.float64: ...
 
     def l_ratio(
         self,

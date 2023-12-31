@@ -166,21 +166,6 @@ def _tighten_cdf_support(
 @overload
 def l_moment_from_cdf(
     cdf: UnivariateCDF,
-    r: AnyInt,
-    /,
-    trim: AnyTrim = ...,
-    *,
-    support: Pair[float] | None = ...,
-    quad_opts: QuadOptions | None = ...,
-    alpha: float = ...,
-    ppf: UnivariatePPF | None = ...,
-) -> np.float64:
-    ...
-
-
-@overload
-def l_moment_from_cdf(
-    cdf: UnivariateCDF,
     r: IntVector,
     /,
     trim: AnyTrim = ...,
@@ -189,9 +174,20 @@ def l_moment_from_cdf(
     quad_opts: QuadOptions | None = ...,
     alpha: float = ...,
     ppf: UnivariatePPF | None = ...,
-) -> npt.NDArray[np.float64]:
-    ...
+) -> npt.NDArray[np.float64]: ...
 
+@overload
+def l_moment_from_cdf(
+    cdf: UnivariateCDF,
+    r: AnyInt,
+    /,
+    trim: AnyTrim = ...,
+    *,
+    support: Pair[float] | None = ...,
+    quad_opts: QuadOptions | None = ...,
+    alpha: float = ...,
+    ppf: UnivariatePPF | None = ...,
+) -> np.float64: ...
 
 def l_moment_from_cdf(
     cdf: UnivariateCDF,
@@ -372,20 +368,6 @@ def l_moment_from_cdf(
 @overload
 def l_moment_from_ppf(
     ppf: UnivariatePPF,
-    r: AnyInt,
-    /,
-    trim: AnyTrim = ...,
-    *,
-    support: Pair[float] = ...,
-    quad_opts: QuadOptions | None = ...,
-    alpha: float = ...,
-) -> np.float64:
-    ...
-
-
-@overload
-def l_moment_from_ppf(
-    ppf: UnivariatePPF,
     r: IntVector,
     /,
     trim: AnyTrim = ...,
@@ -393,9 +375,19 @@ def l_moment_from_ppf(
     support: Pair[float] = ...,
     quad_opts: QuadOptions | None = ...,
     alpha: float = ...,
-) -> npt.NDArray[np.float64]:
-    ...
+) -> npt.NDArray[np.float64]: ...
 
+@overload
+def l_moment_from_ppf(
+    ppf: UnivariatePPF,
+    r: AnyInt,
+    /,
+    trim: AnyTrim = ...,
+    *,
+    support: Pair[float] = ...,
+    quad_opts: QuadOptions | None = ...,
+    alpha: float = ...,
+) -> np.float64: ...
 
 def l_moment_from_ppf(
     ppf: UnivariatePPF,
@@ -535,19 +527,6 @@ def l_moment_from_ppf(
 @overload
 def l_moment_from_qdf(
     qdf: UnivariateQDF,
-    r: AnyInt,
-    /,
-    trim: AnyTrim = ...,
-    *,
-    support: Pair[float] = ...,
-    quad_opts: QuadOptions | None = ...,
-    alpha: float = ...,
-) -> np.float64:
-    ...
-
-@overload
-def l_moment_from_qdf(
-    qdf: UnivariateQDF,
     r: IntVector,
     /,
     trim: AnyTrim = ...,
@@ -555,8 +534,19 @@ def l_moment_from_qdf(
     support: Pair[float] = ...,
     quad_opts: QuadOptions | None = ...,
     alpha: float = ...,
-) -> npt.NDArray[np.float64]:
-    ...
+) -> npt.NDArray[np.float64]: ...
+
+@overload
+def l_moment_from_qdf(
+    qdf: UnivariateQDF,
+    r: AnyInt,
+    /,
+    trim: AnyTrim = ...,
+    *,
+    support: Pair[float] = ...,
+    quad_opts: QuadOptions | None = ...,
+    alpha: float = ...,
+) -> np.float64: ...
 
 def l_moment_from_qdf(
     qdf: UnivariateQDF,
@@ -598,21 +588,6 @@ def l_moment_from_qdf(
 @overload
 def l_ratio_from_cdf(
     cdf: UnivariateCDF,
-    r: AnyInt,
-    s: AnyInt,
-    /,
-    trim: AnyTrim = ...,
-    *,
-    support: Pair[float] | None = ...,
-    quad_opts: QuadOptions | None = ...,
-    alpha: float = ...,
-) -> np.float64:
-    ...
-
-
-@overload
-def l_ratio_from_cdf(
-    cdf: UnivariateCDF,
     r: IntVector,
     s: AnyInt | IntVector,
     /,
@@ -622,9 +597,7 @@ def l_ratio_from_cdf(
     quad_opts: QuadOptions | None = ...,
     alpha: float = ...,
     ppf: UnivariatePPF | None = ...,
-) -> npt.NDArray[np.float64]:
-    ...
-
+) -> npt.NDArray[np.float64]: ...
 
 @overload
 def l_ratio_from_cdf(
@@ -638,9 +611,20 @@ def l_ratio_from_cdf(
     quad_opts: QuadOptions | None = ...,
     alpha: float = ...,
     ppf: UnivariatePPF | None = ...,
-) -> npt.NDArray[np.float64]:
-    ...
+) -> npt.NDArray[np.float64]: ...
 
+@overload
+def l_ratio_from_cdf(
+    cdf: UnivariateCDF,
+    r: AnyInt,
+    s: AnyInt,
+    /,
+    trim: AnyTrim = ...,
+    *,
+    support: Pair[float] | None = ...,
+    quad_opts: QuadOptions | None = ...,
+    alpha: float = ...,
+) -> np.float64: ...
 
 def l_ratio_from_cdf(
     cdf: UnivariateCDF,
@@ -677,21 +661,6 @@ def l_ratio_from_cdf(
 @overload
 def l_ratio_from_ppf(
     ppf: UnivariatePPF,
-    r: AnyInt,
-    s: AnyInt,
-    /,
-    trim: AnyTrim = ...,
-    *,
-    support: Pair[float] = ...,
-    quad_opts: QuadOptions | None = ...,
-    alpha: float = ...,
-) -> np.float64:
-    ...
-
-
-@overload
-def l_ratio_from_ppf(
-    ppf: UnivariatePPF,
     r: IntVector,
     s: AnyInt | IntVector,
     /,
@@ -700,9 +669,7 @@ def l_ratio_from_ppf(
     support: Pair[float] = ...,
     quad_opts: QuadOptions | None = ...,
     alpha: float = ...,
-) -> npt.NDArray[np.float64]:
-    ...
-
+) -> npt.NDArray[np.float64]: ...
 
 @overload
 def l_ratio_from_ppf(
@@ -715,9 +682,21 @@ def l_ratio_from_ppf(
     support: Pair[float] = ...,
     quad_opts: QuadOptions | None = ...,
     alpha: float = ...,
-) -> npt.NDArray[np.float64]:
-    ...
+) -> npt.NDArray[np.float64]: ...
 
+@overload
+def l_ratio_from_ppf(
+    ppf: UnivariatePPF,
+    r: AnyInt,
+    s: AnyInt,
+    /,
+    trim: AnyTrim = ...,
+    *,
+    support: Pair[float] = ...,
+    quad_opts: QuadOptions | None = ...,
+    alpha: float = ...,
+) -> np.float64:
+    ...
 
 def l_ratio_from_ppf(
     ppf: UnivariatePPF,
@@ -1629,22 +1608,23 @@ def l_coratio_from_pdf(
 
 class _VectorizedPPF(Protocol):
     @overload
-    def __call__(self, __u: AnyScalar, *, r_max: int = ...) -> float: ...
-    @overload
     def __call__(
         self,
         __u: AnyNDArray[Any] | Sequence[Any],
         *,
         r_max: int = ...,
     ) -> npt.NDArray[np.float64]: ...
+
+    @overload
+    def __call__(self, __u: AnyScalar, *, r_max: int = ...) -> float: ...
+
     @overload
     def __call__(
         self,
         __u: npt.ArrayLike,
         *,
         r_max: int = ...,
-    ) -> float | npt.NDArray[np.float64]:
-        ...
+    ) -> npt.NDArray[np.float64] | float: ...
 
 def _validate_l_bounds(
     l_r: npt.NDArray[np.float64],

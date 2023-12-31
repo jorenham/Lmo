@@ -225,6 +225,20 @@ def l_weights(
 
 # Summary statistics
 
+@overload
+def l_moment(
+    a: npt.ArrayLike,
+    r: IntVector,
+    /,
+    trim: AnyTrim = ...,
+    *,
+    axis: int | None = ...,
+    dtype: np.dtype[T] | type[T] = np.float64,
+    fweights: IntVector | None = ...,
+    aweights: npt.ArrayLike | None = ...,
+    sort: SortKind | None = ...,
+    cache: bool = ...,
+) -> npt.NDArray[T]: ...
 
 @overload
 def l_moment(
@@ -234,31 +248,12 @@ def l_moment(
     trim: AnyTrim = ...,
     *,
     axis: None = ...,
-    dtype: type[np.float64] = ...,
+    dtype: np.dtype[T] | type[T] = np.float64,
     fweights: IntVector | None = ...,
     aweights: npt.ArrayLike | None = ...,
     sort: SortKind | None = ...,
     cache: bool = ...,
-) -> np.float64:
-    ...
-
-
-@overload
-def l_moment(
-    a: npt.ArrayLike,
-    r: AnyInt,
-    /,
-    trim: AnyTrim = ...,
-    *,
-    axis: None = ...,
-    dtype: np.dtype[T] | type[T],
-    fweights: IntVector | None = ...,
-    aweights: npt.ArrayLike | None = ...,
-    sort: SortKind | None = ...,
-    cache: bool = ...,
-) -> T:
-    ...
-
+) -> T: ...
 
 @overload
 def l_moment(
@@ -268,65 +263,12 @@ def l_moment(
     trim: AnyTrim = ...,
     *,
     axis: int | None = ...,
-    dtype: type[np.float64] = ...,
+    dtype: np.dtype[T] | type[T] = np.float64,
     fweights: IntVector | None = ...,
     aweights: npt.ArrayLike | None = ...,
     sort: SortKind | None = ...,
     cache: bool = ...,
-) -> npt.NDArray[np.float64] | np.float64:
-    ...
-
-
-@overload
-def l_moment(
-    a: npt.ArrayLike,
-    r: AnyInt,
-    /,
-    trim: AnyTrim = ...,
-    *,
-    axis: int | None = ...,
-    dtype: np.dtype[T] | type[T],
-    fweights: IntVector | None = ...,
-    aweights: npt.ArrayLike | None = ...,
-    sort: SortKind | None = ...,
-    cache: bool = ...,
-) -> npt.NDArray[T] | T:
-    ...
-
-
-@overload
-def l_moment(
-    a: npt.ArrayLike,
-    r: IntVector,
-    /,
-    trim: AnyTrim = ...,
-    *,
-    axis: int | None = ...,
-    dtype: type[np.float64] = ...,
-    fweights: IntVector | None = ...,
-    aweights: npt.ArrayLike | None = ...,
-    sort: SortKind | None = ...,
-    cache: bool = ...,
-) -> npt.NDArray[np.float64]:
-    ...
-
-
-@overload
-def l_moment(
-    a: npt.ArrayLike,
-    r: IntVector,
-    /,
-    trim: AnyTrim = ...,
-    *,
-    axis: int | None = ...,
-    dtype: np.dtype[T] | type[T],
-    fweights: IntVector | None = ...,
-    aweights: npt.ArrayLike | None = ...,
-    sort: SortKind | None = ...,
-    cache: bool = ...,
-) -> npt.NDArray[T]:
-    ...
-
+) -> npt.NDArray[T] | T: ...
 
 def l_moment(
     a: npt.ArrayLike,
@@ -472,92 +414,15 @@ def l_moment(
 @overload
 def l_ratio(
     a: npt.ArrayLike,
-    r: AnyInt,
-    s: AnyInt,
-    /,
-    trim: AnyTrim = ...,
-    *,
-    axis: None = ...,
-    dtype: type[np.float64] = ...,
-    **kwargs: Unpack[LMomentOptions],
-) -> np.float64:
-    ...
-
-
-@overload
-def l_ratio(
-    a: npt.ArrayLike,
-    r: AnyInt,
-    s: AnyInt,
-    /,
-    trim: AnyTrim = ...,
-    *,
-    axis: None = ...,
-    dtype: np.dtype[T] | type[T],
-    **kwargs: Unpack[LMomentOptions],
-) -> T:
-    ...
-
-
-@overload
-def l_ratio(
-    a: npt.ArrayLike,
-    r: AnyInt,
-    s: AnyInt,
-    /,
-    trim: AnyTrim = ...,
-    *,
-    axis: int | None = ...,
-    dtype: type[np.float64] = ...,
-    **kwargs: Unpack[LMomentOptions],
-) -> np.float64 | npt.NDArray[np.float64]:
-    ...
-
-
-@overload
-def l_ratio(
-    a: npt.ArrayLike,
-    r: AnyInt,
-    s: AnyInt,
-    /,
-    trim: AnyTrim = ...,
-    *,
-    axis: int | None = ...,
-    dtype: np.dtype[T] | type[T],
-    **kwargs: Unpack[LMomentOptions],
-) -> npt.NDArray[T] | T:
-    ...
-
-
-@overload
-def l_ratio(
-    a: npt.ArrayLike,
     r: IntVector,
     s: AnyInt | IntVector,
     /,
     trim: AnyTrim = ...,
     *,
     axis: int | None = ...,
-    dtype: type[np.float64] = ...,
+    dtype: np.dtype[T] | type[T] = np.float64,
     **kwargs: Unpack[LMomentOptions],
-) -> npt.NDArray[np.float64]:
-    ...
-
-
-@overload
-def l_ratio(
-    a: npt.ArrayLike,
-    r: IntVector,
-    s: AnyInt | IntVector,
-    /,
-    trim: AnyTrim = ...,
-    *,
-    axis: int | None = ...,
-    dtype: np.dtype[T] | type[T],
-    **kwargs: Unpack[LMomentOptions],
-) -> npt.NDArray[T]:
-    ...
-
+) -> npt.NDArray[T]: ...
 
 @overload
 def l_ratio(
@@ -568,26 +433,35 @@ def l_ratio(
     trim: AnyTrim = ...,
     *,
     axis: int | None = ...,
-    dtype: type[np.float64] = ...,
+    dtype: np.dtype[T] | type[T] = np.float64,
     **kwargs: Unpack[LMomentOptions],
-) -> npt.NDArray[np.float64]:
-    ...
-
+) -> npt.NDArray[T]: ...
 
 @overload
 def l_ratio(
     a: npt.ArrayLike,
-    r: AnyInt | IntVector,
-    s: IntVector,
+    r: AnyInt,
+    s: AnyInt,
+    /,
+    trim: AnyTrim = ...,
+    *,
+    axis: None = ...,
+    dtype: np.dtype[T] | type[T] = np.float64,
+    **kwargs: Unpack[LMomentOptions],
+) -> T: ...
+
+@overload
+def l_ratio(
+    a: npt.ArrayLike,
+    r: AnyInt,
+    s: AnyInt,
     /,
     trim: AnyTrim = ...,
     *,
     axis: int | None = ...,
-    dtype: np.dtype[T] | type[T],
+    dtype: np.dtype[T] | type[T] = np.float64,
     **kwargs: Unpack[LMomentOptions],
-) -> npt.NDArray[T]:
-    ...
-
+) -> npt.NDArray[T] | T: ...
 
 def l_ratio(
     a: npt.ArrayLike,
@@ -689,24 +563,9 @@ def l_loc(
     trim: AnyTrim = ...,
     *,
     axis: None = ...,
-    dtype: type[np.float64] = ...,
+    dtype: np.dtype[T] | type[T] = np.float64,
     **kwargs: Unpack[LMomentOptions],
-) -> np.float64:
-    ...
-
-
-@overload
-def l_loc(
-    a: npt.ArrayLike,
-    /,
-    trim: AnyTrim = ...,
-    *,
-    axis: None = ...,
-    dtype: np.dtype[T] | type[T],
-    **kwargs: Unpack[LMomentOptions],
-) -> T:
-    ...
-
+) -> T: ...
 
 @overload
 def l_loc(
@@ -715,24 +574,9 @@ def l_loc(
     trim: AnyTrim = ...,
     *,
     axis: int,
-    dtype: type[np.float64] = ...,
+    dtype: np.dtype[T] | type[T] = np.float64,
     **kwargs: Unpack[LMomentOptions],
-) -> npt.NDArray[np.float64] | np.float64:
-    ...
-
-
-@overload
-def l_loc(
-    a: npt.ArrayLike,
-    /,
-    trim: AnyTrim = ...,
-    *,
-    axis: int,
-    dtype: np.dtype[T] | type[T],
-    **kwargs: Unpack[LMomentOptions],
-) -> npt.NDArray[T] | T:
-    ...
-
+) -> npt.NDArray[T] | T: ...
 
 def l_loc(
     a: npt.ArrayLike,
@@ -780,24 +624,9 @@ def l_scale(
     trim: AnyTrim = ...,
     *,
     axis: None = ...,
-    dtype: type[np.float64] = ...,
+    dtype: np.dtype[T] | type[T] = np.float64,
     **kwargs: Unpack[LMomentOptions],
-) -> np.float64:
-    ...
-
-
-@overload
-def l_scale(
-    a: npt.ArrayLike,
-    /,
-    trim: AnyTrim = ...,
-    *,
-    axis: None = ...,
-    dtype: np.dtype[T] | type[T],
-    **kwargs: Unpack[LMomentOptions],
-) -> T:
-    ...
-
+) -> T: ...
 
 @overload
 def l_scale(
@@ -806,24 +635,9 @@ def l_scale(
     trim: AnyTrim = ...,
     *,
     axis: int,
-    dtype: type[np.float64] = ...,
+    dtype: np.dtype[T] | type[T] = np.float64,
     **kwargs: Unpack[LMomentOptions],
-) -> npt.NDArray[np.float64] | np.float64:
-    ...
-
-
-@overload
-def l_scale(
-    a: npt.ArrayLike,
-    /,
-    trim: AnyTrim = ...,
-    *,
-    axis: int,
-    dtype: np.dtype[T] | type[T],
-    **kwargs: Unpack[LMomentOptions],
-) -> npt.NDArray[T] | T:
-    ...
-
+) -> npt.NDArray[T] | T: ...
 
 def l_scale(
     a: npt.ArrayLike,
@@ -869,25 +683,11 @@ def l_variation(
     trim: AnyTrim = ...,
     *,
     axis: None = ...,
-    dtype: type[np.float64] = ...,
-    **kwargs: Unpack[LMomentOptions],
-) -> np.float64:
-    ...
-
-
-@overload
-def l_variation(
-    a: npt.ArrayLike,
-    /,
-    trim: AnyTrim = ...,
-    *,
-    axis: None = ...,
-    dtype: np.dtype[T] | type[T],
+    dtype: np.dtype[T] | type[T] = np.float64,
     **kwargs: Unpack[LMomentOptions],
 ) -> T:
     ...
 
-
 @overload
 def l_variation(
     a: npt.ArrayLike,
@@ -895,24 +695,10 @@ def l_variation(
     trim: AnyTrim = ...,
     *,
     axis: int,
-    dtype: type[np.float64] = ...,
-    **kwargs: Unpack[LMomentOptions],
-) -> npt.NDArray[np.float64] | np.float64:
-    ...
-
-
-@overload
-def l_variation(
-    a: npt.ArrayLike,
-    /,
-    trim: AnyTrim = ...,
-    *,
-    axis: int,
-    dtype: np.dtype[T] | type[T],
+    dtype: np.dtype[T] | type[T] = np.float64,
     **kwargs: Unpack[LMomentOptions],
 ) -> npt.NDArray[T] | T:
     ...
-
 
 def l_variation(
     a: npt.ArrayLike,
@@ -967,24 +753,9 @@ def l_skew(
     trim: AnyTrim = ...,
     *,
     axis: None = ...,
-    dtype: type[np.float64] = ...,
+    dtype: np.dtype[T] | type[T] = np.float64,
     **kwargs: Unpack[LMomentOptions],
-) -> np.float64:
-    ...
-
-
-@overload
-def l_skew(
-    a: npt.ArrayLike,
-    /,
-    trim: AnyTrim = ...,
-    *,
-    axis: None = ...,
-    dtype: np.dtype[T] | type[T],
-    **kwargs: Unpack[LMomentOptions],
-) -> T:
-    ...
-
+) -> T: ...
 
 @overload
 def l_skew(
@@ -993,24 +764,9 @@ def l_skew(
     trim: AnyTrim = ...,
     *,
     axis: int,
-    dtype: type[np.float64] = ...,
+    dtype: np.dtype[T] | type[T] = np.float64,
     **kwargs: Unpack[LMomentOptions],
-) -> npt.NDArray[np.float64] | np.float64:
-    ...
-
-
-@overload
-def l_skew(
-    a: npt.ArrayLike,
-    /,
-    trim: AnyTrim = ...,
-    *,
-    axis: int,
-    dtype: np.dtype[T] | type[T],
-    **kwargs: Unpack[LMomentOptions],
-) -> npt.NDArray[T] | T:
-    ...
-
+) -> npt.NDArray[T] | T: ...
 
 def l_skew(
     a: npt.ArrayLike,
@@ -1058,24 +814,9 @@ def l_kurtosis(
     trim: AnyTrim = ...,
     *,
     axis: None = ...,
-    dtype: type[np.float64] = ...,
+    dtype: np.dtype[T] | type[T] = np.float64,
     **kwargs: Unpack[LMomentOptions],
-) -> np.float64:
-    ...
-
-
-@overload
-def l_kurtosis(
-    a: npt.ArrayLike,
-    /,
-    trim: AnyTrim = ...,
-    *,
-    axis: None = ...,
-    dtype: np.dtype[T] | type[T],
-    **kwargs: Unpack[LMomentOptions],
-) -> T:
-    ...
-
+) -> T: ...
 
 @overload
 def l_kurtosis(
@@ -1084,24 +825,9 @@ def l_kurtosis(
     trim: AnyTrim = ...,
     *,
     axis: int,
-    dtype: type[np.float64] = ...,
+    dtype: np.dtype[T] | type[T] = np.float64,
     **kwargs: Unpack[LMomentOptions],
-) -> npt.NDArray[np.float64] | np.float64:
-    ...
-
-
-@overload
-def l_kurtosis(
-    a: npt.ArrayLike,
-    /,
-    trim: AnyTrim = ...,
-    *,
-    axis: int,
-    dtype: np.dtype[T] | type[T],
-    **kwargs: Unpack[LMomentOptions],
-) -> npt.NDArray[T] | T:
-    ...
-
+) -> npt.NDArray[T] | T: ...
 
 def l_kurtosis(
     a: npt.ArrayLike,

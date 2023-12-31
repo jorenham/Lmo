@@ -178,12 +178,12 @@ class PolySeries(Protocol):
     @overload
     def __call__(self, __arg: complex | _NpComplex) -> _NpComplex: ...
     @overload
-    def __call__(self, __arg: AnyNumber) -> _NpFloat | _NpComplex: ...
-    @overload
     def __call__(
         self,
         __arg: AnyNDArray[_NpNumber],
     ) -> npt.NDArray[_NpFloat] | npt.NDArray[_NpComplex]: ...
+    @overload
+    def __call__(self, __arg: AnyNumber) -> _NpFloat | _NpComplex: ...
     def __iter__(self) -> Iterator[_NpFloat | _NpComplex]: ...
     def __len__(self) -> int: ...
     def __neg__(self) -> Self: ...
@@ -407,7 +407,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
     @overload
     def pdf(
         self,
-        x: AnyFloat,
+        x: _ArrayR,
         *__args: (
             Unpack[Ps]
             | Unpack[tuple[Unpack[Ps], float]]
@@ -415,24 +415,11 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
         ),
         loc: float = ...,
         scale: float = ...,
-    ) -> float: ...
+    ) -> npt.NDArray[np.float64]: ...
 
     @overload
     def pdf(
         self,
-        x: _ArrayR,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
-        loc: float = ...,
-        scale: float = ...,
-    ) -> npt.NDArray[np.float64]: ...
-
-    @overload
-    def logpdf(
-        self,
         x: AnyFloat,
         *__args: (
             Unpack[Ps]
@@ -457,7 +444,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
     ) -> npt.NDArray[np.float64]: ...
 
     @overload
-    def cdf(
+    def logpdf(
         self,
         x: AnyFloat,
         *__args: (
@@ -483,7 +470,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
     ) -> npt.NDArray[np.float64]: ...
 
     @overload
-    def logcdf(
+    def cdf(
         self,
         x: AnyFloat,
         *__args: (
@@ -509,7 +496,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
     ) -> npt.NDArray[np.float64]: ...
 
     @overload
-    def sf(
+    def logcdf(
         self,
         x: AnyFloat,
         *__args: (
@@ -535,7 +522,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
     ) -> npt.NDArray[np.float64]: ...
 
     @overload
-    def logsf(
+    def sf(
         self,
         x: AnyFloat,
         *__args: (
@@ -561,9 +548,9 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
     ) -> npt.NDArray[np.float64]: ...
 
     @overload
-    def ppf(
+    def logsf(
         self,
-        q: AnyFloat,
+        x: AnyFloat,
         *__args: (
             Unpack[Ps]
             | Unpack[tuple[Unpack[Ps], float]]
@@ -587,7 +574,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
     ) -> npt.NDArray[np.float64]: ...
 
     @overload
-    def isf(
+    def ppf(
         self,
         q: AnyFloat,
         *__args: (
@@ -611,6 +598,19 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
         loc: float = ...,
         scale: float = ...,
     ) -> npt.NDArray[np.float64]: ...
+
+    @overload
+    def isf(
+        self,
+        q: AnyFloat,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+    ) -> float: ...
 
     def fit(
         self,
@@ -794,23 +794,6 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
         scale: float = ...,
     ) -> tuple[float, float]: ...
 
-
-    @overload
-    def l_moment(
-        self,
-        r: AnyInt,
-        /,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
-        loc: float = ...,
-        scale: float = ...,
-        trim: 'AnyTrim' = ...,
-        quad_opts: QuadOptions | None = ...,
-    ) -> np.float64: ...
-
     @overload
     def l_moment(
         self,
@@ -829,10 +812,9 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
     ) -> npt.NDArray[np.float64]: ...
 
     @overload
-    def l_ratio(
+    def l_moment(
         self,
-        order: AnyInt,
-        order_denom: AnyInt | IntVector,
+        r: AnyInt,
         /,
         *__args: (
             Unpack[Ps]
@@ -861,6 +843,23 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
         trim: 'AnyTrim' = ...,
         quad_opts: QuadOptions | None = ...,
     ) -> npt.NDArray[np.float64]: ...
+
+    @overload
+    def l_ratio(
+        self,
+        order: AnyInt,
+        order_denom: AnyInt | IntVector,
+        /,
+        *__args: (
+            Unpack[Ps]
+            | Unpack[tuple[Unpack[Ps], float]]
+            | Unpack[tuple[Unpack[Ps], float, float]]
+        ),
+        loc: float = ...,
+        scale: float = ...,
+        trim: 'AnyTrim' = ...,
+        quad_opts: QuadOptions | None = ...,
+    ) -> np.float64: ...
 
     def l_stats(
         self,
@@ -1086,15 +1085,15 @@ class DistributionFunction(Protocol[Theta]):
     @overload
     def __call__(
         self,
-        __arg: AnyFloat,
-        *__args: Theta.args,
-        **__kwds: Theta.kwargs,
-    ) -> float: ...
-
-    @overload
-    def __call__(
-        self,
         __arg: _ArrayR,
         *__args: Theta.args,
         **__kwds: Theta.kwargs,
     ) -> npt.NDArray[np.float64]: ...
+
+    @overload
+    def __call__(
+        self,
+        __arg: AnyFloat,
+        *__args: Theta.args,
+        **__kwds: Theta.kwargs,
+    ) -> float: ...
