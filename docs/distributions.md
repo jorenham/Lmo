@@ -54,7 +54,7 @@ exist (in closed form).
     <tr>
         <td>
             [Uniform](https://w.wiki/8gGh)<br>
-            [`uniform`][scipy.stats.uniform]
+            [`uniform()`][scipy.stats.uniform]
         </td>
         <td>\( [0, 1] \)</td>
         <td>\( \displaystyle \frac 1 2 \)</td>
@@ -65,7 +65,7 @@ exist (in closed form).
     <tr>
         <td>
             [Normal](https://w.wiki/3hoJ)<br>
-            [`norm`][scipy.stats.norm]
+            [`norm()`][scipy.stats.norm]
         </td>
         <td></td>
         <td>\( 0 \)</td>
@@ -81,7 +81,7 @@ exist (in closed form).
     <tr>
         <td>
             [Logistic](https://w.wiki/8gGn)<br>
-            [`logistic`][scipy.stats.logistic]
+            [`logistic()`][scipy.stats.logistic]
         </td>
         <td></td>
         <td>\( 0 \)</td>
@@ -92,7 +92,7 @@ exist (in closed form).
     <tr>
         <td>
             [Laplace](https://w.wiki/8EYL)<br>
-            [`laplace`][scipy.stats.laplace]
+            [`laplace()`][scipy.stats.laplace]
         </td>
         <td></td>
         <td>\( 0 \)</td>
@@ -146,7 +146,7 @@ exist (in closed form).
     <tr>
         <td>
             [Exponential](https://w.wiki/3jXu)<br>
-            [`expon`][scipy.stats.expon]
+            [`expon()`][scipy.stats.expon]
         </td>
         <td></td>
         <td>\( \displaystyle 1 \)</td>
@@ -157,7 +157,7 @@ exist (in closed form).
     <tr>
         <td>
             [Half-normal](https://w.wiki/8gG$)<br>
-            [`halfnorm`][scipy.stats.halfnorm]
+            [`halfnorm()`][scipy.stats.halfnorm]
         </td>
         <td></td>
         <td>\( 1 \)</td>
@@ -169,12 +169,12 @@ exist (in closed form).
                 \approx 0.1983
             \)
         </td>
-        <td>\( \approx 0.097\ 317\ 159 \)</td>
+        <td>\( \approx 0.09732 \)</td>
     </tr>
     <tr>
         <td>
             [Rayleigh](https://w.wiki/8gH3)<br>
-            [`rayleigh`][scipy.stats.rayleigh]
+            [`rayleigh()`][scipy.stats.rayleigh]
         </td>
         <td></td>
         <td>
@@ -211,7 +211,7 @@ exist (in closed form).
     <tr>
         <td>
             [Gumbel](https://w.wiki/8gHD)<br>
-            [`gumbel_r`][scipy.stats.gumbel_r]
+            [`gumbel_r()`][scipy.stats.gumbel_r]
         </td>
         <td></td>
         <td>\( \gamma_e \\ \approx 0.5772 \)</td>
