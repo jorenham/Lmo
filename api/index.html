@@ -22,7 +22,7 @@
       
       
       <link rel="icon" href="../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.2">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.3">
     
     
       
@@ -55,6 +55,8 @@
       <link rel="stylesheet" href="../assets/_mkdocstrings.css">
     
       <link rel="stylesheet" href="../styles/theme.css">
+    
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     
     <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -662,6 +664,282 @@
       genlambda
     </span>
   </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.distributions.l_poly" class="md-nav__link">
+    <span class="md-ellipsis">
+      l_poly
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="l_poly">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lmo.distributions.l_poly.random_state" class="md-nav__link">
+    <span class="md-ellipsis">
+      random_state
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.distributions.l_poly.fit" class="md-nav__link">
+    <span class="md-ellipsis">
+      fit()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.distributions.l_poly.rvs" class="md-nav__link">
+    <span class="md-ellipsis">
+      rvs()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.distributions.l_poly.ppf" class="md-nav__link">
+    <span class="md-ellipsis">
+      ppf()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.distributions.l_poly.isf" class="md-nav__link">
+    <span class="md-ellipsis">
+      isf()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.distributions.l_poly.qdf" class="md-nav__link">
+    <span class="md-ellipsis">
+      qdf()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.distributions.l_poly.cdf" class="md-nav__link">
+    <span class="md-ellipsis">
+      cdf()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.distributions.l_poly.logcdf" class="md-nav__link">
+    <span class="md-ellipsis">
+      logcdf()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.distributions.l_poly.sf" class="md-nav__link">
+    <span class="md-ellipsis">
+      sf()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.distributions.l_poly.logsf" class="md-nav__link">
+    <span class="md-ellipsis">
+      logsf()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.distributions.l_poly.pdf" class="md-nav__link">
+    <span class="md-ellipsis">
+      pdf()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.distributions.l_poly.hf" class="md-nav__link">
+    <span class="md-ellipsis">
+      hf()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.distributions.l_poly.median" class="md-nav__link">
+    <span class="md-ellipsis">
+      median()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.distributions.l_poly.mean" class="md-nav__link">
+    <span class="md-ellipsis">
+      mean()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.distributions.l_poly.var" class="md-nav__link">
+    <span class="md-ellipsis">
+      var()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.distributions.l_poly.std" class="md-nav__link">
+    <span class="md-ellipsis">
+      std()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.distributions.l_poly.entropy" class="md-nav__link">
+    <span class="md-ellipsis">
+      entropy()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.distributions.l_poly.support" class="md-nav__link">
+    <span class="md-ellipsis">
+      support()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.distributions.l_poly.interval" class="md-nav__link">
+    <span class="md-ellipsis">
+      interval()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.distributions.l_poly.moment" class="md-nav__link">
+    <span class="md-ellipsis">
+      moment()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.distributions.l_poly.stats" class="md-nav__link">
+    <span class="md-ellipsis">
+      stats()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.distributions.l_poly.expect" class="md-nav__link">
+    <span class="md-ellipsis">
+      expect()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.distributions.l_poly.l_moment" class="md-nav__link">
+    <span class="md-ellipsis">
+      l_moment()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.distributions.l_poly.l_ratio" class="md-nav__link">
+    <span class="md-ellipsis">
+      l_ratio()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.distributions.l_poly.l_stats" class="md-nav__link">
+    <span class="md-ellipsis">
+      l_stats()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.distributions.l_poly.l_loc" class="md-nav__link">
+    <span class="md-ellipsis">
+      l_loc()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.distributions.l_poly.l_scale" class="md-nav__link">
+    <span class="md-ellipsis">
+      l_scale()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.distributions.l_poly.l_skew" class="md-nav__link">
+    <span class="md-ellipsis">
+      l_skew()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.distributions.l_poly.l_kurtosis" class="md-nav__link">
+    <span class="md-ellipsis">
+      l_kurtosis()
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -1631,6 +1909,24 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#lmo.special.norm_sh_jacobi" class="md-nav__link">
+    <span class="md-ellipsis">
+      norm_sh_jacobi()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.special.fourier_jacobi" class="md-nav__link">
+    <span class="md-ellipsis">
+      fourier_jacobi()
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1659,6 +1955,15 @@
   <a href="#lmo.theoretical.l_moment_from_ppf" class="md-nav__link">
     <span class="md-ellipsis">
       l_moment_from_ppf()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.theoretical.l_moment_from_qdf" class="md-nav__link">
+    <span class="md-ellipsis">
+      l_moment_from_qdf()
     </span>
   </a>
   
@@ -1749,6 +2054,33 @@
   <a href="#lmo.theoretical.l_coratio_from_pdf" class="md-nav__link">
     <span class="md-ellipsis">
       l_coratio_from_pdf()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.theoretical.ppf_from_l_moments" class="md-nav__link">
+    <span class="md-ellipsis">
+      ppf_from_l_moments()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.theoretical.qdf_from_l_moments" class="md-nav__link">
+    <span class="md-ellipsis">
+      qdf_from_l_moments()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lmo.theoretical.cdf_from_ppf" class="md-nav__link">
+    <span class="md-ellipsis">
+      cdf_from_ppf()
     </span>
   </a>
   
@@ -3681,6 +4013,1605 @@ shape parameter.</p>
 
 
 
+<h4 id="lmo.distributions.l_poly" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">l_poly</span><span class="p">(</span><span class="n">lmbda</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="o">*</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#lmo.distributions.l_poly" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+  <div class="doc doc-contents ">
+
+  
+      <p>Polynomial quantile distribution with (only) the given L-moments.</p>
+
+<details class="todo" open>
+  <summary>Todo</summary>
+  <ul>
+<li>Examples</li>
+<li><code>stats(moments='mv')</code></li>
+</ul>
+</details>  
+      <p>Create a new <code>l_poly</code> instance.</p>
+
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>PARAMETER</b></th>
+        <th><b> DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>lmbda</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>1-d array-like of L-moments <span class="arithmatex">\( \tlmoment{s,t}{r} \)</span> for
+<span class="arithmatex">\( r = 1, 2, \ldots, R \)</span>. At least 2 L-moments are required.
+All remaining L-moments with <span class="arithmatex">\( r &gt; R \)</span> are considered zero.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">npt</a>.<span title="numpy.ArrayLike">ArrayLike</span></code>
+                </span>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td><code>trim</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>The trim-length(s) of L-moments <code>lmbda</code>.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><span title="lmo.typing.AnyTrim">AnyTrim</span></code>
+                </span>
+                <span class="doc-param-default">
+                  <b>DEFAULT:</b> 
+                    <code>(0, 0)</code>
+                </span>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td><code>seed</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Random number generator.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a class="autorefs autorefs-external" title="numpy.random" href="https://numpy.org/doc/stable/reference/random/index.html#module-numpy.random">random</a>.<a class="autorefs autorefs-external" title="numpy.random.Generator" href="https://numpy.org/doc/stable/reference/random/generator.html#numpy.random.Generator">Generator</a> | <span title="lmo.typing.AnyInt">AnyInt</span> | None</code>
+                </span>
+                <span class="doc-param-default">
+                  <b>DEFAULT:</b> 
+                    <code>None</code>
+                </span>
+            </p>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+
+<h5 id="lmo.distributions.l_poly.random_state" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">random_state</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">Generator</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+      <small class="doc doc-label doc-label-writable"><code>writable</code></small>
+  </span>
+
+<a href="#lmo.distributions.l_poly.random_state" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>The random number generator of the distribution.</p>
+  </div>
+
+</div>
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h5 id="lmo.distributions.l_poly.fit" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">moments</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+<a href="#lmo.distributions.l_poly.fit" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Fit distribution using the (trimmed) L-moment estimates of the given
+data.</p>
+
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>PARAMETER</b></th>
+        <th><b> DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>data</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>1-d array-like with sample observations.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">npt</a>.<span title="numpy.ArrayLike">ArrayLike</span></code>
+                </span>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td><code>moments</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>How many sample L-moments to use, <code>2 &lt;= moments &lt; len(data)</code>.
+Defaults to <span class="arithmatex">\(\sqrt[3]{n}\)</span>, where <span class="arithmatex">\(n\)</span> is <code>len(data)</code>.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a> | None</code>
+                </span>
+                <span class="doc-param-default">
+                  <b>DEFAULT:</b> 
+                    <code>None</code>
+                </span>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td><code>trim</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>The left and right trim-lengths <span class="arithmatex">\((s, t)\)</span> to use. Defaults
+to <span class="arithmatex">\((0, 0)\)</span>.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><span title="lmo.typing.AnyTrim">AnyTrim</span></code>
+                </span>
+                <span class="doc-param-default">
+                  <b>DEFAULT:</b> 
+                    <code>(0, 0)</code>
+                </span>
+            </p>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>RETURNS</b></th>
+        <th><b>DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+              <span class="doc-returns-annotation">
+                  <code><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></code>
+              </span>
+          </td>
+          <td class="doc-returns-details">
+            <div class="doc-md-description">
+              <p>A fitted <code>l_poly</code> instance.</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>RAISES</b></th>
+        <th><b>DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+            <span class="doc-raises-annotation">
+                <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#TypeError">TypeError</a></code>
+            </span>
+          </td>
+          <td class="doc-raises-details">
+            <div class="doc-md-description">
+              <p>Invalid <code>data</code> shape.</p>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <span class="doc-raises-annotation">
+                <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></code>
+            </span>
+          </td>
+          <td class="doc-raises-details">
+            <div class="doc-md-description">
+              <p>Not enough <code>moments</code>.</p>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <span class="doc-raises-annotation">
+                <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#ValueError">ValueError</a></code>
+            </span>
+          </td>
+          <td class="doc-raises-details">
+            <div class="doc-md-description">
+              <p>If the L-moments of the data do not result in strictly
+monotinically increasing quantile function (PPF).</p>
+<p>This generally means that either the left, the right, or both
+<code>trim</code>-orders are too small.</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h5 id="lmo.distributions.l_poly.rvs" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">rvs</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#lmo.distributions.l_poly.rvs" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Draw random variates from the relevant distribution.</p>
+
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>PARAMETER</b></th>
+        <th><b> DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>size</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Defining number of random variates, defaults to 1.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a> | <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, ...] | None</code>
+                </span>
+                <span class="doc-param-default">
+                  <b>DEFAULT:</b> 
+                    <code>None</code>
+                </span>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td><code>random_state</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Seed or <a class="autorefs autorefs-external" href="https://numpy.org/doc/stable/reference/random/generator.html#numpy.random.Generator"><code>numpy.random.Generator</code></a>
+instance. Defaults to
+<a class="autorefs autorefs-internal" href="#lmo.distributions.l_poly.random_state"><code>l_poly.random_state</code></a>.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a class="autorefs autorefs-external" title="numpy.random" href="https://numpy.org/doc/stable/reference/random/index.html#module-numpy.random">random</a>.<a class="autorefs autorefs-external" title="numpy.random.Generator" href="https://numpy.org/doc/stable/reference/random/generator.html#numpy.random.Generator">Generator</a> | <span title="lmo.typing.AnyInt">AnyInt</span> | None</code>
+                </span>
+                <span class="doc-param-default">
+                  <b>DEFAULT:</b> 
+                    <code>None</code>
+                </span>
+            </p>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>RETURNS</b></th>
+        <th><b>DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+              <span class="doc-returns-annotation">
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | <span title="lmo.distributions._ArrF8">_ArrF8</span></code>
+              </span>
+          </td>
+          <td class="doc-returns-details">
+            <div class="doc-md-description">
+              <p>A scalar or array with shape like <code>size</code>.</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h5 id="lmo.distributions.l_poly.ppf" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">ppf</span><span class="p">(</span><span class="n">p</span><span class="p">)</span></code>
+
+<a href="#lmo.distributions.l_poly.ppf" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p><a href="https://w.wiki/8cQU">Percent point function</a> <span class="arithmatex">\( Q(p) \)</span> (inverse of
+<a class="autorefs autorefs-internal" href="#lmo.distributions.l_poly.cdf">CDF</a>, a.k.a. the quantile function) at
+<span class="arithmatex">\( p \)</span> of the given distribution.</p>
+
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>PARAMETER</b></th>
+        <th><b> DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>p</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Scalar or array-like of lower tail probability values in
+<span class="arithmatex">\( [0, 1] \)</span>.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">npt</a>.<span title="numpy.ArrayLike">ArrayLike</span></code>
+                </span>
+            </p>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <ul>
+<li><a class="autorefs autorefs-internal" href="#lmo.theoretical.ppf_from_l_moments"><code>ppf_from_l_moments</code></a></li>
+</ul>
+</details>
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h5 id="lmo.distributions.l_poly.isf" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">isf</span><span class="p">(</span><span class="n">q</span><span class="p">)</span></code>
+
+<a href="#lmo.distributions.l_poly.isf" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Inverse survival function <span class="arithmatex">\( \bar{Q}(q) = Q(1 - q) \)</span> (inverse of
+<a class="autorefs autorefs-internal" href="#lmo.distributions.l_poly.sf"><code>sf</code></a>) at <span class="arithmatex">\( q \)</span>.</p>
+
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>PARAMETER</b></th>
+        <th><b> DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>q</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Scalar or array-like of upper tail probability values in
+<span class="arithmatex">\( [0, 1] \)</span>.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">npt</a>.<span title="numpy.ArrayLike">ArrayLike</span></code>
+                </span>
+            </p>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h5 id="lmo.distributions.l_poly.qdf" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">qdf</span><span class="p">(</span><span class="n">p</span><span class="p">)</span></code>
+
+<a href="#lmo.distributions.l_poly.qdf" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Quantile density function <span class="arithmatex">\( q \equiv \frac{\dd{Q}}{\dd{p}} \)</span> (
+derivative of the <a class="autorefs autorefs-internal" href="#lmo.distributions.l_poly.ppf">PPF</a>) at <span class="arithmatex">\( p \)</span> of
+the given distribution.</p>
+
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>PARAMETER</b></th>
+        <th><b> DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>p</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Scalar or array-like of lower tail probability values in
+<span class="arithmatex">\( [0, 1] \)</span>.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">npt</a>.<span title="numpy.ArrayLike">ArrayLike</span></code>
+                </span>
+            </p>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <ul>
+<li><a class="autorefs autorefs-internal" href="#lmo.theoretical.ppf_from_l_moments"><code>qdf_from_l_moments</code></a></li>
+</ul>
+</details>
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h5 id="lmo.distributions.l_poly.cdf" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">cdf</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></code>
+
+<a href="#lmo.distributions.l_poly.cdf" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p><a href="https://w.wiki/3ota">Cumulative distribution function</a>
+<span class="arithmatex">\( F(x) = \mathrm{P}(X \le x) \)</span> at <span class="arithmatex">\( x \)</span> of the given distribution.</p>
+
+<details class="note" open>
+  <summary>Note</summary>
+  <p>Because the CDF of <code>l_poly</code> is not analytically expressible, it
+is evaluated numerically using a root-finding algorithm.</p>
+</details>
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>PARAMETER</b></th>
+        <th><b> DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>x</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Scalar or array-like of quantiles.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">npt</a>.<span title="numpy.ArrayLike">ArrayLike</span></code>
+                </span>
+            </p>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h5 id="lmo.distributions.l_poly.logcdf" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">logcdf</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></code>
+
+<a href="#lmo.distributions.l_poly.logcdf" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Logarithm of the cumulative distribution function (CDF) at <span class="arithmatex">\( x \)</span>,
+i.e. <span class="arithmatex">\( \ln F(x) \)</span>.</p>
+
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>PARAMETER</b></th>
+        <th><b> DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>x</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Scalar or array-like of quantiles.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">npt</a>.<span title="numpy.ArrayLike">ArrayLike</span></code>
+                </span>
+            </p>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h5 id="lmo.distributions.l_poly.sf" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">sf</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></code>
+
+<a href="#lmo.distributions.l_poly.sf" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Survival function <span class="arithmatex">\(S(x) = \mathrm{P}(X &gt; x) =
+1 - \mathrm{P}(X \le x) = 1 - F(x) \)</span> (the complement of the
+<a class="autorefs autorefs-internal" href="#lmo.distributions.l_poly.cdf">CDF</a>).</p>
+
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>PARAMETER</b></th>
+        <th><b> DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>x</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Scalar or array-like of quantiles.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">npt</a>.<span title="numpy.ArrayLike">ArrayLike</span></code>
+                </span>
+            </p>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h5 id="lmo.distributions.l_poly.logsf" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">logsf</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></code>
+
+<a href="#lmo.distributions.l_poly.logsf" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Logarithm of the survical function (SF) at <span class="arithmatex">\( x \)</span>, i.e.
+<span class="arithmatex">\( \ln \left( S(x) \right) \)</span>.</p>
+
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>PARAMETER</b></th>
+        <th><b> DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>x</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Scalar or array-like of quantiles.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">npt</a>.<span title="numpy.ArrayLike">ArrayLike</span></code>
+                </span>
+            </p>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h5 id="lmo.distributions.l_poly.pdf" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">pdf</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></code>
+
+<a href="#lmo.distributions.l_poly.pdf" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Probability density function <span class="arithmatex">\( f \equiv \frac{\dd{F}}{\dd{x}} \)</span>
+(derivative of the <a class="autorefs autorefs-internal" href="#lmo.distributions.l_poly.cdf">CDF</a>) at <span class="arithmatex">\( x \)</span>.</p>
+<p>By applying the <a href="https://w.wiki/8cQS">inverse function rule</a>, the PDF
+can also defined using the <a class="autorefs autorefs-internal" href="#lmo.distributions.l_poly.qdf">QDF</a> as
+<span class="arithmatex">\(  f(x) = 1 / q\big(F(x)\big) \)</span>.</p>
+
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>PARAMETER</b></th>
+        <th><b> DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>x</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Scalar or array-like of quantiles.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">npt</a>.<span title="numpy.ArrayLike">ArrayLike</span></code>
+                </span>
+            </p>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h5 id="lmo.distributions.l_poly.hf" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">hf</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></code>
+
+<a href="#lmo.distributions.l_poly.hf" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p><a href="https://w.wiki/8cWL#Failure_rate_in_the_continuous_sense">Hazard function
+</a>
+<span class="arithmatex">\( h(x) = f(x) / S(x) \)</span> at <span class="arithmatex">\( x \)</span>, with <span class="arithmatex">\( f \)</span> and <span class="arithmatex">\( S \)</span> the
+<a class="autorefs autorefs-internal" href="#lmo.distributions.l_poly.pdf">PDF</a> and
+<a class="autorefs autorefs-internal" href="#lmo.distributions.l_poly.sf">SF</a>, respectively.</p>
+
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>PARAMETER</b></th>
+        <th><b> DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>x</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Scalar or array-like of quantiles.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">npt</a>.<span title="numpy.ArrayLike">ArrayLike</span></code>
+                </span>
+            </p>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h5 id="lmo.distributions.l_poly.median" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">median</span><span class="p">()</span></code>
+
+<a href="#lmo.distributions.l_poly.median" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p><a href="https://w.wiki/3oaw">Median</a> (50th percentile) of the distribution.
+Alias for <code>ppf(1 / 2)</code>.</p>
+
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <ul>
+<li><a class="autorefs autorefs-internal" href="#lmo.distributions.l_poly.ppf"><code>l_poly.ppf</code></a></li>
+</ul>
+</details>
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h5 id="lmo.distributions.l_poly.mean" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">mean</span><span class="p">()</span></code>
+
+<a href="#lmo.distributions.l_poly.mean" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>The <a href="https://w.wiki/8cQe">mean</a> <span class="arithmatex">\( \mu = \E[X] \)</span> of random varianble
+<span class="arithmatex">\( X \)</span> of the relevant distribution.</p>
+
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <ul>
+<li><a class="autorefs autorefs-internal" href="#lmo.distributions.l_poly.l_loc"><code>l_poly.l_loc</code></a></li>
+</ul>
+</details>
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h5 id="lmo.distributions.l_poly.var" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">var</span><span class="p">()</span></code>
+
+<a href="#lmo.distributions.l_poly.var" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>The <a href="https://w.wiki/3jNh">variance</a>
+<span class="arithmatex">\( \Var[X] = \E\bigl[(X - \E[X])^2\bigr] =
+\E\bigl[X^2\bigr] - \E[X]^2 = \sigma^2 \)</span> (2nd central product moment)
+of random varianble <span class="arithmatex">\( X \)</span> of the relevant distribution.</p>
+
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <ul>
+<li><a class="autorefs autorefs-internal" href="#lmo.distributions.l_poly.moment"><code>l_poly.moment</code></a></li>
+</ul>
+</details>
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h5 id="lmo.distributions.l_poly.std" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">std</span><span class="p">()</span></code>
+
+<a href="#lmo.distributions.l_poly.std" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>The <a href="https://w.wiki/3hwM">standard deviation</a>
+<span class="arithmatex">\( \Std[X] = \sqrt{\Var[X]} = \sigma \)</span> of random varianble <span class="arithmatex">\( X \)</span> of
+the relevant distribution.</p>
+
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <ul>
+<li><a class="autorefs autorefs-internal" href="#lmo.distributions.l_poly.l_scale"><code>l_poly.l_scale</code></a></li>
+</ul>
+</details>
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h5 id="lmo.distributions.l_poly.entropy" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">entropy</span><span class="p">()</span></code>
+
+<a href="#lmo.distributions.l_poly.entropy" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p><a href="https://w.wiki/8cR3">Differential entropy</a> <span class="arithmatex">\( \mathrm{H}[X] \)</span> of
+random varianble <span class="arithmatex">\( X \)</span> of the relevant distribution.</p>
+<p>It is defined as</p>
+<div class="arithmatex">\[
+\mathrm{H}[X]
+    = \E \bigl[ -\ln f(X) \bigr]
+    = -\int_{Q(0)}^{Q(1)} \ln f(x) \dd x
+    = \int_0^1 \ln q(p) \dd p ,
+\]</div>
+<p>with <span class="arithmatex">\( f(x) \)</span> the <a class="autorefs autorefs-internal" href="#lmo.distributions.l_poly.pdf">PDF</a>, <span class="arithmatex">\( Q(p) \)</span>
+the <a class="autorefs autorefs-internal" href="#lmo.distributions.l_poly.ppf">PPF</a>, and <span class="arithmatex">\( q(p) = Q'(p) \)</span> the
+<a class="autorefs autorefs-internal" href="#lmo.distributions.l_poly.qdf">QDF</a>.</p>
+
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <ul>
+<li><a class="autorefs autorefs-internal" href="#lmo.theoretical.entropy_from_qdf"><code>entropy_from_qdf</code></a></li>
+</ul>
+</details>
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h5 id="lmo.distributions.l_poly.support" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">support</span><span class="p">()</span></code>
+
+<a href="#lmo.distributions.l_poly.support" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>The support <span class="arithmatex">\( (Q(0), Q(1)) \)</span> of the distribution, where <span class="arithmatex">\( Q(p) \)</span>
+is the <a class="autorefs autorefs-internal" href="#lmo.distributions.l_poly.ppf">PPF</a>.</p>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h5 id="lmo.distributions.l_poly.interval" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">interval</span><span class="p">(</span><span class="n">confidence</span><span class="p">)</span></code>
+
+<a href="#lmo.distributions.l_poly.interval" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p><a href="https://w.wiki/3kdb">Confidence interval</a> with equal areas around
+the <a class="autorefs autorefs-internal" href="#lmo.distributions.l_poly.median">median</a>.</p>
+<p>For <code>confidence</code> level <span class="arithmatex">\( \alpha \in [0, 1] \)</span>, this function evaluates</p>
+<div class="arithmatex">\[
+    \left[
+        Q\left( \frac{1 - \alpha}{2} \right) ,
+        Q\left( \frac{1 + \alpha}{2} \right)
+    \right],
+\]</div>
+<p>where <span class="arithmatex">\( Q(p) \)</span> is the <a class="autorefs autorefs-internal" href="#lmo.distributions.l_poly.ppf">PPF</a>.</p>
+
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>PARAMETER</b></th>
+        <th><b> DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>confidence</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Scalar or array-like. The Probability that a random
+varianble will be drawn from the returned range.</p>
+<p>Each confidence value should be between 0 and 1.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">npt</a>.<span title="numpy.ArrayLike">ArrayLike</span></code>
+                </span>
+            </p>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h5 id="lmo.distributions.l_poly.moment" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">moment</span><span class="p">(</span><span class="n">n</span><span class="p">)</span></code>
+
+<a href="#lmo.distributions.l_poly.moment" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Non-central product moment <span class="arithmatex">\( \E[X^n] \)</span> of <span class="arithmatex">\( X \)</span> of specified
+order <span class="arithmatex">\( n \)</span>.</p>
+
+<details class="note" open>
+  <summary>Note</summary>
+  <p>The product moment is evaluated using numerical integration
+(<a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.quad.html#scipy.integrate.quad"><code>scipy.integrate.quad</code></a>), which cannot
+check whether the product-moment actually exists for the
+distribution, in which case an invalid result will be returned.</p>
+</details>
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>PARAMETER</b></th>
+        <th><b> DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>n</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Order <span class="arithmatex">\( n \ge 0 \)</span> of the moment.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>
+                </span>
+            </p>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <ul>
+<li><a class="autorefs autorefs-internal" href="#lmo.distributions.l_poly.l_moment"><code>l_poly.l_moment</code></a></li>
+</ul>
+</details>
+<details class="todo" open>
+  <summary>Todo</summary>
+  <ul>
+<li>For n&gt;=2, attempt tot infer from <code>_l_moments</code> if the 2nd moment
+    condition holds, using <code>diagnostics.l_moment_bounds</code>.</li>
+</ul>
+</details>
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h5 id="lmo.distributions.l_poly.stats" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">stats</span><span class="p">(</span><span class="n">moments</span><span class="o">=</span><span class="s1">&#39;mv&#39;</span><span class="p">)</span></code>
+
+<a href="#lmo.distributions.l_poly.stats" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Some product-moment statistics of the given distribution.</p>
+
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>PARAMETER</b></th>
+        <th><b> DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>moments</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Composed of letters <code>mvsk</code> defining which product-moment
+statistic to compute:</p>
+<dl>
+<dt><code>'m'</code>:</dt>
+<dd>Mean <span class="arithmatex">\( \mu = \E[X] \)</span></dd>
+<dt><code>'v'</code>:</dt>
+<dd>Variance <span class="arithmatex">\( \sigma^2 = \E[(X - \mu)^2] \)</span></dd>
+<dt><code>'s'</code>:</dt>
+<dd>Skewness <span class="arithmatex">\( \E[(X - \mu)^3] / \sigma^3 \)</span></dd>
+<dt><code>'k'</code>:</dt>
+<dd>Ex. Kurtosis <span class="arithmatex">\( \E[(X - \mu)^4] / \sigma^4 - 3 \)</span></dd>
+</dl>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><span title="lmo.distributions._STATS">_STATS</span></code>
+                </span>
+                <span class="doc-param-default">
+                  <b>DEFAULT:</b> 
+                    <code>&#39;mv&#39;</code>
+                </span>
+            </p>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h5 id="lmo.distributions.l_poly.expect" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">expect</span><span class="p">(</span><span class="n">g</span><span class="p">)</span></code>
+
+<a href="#lmo.distributions.l_poly.expect" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Calculate expected value of a function with respect to the
+distribution by numerical integration.</p>
+<p>The expected value of a function <span class="arithmatex">\( g(x) \)</span> with respect to a
+random variable <span class="arithmatex">\( X \)</span> is defined as</p>
+<div class="arithmatex">\[
+    \E\left[ g(X) \right]
+        = \int_{Q(0)}^{Q(1)} g(x) f(x) \dd x
+        = \int_0^1 g\big(Q(u)\big) \dd u ,
+\]</div>
+<p>with <span class="arithmatex">\( f(x) \)</span> the <a class="autorefs autorefs-internal" href="#lmo.distributions.l_poly.pdf">PDF</a>, and
+<span class="arithmatex">\( Q \)</span> the <a class="autorefs autorefs-internal" href="#lmo.distributions.l_poly.ppf">PPF</a>.</p>
+
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>PARAMETER</b></th>
+        <th><b> DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>g</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Continuous and deterministic function
+<span class="arithmatex">\( g: \reals \mapsto \reals \)</span>.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code> (float) -&gt; float </code>
+                </span>
+            </p>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h5 id="lmo.distributions.l_poly.l_moment" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">l_moment</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#lmo.distributions.l_poly.l_moment" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Evaluate the population L-moment(s) <span class="arithmatex">\(\lambda^{(s,t)}_r\)</span>.</p>
+
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>PARAMETER</b></th>
+        <th><b> DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>r</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>L-moment order(s), non-negative integer or array-like of
+integers.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><span title="lmo.typing.AnyInt">AnyInt</span> | <span title="lmo.typing.IntVector">IntVector</span></code>
+                </span>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td><code>trim</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Left- and right- trim. Can be scalar or 2-tuple of
+non-negative int or float.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><span title="lmo.typing.AnyTrim">AnyTrim</span> | None</code>
+                </span>
+                <span class="doc-param-default">
+                  <b>DEFAULT:</b> 
+                    <code>None</code>
+                </span>
+            </p>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h5 id="lmo.distributions.l_poly.l_ratio" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">l_ratio</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#lmo.distributions.l_poly.l_ratio" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Evaluate the population L-moment ratio(&rsquo;s) <span class="arithmatex">\(\tau^{(s,t)}_{r,k}\)</span>.</p>
+
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>PARAMETER</b></th>
+        <th><b> DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>r</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>L-moment order(s), non-negative integer or array-like of
+integers.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><span title="lmo.typing.AnyInt">AnyInt</span> | <span title="lmo.typing.IntVector">IntVector</span></code>
+                </span>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td><code>k</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>L-moment order of the denominator, e.g. 2.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><span title="lmo.typing.AnyInt">AnyInt</span> | <span title="lmo.typing.IntVector">IntVector</span></code>
+                </span>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td><code>trim</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Left- and right- trim. Can be scalar or 2-tuple of
+non-negative int or float.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><span title="lmo.typing.AnyTrim">AnyTrim</span> | None</code>
+                </span>
+                <span class="doc-param-default">
+                  <b>DEFAULT:</b> 
+                    <code>None</code>
+                </span>
+            </p>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h5 id="lmo.distributions.l_poly.l_stats" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">l_stats</span><span class="p">(</span><span class="n">trim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">moments</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span></code>
+
+<a href="#lmo.distributions.l_poly.l_stats" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Evaluate the L-moments (for <span class="arithmatex">\(r \le 2\)</span>) and L-ratio&rsquo;s (for <span class="arithmatex">\(r &gt; 2\)</span>).</p>
+
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>PARAMETER</b></th>
+        <th><b> DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>trim</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Left- and right- trim. Can be scalar or 2-tuple of
+non-negative int or float.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><span title="lmo.typing.AnyTrim">AnyTrim</span> | None</code>
+                </span>
+                <span class="doc-param-default">
+                  <b>DEFAULT:</b> 
+                    <code>None</code>
+                </span>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td><code>moments</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>The amount of L-moments to return. Defaults to 4.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>
+                </span>
+                <span class="doc-param-default">
+                  <b>DEFAULT:</b> 
+                    <code>4</code>
+                </span>
+            </p>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h5 id="lmo.distributions.l_poly.l_loc" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">l_loc</span><span class="p">(</span><span class="n">trim</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#lmo.distributions.l_poly.l_loc" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>L-location of the distribution, i.e. the 1st L-moment.</p>
+<p>Alias for <code>l_poly.l_moment(1, ...)</code>.</p>
+
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <ul>
+<li><a class="autorefs autorefs-internal" href="#lmo.distributions.l_poly.l_moment"><code>l_poly.l_moment</code></a></li>
+</ul>
+</details>
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h5 id="lmo.distributions.l_poly.l_scale" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">l_scale</span><span class="p">(</span><span class="n">trim</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#lmo.distributions.l_poly.l_scale" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>L-scale of the distribution, i.e. the 2nd L-moment.</p>
+<p>Alias for <code>l_poly.l_moment(2, ...)</code>.</p>
+
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <ul>
+<li><a class="autorefs autorefs-internal" href="#lmo.distributions.l_poly.l_moment"><code>l_poly.l_moment</code></a></li>
+</ul>
+</details>
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h5 id="lmo.distributions.l_poly.l_skew" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">l_skew</span><span class="p">(</span><span class="n">trim</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#lmo.distributions.l_poly.l_skew" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>L-skewness coefficient of the distribution; the 3rd L-moment ratio.</p>
+<p>Alias for <code>l_poly.l_ratio(3, 2, ...)</code>.</p>
+
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <ul>
+<li><a class="autorefs autorefs-internal" href="#lmo.distributions.l_poly.l_ratio"><code>l_poly.l_ratio</code></a></li>
+</ul>
+</details>
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h5 id="lmo.distributions.l_poly.l_kurtosis" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">l_kurtosis</span><span class="p">(</span><span class="n">trim</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#lmo.distributions.l_poly.l_kurtosis" class="headerlink" title="Permanent link">&para;</a></h5>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>L-kurtosis coefficient of the distribution; the 4th L-moment ratio.</p>
+<p>Alias for <code>l_poly.l_ratio(4, 2, ...)</code>.</p>
+
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <ul>
+<li><a class="autorefs autorefs-internal" href="#lmo.distributions.l_poly.l_ratio"><code>l_poly.l_ratio</code></a></li>
+</ul>
+</details>
+  </div>
+
+</div>
+
+
+
+  </div>
+
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+
 <h4 id="lmo.distributions.l_rv_nonparametric" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">l_rv_nonparametric</span><span class="p">(</span><span class="n">l_moments</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">a</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
@@ -3692,7 +5623,12 @@ shape parameter.</p>
             Bases: <code><span title="scipy.stats.distributions.rv_continuous">_rv_continuous</span></code></p>
 
   
-      <p>Estimate a distribution using the given L-moments.
+
+<details class="warning" open>
+  <summary>Warning</summary>
+  <p><code>l_rv_nonparametric</code> is deprecated, and will be removed in version
+<code>0.13</code>. Use <code>l_poly</code> instead.</p>
+</details>      <p>Estimate a distribution using the given L-moments.
 See <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.rv_continuous.html#scipy.stats.rv_continuous"><code>scipy.stats.rv_continuous</code></a> for the
 available method.</p>
 <p>The PPF (quantile function) is estimated using generalized Fourier series,
@@ -3944,7 +5880,7 @@ function (ICDF).</p>
 <details class="note" open>
   <summary>Note</summary>
   <p>Converges to the &ldquo;true&rdquo; PPF in the mean-squared sense, with
-weight function <span class="arithmatex">\(q^s (1 - q)^t\)</span> of quantile <span class="arithmatex">\(q \in \[0, 1\]\)</span>,
+weight function <span class="arithmatex">\(q^s (1 - q)^t\)</span> of quantile <span class="arithmatex">\(q \in [0, 1]\)</span>,
 and trim-lengths <span class="arithmatex">\((t_1, t_2) \in \mathbb{R^+} \times \mathbb{R^+}\)</span>.</p>
 </details>
 
@@ -4339,7 +6275,7 @@ test implementation.</p>
             <p>
                 <span class="doc-attribute-annotation">
                   <b>TYPE:</b>
-                    <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | <a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">npt</a>.<span title="numpy.NDArray">NDArray</span>[<a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a class="autorefs autorefs-external" title="numpy.float64" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64">float64</a>]</code>
+                    <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | <span title="lmo.diagnostic._ArrF8">_ArrF8</span></code>
                 </span>
             </p>
           </td>
@@ -4354,7 +6290,7 @@ hypothesis, <span class="arithmatex">\(H_0\)</span>.</p>
             <p>
                 <span class="doc-attribute-annotation">
                   <b>TYPE:</b>
-                    <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | <a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">npt</a>.<span title="numpy.NDArray">NDArray</span>[<a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a class="autorefs autorefs-external" title="numpy.float64" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64">float64</a>]</code>
+                    <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | <span title="lmo.diagnostic._ArrF8">_ArrF8</span></code>
                 </span>
             </p>
           </td>
@@ -4755,7 +6691,7 @@ integers.</p>
             <p>
                 <span class="doc-param-annotation">
                   <b>TYPE:</b>
-                    <code><span title="lmo.typing.IntVector">IntVector</span> | <span title="lmo.typing.AnyInt">AnyInt</span></code>
+                    <code><span title="lmo.typing.AnyInt">AnyInt</span> | <span title="lmo.typing.IntVector">IntVector</span></code>
                 </span>
             </p>
           </td>
@@ -4822,7 +6758,7 @@ Defaults to 1.</p>
               <p>
                 <span class="doc-returns-annotation">
                   <b>TYPE:</b>
-                    <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | <a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">npt</a>.<span title="numpy.NDArray">NDArray</span>[<a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a class="autorefs autorefs-external" title="numpy.float64" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64">float64</a>]</code>
+                    <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | <span title="lmo.diagnostic._ArrF8">_ArrF8</span></code>
                 </span>
               </p>
           </td>
@@ -4848,41 +6784,80 @@ Defaults to 1.</p>
 
 
 <h4 id="lmo.diagnostic.l_ratio_bounds" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">diagnostic</span><span class="o">.</span><span class="n">l_ratio_bounds</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="o">*</span><span class="p">,</span> <span class="n">has_variance</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
+          <code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">diagnostic</span><span class="o">.</span><span class="n">l_ratio_bounds</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="o">*</span><span class="p">,</span> <span class="n">legacy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
 
 <a href="#lmo.diagnostic.l_ratio_bounds" class="headerlink" title="Permanent link">&para;</a></h4>
 
 
   <div class="doc doc-contents ">
   
-      <p>Returns the absolute upper bounds <span class="arithmatex">\(T^{(s,t)}_r\)</span> on L-moment ratio&rsquo;s
-<span class="arithmatex">\(\tau^{(s,t)}_r = \lambda^{(s,t)}_r / \lambda^{(s,t)}_r\)</span>, for <span class="arithmatex">\(r \ge 2\)</span>.
-So <span class="arithmatex">\(\left| \tau^{(s,t)}_r(X) \right| \le T^{(s,t)}_r\)</span>, given that
-<span class="arithmatex">\(\mathrm{Var}[X] = \sigma^2_X\)</span> exists.</p>
-<p>If the variance of the distribution is not defined, e.g. in case of the
-<a href="https://wikipedia.org/wiki/Cauchy_distribution">Cauchy distribution</a>,
-this method will not work. In this case, the looser bounds from
-Hosking (2007) can be used instead, by passing <code>has_variance=False</code>.</p>
+      <p>Unlike the standardized product-moments, the L-moment ratio&rsquo;s with
+<span class="arithmatex">\( r \ge 2 \)</span> are bounded above and below.</p>
+<p>Specifically, Hosking derived in 2007 that</p>
+<div class="arithmatex">\[
+    | \tlratio{r}{s,t}| \le
+        \frac 2 r
+        \frac{\ffact{r + s + t}{r - 2}}{\ffact{r - 1 + s \wedge t}{r - 2}}
+        .
+\]</div>
+<p>But this derivation relies on unnecessarily loose Jacobi polynomial bounds.
+If the actual min and max of the Jacobi polynomials are used instead,
+the following (tighter) inequality is obtained:</p>
+<div class="arithmatex">\[
+    \frac{\dot{w}_r^{(s, t)}}{\dot{w}_2^{(s, t)}}
+    \min_{u \in [0, 1]} \left[ \shjacobi{r - 1}{t + 1}{s + 1}{u} \right]
+    \le
+    \tlratio{s, t}{r}
+    \le
+    \frac{\dot{w}_r^{(s, t)}}{\dot{w}_2^{(s, t)}}
+    \max_{0 \le u \le 1} \left[ \shjacobi{r - 1}{t + 1}{s + 1}{u} \right],
+\]</div>
+<p>where</p>
+<div class="arithmatex">\[
+    \dot{w}_r^{(s, t)} =
+        % \frac{r + s + t}{r (r - 1)}
+        % \frac{\B(r,\ r + s + t)}{\B(r + s,\ r + t)}.
+        \frac{\B(r - 1,\ r + s + t + 1)}{r \B(r + s,\ r + t)}.
+\]</div>
 
 
 
 <p><strong>Examples:</strong></p>
-    <p>Calculate the bounds for different degrees of trimming:</p>
-    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">l_ratio_bounds</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
-<span class="go">array([       inf, 1.        , 0.77459667, 0.65465367])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># the bounds for r=1,2 are the same for all trimmings; skip them</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">l_ratio_bounds</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-<span class="go">array([0.61475926, 0.4546206 ])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">l_ratio_bounds</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mf">.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">))</span>
-<span class="go">array([0.65060005, 0.49736473])</span>
+    <p>Without trim, the lower- and upper-bounds of the L-skewness and
+L-kurtosis are:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">l_ratio_bounds</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="go">(-1.0, 1.0)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">l_ratio_bounds</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="go">(-0.25, 1.0)</span>
 </code></pre></div>
-    <p>In case of undefined variance, the bounds become a lot looser:</p>
-    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">l_ratio_bounds</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">has_variance</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="go">array([1., 1.])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">l_ratio_bounds</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">has_variance</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="go">array([1.11111111, 1.25      ])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">l_ratio_bounds</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mf">.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">),</span> <span class="n">has_variance</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="go">array([1.33333333, 1.71428571])</span>
+    <p>For the L-kurtosis, the &ldquo;legacy&rdquo; bounds by Hosking (2007) are clearly
+looser:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">l_ratio_bounds</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">legacy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="go">(-1.0, 1.0)</span>
+</code></pre></div>
+    <p>For the symmetrically trimmed TL-moment ratio&rsquo;s:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">l_ratio_bounds</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="go">(-1.2, 1.2)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">l_ratio_bounds</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="go">(-0.15, 1.5)</span>
+</code></pre></div>
+    <p>Similarly, those of the LL-ratio&rsquo;s are</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">l_ratio_bounds</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="go">(-0.8, 2.0)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">l_ratio_bounds</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="go">(-0.2333..., 3.5)</span>
+</code></pre></div>
+    <p>The LH-skewness bounds are &ldquo;flipped&rdquo; w.r.t to the LL-skewness,
+but they are the same for the L*-kurtosis:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">l_ratio_bounds</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="go">(-2.0, 0.8)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">l_ratio_bounds</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="go">(-0.2333..., 3.5)</span>
+</code></pre></div>
+    <p>The bounds of multiple L-ratio&rsquo;s can be calculated in one shot:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">l_ratio_bounds</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="go">(array([-1.        , -0.194..., -1.12      , -0.149...]),</span>
+<span class="go"> array([1.333..., 1.75      , 2.24      , 2.8       ]))</span>
 </code></pre></div>
 
 
@@ -4899,8 +6874,7 @@ Hosking (2007) can be used instead, by passing <code>has_variance=False</code>.<
           <td><code>r</code></td>
           <td class="doc-param-details">
             <div class="doc-md-description">
-              <p>Order of the L-moment ratio(s), as positive integer scalar or
-array-like.</p>
+              <p>Scalar or array-like with the L-moment ratio order(s).</p>
             </div>
             <p>
                 <span class="doc-param-annotation">
@@ -4914,8 +6888,7 @@ array-like.</p>
           <td><code>trim</code></td>
           <td class="doc-param-details">
             <div class="doc-md-description">
-              <p>Tuple of left- and right- trim-lengths, matching those of the
-relevant L-moment ratio&rsquo;s.</p>
+              <p>L-moment ratio trim-length(s).</p>
             </div>
             <p>
                 <span class="doc-param-annotation">
@@ -4930,11 +6903,10 @@ relevant L-moment ratio&rsquo;s.</p>
           </td>
         </tr>
         <tr>
-          <td><code>has_variance</code></td>
+          <td><code>legacy</code></td>
           <td class="doc-param-details">
             <div class="doc-md-description">
-              <p>Set to False if the distribution has undefined variance, in which
-case the (looser) bounds from J.R.M. Hosking (2007) will be used.</p>
+              <p>If set to <code>True</code>, will use the (looser) by Hosking (2007).</p>
             </div>
             <p>
                 <span class="doc-param-annotation">
@@ -4943,7 +6915,7 @@ case the (looser) bounds from J.R.M. Hosking (2007) will be used.</p>
                 </span>
                 <span class="doc-param-default">
                   <b>DEFAULT:</b> 
-                    <code>True</code>
+                    <code>False</code>
                 </span>
             </p>
           </td>
@@ -4964,12 +6936,12 @@ case the (looser) bounds from J.R.M. Hosking (2007) will be used.</p>
         <tr>
           <td>
               <span class="doc-returns-annotation">
-                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | <a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">npt</a>.<span title="numpy.NDArray">NDArray</span>[<a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a class="autorefs autorefs-external" title="numpy.float64" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64">float64</a>]</code>
+                  <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | <span title="lmo.diagnostic._ArrF8">_ArrF8</span>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | <span title="lmo.diagnostic._ArrF8">_ArrF8</span>]</code>
               </span>
           </td>
           <td class="doc-returns-details">
             <div class="doc-md-description">
-              <p>Array or scalar with shape like <span class="arithmatex">\(r\)</span>.</p>
+              <p>A 2-tuple with arrays or scalars, of the lower- and upper bounds.</p>
             </div>
           </td>
         </tr>
@@ -4981,6 +6953,7 @@ case the (looser) bounds from J.R.M. Hosking (2007) will be used.</p>
   <ul>
 <li><a class="autorefs autorefs-internal" href="#lmo.l_ratio"><code>l_ratio</code></a></li>
 <li><a class="autorefs autorefs-internal" href="#lmo.l_ratio_se"><code>l_ratio_se</code></a></li>
+<li><a class="autorefs autorefs-internal" href="#lmo.diagnostic.l_moment_bounds"><code>diagnostic.l_moment_bounds</code></a></li>
 </ul>
 </details>
 <details class="references" open>
@@ -8891,12 +10864,12 @@ observation vector(s) of size <span class="arithmatex">\(n\)</span>), into (an u
 
   <div class="doc doc-contents ">
   
-      <p>Magic angle <span class="arithmatex">\( \theta_m = \arctan \sqrt 2 \approx 0.9553 \)</span>.</p>
+      <p>Magic angle <span class="arithmatex">\( \theta_m = \arctan \sqrt 2 \)</span>.</p>
 
 <details class="see-also" open>
   <summary>See also</summary>
   <ul>
-<li>https://wikipedia.org/wiki/Magic_angle</li>
+<li><a href="https://wikipedia.org/wiki/Magic_angle">Magic angle - Wikipedia</a></li>
 </ul>
 </details>  </div>
 
@@ -8908,7 +10881,7 @@ observation vector(s) of size <span class="arithmatex">\(n\)</span>), into (an u
 
 
 <h4 id="lmo.constants.theta_m_bar" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">constants</span><span class="o">.</span><span class="n">theta_m_bar</span><span class="p">:</span> <span class="n">Final</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.22138970964098584</span></code>
+          <code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">constants</span><span class="o">.</span><span class="n">theta_m_bar</span><span class="p">:</span> <span class="n">Final</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.1520433619923482</span></code>
   
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
@@ -8919,14 +10892,14 @@ observation vector(s) of size <span class="arithmatex">\(n\)</span>), into (an u
 
   <div class="doc doc-contents ">
   
-      <p>Magic number of turns <span class="arithmatex">\( \bar{\theta}_m = \theta_m / (2 \pi) \approx 0.2214 \)</span></p>
+      <p>Magic number of turns <span class="arithmatex">\( \bar{\theta}_m = \theta_m / (2 \pi) \)</span>.</p>
 
 <details class="see-also" open>
   <summary>See also</summary>
   <ul>
-<li><a class="autorefs autorefs-internal" href="#lmo.constants.theta_m">theta_m</a></li>
-<li>https://wikipedia.org/wiki/Magic_angle</li>
-<li>https://wikipedia.org/wiki/Turn_(angle)</li>
+<li><a class="autorefs autorefs-internal" href="#lmo.constants.theta_m"><code>lmo.constants.theta_m</code></a></li>
+<li><a href="https://wikipedia.org/wiki/Magic_angle">Magic angle - Wikipedia</a></li>
+<li><a href="https://wikipedia.org/wiki/Turn_(angle)">Turn (angle) - Wikipedia</a></li>
 </ul>
 </details>  </div>
 
@@ -11390,6 +13363,188 @@ complex argument via analytic contunuation.</p>
 </div>
 
 
+<div class="doc doc-object doc-function">
+
+
+
+
+<h4 id="lmo.special.norm_sh_jacobi" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">special</span><span class="o">.</span><span class="n">norm_sh_jacobi</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">)</span></code>
+
+<a href="#lmo.special.norm_sh_jacobi" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Evaluate the (weighted) <span class="arithmatex">\( L^2 \)</span>-norm of a shifted Jacobi polynomial.</p>
+<p>Specifically,</p>
+<div class="arithmatex">\[
+    \| p_n \|^2
+    = \braket{p_n | p_n}
+    = \int_0^1 |p_n|^2 \mathrm{d}x
+    = \frac{1}{2 n + \alpha + \beta + 1} \frac
+        {\Gamma(n + \alpha + 1) \Gamma(n + \beta + 1)}
+        {n! \ \Gamma(n + \alpha + \beta + 1)}
+\]</div>
+<p>with</p>
+<div class="arithmatex">\[
+    p_n(x) \equiv
+        x^{\beta / 2} \
+        (1 - x)^{\alpha / 2} \
+        \shjacobi{n}{\alpha}{\beta}{x}
+\]</div>
+<p>the normalized Jacobi polynomial on <span class="arithmatex">\( [0, 1] \)</span>.</p>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h4 id="lmo.special.fourier_jacobi" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">special</span><span class="o">.</span><span class="n">fourier_jacobi</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span></code>
+
+<a href="#lmo.special.fourier_jacobi" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Evaluate the Fourier-Jacobi series, using the Clenshaw summation
+algorithm.</p>
+<p>If <span class="arithmatex">\( c \)</span> is of length <span class="arithmatex">\( n + 1 \)</span>, this function returns the value:</p>
+<div class="arithmatex">\[
+    c_0 \cdot \jacobi{0}{a}{b}{x} +
+    c_1 \cdot \jacobi{1}{a}{b}{x} +
+    \ldots +
+    c_n \cdot \jacobi{n}{a}{b}{x}
+\]</div>
+<p>Here, <span class="arithmatex">\( \jacobi{n}{a}{b}{x} \)</span> is a Jacobi polynomial of degree
+<span class="arithmatex">\( n = |\vec{c}| \)</span>, which is orthogonal iff
+<span class="arithmatex">\( (a, b) \in (-1,\ \infty)^2 \)</span> and <span class="arithmatex">\( x \in [0,\ 1] \)</span>.</p>
+
+<details class="tip" open>
+  <summary>Tip</summary>
+  <p>Trailing zeros in the coefficients will be used in the evaluation,
+so they should be avoided if efficiency is a concern.</p>
+</details>
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>PARAMETER</b></th>
+        <th><b> DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>x</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Scalar or array-like with input data.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">npt</a>.<span title="numpy.ArrayLike">ArrayLike</span></code>
+                </span>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td><code>c</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Array-like of coefficients, ordered from low to high. All
+coefficients to the right are considered zero.</p>
+<p>For instance, <code>[4, 3, 2]</code> gives <span class="arithmatex">\( 4 \jacobi{0}{a}{b}{x} +
+3 \jacobi{1}{a}{b}{x} + 2 \jacobi{2}{a}{b}{x} \)</span>.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">npt</a>.<span title="numpy.ArrayLike">ArrayLike</span></code>
+                </span>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td><code>a</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Jacobi parameter <span class="arithmatex">\( a &gt; -1 \)</span>.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>
+                </span>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td><code>b</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>Jacobi parameter <span class="arithmatex">\( a &gt; -1 \)</span>.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>
+                </span>
+            </p>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>RETURNS</b></th>
+        <th><b>DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+              <code>out</code>
+          </td>
+          <td class="doc-returns-details">
+            <div class="doc-md-description">
+              <p>Scalar or array of same shape as <code>x</code>.</p>
+            </div>
+              <p>
+                <span class="doc-returns-annotation">
+                  <b>TYPE:</b>
+                    <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | <a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">npt</a>.<span title="numpy.NDArray">NDArray</span>[<a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a class="autorefs autorefs-external" title="numpy.float64" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64">float64</a>]</code>
+                </span>
+              </p>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <ul>
+<li><a href="https://wikipedia.org/wiki/Generalized_Fourier_series">Generalized Fourier series - Wikipedia</a></li>
+<li><a href="https://mathworld.wolfram.com/ClenshawRecurrenceFormula.html">Clenshaw Recurrence Formula - Wolfram MathWorld</a></li>
+<li><a href="https://mathworld.wolfram.com/JacobiPolynomial.html">Jacobi Polynomial - Worlfram Mathworld</a></li>
+</ul>
+</details>
+  </div>
+
+</div>
+
+
 
   </div>
 
@@ -11986,6 +14141,28 @@ If <code>nan</code>, consult the related <code>IntegrationWarning</code> message
 <li><a class="autorefs autorefs-internal" href="#lmo.l_moment"><code>l_moment</code></a>: sample L-moment</li>
 </ul>
 </details>
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h4 id="lmo.theoretical.l_moment_from_qdf" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">theoretical</span><span class="o">.</span><span class="n">l_moment_from_qdf</span><span class="p">(</span><span class="n">qdf</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="o">*</span><span class="p">,</span> <span class="n">support</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">quad_opts</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">ALPHA</span><span class="p">)</span></code>
+
+<a href="#lmo.theoretical.l_moment_from_qdf" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Evaluate the population L-moments <span class="arithmatex">\( \tlmoment{s, t}{r} \)</span> for <span class="arithmatex">\( r &gt; 1 \)</span>
+from the quantile distribution function (QDF), which is the derivative of
+the PPF (quantile function).</p>
+
   </div>
 
 </div>
@@ -13388,6 +15565,244 @@ probability distribution, using the joint PDF <span class="arithmatex">\(f_{\vec
 
 
 
+<h4 id="lmo.theoretical.ppf_from_l_moments" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">theoretical</span><span class="o">.</span><span class="n">ppf_from_l_moments</span><span class="p">(</span><span class="n">lmbda</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="o">*</span><span class="p">,</span> <span class="n">support</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">),</span> <span class="n">validate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">extrapolate</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
+
+<a href="#lmo.theoretical.ppf_from_l_moments" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Return a PPF (quantile function, or inverse CDF), with the specified.
+L-moments <span class="arithmatex">\( \tlmoment{s, t}{1}, \tlmoment{s, t}{2}, \ldots,
+\tlmoment{s, t}{R} \)</span>. Other L-moments are considered zero.</p>
+<p>For <span class="arithmatex">\( R \)</span> L-moments, this function returns</p>
+<div class="arithmatex">\[
+    \hat{Q}_R(u) = \sum_{r=1}^{R}
+        r \frac{2r + s + t - 1}{r + s + t}
+        \tlmoment{s, t}{r}
+        \shjacobi{r - 1}{t}{s}{u},
+\]</div>
+<p>where <span class="arithmatex">\( \shjacobi{n}{a}{b}{x} \)</span> is an <span class="arithmatex">\( n \)</span>-th degree shifted Jacobi
+polynomial, which is orthogonal for <span class="arithmatex">\( (a, b) \in (-1, \infty)^2 \)</span> on
+<span class="arithmatex">\( u \in [0, 1] \)</span>.</p>
+<p>This <em>nonparametric</em> quantile function estimation method was first
+described by
+<a href="https://doi.org/10.1016/j.jspi.2006.12.002">J.R.M. Hosking in 2007</a>.
+However, his derivation contains a small, but obvious error, resulting
+in zero-division for <span class="arithmatex">\( r = 1 \)</span>.
+So Lmo derived this correct version  himself, by using the fact that
+L-moments are the disguised coefficients of the PPF&rsquo;s generalized
+Fourier-Jacobi series expansion.</p>
+<p>With Parseval&rsquo;s theorem it can be shown that, if the probability-weighted
+moment <span class="arithmatex">\( M_{2,s,t} \)</span> (which is the variance if <span class="arithmatex">\( s = t = 0 \)</span>) is
+finite, then <span class="arithmatex">\( \hat{Q}_R(u) = Q(u) \)</span> as <span class="arithmatex">\( R \to \infty \)</span>.</p>
+
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>PARAMETER</b></th>
+        <th><b> DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>lmbda</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>1-d array-like of L-moments <span class="arithmatex">\( \tlmoment{s,t}{r} \)</span> for
+<span class="arithmatex">\( r = 1, 2, \ldots, R \)</span>. At least 2 L-moments are required.
+All remaining L-moments with <span class="arithmatex">\( r &gt; R \)</span> are considered zero.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">npt</a>.<span title="numpy.ArrayLike">ArrayLike</span></code>
+                </span>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td><code>trim</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>The trim-length(s) of L-moments <code>lmbda</code>.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><span title="lmo.typing.AnyTrim">AnyTrim</span></code>
+                </span>
+                <span class="doc-param-default">
+                  <b>DEFAULT:</b> 
+                    <code>(0, 0)</code>
+                </span>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td><code>support</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>A tuple like <code>(x_min, x_max)</code>. If provided, the PPF results
+will be clipped to within this interval.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><span title="lmo.theoretical.Pair">Pair</span>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>]</code>
+                </span>
+                <span class="doc-param-default">
+                  <b>DEFAULT:</b> 
+                    <code>(-<a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a class="autorefs autorefs-external" title="numpy.inf" href="https://numpy.org/doc/stable/reference/constants.html#numpy.inf">inf</a>, <a class="autorefs autorefs-external" title="numpy" href="https://numpy.org/doc/stable/reference/index.html#module-numpy">np</a>.<a class="autorefs autorefs-external" title="numpy.inf" href="https://numpy.org/doc/stable/reference/constants.html#numpy.inf">inf</a>)</code>
+                </span>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td><code>validate</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>If <code>True</code> (default), a <code>ValueError</code> will be raised if the
+resulting PPF is invalid (non-monotonic), which can be solved by
+increasing  the <code>trim</code>.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+                </span>
+                <span class="doc-param-default">
+                  <b>DEFAULT:</b> 
+                    <code>True</code>
+                </span>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td><code>extrapolate</code></td>
+          <td class="doc-param-details">
+            <div class="doc-md-description">
+              <p>If set to <code>True</code>, a simple moving average of <span class="arithmatex">\( R \)</span> and
+<span class="arithmatex">\( R - 1 \)</span> will be returned. This generally results in a smoother
+and more accurate PPF, but its L-moments will not be equal to
+<code>lmda</code>. Defaults to <code>False</code>.</p>
+            </div>
+            <p>
+                <span class="doc-param-annotation">
+                  <b>TYPE:</b>
+                    <code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>
+                </span>
+                <span class="doc-param-default">
+                  <b>DEFAULT:</b> 
+                    <code>False</code>
+                </span>
+            </p>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <table>
+    <thead>
+      <tr>
+        <th><b>RETURNS</b></th>
+        <th><b>DESCRIPTION</b></th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+              <code>ppf</code>
+          </td>
+          <td class="doc-returns-details">
+            <div class="doc-md-description">
+              <p>A vectorized PPF (quantile function). Its extra optional
+keyword argument <code>r_max: int</code> can be used to &ldquo;censor&rdquo; trailing
+L-moments, i.e. truncating the degree of the polynomial.</p>
+            </div>
+              <p>
+                <span class="doc-returns-annotation">
+                  <b>TYPE:</b>
+                    <code><span title="lmo.theoretical._VectorizedPPF">_VectorizedPPF</span></code>
+                </span>
+              </p>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h4 id="lmo.theoretical.qdf_from_l_moments" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">theoretical</span><span class="o">.</span><span class="n">qdf_from_l_moments</span><span class="p">(</span><span class="n">lmbda</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="o">*</span><span class="p">,</span> <span class="n">validate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">extrapolate</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
+
+<a href="#lmo.theoretical.qdf_from_l_moments" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Return the QDF (quantile density function, the derivative of the PPF),
+with the specified L-moments <span class="arithmatex">\( \tlmoment{s, t}{1}, \tlmoment{s, t}{2},
+\ldots, \tlmoment{s, t}{R} \)</span>. Other L-moments are considered zero.</p>
+<p>This function returns</p>
+<div class="arithmatex">\[
+\begin{align*}
+    \hat{q}_R(u)
+        &amp;= \frac{\dd{\hat{Q}_R(u)}}{\dd{u}}  \\
+        &amp;= \sum_{r=2}^{R}
+            r (2r + s + t - 1)
+            \tlmoment{s, t}{r}
+            \shjacobi{r - 2}{t + 1}{s + 1}{u},
+\end{align*}
+\]</div>
+<p>where <span class="arithmatex">\( \shjacobi{n}{a}{b}{x} \)</span> is an <span class="arithmatex">\( n \)</span>-th degree shifted Jacobi
+polynomial, which is orthogonal for <span class="arithmatex">\( (a, b) \in (-1, \infty)^2 \)</span> on
+<span class="arithmatex">\( u \in [0, 1] \)</span>.</p>
+<p>See <a class="autorefs autorefs-internal" href="#lmo.theoretical.ppf_from_l_moments"><code>ppf_from_l_moments</code></a> for options.</p>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h4 id="lmo.theoretical.cdf_from_ppf" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">theoretical</span><span class="o">.</span><span class="n">cdf_from_ppf</span><span class="p">(</span><span class="n">ppf</span><span class="p">)</span></code>
+
+<a href="#lmo.theoretical.cdf_from_ppf" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Numerical inversion of the PPF.</p>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
 <h4 id="lmo.theoretical.entropy_from_qdf" class="doc doc-heading">
           <code class="highlight language-python"><span class="n">lmo</span><span class="o">.</span><span class="n">theoretical</span><span class="o">.</span><span class="n">entropy_from_qdf</span><span class="p">(</span><span class="n">qdf</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span></code>
 
@@ -13406,7 +15821,7 @@ with <span class="arithmatex">\( F^{-1} \)</span> the inverse of the CDF, i.e. t
     h(X)
         = \E[-\ln f(X)]
         = \int_\mathbb{R} \ln \frac{1}{f(x)} \mathrm{d} x
-        = \int_1 \ln q(u) \mathrm{d} u
+        = \int_0^1 \ln q(u) \mathrm{d} u
 \]</div>
 
 
@@ -13490,7 +15905,7 @@ with <span class="arithmatex">\( F^{-1} \)</span> the inverse of the CDF, i.e. t
           </td>
           <td class="doc-returns-details">
             <div class="doc-md-description">
-              <p>The differential entropy <span class="arithmatex">\( h(X) \)</span>.</p>
+              <p>The differential entropy <span class="arithmatex">\( H(X) \)</span>.</p>
             </div>
           </td>
         </tr>
@@ -13610,11 +16025,13 @@ with <span class="arithmatex">\( F^{-1} \)</span> the inverse of the CDF, i.e. t
     
       <script src="../assets/javascripts/bundle.d7c377c4.min.js"></script>
       
-        <script src="../scripts/mathjax.js"></script>
+        <script src="../scripts/katex.js"></script>
       
-        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+        <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
       
-        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/copy-tex.min.js"></script>
       
     
   </body>

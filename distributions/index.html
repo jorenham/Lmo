@@ -22,7 +22,7 @@
       
       
       <link rel="icon" href="../img/favicon.ico">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.2">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.3">
     
     
       
@@ -55,6 +55,8 @@
       <link rel="stylesheet" href="../assets/_mkdocstrings.css">
     
       <link rel="stylesheet" href="../styles/theme.css">
+    
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     
     <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -407,19 +409,28 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#ll-stats" class="md-nav__link">
+    <span class="md-ellipsis">
+      LL-stats
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#general-distribution-l-moments" class="md-nav__link">
+  <a href="#general-l-moments" class="md-nav__link">
     <span class="md-ellipsis">
-      General distribution L-moments
+      General L-moments
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="General distribution L-moments">
+    <nav class="md-nav" aria-label="General L-moments">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -627,649 +638,664 @@ of a bunch of popular univariate probability distributions, for which they
 exist (in closed form).</p>
 <h3 id="l-stats">L-stats<a class="headerlink" href="#l-stats" title="Permanent link">&para;</a></h3>
 <table>
-<thead>
-<tr>
-    <th>Name /<br> <code>scipy.stats</code></th>
-    <th>Shape</th>
-    <th>\( \lmoment{1} \)</th>
-    <th>\( \lmoment{2} \)</th>
-    <th>\( \lratio{3} = \lmoment{3}/\lmoment{2} \)</th>
-    <th>\( \lratio{4} = \lmoment{4}/\lmoment{2} \)</th>
-</tr>
-</thead>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Continuous_uniform_distribution"
-            target="_blank"
-            title="Continuous uniform distribution - Wikipedia"
-        >
-            Uniform
-        </a>
-        \( [0, 1] \)
-        <br>
-        <code>uniform</code>
-    </td>
-    <td></td>
-    <td>\[ \frac 1 2 \]</td>
-    <td>\[ \frac 1 6 \]</td>
-    <td>\( 0 \)</td>
-    <td>\( 0 \)</td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Normal_distribution"
-            target="_blank"
-            title="Normal distribution - Wikipedia"
-        >
-            Normal
-        </a>
-        <br>
-        <code>norm</code>
-    </td>
-    <td></td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ \frac{1}{\sqrt \pi} \]
-        \( \approx 0.5642 \)
-    </td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ 30 \ \frac{\theta_m}{\pi} - 9 \]
-        \( \approx 0.1226 \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Logistic_distribution"
-            target="_blank"
-            title="Logistic distribution - Wikipedia"
-        >
-            Logistic
-        </a>
-        <br>
-        <code>logistic</code>
-    </td>
-    <td></td>
-    <td>\( 0 \)</td>
-    <td>\( 1 \)</td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ 1 / 6 \]
-        \( = 0.16\overline{6}\dots \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Laplace_distribution"
-            target="_blank"
-            title="Laplace distribution - Wikipedia"
-        >
-            Laplace
-        </a>
-        <br>
-        <code>laplace</code>
-    </td>
-    <td></td>
-    <td>\( 0 \)</td>
-    <td>\[ \frac 3 4 \]</td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ \frac{17}{72} \]
-        \( \approx 0.2361 \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Student%27s_t-distribution"
-            target="_blank"
-            title="Student's t-distribution - Wikipedia"
-        >
-            Student's <i>t</i>
-        </a>
-        <br>
-        <code>t(2)</code>
-    </td>
-    <td>\( \nu = 2 \)</td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ \frac{\pi}{2 \sqrt{2}} \]
-        \( \approx 1.1107 \)
-    </td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ \frac 3 8 \]
-        \( = 0.375 \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Student%27s_t-distribution"
-            target="_blank"
-            title="Student's t-distribution - Wikipedia"
-        >
-            Student's <i>t</i>
-        </a>
-        <br>
-        <code>t(3)</code>
-    </td>
-    <td>\( \nu = 3 \)</td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ \frac{3 \sqrt 3}{\vphantom{\pi^2}2 \pi} \]
-        \( \approx 0.8270 \)
-    </td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ 1 - \frac{\vphantom{\sqrt 3}175}{24 \pi^2} \]
-        \( \approx 0.2612 \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Student%27s_t-distribution"
-            target="_blank"
-            title="Student's t-distribution - Wikipedia"
-        >
-            Student's <i>t</i>
-        </a>
-        <br>
-        <code>t(4)</code>
-    </td>
-    <td>\( \nu = 4 \)</td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ \frac{15}{64} \pi \]
-        \( \approx 0.7363 \)
-    </td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ \frac{111}{512} \]
-        \( \approx 0.2168 \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Exponential_distribution"
-            target="_blank"
-            title="Exponential distribution - Wikipedia"
-        >
-            Exponential
-        </a>
-        <br>
-        <code>expon</code>
-    </td>
-    <td></td>
-    <td>\( 1 \)</td>
-    <td>\[ \frac 1 2 \]</td>
-    <td>
-        \[ \frac 1 3 \]
-        \( = 0.3\overline{3}\dots \)
-    </td>
-    <td>
-        \[ \frac 1 6 \]
-        \( = 0.16\overline{6}\dots \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Half-normal_distribution"
-            target="_blank"
-            title="Half-normal distribution - Wikipedia"
-        >
-            Half-normal
-        </a>
-        <br>
-        <code>halfnorm</code>
-    </td>
-    <td></td>
-    <td>\( 1 \)</td>
-    <td>
-        \[ \sqrt 2 - 1 \]<br>
-        \( \approx 0.4142 \)
-    </td>
-    <td>
-        \[ \frac 1 3 \]
-        \( = 0.3\overline{3}\dots \)
-    </td>
-    <td>
-        \[ \frac 1 6 \]
-        \( = 0.16\overline{6}\dots \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Rayleigh_distribution"
-            target="_blank"
-            title="Rayleigh distribution - Wikipedia"
-        >
-            Rayleigh
-        </a>
-        <br>
-        <code>rayleigh</code>
-    </td>
-    <td></td>
-    <td>
-        \[ \frac 1 2 \sqrt{2 \pi} \]
-        \( \approx 1.253 \)
-    </td>
-    <td>
-        \[ \frac {\sqrt 2 - 1}{2} \sqrt{\pi} \]
-        \( \approx 0.3671 \)
-    </td>
-    <td>
-        \[ 2 \frac{2 + \sqrt 2}{\sqrt 3} - \frac{4 + \sqrt{2}}{\sqrt 2} \]
-        \( \approx 0.1140 \)
-    </td>
-    <td>
-        \[ 10 \frac{2 + \sqrt 2}{\sqrt 3} - 3 \frac{5 + 3 \sqrt 2}{\sqrt 2} \]
-        \( \approx 0.1054 \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Gumbel_distribution"
-            target="_blank"
-            title="Gumbel distribution - Wikipedia"
-        >
-            Gumbel
-        </a>
-        <br>
-        <code>gumbel_r</code>
-        <br>
-        see eq. \( \eqref{eq:lr_gev} \) for \( \lmoment{r} \)
-    </td>
-    <td></td>
-    <td>
-        \[ \gamma_e \]
-        \( \approx 0.5772 \)
-    </td>
-    <td>
-        \[ \ln{2} \]
-        \( \approx 0.6931 \)
-    </td>
-    <td>
-        \[ 2 \log_2(3) - 3 \]
-        \( \approx 0.1699 \)
-    </td>
-    <td>
-        \[ 16 - 10 \log_2(3) \]
-        \( \approx 0.1504 \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Pareto_distribution"
-            target="_blank"
-            title="Pareto distribution - Wikipedia"
-        >
-            Pareto
-        </a>
-        <br>
-        <code>pareto</code>
-        <br>
-        see eq. \( \eqref{eq:lr_burr12} \) for \( \lmoment{r} \)
-    </td>
-    <td>\( \alpha > 0  \)</td>
-    <td>
-        \[ \frac{\alpha}{\alpha - 1} \]
-    </td>
-    <td>
-        \[ \frac{\alpha}{\alpha - 1} \frac{1}{2 \alpha - 1} \]
-    </td>
-    <td>
-        \[ \frac{\alpha + 1}{3 \alpha - 1} \]
-    </td>
-    <td>
-        \[ \frac{\alpha + 1}{3 \alpha - 1} \frac{2 \alpha + 1}{4 \alpha - 1} \]
-    </td>
-</tr>
-</table>
-
-<h3 id="tl-stats">TL-stats<a class="headerlink" href="#tl-stats" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
     <tr>
-        <th>Name / <br><code>scipy.stats</code></th>
+        <th>Distribution</th>
         <th>Shape</th>
-        <th>\( \tlmoment{1}{1} \)</th>
-        <th>\( \tlmoment{1}{2} \)</th>
-        <th>\( \tlratio{1}{3} \)</th>
-        <th>\( \tlratio{1}{4} \)</th>
+        <th><span class="arithmatex">\( \lmoment{1} \)</span></th>
+        <th><span class="arithmatex">\( \lmoment{2} \)</span></th>
+        <th><span class="arithmatex">\( \lratio{3} = \lmoment{3}/\lmoment{2} \)</span></th>
+        <th><span class="arithmatex">\( \lratio{4} = \lmoment{4}/\lmoment{2} \)</span></th>
     </tr>
-</thead>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Continuous_uniform_distribution"
-            target="_blank"
-            title="Continuous uniform distribution - Wikipedia"
-        >
-            Uniform
-        </a>
-        \( [0, 1] \)
-        <br>
-        <code>uniform</code>
-    </td>
-    <td></td>
-    <td>\[ \frac 1 2 \]</td>
-    <td>\[ \frac{1}{10} \]</td>
-    <td>\( 0 \)</td>
-    <td>\( 0 \)</td>
-    <td></td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Normal_distribution"
-            target="_blank"
-            title="Normal distribution - Wikipedia"
-        >
-            Normal
-        </a>
-        <br>
-        <code>norm</code>
-    </td>
-    <td></td>
-    <td>\( 0 \)</td>
-    <td>
-        \[
-            \frac{6}{\sqrt \pi} \left(
-                1
-                - 3 \frac{\theta_m}{\pi}
-            \right)
-        \]
-        \( \approx 0.2970 \)
-    </td>
-    <td>\( 0 \)</td>
-    <td>
-        \( \approx 0.06248 \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Logistic_distribution"
-            target="_blank"
-            title="Logistic distribution - Wikipedia"
-        >
-            Logistic
-        </a>
-        <br>
-        <code>logistic(μ, s)</code>
-    </td>
-    <td></td>
-    <td>0</td>
-    <td>\[ \frac 1 2 \]</td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ \frac{1}{12} \]
-        \( = 0.083\overline{3} \dots \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Laplace_distribution"
-            target="_blank"
-            title="Laplace distribution - Wikipedia"
-        >
-            Laplace
-        </a>
-        <br>
-        <code>laplace</code>
-    </td>
-    <td></td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ \frac{11}{32} \]
-        \( = 0.34375 \)
-    </td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ \frac{3}{22} \]
-        \( = 0.136\overline{36} \dots \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://en.wikipedia.org/wiki/Cauchy_distribution"
-            target="_blank"
-            title="Cauchy distribution - Wikipedia"
-        >
-            Cauchy
-        </a>
-        /
-        <br>
-        <a
-            href="https://wikipedia.org/wiki/Student%27s_t-distribution"
-            target="_blank"
-            title="Student's t-distribution - Wikipedia"
-        >
-            Student's <i>t</i>
-        </a>
-        <br>
-        <code>cauchy</code>
-        /
-        <code>t(2)</code>
-    </td>
-    <td>\( \nu = 1 \)</td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ \frac{18 \vphantom{)}}{\pi^3 \vphantom{)}} \ \zeta(3) \]
-        \( \approx 0.6978 \)
-    </td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ \frac{25}{6} - \frac{175}{4 \pi^2} \frac{\zeta(5)}{\zeta(3)} \]
-        \( \approx 0.3428 \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Student%27s_t-distribution"
-            target="_blank"
-            title="Student's t-distribution - Wikipedia"
-        >
-            Student's <i>t</i>
-        </a>
-        <br>
-        <code>t(2)</code>
-    </td>
-    <td>\( \nu = 2 \)</td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ \frac{3 \pi}{16 \sqrt{2}} \]
-        \( \approx 0.4165 \)
-    </td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ \frac{5}{32} \]
-        \( = 0.15625 \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Student%27s_t-distribution"
-            target="_blank"
-            title="Student's t-distribution - Wikipedia"
-        >
-            Student's <i>t</i>
-        </a>
-        <br>
-        <code>t(3)</code>
-    </td>
-    <td>\( \nu = 3 \)</td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ \frac{105 \sqrt 3}{16 \pi^3} \]
-        \( \approx 0.3666 \)
-    </td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ \frac{25}{6} -  \frac{23 \ 023}{(24 \pi)^2} \]
-        \( \approx 0.1168 \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Student%27s_t-distribution"
-            target="_blank"
-            title="Student's t-distribution - Wikipedia"
-        >
-            Student's <i>t</i>
-        </a>
-        <br>
-        <code>t(4)</code>
-    </td>
-    <td>\( \nu = 4 \)</td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ \frac{3 \ 609 \ \pi}{32 \ 768} \]
-        \( \approx 0.3460 \)
-    </td>
-    <td>\( 0 \)</td>
-    <td>
-        \[ \frac{164 \ 975}{1 \ 642 \ 496} \]
-        \( \approx 0.1004 \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Exponential_distribution"
-            target="_blank"
-            title="Exponential distribution - Wikipedia"
-        >
-            Exponential
-        </a>
-        <br>
-        <code>expon</code>
-    </td>
-    <td></td>
-    <td>\[ \frac 5 6 \]</td>
-    <td>\[ \frac 1 4 \]</td>
-    <td>
-        \[ \frac 2 9 \]
-        \( = 0.2\overline{2}\dots \)
-    </td>
-    <td>
-        \[ \frac{1}{12} \]
-        \( = 0.083\overline{3}\dots \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Rayleigh_distribution"
-            target="_blank"
-            title="Rayleigh distribution - Wikipedia"
-        >
-            Rayleigh
-        </a>
-        <br>
-        <code>rayleigh</code>
-    </td>
-    <td></td>
-    <td>
-        \[
-            \frac{\sqrt \pi}{6}
-            \bigl( 9 - 2 \sqrt 6 \bigr)
-        \]
-        \( \approx 1.211  \)
-    </td>
-    <td>
-        \[
-            \frac{\sqrt \pi}{4}
-            \bigl( 6 - 4 \sqrt 6 + 3 \sqrt 2 \bigr)
-        \]
-        \( \approx 0.1970 \)
-    </td>
-    <td>
-        \[
-            \frac{10}{9}
-            - \frac{8}{9}
-            \frac
-                {3 \sqrt{10} + 5 \sqrt 6 - 15 \sqrt 2}
-                {6 - 4 \sqrt 6 + 3 \sqrt 2}
-        \]
-        \( \approx 0.06951 \)
-    </td>
-    <td>
-        \[
-            \frac 5 4
-            - \frac 7 6
-            \frac
-                {18 \sqrt{10} + 10 \sqrt 6 - 10 \sqrt 3 - 45 \sqrt 2}
-                {6 - 4 \sqrt 6 + 3 \sqrt 2}
-        \]
-        \( \approx 0.05422 \)
-    </td>
-</tr>
-<tr>
-    <td>
-        <a
-            href="https://wikipedia.org/wiki/Gumbel_distribution"
-            target="_blank"
-            title="Gumbel distribution - Wikipedia"
-        >
-            Gumbel
-        </a>
-        <br>
-        <code>gumbel_r</code>
-        <br>
-        see eq. \( \eqref{eq:lr_gev} \) for \( \tlmoment{s,t}{r} \)
-    </td>
-    <td></td>
-    <td>
-        \[ \gamma_e + 3 \ln{2} - 2 \ln{3} \]
-        \( \approx 0.4594 \)
-    </td>
-    <td>
-        \[ 6 \ln{3} - 9 \ln{2} \]
-        \( \approx 0.3533 \)
-    </td>
-    <td>
-        \[
-            -\frac{10}{9}
-            \frac
-                {2 \log_2(5) - 5}
-                {2 \log_2(3) - 3}
-            -
-            \frac{20}{9}
-        \]
-        \( \approx 0.1065 \)
-    </td>
-    <td>
-        \[
-            \frac{35}{6}
-            \frac
-                {3 \log_2(5) - 7}
-                {2 \log_2(3) - 3}
-            +
-            \frac{5}{4}
-        \]
-        \( \approx 0.07541 \)
-    </td>
-</tr>
+    <tr>
+        <td>
+            <a href="https://w.wiki/8gGh">Uniform</a><br>
+            <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.uniform.html#scipy.stats.uniform"><code>uniform()</code></a>
+        </td>
+        <td><span class="arithmatex">\( [0, 1] \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle \frac 1 2 \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle \frac 1 6 \)</span></td>
+        <td><span class="arithmatex">\( 0 \)</span></td>
+        <td><span class="arithmatex">\( 0 \)</span></td>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://w.wiki/3hoJ">Normal</a><br>
+            <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.norm.html#scipy.stats.norm"><code>norm()</code></a>
+        </td>
+        <td></td>
+        <td><span class="arithmatex">\( 0 \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle \frac{1}{\sqrt \pi} \\ \approx 0.5642 \)</span></td>
+        <td><span class="arithmatex">\( 0 \)</span></td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle 30 \
+                \frac{\href{#const-theta_m}{\theta_m}}{\pi} - 9 \\
+                \approx 0.1226
+            \)</span>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://w.wiki/8gGn">Logistic</a><br>
+            <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.logistic.html#scipy.stats.logistic"><code>logistic()</code></a>
+        </td>
+        <td></td>
+        <td><span class="arithmatex">\( 0 \)</span></td>
+        <td><span class="arithmatex">\( 1 \)</span></td>
+        <td><span class="arithmatex">\( 0 \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle 1 / 6 \)</span><br></td>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://w.wiki/8EYL">Laplace</a><br>
+            <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.laplace.html#scipy.stats.laplace"><code>laplace()</code></a>
+        </td>
+        <td></td>
+        <td><span class="arithmatex">\( 0 \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle \frac 3 4 \)</span></td>
+        <td><span class="arithmatex">\( 0 \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle \frac{17}{72} \\ \approx 0.2361 \)</span></td>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://w.wiki/3r3U">Student&rsquo;s <em>t</em></a><br>
+            <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.t.html#scipy.stats.t"><code>t(2)</code></a>
+        </td>
+        <td><span class="arithmatex">\( \nu = 2 \)</span></td>
+        <td><span class="arithmatex">\( 0 \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle \frac{\pi}{2 \sqrt 2} \\ \approx 1.1107 \)</span></td>
+        <td><span class="arithmatex">\( 0 \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle \frac 3 8 \\ = 0.375 \)</span></td>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://w.wiki/3r3U">Student&rsquo;s <em>t</em></a><br>
+            <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.t.html#scipy.stats.t"><code>t(3)</code></a>
+        </td>
+        <td><span class="arithmatex">\( \nu = 3 \)</span></td>
+        <td><span class="arithmatex">\( 0 \)</span></td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle \frac{3 \sqrt 3}{\vphantom{\pi^2}2 \pi} \\
+                \approx 0.8270
+            \)</span>
+        </td>
+        <td><span class="arithmatex">\( 0 \)</span></td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle 1 - \frac{\vphantom{\sqrt 3}175}{24 \pi^2} \\
+                \approx 0.2612
+            \)</span>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://w.wiki/3r3U">Student&rsquo;s <em>t</em></a><br>
+            <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.t.html#scipy.stats.t"><code>t(4)</code></a>
+        </td>
+        <td><span class="arithmatex">\( \nu = 4 \)</span></td>
+        <td><span class="arithmatex">\( 0 \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle \frac{15}{64} \pi \\ \approx 0.7363 \)</span></td>
+        <td><span class="arithmatex">\( 0 \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle \frac{111}{512} \\ \approx 0.2168 \)</span></td>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://w.wiki/3jXu">Exponential</a><br>
+            <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.expon.html#scipy.stats.expon"><code>expon()</code></a>
+        </td>
+        <td></td>
+        <td><span class="arithmatex">\( \displaystyle 1 \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle \frac 1 2 \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle \frac 1 3 \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle \frac 1 6 \)</span></td>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://w.wiki/8gG$">Half-normal</a><br>
+            <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.halfnorm.html#scipy.stats.halfnorm"><code>halfnorm()</code></a>
+        </td>
+        <td></td>
+        <td><span class="arithmatex">\( 1 \)</span></td>
+        <td><span class="arithmatex">\( \sqrt 2 - 1 \\ \approx 0.4142 \)</span></td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle
+                7 + 4 \sqrt 2 - 12 (2 - \sqrt 2) \frac
+                    {\href{#const-theta_m}{\theta_m}}
+                    {\pi}
+                \\
+                \approx 0.1983
+            \)</span>
+        </td>
+        <td><span class="arithmatex">\( \approx 0.09732 \)</span></td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <a href="https://w.wiki/8hRg">Half-logistic</a><br>
+            <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.halflogistic.html#scipy.stats.halflogistic"><code>halflogistic()</code></a>
+        </td>
+        <td><span class="arithmatex">\( 2 \ln 2 \\ \approx 1.386 \)</span></td>
+        <td><span class="arithmatex">\( 1 \)</span></td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle
+                \frac{1}{1 - \ln 2} - 3 \\
+                \approx 0.2589
+            \)</span>
+        </td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle
+                % \frac{23 - 33 \ln 2}{3 - 3 \ln 2} \\
+                \frac 1 3 \left(
+                    \frac{-10}{1 - \ln 2} + 33
+                \right) \\
+                \approx 0.1370
+            \)</span>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://w.wiki/8gH3">Rayleigh</a><br>
+            <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.rayleigh.html#scipy.stats.rayleigh"><code>rayleigh()</code></a>
+        </td>
+        <td></td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle
+                \frac 1 2 \sqrt{2 \pi}  \\
+                \approx 1.253
+            \)</span>
+        </td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle
+                \frac {\sqrt 2 - 1}{2} \sqrt{\pi} \\
+                \approx 0.3671
+            \)</span>
+        </td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle
+                \frac{2 + \sqrt 2}{\sqrt 3}
+                - \frac{4 + \sqrt{2}}{\sqrt 2} \\
+                \approx 0.1140
+            \)</span>
+        </td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle
+                10 \frac{2 + \sqrt 2}{\sqrt 3}
+                - 3 \frac{5 + 3 \sqrt 2}{\sqrt 2} \\
+                \approx 0.1054
+            \)</span>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://w.wiki/8gHD">Gumbel</a><br>
+            <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.gumbel_r.html#scipy.stats.gumbel_r"><code>gumbel_r()</code></a>
+        </td>
+        <td></td>
+        <td><span class="arithmatex">\( \href{#const-euler}{\gamma_e} \\ \approx 0.5772 \)</span></td>
+        <td><span class="arithmatex">\( \ln{2} \\ \approx 0.6931 \)</span></td>
+        <td><span class="arithmatex">\( 2 \log_2(3) - 3 \\ \approx 0.1699 \)</span></td>
+        <td><span class="arithmatex">\( 16 - 10 \log_2(3) \\ \approx 0.1504 \)</span></td>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://w.wiki/7ZfA"><span class="arithmatex">\( \chi^2 \)</span></a><br>
+            <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.chi2.html#scipy.stats.chi2"><code>chi2(2)</code></a>
+        </td>
+        <td><span class="arithmatex">\( k = 2 \)</span></td>
+        <td><span class="arithmatex">\( 2 \)</span></td>
+        <td><span class="arithmatex">\( 1 \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle \frac 1 3 \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle \frac 1 6 \)</span></td>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://w.wiki/7ZfA"><span class="arithmatex">\( \chi^2 \)</span></a><br>
+            <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.chi2.html#scipy.stats.chi2"><code>chi2(4)</code></a>
+        </td>
+        <td><span class="arithmatex">\( k = 4 \)</span></td>
+        <td><span class="arithmatex">\( 4 \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle \frac 3 2 \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle \frac{19}{81} \\ \approx 0.2346 \)</span></td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle
+                \frac{367}{2^5 \cdot 3^4} \\
+                \approx 0.1416
+            \)</span>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://w.wiki/7ZfA"><span class="arithmatex">\( \chi^2 \)</span></a><br>
+            <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.chi2.html#scipy.stats.chi2"><code>chi2(6)</code></a>
+        </td>
+        <td><span class="arithmatex">\( k = 6 \)</span></td>
+        <td><span class="arithmatex">\( 6 \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle \frac{15}{8} \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle \frac{139}{729} \\ \approx 0.2346 \)</span></td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle
+                \frac{200\ 827}{2^{11} \cdot 3^6} \\
+                \approx 0.1345
+            \)</span>
+        </td>
+    </tr>
 </table>
-
-<h2 id="general-distribution-l-moments">General distribution L-moments<a class="headerlink" href="#general-distribution-l-moments" title="Permanent link">&para;</a></h2>
+<h3 id="tl-stats">TL-stats<a class="headerlink" href="#tl-stats" title="Permanent link">&para;</a></h3>
+<p>Symmetrically trimmed TL-stats of some symmetric distributions.</p>
+<table>
+    <tr>
+        <th>Distribution</th>
+        <th>Shape</th>
+        <th><span class="arithmatex">\( \tlmoment{1}{1} \)</span></th>
+        <th><span class="arithmatex">\( \tlmoment{1}{2} \)</span></th>
+        <th><span class="arithmatex">\( \tlratio{1}{3} \)</span></th>
+        <th><span class="arithmatex">\( \tlratio{1}{4} \)</span></th>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://w.wiki/8gGh">Uniform</a><br>
+            <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.uniform.html#scipy.stats.uniform"><code>uniform()</code></a>
+        </td>
+        <td><span class="arithmatex">\( [0, 1] \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle \frac 1 2 \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle \frac{1}{10} \)</span></td>
+        <td><span class="arithmatex">\( 0 \)</span></td>
+        <td><span class="arithmatex">\( 0 \)</span></td>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://w.wiki/3hoJ">Normal</a><br>
+            <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.norm.html#scipy.stats.norm"><code>norm()</code></a>
+        </td>
+        <td></td>
+        <td><span class="arithmatex">\( 0 \)</span></td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle
+                \frac{6}{\sqrt \pi}
+                \left(
+                    1 - 3 \frac{\href{#const-theta_m}{\theta_m}}{\pi}
+                \right) \\
+                \approx 0.2970
+            \)</span>
+        </td>
+        <td><span class="arithmatex">\( 0 \)</span></td>
+        <td><span class="arithmatex">\( \approx 0.06248 \)</span></td>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://w.wiki/8gGn">Logistic</a><br>
+            <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.logistic.html#scipy.stats.logistic"><code>logistic()</code></a>
+        </td>
+        <td></td>
+        <td><span class="arithmatex">\( 0 \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle \frac 1 2 \)</span></td>
+        <td><span class="arithmatex">\( 0 \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle \frac{1}{12} \\ = 0.083\overline{3} \dots \)</span></td>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://w.wiki/8EYL">Laplace</a><br>
+            <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.laplace.html#scipy.stats.laplace"><code>laplace()</code></a>
+        </td>
+        <td></td>
+        <td><span class="arithmatex">\( 0 \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle \frac{11}{32} \\ = 0.34375 \)</span></td>
+        <td><span class="arithmatex">\( 0 \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle \frac{3}{22} \\ = 0.136\overline{36} \dots \)</span></td>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://w.wiki/8gHv">Cauchy</a><br>
+            <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.cauchy.html#scipy.stats.cauchy"><code>cauchy()</code></a>
+        </td>
+        <td></td>
+        <td><span class="arithmatex">\( 0 \)</span></td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle
+                \frac{18}{\pi^3} \ \href{#const-zeta}{\zeta}(3) \\
+                \approx 0.6978
+            \)</span>
+        </td>
+        <td><span class="arithmatex">\( 0 \)</span></td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle
+                \frac{25}{6} - \frac{175}{4 \pi^2} \frac
+                    {\href{#const-zeta}{\zeta}(5)}
+                    {\href{#const-zeta}{\zeta}(3)}
+                \\
+                \approx 0.3428
+            \)</span>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://w.wiki/3r3U">Student&rsquo;s <em>t</em></a><br>
+            <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.t.html#scipy.stats.t"><code>t(2)</code></a>
+        </td>
+        <td><span class="arithmatex">\( \nu = 2 \)</span></td>
+        <td><span class="arithmatex">\( 0 \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle \frac{3 \pi}{16 \sqrt 2} \\ \approx 0.4165 \)</span></td>
+        <td><span class="arithmatex">\( 0 \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle \frac{5}{32} \\ = 0.15625 \)</span></td>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://w.wiki/3r3U">Student&rsquo;s <em>t</em></a><br>
+            <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.t.html#scipy.stats.t"><code>t(3)</code></a>
+        </td>
+        <td><span class="arithmatex">\( \nu = 3 \)</span></td>
+        <td><span class="arithmatex">\( 0 \)</span></td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle
+                \frac{105 \sqrt 3}{16 \pi^3} \\
+                \approx 0.3666
+            \)</span>
+        </td>
+        <td><span class="arithmatex">\( 0 \)</span></td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle
+                \frac{25}{6} -  \frac{23 \ 023}{(24 \pi)^2} \\
+                \approx 0.1168
+            \)</span>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://w.wiki/3r3U">Student&rsquo;s <em>t</em></a><br>
+            <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.t.html#scipy.stats.t"><code>t(4)</code></a>
+        </td>
+        <td><span class="arithmatex">\( \nu = 4 \)</span></td>
+        <td><span class="arithmatex">\( 0 \)</span></td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle
+                \frac{3\ 609\ \pi}{32\ 768} \\
+                \approx 0.3460
+            \)</span>
+        </td>
+        <td><span class="arithmatex">\( 0 \)</span></td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle
+                \frac{164 \ 975}{1 \ 642 \ 496} \\
+                \approx 0.1004
+            \)</span>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://w.wiki/8gHD">Gumbel</a><br>
+            <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.gumbel_r.html#scipy.stats.gumbel_r"><code>gumbel_r()</code></a>
+        </td>
+        <td></td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle
+                \href{#const-euler}{\gamma_e} - 2 \ln 3 + 3 \ln 2 \\
+                \approx 0.4594
+            \)</span>
+        </td>
+        <td><span class="arithmatex">\( \displaystyle 6 \ln 3 - 9 \ln 2 \\ \approx 0.3533 \)</span></td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle
+                -\frac{10}{9}
+                \frac{5 - 2 \log_2(5)}{3 - 2 \log_2(3)} - \frac{20}{9} \\
+                \approx 0.1065
+            \)</span>
+        </td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle
+                \frac{35}{6}
+                \frac{7 - 3 \log_2(5)}{3 - 2 \log_2(3)} + \frac{5}{4} \\
+                \approx 0.07541
+            \)</span>
+        </td>
+    </tr>
+</table>
+<h3 id="ll-stats">LL-stats<a class="headerlink" href="#ll-stats" title="Permanent link">&para;</a></h3>
+<p>Right-trimmed LL-stats of some simple left-bound distributions.</p>
+<table>
+    <tr>
+        <th>Distribution</th>
+        <th>Shape</th>
+        <th><span class="arithmatex">\( \tlmoment{0, 1}{1} \)</span></th>
+        <th><span class="arithmatex">\( \tlmoment{0, 1}{2} \)</span></th>
+        <th><span class="arithmatex">\( \tlratio{0, 1}{3} \)</span></th>
+        <th><span class="arithmatex">\( \tlratio{0, 1}{4} \)</span></th>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://w.wiki/3jXu">Exponential</a><br>
+            <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.expon.html#scipy.stats.expon"><code>expon()</code></a>
+        </td>
+        <td></td>
+        <td><span class="arithmatex">\( \displaystyle \frac 1 2 \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle \frac 1 4 \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle \frac 2 9 \\ = 0.2\overline{2} \dots  \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle \frac{1}{12} \\ = 0.083\overline{3} \dots  \)</span></td>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://w.wiki/8gG$">Half-normal</a><br>
+            <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.halfnorm.html#scipy.stats.halfnorm"><code>halfnorm()</code></a>
+        </td>
+        <td></td>
+        <td><span class="arithmatex">\( 2 - \sqrt 2 \\ \approx 0.5858 \)</span></td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle
+                9 \sqrt 2 \ \frac{\href{#const-theta_m}{\theta_m}}{\pi}
+                - 3 \frac{1 + \sqrt 2}{2} \\
+                \approx 0.2491
+            \)</span>
+        </td>
+        <td><span class="arithmatex">\( \approx 0.1119 \)</span></td>
+        <td><span class="arithmatex">\( \approx 0.04489 \)</span></td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <a href="https://w.wiki/8hRg">Half-logistic</a><br>
+            <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.halflogistic.html#scipy.stats.halflogistic"><code>halflogistic()</code></a>
+        </td>
+        <td><span class="arithmatex">\( 4 \ln 2 - 2 \\ \approx 0.7726 \)</span></td>
+        <td><span class="arithmatex">\( 1 \)</span></td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle
+                \frac{4}{27} \left(
+                    \frac{5}{3 - 4 \ln 2} - 21
+                \right) \\
+                \approx 0.1462
+            \)</span>
+        </td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle
+                \frac{5}{36} \left(
+                    % \frac{233 - 336 \ln 2}{3 - 4 \ln 2}
+                    \frac{-19}{3 - 4 \ln 2} + 84
+                \right) \\
+                \approx 0.06263
+            \)</span>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <a href="https://w.wiki/8hTq">Half-Cauchy</a><br>
+            <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.halfcauchy.html#scipy.stats.halfcauchy"><code>halfcauchy()</code></a>
+        </td>
+        <td><span class="arithmatex">\( \displaystyle \frac{4 \ln 2}{\pi} \\ \approx 0.8825 \)</span></td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle
+                \frac{63 \href{#const-zeta}{\mathop{\zeta}}(3)}{2 \pi^3}
+                - \frac{3 \ln 2}{\pi} \\
+                \approx 0.5593
+            \)</span>
+        </td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle
+                \frac
+                    {40 \mathop{\zeta}(3)}
+                    {63 \mathop{\zeta}(3) - 9 \pi^2 \ln 2}
+                    - \frac 8 9 \\
+                \approx 0.4974
+            \)</span>
+        </td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle
+                \frac{155}{2} \frac
+                    {3 \mathop{\zeta}(3) - 35 \pi^{-2} \mathop{\zeta}(5)}
+                    {21 \mathop{\zeta}(3) - 2 \pi^2 \ln 2}
+                + \frac{5}{6}\\
+                \approx 0.3572
+            \)</span>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://w.wiki/8gH3">Rayleigh</a><br>
+            <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.rayleigh.html#scipy.stats.rayleigh"><code>rayleigh()</code></a>
+        </td>
+        <td></td>
+        <td><span class="arithmatex">\( \displaystyle \frac{\sqrt \pi}{2} \\ \approx 0.8862 \)</span></td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle
+                \frac{3 - \sqrt 6}{4} \sqrt \pi \\
+                \approx 0.2439
+            \)</span>
+        </td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle
+                \frac{10}{9} \left(
+                    3 \sqrt 2 + 2 \sqrt 3 - 2 \sqrt 6
+                \right) - \frac{28}{9}  \\
+                \approx 0.008\ 625
+            \)</span>
+        </td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle
+                \frac{1}{4} \frac
+                    {80 - 75 \sqrt 2 + 14 \sqrt{10}}
+                    {\sqrt 6 - 3}
+                + \frac{25}{3} \\
+                \approx 0.06561
+            \)</span>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://w.wiki/8gHD">Gumbel</a><br>
+            <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.gumbel_r.html#scipy.stats.gumbel_r"><code>gumbel_r()</code></a>
+        </td>
+        <td></td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle
+                \href{#const-euler}{\gamma_e} - \ln 2 \\
+                \approx -0.1159
+            \)</span>
+        </td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle
+                3 \ln 2 - \frac{3}{2} \ln 3 \\
+                \approx 0.4315
+            \)</span>
+        </td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle
+                \frac{4}{9} \left(
+                    \frac{5}{2 - \log_2(3)} - 12
+                \right) \\
+                \approx 0.02094
+            \)</span>
+        </td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle
+                \frac{5}{6} \left(
+                    \frac{8 - 7 \log_2(5)}{2 - \hphantom{1}\log_2(3)} + 20
+                \right) \\
+                \approx 0.09488
+            \)</span>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://w.wiki/7ZfA"><span class="arithmatex">\( \chi^2 \)</span></a><br>
+            <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.chi2.html#scipy.stats.chi2"><code>chi2(2)</code></a>
+        </td>
+        <td><span class="arithmatex">\( k = 2 \)</span></td>
+        <td><span class="arithmatex">\( 1 \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle \frac 1 2 \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle \frac 2 9 \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle \frac{1}{12} \)</span></td>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://w.wiki/7ZfA"><span class="arithmatex">\( \chi^2 \)</span></a><br>
+            <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.chi2.html#scipy.stats.chi2"><code>chi2(4)</code></a>
+        </td>
+        <td><span class="arithmatex">\( k = 4 \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle \frac 5 2 \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle \frac{31}{36} \\ = 0.861\overline{1}\dots \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle \frac{241}{2\ 232} \\ \approx 0.1080 \)</span></td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle
+                \frac{282\ 127}{372 \cdot 10^4} \\
+                \approx 0.07584
+            \)</span>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <a href="https://w.wiki/7ZfA"><span class="arithmatex">\( \chi^2 \)</span></a><br>
+            <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.chi2.html#scipy.stats.chi2"><code>chi2(6)</code></a>
+        </td>
+        <td><span class="arithmatex">\( k = 6 \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle \frac{33}{8} \)</span></td>
+        <td><span class="arithmatex">\( \displaystyle \frac{1\ 475}{1\ 296} \\ \approx 1.138 \)</span></td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle
+                \frac{16\ 769}{271\ 872} \\
+                \approx 0.06168
+            \)</span>
+        </td>
+        <td>
+            <span class="arithmatex">\(
+                \displaystyle
+                \frac{550\ 465\ 668\ 887}{708 \cdot 10^{10}} \\
+                \approx 0.07775
+            \)</span>
+        </td>
+    </tr>
+</table>
+<h2 id="general-l-moments">General L-moments<a class="headerlink" href="#general-l-moments" title="Permanent link">&para;</a></h2>
 <p>Lmo derived a bunch of closed-form solutions for L-moments of several
 distributions. The proofs are not published, but it isn&rsquo;t difficult
 to validate their correctness, e.g. numerically, or symbolically with sympy or
@@ -1279,41 +1305,35 @@ wolfram alpha / mathematica.</p>
 <a href="https://wikipedia.org/wiki/Bernoulli_distribution">Bernoulli distribution</a>
 <sup id="fnref:BERN"><a class="footnote-ref" href="#fn:BERN">1</a></sup>, can&rsquo;t be expressed as easily as the distribution itself:</p>
 <div class="arithmatex">\[
-    \begin{equation}
-    \tlmoment{s, t}{r} =
-        \frac{(-1)^r}{r}
-        (1 - p)^{s + 1}
-        \jacobi{r + t - 1}{s + 1}{-t - 1}{2p - 1}
-        + \ffact{1}{r}
-    \label{eq:lr_bernoulli}
-    \end{equation}
+\tlmoment{s, t}{r} =
+    \frac{(-1)^r}{r}
+    (1 - p)^{s + 1}
+    \jacobi{r + t - 1}{s + 1}{-t - 1}{2p - 1}
+    + \ffact{1}{r}
 \]</div>
 <p>Here, <span class="arithmatex">\( \jacobi{n}{\alpha}{\beta}{x} \)</span> is a
-<a href="#def-jacobi">Jacobi polynomial</a> (although it&rsquo;s not orthogonal, since
-<span class="arithmatex">\( \beta &gt; -1 \)</span> does not hold).</p>
+<a href="#def-jacobi">Jacobi polynomial</a> (although it&rsquo;s not orthogonal for
+<span class="arithmatex">\( t &gt;= 0 \)</span>, since <span class="arithmatex">\( \beta &gt; -1 \)</span> does not hold).</p>
 <h3 id="gompertz">Gompertz<a class="headerlink" href="#gompertz" title="Permanent link">&para;</a></h3>
 <p>The <a href="https://wikipedia.org/wiki/Gompertz_distribution">Gompertz distribution</a>
 <sup id="fnref:GOMP"><a class="footnote-ref" href="#fn:GOMP">2</a></sup> with shape parameter <span class="arithmatex">\( \alpha &gt; 0 \)</span> and <span class="arithmatex">\( x \ge 0 \)</span>, has the
 following <abbr title="Cumulative distribution function">CDF</abbr> and <abbr title="Percent point function, inverse of the CDF, a.k.a. quantile function">PPF</abbr>:</p>
 <div class="arithmatex">\[
-    \begin{align*}
-        F(x) &amp;= 1 - e^{\alpha (1 - e^x)} \\
-        x(F) &amp;= \ln\left( 1 - \frac{\ln(1-F)}{\alpha} \right)
-    \end{align*}
+\begin{align*}
+    F(x) &amp;= 1 - e^{\alpha (1 - e^x)} \\
+    x(F) &amp;= \ln\left( 1 - \frac{\ln(1-F)}{\alpha} \right)
+\end{align*}
 \]</div>
 <p>The general trimmed L-moments of the Gompertz distribution are:</p>
 <div class="arithmatex">\[
-    \begin{equation}
-    \tlmoment{s, t}{r} =
-        \frac{1}{r}
-        \sum_{k = t + 1}^{r + s + t}
-            (-1)^{k - t - 1}
-            \binom{r + k - 2}{r + t - 1}
-            \binom{r + s + t}{k}
-            e^{\alpha k} \
-            \Gamma_{\alpha k}(0)
-    \label{eq:lr_gompertz}
-    \end{equation}
+\tlmoment{s, t}{r} =
+    \frac{1}{r}
+    \sum_{k = t + 1}^{r + s + t}
+        (-1)^{k - t - 1}
+        \binom{r + k - 2}{r + t - 1}
+        \binom{r + s + t}{k}
+        e^{\alpha k} \
+        \Gamma_{\alpha k}(0)
 \]</div>
 <h3 id="gev"><abbr title="Generalized (maximum) Extreme Value distribution">GEV</abbr><a class="headerlink" href="#gev" title="Permanent link">&para;</a></h3>
 <p>The <a href="https://wikipedia.org/wiki/GEV_distribution"><abbr title="Generalized (maximum) Extreme Value distribution">GEV</abbr></a> unifies the
@@ -1340,23 +1360,20 @@ The convention that is used here, is the same as in
 <span class="arithmatex">\( \alpha \)</span>.</p>
 <p>The trimmed L-moments of the <abbr title="Generalized (maximum) Extreme Value distribution">GEV</abbr> are</p>
 <div class="arithmatex">\[
-\begin{equation}
-    \tlmoment{s, t}{r} =
-        \frac{(-1)^{r}}{r}
-        \sum_{k = s + 1}^{r + s + t}
-            (-1)^{k - s}
-            \binom{r + k - 2}{r + s - 1}
-            \binom{r + s + t}{k}
-            \left(
-            \begin{cases}
-                \gamma_e + \ln(k)
-                    &amp; \text{if } \alpha = 0 \\
-                1 / \alpha - \Gamma(\alpha) \ k^{-\alpha}
-                    &amp; \text{if } \alpha \neq 0
-            \end{cases}
-            \right)
-    \label{eq:lr_gev}
-\end{equation}
+\tlmoment{s, t}{r} =
+    \frac{(-1)^{r}}{r}
+    \sum_{k = s + 1}^{r + s + t}
+        (-1)^{k - s}
+        \binom{r + k - 2}{r + s - 1}
+        \binom{r + s + t}{k}
+        \left(
+        \begin{cases}
+            \gamma_e + \ln(k)
+                &amp; \text{if } \alpha = 0 \\
+            1 / \alpha - \Gamma(\alpha) \ k^{-\alpha}
+                &amp; \text{if } \alpha \neq 0
+        \end{cases}
+        \right)
 \]</div>
 <p>Note that the <abbr title="Generalized (maximum) Extreme Value distribution">GEV</abbr> is effectively a reparametrized
 <span class="arithmatex">\( q \)</span>-<a href="https://wikipedia.org/wiki/Gumbel_distribution">Gumbel</a>
@@ -1368,33 +1385,30 @@ The convention that is used here, is the same as in
 parameter <span class="arithmatex">\( \alpha \in \mathbb{R} \)</span>, is characterized by the following
 distribution functions:</p>
 <div class="arithmatex">\[
-    \begin{align*}
-        F(x) &amp;= \frac{1}{1 + \qexp{1 - \alpha}{x}} \\
-        x(F) &amp;= -\qlog{1 - \alpha}{\frac{1 - F}{F}}
-    \end{align*}
+\begin{align*}
+    F(x) &amp;= \frac{1}{1 + \qexp{1 - \alpha}{x}} \\
+    x(F) &amp;= -\qlog{1 - \alpha}{\frac{1 - F}{F}}
+\end{align*}
 \]</div>
 <p>For <span class="arithmatex">\( -1 &lt; \alpha &lt; 1 \)</span>, the general trimmed L-moments of the <abbr title="Generalized Logistic distribution">GLO</abbr> are:</p>
 <div class="arithmatex">\[
-    \begin{equation}
-        \tlmoment{s, t}{r} = \begin{cases}
-            \displaystyle
-                \digamma(s + 1) - \digamma(t + 1)
-            &amp; \text{if } \alpha = 0 \wedge r = 1 \\
-            \displaystyle
-                \frac{(-1)^r}{r} \B(r - 1,\ s + 1)
-                + \frac 1 r \B(r - 1,\ t + 1)
-            &amp; \text{if } \alpha = 0 \\
-            \displaystyle
-                \frac{\ffact{1}{r}}{\alpha}
-                + \sum_{k = s + 1}^{r + s + t}
-                    (-1)^{r + s - k }
-                    \binom{r + k - 2}{r + s - 1}
-                    \binom{r + s + t}{k}
-                    \B(\alpha,\ k - \alpha)
-            &amp; \text{if } -1 &lt; \alpha &lt; 1
-        \end{cases}
-    \label{eq:lr_glo}
-    \end{equation}
+\tlmoment{s, t}{r} = \begin{cases}
+    \displaystyle
+        \digamma(s + 1) - \digamma(t + 1)
+    &amp; \text{if } \alpha = 0 \wedge r = 1 \\
+    \displaystyle
+        \frac{(-1)^r}{r} \B(r - 1,\ s + 1)
+        + \frac 1 r \B(r - 1,\ t + 1)
+    &amp; \text{if } \alpha = 0 \\
+    \displaystyle
+        \frac{\ffact{1}{r}}{\alpha}
+        + \sum_{k = s + 1}^{r + s + t}
+            (-1)^{r + s - k }
+            \binom{r + k - 2}{r + s - 1}
+            \binom{r + s + t}{k}
+            \B(\alpha,\ k - \alpha)
+    &amp; \text{if } -1 &lt; \alpha &lt; 1
+\end{cases}
 \]</div>
 <p>Where <span class="arithmatex">\( \digamma(z) \)</span> is the <a href="#def-digamma">digamma function</a>.</p>
 <p>The corresponding <code>scipy.stats</code> implementation is
@@ -1409,28 +1423,25 @@ distribution functions:</p>
 with shape parameter <span class="arithmatex">\( \alpha \in \mathbb{R} \)</span>, has for <span class="arithmatex">\( x \ge 0 \)</span> the
 distribution functions:</p>
 <div class="arithmatex">\[
-    \begin{align*}
-        F(x) &amp;= 1 - \qexp{1 + \alpha}{-x} \\
-        x(F) &amp;= -\qlog{1 + \alpha}{1 - F}
-    \end{align*}
+\begin{align*}
+    F(x) &amp;= 1 - \qexp{1 + \alpha}{-x} \\
+    x(F) &amp;= -\qlog{1 + \alpha}{1 - F}
+\end{align*}
 \]</div>
 <p>The L-moments of the <abbr title="Generalized Pareto Distribution">GPD</abbr> exist when <span class="arithmatex">\( \alpha &lt; 1 + t \)</span>, and can be
 compactly expressed as</p>
 <div class="arithmatex">\[
-    \begin{equation}
-        \tlmoment{s,t}{r} = \begin{cases}
-            \displaystyle H_{s + t + 1} - H_t
-                &amp; \text{if } \alpha = 0 \wedge r = 1 \\
-            \displaystyle \frac{1}{\alpha r} \left[
-                \frac
-                    {\B(t + 1 - \alpha,\ r - 1 + \alpha)}
-                    {\B(r + s + t - 1 - \alpha,\ \alpha)}
-                - \ffact{1}{r}
-            \right]
-                &amp; \text{otherwise,}
-        \end{cases}
-        \label{eq:lr_gpd}
-    \end{equation}
+\tlmoment{s,t}{r} = \begin{cases}
+    \displaystyle H_{s + t + 1} - H_t
+        &amp; \text{if } \alpha = 0 \wedge r = 1 \\
+    \displaystyle \frac{1}{\alpha r} \left[
+        \frac
+            {\B(t + 1 - \alpha,\ r - 1 + \alpha)}
+            {\B(r + s + t - 1 - \alpha,\ \alpha)}
+        - \ffact{1}{r}
+    \right]
+        &amp; \text{otherwise,}
+\end{cases}
 \]</div>
 <p>where <span class="arithmatex">\( H_n \)</span> is a <a href="#def-harmonic">harmonic number</a>.</p>
 <p>See <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.genpareto.html#scipy.stats.genpareto"><code>scipy.stats.genpareto</code></a> for an Lmo-compatible
@@ -1475,27 +1486,29 @@ positive reals</p>
 \]</div>
 <p>For <span class="arithmatex">\( \alpha &gt; 1 \)</span>, the general L-moments are:</p>
 <div class="arithmatex">\[
-\begin{equation}
-    \tlmoment{s,t}{r} =
-        (-1)^{t - 1 / \alpha} \
-        \beta \
-        \frac{r + s + t}{r}
-        \sum_{k = s}^{r + s + t - 1}
-            (-1)^{k}
-            \binom{k + r - 1}{k - s}
-            \binom{r + s + t - 1}{k}
-            \B(1 - 1 / \alpha, -\beta - k \beta)
-    \label{eq:lr_burr3}
-\end{equation}
+\tlmoment{s,t}{r} =
+    (-1)^{t - 1 / \alpha} \
+    \beta \
+    \frac{r + s + t}{r}
+    \sum_{k = s}^{r + s + t - 1}
+        (-1)^{k}
+        \binom{k + r - 1}{k - s}
+        \binom{r + s + t - 1}{k}
+        \B(1 - 1 / \alpha, -\beta - k \beta)
 \]</div>
 <p>The Burr III distribution is implemented in
 <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.burr.html#scipy.stats.burr"><code>scipy.stats.burr</code></a>, where the shape parameters <code>c</code> and <code>d</code>
 correspond to  <span class="arithmatex">\( \alpha \)</span> and <span class="arithmatex">\( \beta \)</span>, respectively.
 Equivalently, <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.mielke.html#scipy.stats.mielke"><code>scipy.stats.mielke</code></a> can be used, by
 setting <code>k</code> and <code>s</code> to <span class="arithmatex">\( \alpha \beta \)</span> and <span class="arithmatex">\( \alpha \)</span>, respectively.</p>
-<p>The special case where <span class="arithmatex">\( \beta = 1 \)</span> is known as the
-<a href="https://wikipedia.org/wiki/Log-logistic_distribution"><em>log-logistic</em></a>
-distribution</p>
+<div class="admonition info">
+<p class="admonition-title">Special cases</p>
+<dl>
+<dt><a href="https://wikipedia.org/wiki/Log-logistic_distribution">Log-logistic / Fisk</a></dt>
+<dd>With <span class="arithmatex">\( \beta = 1 \)</span> Burr III is <em>Log-logistic</em> with shape
+<span class="arithmatex">\( \gamma \equiv \alpha \)</span> and scale <span class="arithmatex">\( \sigma = 1 \)</span>.</dd>
+</dl>
+</div>
 <h3 id="burr-xii-pareto-iv">Burr XII / Pareto IV<a class="headerlink" href="#burr-xii-pareto-iv" title="Permanent link">&para;</a></h3>
 <p>The
 <a href="https://wikipedia.org/wiki/Burr_distribution"><em>Burr XII distribution</em></a> <sup id="fnref2:BURR"><a class="footnote-ref" href="#fn:BURR">6</a></sup>
@@ -1503,7 +1516,7 @@ has two shape parameters <span class="arithmatex">\( \alpha \)</span> and <span 
 positive reals. It is also known as the <em>Singh-Maddala distribution</em>.
 The alternative parametrization <span class="arithmatex">\( \alpha \mapsto 1 / \gamma \)</span>, where
 <span class="arithmatex">\( \gamma &gt; 0 \)</span>, is known as the (standard) type IV
-<a href="https://wikipedia.org/wiki/Pareto_distribution"><em>Pareto distribution</em></a></p>
+<a href="https://w.wiki/8htG#Pareto_types_I–IV"><em>Pareto distribution</em></a></p>
 <p>The distribution functions for <span class="arithmatex">\( x &gt; 0 \)</span> are defined as:</p>
 <div class="arithmatex">\[
 \begin{align*}
@@ -1511,19 +1524,19 @@ The alternative parametrization <span class="arithmatex">\( \alpha \mapsto 1 / \
     x(F) &amp;= \bigl((1 - F)^{-1/\beta} - 1 \bigr)^{1/\alpha}
 \end{align*}
 \]</div>
+<p><img src="../gallery/burr12.svg" width="100%"
+    style="height: auto; aspect-ratio: 16/9;"
+    alt="Burr XII distribution PDF" /></p>
 <p>When <span class="arithmatex">\( \beta &gt; 1 / \alpha \)</span>, the general <span class="arithmatex">\( r \)</span>-th trimmed L-moment is:</p>
 <div class="arithmatex">\[
-\begin{equation}
-    \tlmoment{s,t}{r} =
-        \beta \
-        \frac{r + s + t}{r}
-        \sum_{k = t}^{r + s + t - 1}
-            (-1)^k
-            \binom{k + r - 1}{k - t}
-            \binom{r + s + t - 1}{k}
-            \B\bigl(1 + 1 / \alpha,\ \beta + k \beta - 1 / \alpha \bigr)
-        \label{eq:lr_burr12}
-\end{equation}
+\tlmoment{s,t}{r} =
+    \beta \
+    \frac{r + s + t}{r}
+    \sum_{k = t}^{r + s + t - 1}
+        (-1)^k
+        \binom{k + r - 1}{k - t}
+        \binom{r + s + t - 1}{k}
+        \B\bigl(1 + 1 / \alpha,\ \beta + k \beta - 1 / \alpha \bigr)
 \]</div>
 <p>This distribution is implemented in
 <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.burr12.html#scipy.stats.burr12"><code>scipy.stats.burr12</code></a>, where the shape parameters <code>c</code>
@@ -1532,10 +1545,22 @@ and <code>d</code> correspond to  <span class="arithmatex">\( \alpha \)</span> a
 <span class="arithmatex">\( X \)</span> and <span class="arithmatex">\( Y \)</span> are <abbr title="Random variable">RV</abbr>&rsquo;s with Burr XII <span class="arithmatex">\( (\alpha, \beta) \)</span>
 and Burr III <span class="arithmatex">\( (1 / \alpha, \beta) \)</span>
 distributions (or vice-versa), respectively.</p>
-<p>In the special case where <span class="arithmatex">\( \alpha = 1 \)</span> is known as the
-<a href="https://wikipedia.org/wiki/Lomax_distribution"><em>Lomax distribution</em></a>. This
-has been implemented as <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.lomax.html#scipy.stats.lomax">scipy.stats.lomax</a>, where the
-parameter <code>c</code> corresponds to <span class="arithmatex">\( \beta \)</span>.</p>
+<div class="admonition info">
+<p class="admonition-title">Special cases</p>
+<p>There are several notable special cases of the Burr XII distribution:</p>
+<dl>
+<dt><a href="https://w.wiki/8htG#Pareto_types_I–IV">Pareto IV</a></dt>
+<dd>Burr XII is a reparametrized standard <em>Pareto type IV</em> distribution with
+shapes <span class="arithmatex">\( \gamma \equiv 1 / \alpha \)</span> and <span class="arithmatex">\( \alpha' \equiv \beta \)</span>, location
+<span class="arithmatex">\( \mu = 0 \)</span>, and scale <span class="arithmatex">\( \sigma = 1 \)</span>.</dd>
+<dt><a href="https://wikipedia.org/wiki/Lomax_distribution">Lomax</a></dt>
+<dd>With <span class="arithmatex">\( \alpha = 1 \)</span> Burr XII is <em>Lomax</em> with shape
+<span class="arithmatex">\( \alpha' \equiv \beta \)</span> and scale <span class="arithmatex">\( \sigma = 1 \)</span>.</dd>
+<dt><a href="https://wikipedia.org/wiki/Log-logistic_distribution">Log-logistic / Fisk</a></dt>
+<dd>With <span class="arithmatex">\( \beta = 1 \)</span> Burr XII is <em>Log-logistic</em> with shape
+<span class="arithmatex">\( \gamma \equiv \alpha \)</span> and scale <span class="arithmatex">\( \sigma = 1 \)</span>.</dd>
+</dl>
+</div>
 <h3 id="kumaraswamy">Kumaraswamy<a class="headerlink" href="#kumaraswamy" title="Permanent link">&para;</a></h3>
 <p>For <a href="https://wikipedia.org/wiki/Kumaraswamy_distribution">Kumaraswamy&rsquo;s distribution
 </a> <sup id="fnref:KUM1"><a class="footnote-ref" href="#fn:KUM1">7</a></sup> with parameters
@@ -1546,25 +1571,36 @@ trimmed L-moments.</p>
 <p>The distribution functions are for <span class="arithmatex">\( 0 \le x \le 1 \)</span> defined as:</p>
 <div class="arithmatex">\[
 \begin{align*}
-F(x) &amp;= 1 - (1 - x^\alpha)^\beta \\
-x(F) &amp;= \bigl(1 - (1 - F)^{1/\beta} \bigr)^{1/\alpha}
+    F(x) &amp;= 1 - (1 - x^\alpha)^\beta \\
+    x(F) &amp;= \bigl(1 - (1 - F)^{1/\beta} \bigr)^{1/\alpha}
 \end{align*}
 \]</div>
+<p><img src="../gallery/kumaraswamy.svg" width="100%"
+    style="height: auto; aspect-ratio: 16/9;"
+    alt="Kumaraswamy distribution PDF" /></p>
 <p>Its general <span class="arithmatex">\( r \)</span>-th trimmed L-moment are:</p>
 <div class="arithmatex">\[
-    \begin{equation}
-        \tlmoment{s,t}{r} =
-            \frac{1}{r}
-            \sum_{k = t + 1}^{r + s + t}
-                (-1)^{k - 1}
-                \binom{r + k - 2}{r + t - 1}
-                \binom{r + s + t}{k}
-                \frac{\B\bigl(1 / \alpha,\ 1 + k \beta \bigr)}{\alpha}
-            \label{eq:lr_kum}
-    \end{equation}
+\tlmoment{s,t}{r} =
+    \frac{1}{r}
+    \sum_{k = t + 1}^{r + s + t}
+        (-1)^{k - 1}
+        \binom{r + k - 2}{r + t - 1}
+        \binom{r + s + t}{k}
+        \frac{\B\bigl(1 / \alpha,\ 1 + k \beta \bigr)}{\alpha}
 \]</div>
 <p>The Kumaraswamy distribution is implemented in
 <a class="autorefs autorefs-internal" href="../api/#lmo.distributions.kumaraswamy"><code>lmo.distributions.kumaraswamy</code></a>.</p>
+<div class="admonition info">
+<p class="admonition-title">Special cases</p>
+<p>There are several notable special cases of the Kumaraswamy distribution:</p>
+<dl>
+<dt><a href="https://wikipedia.org/wiki/Beta_distribution">Beta</a></dt>
+<dd>With <span class="arithmatex">\( \alpha = 1 \)</span> or <span class="arithmatex">\( \beta = 1 \)</span> Kumaraswamy is
+<span class="arithmatex">\( \text{Beta}(1, \beta) \)</span> or <span class="arithmatex">\( \text{Beta}(\alpha, 1) \)</span>, respectively.</dd>
+<dt><a href="https://wikipedia.org/wiki/Continuous_uniform_distribution">Uniform</a></dt>
+<dd>With <span class="arithmatex">\( \alpha = \beta = 1 \)</span> Kumaraswamy is uniform on <span class="arithmatex">\( [0, 1] \)</span>.</dd>
+</dl>
+</div>
 <h3 id="wakeby">Wakeby<a class="headerlink" href="#wakeby" title="Permanent link">&para;</a></h3>
 <p>The <a href="https://wikipedia.org/wiki/Wakeby_distribution"><em>Wakeby distribution</em></a>
 <sup id="fnref:WAK"><a class="footnote-ref" href="#fn:WAK">9</a></sup> is quantile-based &ndash; the <abbr title="Cumulative distribution function">CDF</abbr> and <abbr title="Probability density function">PDF</abbr> are not analytically expressible for the
@@ -1620,7 +1656,7 @@ effectively combines the two scale parameters.</p>
 <p>Lmo figured out that when <span class="arithmatex">\( \delta &lt; t + 1 \)</span>, all of Wakeby&rsquo;s (trimmed)
 L-moments can be expressed as</p>
 <div class="arithmatex">\[
-\begin{align}
+\begin{align*}
     \tlmoment{s,t}{1}
     &amp;= \phi \left(
     \begin{cases}
@@ -1652,7 +1688,7 @@ L-moments can be expressed as</p>
             {\rfact{1 + \delta}{r - 2}}
             {\rfact{1 - \delta + t}{r + s}}
     \right) \quad \text{for } r &gt; 1
-\end{align}
+\end{align*}
 \]</div>
 <p>where <span class="arithmatex">\( H_n \)</span> is a <a href="#def-harmonic">harmonic number</a>.</p>
 <div class="admonition info">
@@ -1691,13 +1727,13 @@ x(F) = (\phi + 1) \qlog{1 - \beta}{F} + (\phi - 1) \qlog{1 - \delta}{1 - F}
 <p>The domain is</p>
 <div class="arithmatex">\[
 \left.
-\begin{array}{l}
+\begin{array}{ll}
     \text{if } \beta \le 0: &amp; \displaystyle -\infty \\
     \text{if } \beta &gt; 0:  &amp; \displaystyle -\frac{1 + \phi}{\beta}
 \end{array}
 \right\} \le
 x
-\le \left\{ \begin{array}{l}
+\le \left\{ \begin{array}{ll}
     \displaystyle \infty \ , &amp; \text{if } \delta \le 0 \\
     \displaystyle \frac{1 - \phi}{\delta} \ , &amp; \text{if } \delta &gt; 0
 \end{array}
@@ -1711,25 +1747,21 @@ expression, its trimmed L-moments can be compactly expressed.
 When <span class="arithmatex">\( \beta &gt; -s - 1 \)</span> and <span class="arithmatex">\( \delta &gt; -t - 1 \)</span>, the L-moments are defined
 for <span class="arithmatex">\( r = 2, 3, \ldots \)</span> and <span class="arithmatex">\( s, t \ge 0 \)</span> as</p>
 <div class="arithmatex">\[
-\begin{equation}
-    r \tlmoment{s, t}{r}
-        = \frac{(-1)^r \ (1 + \phi)}{r + s + t + \beta}
-        \frac
-            {\B(1 + s + \beta ,\ r - 1 - \beta)}
-            {\B(r + s + t + \beta,\ 1 - \beta)}
-        + \frac{1 - \phi}{r + s + t + \delta}
-        \frac
-            {\B(1 + t + \delta ,\ r - 1 - \delta)}
-            {\B(r + s + t + \delta,\ 1 - \delta)} \ ,
-\end{equation}
+r \tlmoment{s, t}{r}
+    = \frac{(-1)^r \ (1 + \phi)}{r + s + t + \beta}
+    \frac
+        {\B(1 + s + \beta ,\ r - 1 - \beta)}
+        {\B(r + s + t + \beta,\ 1 - \beta)}
+    + \frac{1 - \phi}{r + s + t + \delta}
+    \frac
+        {\B(1 + t + \delta ,\ r - 1 - \delta)}
+        {\B(r + s + t + \delta,\ 1 - \delta)} \ ,
 \]</div>
 <p>and the arbitrarily-trimmed L-location is</p>
 <div class="arithmatex">\[
-\begin{equation}
-    \tlmoment{s, t}{1}
-        = -(1 + \phi) \mathfrak{L}_{1}^{(s)}(\beta)
-        + (1 - \phi) \mathfrak{L}_{1}^{(t)}(\delta) \,
-\end{equation}
+\tlmoment{s, t}{1}
+    = -(1 + \phi) \mathfrak{L}_{1}^{(s)}(\beta)
+    + (1 - \phi) \mathfrak{L}_{1}^{(t)}(\delta) \,
 \]</div>
 <p>where</p>
 <div class="arithmatex">\[
@@ -2227,7 +2259,7 @@ processes&#160;<a class="footnote-backref" href="#fnref:KUM1" title="Jump back t
 </li>
 <li id="fn:KUM2">
 <p><a href="https://doi.org/10.1016/j.stamet.2008.04.001">M.C. Jones (2009)</a> &ndash;
-Kumaraswamy’s distribution: A beta-type distribution with some
+Kumaraswamy&rsquo;s distribution: A beta-type distribution with some
 tractability advantages&#160;<a class="footnote-backref" href="#fnref:KUM2" title="Jump back to footnote 8 in the text">&#8617;</a></p>
 </li>
 <li id="fn:WAK">
@@ -2261,7 +2293,7 @@ generating asymmetric random variables&#160;<a class="footnote-backref" href="#f
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-12-13</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-01-02</span>
   </span>
 
     
@@ -2336,11 +2368,13 @@ generating asymmetric random variables&#160;<a class="footnote-backref" href="#f
     
       <script src="../assets/javascripts/bundle.d7c377c4.min.js"></script>
       
-        <script src="../scripts/mathjax.js"></script>
+        <script src="../scripts/katex.js"></script>
       
-        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+        <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
       
-        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/copy-tex.min.js"></script>
       
     
   </body>
