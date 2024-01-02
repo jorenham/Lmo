@@ -176,6 +176,31 @@ exist (in closed form).
         <td>\( \approx 0.09732 \)</td>
     </tr>
     <tr>
+        <td colspan="2">
+            [Half-logistic](https://w.wiki/8hRg)<br>
+            [`halflogistic()`][scipy.stats.halflogistic]
+        </td>
+        <td>\( 2 \ln 2 \\ \approx 1.386 \)</td>
+        <td>\( 1 \)</td>
+        <td>
+            \(
+                \displaystyle
+                \frac{1}{1 - \ln 2} - 3 \\
+                \approx 0.2589
+            \)
+        </td>
+        <td>
+            \(
+                \displaystyle
+                % \frac{23 - 33 \ln 2}{3 - 3 \ln 2} \\
+                \frac 1 3 \left(
+                    \frac{-10}{1 - \ln 2} + 33
+                \right) \\
+                \approx 0.1370
+            \)
+        </td>
+    </tr>
+    <tr>
         <td>
             [Rayleigh](https://w.wiki/8gH3)<br>
             [`rayleigh()`][scipy.stats.rayleigh]
@@ -496,6 +521,33 @@ Right-trimmed LL-stats of some simple left-bound distributions, using
         <td>\( \approx 0.04489 \)</td>
     </tr>
     <tr>
+        <td colspan="2">
+            [Half-logistic](https://w.wiki/8hRg)<br>
+            [`halflogistic()`][scipy.stats.halflogistic]
+        </td>
+        <td>\( 4 \ln 2 - 2 \\ \approx 0.7726 \)</td>
+        <td>\( 1 \)</td>
+        <td>
+            \(
+                \displaystyle
+                \frac{4}{27} \left(
+                    \frac{5}{3 - 4 \ln 2} - 21
+                \right) \\
+                \approx 0.1462
+            \)
+        </td>
+        <td>
+            \(
+                \displaystyle
+                \frac{5}{36} \left(
+                    % \frac{233 - 336 \ln 2}{3 - 4 \ln 2}
+                    \frac{-19}{3 - 4 \ln 2} + 84
+                \right) \\
+                \approx 0.06263
+            \)
+        </td>
+    </tr>
+    <tr>
         <td>
             [Rayleigh](https://w.wiki/8gH3)<br>
             [`rayleigh()`][scipy.stats.rayleigh]
@@ -620,8 +672,6 @@ Right-trimmed LL-stats of some simple left-bound distributions, using
         </td>
     </tr>
 </table>
-
-<!-- TODO: Half-logistic -->
 
 ## General L-moments
 
