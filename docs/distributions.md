@@ -994,7 +994,7 @@ has two shape parameters \( \alpha \) and \( \beta \), both restricted to the
 positive reals. It is also known as the *Singh-Maddala distribution*.
 The alternative parametrization \( \alpha \mapsto 1 / \gamma \), where
 \( \gamma > 0 \), is known as the (standard) type IV
-[*Pareto distribution*](https://wikipedia.org/wiki/Pareto_distribution)
+[*Pareto distribution*](https://w.wiki/8htG#Pareto_types_I–IV)
 
 The distribution functions for \( x > 0 \) are defined as:
 
@@ -1004,6 +1004,10 @@ The distribution functions for \( x > 0 \) are defined as:
     x(F) &= \bigl((1 - F)^{-1/\beta} - 1 \bigr)^{1/\alpha}
 \end{align*}
 \]
+
+<img src="../gallery/burr12.svg" width="100%"
+    style="height: auto; aspect-ratio: 16/9;"
+    alt="Burr XII distribution PDF" />
 
 When \( \beta > 1 / \alpha \), the general \( r \)-th trimmed L-moment is:
 
@@ -1027,10 +1031,23 @@ The Burr XII and Burr III distributions are related as \( Y = 1 / X \), where
 and Burr III \( (1 / \alpha, \beta) \)
 distributions (or vice-versa), respectively.
 
-In the special case where \( \alpha = 1 \) is known as the
-[*Lomax distribution*](https://wikipedia.org/wiki/Lomax_distribution). This
-has been implemented as [scipy.stats.lomax][scipy.stats.lomax], where the
-parameter `c` corresponds to \( \beta \).
+/// admonition | Special cases
+    type: info
+There are several notable special cases of the Burr XII distribution:
+
+[Pareto IV](https://w.wiki/8htG#Pareto_types_I–IV)
+:   Burr XII is a reparametrized standard *Pareto type IV* distribution with
+shapes \( \gamma \equiv 1 / \alpha \) and \( \alpha' \equiv \beta \), location
+\( \mu = 0 \), and scale \( \sigma = 1 \).
+
+[Lomax](https://wikipedia.org/wiki/Lomax_distribution)
+:   With \( \alpha = 1 \) Burr XII is *Lomax* with shape
+\( \alpha' \equiv \beta \) and scale \( \sigma = 1 \).
+
+[Log-logistic / Fisk](https://wikipedia.org/wiki/Log-logistic_distribution)
+:   With \( \beta = 1 \) Burr XII is *Log-logistic* with shape
+\( \gamma \equiv \alpha \) and scale \( \sigma = 1 \).
+///
 
 [^BURR]:
     [I.W. Burr (1942)](https://doi.org/10.1214%2Faoms%2F1177731607) --
@@ -1075,7 +1092,7 @@ The Kumaraswamy distribution is implemented in
 
 /// admonition | Special cases
     type: info
-There are several notable special cases of the Wakeby distribution:
+There are several notable special cases of the Kumaraswamy distribution:
 
 [Beta](https://wikipedia.org/wiki/Beta_distribution)
 :   With \( \alpha = 1 \) or \( \beta = 1 \) Kumaraswamy is
