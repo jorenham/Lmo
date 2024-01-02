@@ -1054,6 +1054,10 @@ The distribution functions are for \( 0 \le x \le 1 \) defined as:
 \end{align*}
 \]
 
+<img src="../gallery/kumaraswamy.svg" width="100%"
+    style="height: auto; aspect-ratio: 16/9;"
+    alt="Kumaraswamy distribution PDF" />
+
 Its general \( r \)-th trimmed L-moment are:
 
 \[
@@ -1068,6 +1072,18 @@ Its general \( r \)-th trimmed L-moment are:
 
 The Kumaraswamy distribution is implemented in
 [`lmo.distributions.kumaraswamy`][lmo.distributions.kumaraswamy].
+
+/// admonition | Special cases
+    type: info
+There are several notable special cases of the Wakeby distribution:
+
+[Beta](https://wikipedia.org/wiki/Beta_distribution)
+:   With \( \alpha = 1 \) or \( \beta = 1 \) Kumaraswamy is
+\( \text{Beta}(1, \beta) \) or \( \text{Beta}(\alpha, 1) \), respectively.
+
+[Uniform](https://wikipedia.org/wiki/Continuous_uniform_distribution)
+:   With \( \alpha = \beta = 1 \) Kumaraswamy is uniform on \( [0, 1] \).
+///
 
 [^KUM1]:
     [P. Kumaraswamy](https://doi.org/10.1016/0022-1694(80)90036-0) --
