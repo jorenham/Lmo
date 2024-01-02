@@ -982,9 +982,12 @@ correspond to  \( \alpha \) and \( \beta \), respectively.
 Equivalently, [`scipy.stats.mielke`][scipy.stats.mielke] can be used, by
 setting `k` and `s` to \( \alpha \beta \) and \( \alpha \), respectively.
 
-The special case where \( \beta = 1 \) is known as the
-[*log-logistic*](https://wikipedia.org/wiki/Log-logistic_distribution)
-distribution
+/// admonition | Special cases
+    type: info
+[Log-logistic / Fisk](https://wikipedia.org/wiki/Log-logistic_distribution)
+:   With \( \beta = 1 \) Burr III is *Log-logistic* with shape
+\( \gamma \equiv \alpha \) and scale \( \sigma = 1 \).
+///
 
 ### Burr XII / Pareto IV
 
