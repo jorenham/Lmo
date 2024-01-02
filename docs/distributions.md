@@ -223,7 +223,51 @@ exist (in closed form).
         <td>\( 2 \log_2(3) - 3 \\ \approx 0.1699 \)</td>
         <td>\( 16 - 10 \log_2(3) \\ \approx 0.1504 \)</td>
     </tr>
-
+    <tr>
+        <td>
+            [\( \chi^2 \)](https://w.wiki/7ZfA)<br>
+            [`chi2(2)`][scipy.stats.chi2]
+        </td>
+        <td>\( k = 2 \)</td>
+        <td>\( 2 \)</td>
+        <td>\( 1 \)</td>
+        <td>\( \displaystyle \frac 1 3 \)</td>
+        <td>\( \displaystyle \frac 1 6 \)</td>
+    </tr>
+    <tr>
+        <td>
+            [\( \chi^2 \)](https://w.wiki/7ZfA)<br>
+            [`chi2(4)`][scipy.stats.chi2]
+        </td>
+        <td>\( k = 4 \)</td>
+        <td>\( 4 \)</td>
+        <td>\( \displaystyle \frac 3 2 \)</td>
+        <td>\( \displaystyle \frac{19}{81} \\ \approx 0.2346 \)</td>
+        <td>
+            \(
+                \displaystyle
+                \frac{367}{2^5 \cdot 3^4} \\
+                \approx 0.1416
+            \)
+        </td>
+    </tr>
+    <tr>
+        <td>
+            [\( \chi^2 \)](https://w.wiki/7ZfA)<br>
+            [`chi2(6)`][scipy.stats.chi2]
+        </td>
+        <td>\( k = 6 \)</td>
+        <td>\( 6 \)</td>
+        <td>\( \displaystyle \frac{15}{8} \)</td>
+        <td>\( \displaystyle \frac{139}{729} \\ \approx 0.2346 \)</td>
+        <td>
+            \(
+                \displaystyle
+                \frac{200\ 827}{2^{11} \cdot 3^6} \\
+                \approx 0.1345
+            \)
+        </td>
+    </tr>
 </table>
 
 ### TL-stats
@@ -416,6 +460,7 @@ Right-trimmed LL-stats of some simple left-bound distributions, using
 <table markdown="span">
     <tr>
         <th>Distribution</th>
+        <th>Shape</th>
         <th>\( \tlmoment{0, 1}{1} \)</th>
         <th>\( \tlmoment{0, 1}{2} \)</th>
         <th>\( \tlratio{0, 1}{3} \)</th>
@@ -426,6 +471,7 @@ Right-trimmed LL-stats of some simple left-bound distributions, using
             [Exponential](https://w.wiki/3jXu)<br>
             [`expon()`][scipy.stats.expon]
         </td>
+        <td></td>
         <td>\( \displaystyle \frac 1 2 \)</td>
         <td>\( \displaystyle \frac 1 4 \)</td>
         <td>\( \displaystyle \frac 2 9 \\ = 0.2\overline{2} \dots  \)</td>
@@ -436,6 +482,7 @@ Right-trimmed LL-stats of some simple left-bound distributions, using
             [Half-normal](https://w.wiki/8gG$)<br>
             [`halfnorm()`][scipy.stats.halfnorm]
         </td>
+        <td></td>
         <td>\( 2 - \sqrt 2 \\ \approx 0.5858 \)</td>
         <td>
             \(
@@ -453,6 +500,7 @@ Right-trimmed LL-stats of some simple left-bound distributions, using
             [Rayleigh](https://w.wiki/8gH3)<br>
             [`rayleigh()`][scipy.stats.rayleigh]
         </td>
+        <td></td>
         <td>\( \displaystyle \frac{\sqrt \pi}{2} \\ \approx 0.8862 \)</td>
         <td>
             \(
@@ -486,6 +534,7 @@ Right-trimmed LL-stats of some simple left-bound distributions, using
             [Gumbel](https://w.wiki/8gHD)<br>
             [`gumbel_r()`][scipy.stats.gumbel_r]
         </td>
+        <td></td>
         <td>
             \(
                 \displaystyle
@@ -519,12 +568,60 @@ Right-trimmed LL-stats of some simple left-bound distributions, using
             \)
         </td>
     </tr>
+    <tr>
+        <td>
+            [\( \chi^2 \)](https://w.wiki/7ZfA)<br>
+            [`chi2(2)`][scipy.stats.chi2]
+        </td>
+        <td>\( k = 2 \)</td>
+        <td>\( 1 \)</td>
+        <td>\( \displaystyle \frac 1 2 \)</td>
+        <td>\( \displaystyle \frac 2 9 \)</td>
+        <td>\( \displaystyle \frac{1}{12} \)</td>
+    </tr>
+    <tr>
+        <td>
+            [\( \chi^2 \)](https://w.wiki/7ZfA)<br>
+            [`chi2(4)`][scipy.stats.chi2]
+        </td>
+        <td>\( k = 4 \)</td>
+        <td>\( \displaystyle \frac 5 2 \)</td>
+        <td>\( \displaystyle \frac{31}{36} \\ = 0.861\overline{1}\dots \)</td>
+        <td>\( \displaystyle \frac{241}{2\ 232} \\ \approx 0.1080 \)</td>
+        <td>
+            \(
+                \displaystyle
+                \frac{282\ 127}{372 \cdot 10^4} \\
+                \approx 0.07584
+            \)
+        </td>
+    </tr>
+    <tr>
+        <td>
+            [\( \chi^2 \)](https://w.wiki/7ZfA)<br>
+            [`chi2(6)`][scipy.stats.chi2]
+        </td>
+        <td>\( k = 6 \)</td>
+        <td>\( \displaystyle \frac{33}{8} \)</td>
+        <td>\( \displaystyle \frac{1\ 475}{1\ 296} \\ \approx 1.138 \)</td>
+        <td>
+            \(
+                \displaystyle
+                \frac{16\ 769}{271\ 872} \\
+                \approx 0.06168
+            \)
+        </td>
+        <td>
+            \(
+                \displaystyle
+                \frac{550\ 465\ 668\ 887}{708 \cdot 10^{10}} \\
+                \approx 0.07775
+            \)
+        </td>
+    </tr>
 </table>
 
 <!-- TODO: Half-logistic -->
-<!-- TODO: Log-normal -->
-<!-- TODO: Chi2 (specific df)?  -->
-<!-- TODO: F (specific df)?  -->
 
 ## General L-moments
 
