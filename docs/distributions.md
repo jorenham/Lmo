@@ -479,8 +479,7 @@ Symmetrically trimmed TL-stats of some symmetric distributions.
 
 ### LL-stats
 
-Right-trimmed LL-stats of some simple left-bound distributions, using
-**L**inear combinations of **L**ower order statistics.
+Right-trimmed LL-stats of some simple left-bound distributions.
 
 <table markdown="span">
     <tr>
