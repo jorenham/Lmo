@@ -548,6 +548,41 @@ Right-trimmed LL-stats of some simple left-bound distributions, using
         </td>
     </tr>
     <tr>
+        <td colspan="2">
+            [Half-Cauchy](https://w.wiki/8hTq)<br>
+            [`halfcauchy()`][scipy.stats.halfcauchy]
+        </td>
+        <td>\( \displaystyle \frac{4 \ln 2}{\pi} \\ \approx 0.8825 \)</td>
+        <td>
+            \(
+                \displaystyle
+                \frac{63 \href{#const-zeta}{\mathop{\zeta}}(3)}{2 \pi^3}
+                - \frac{3 \ln 2}{\pi} \\
+                \approx 0.5593
+            \)
+        </td>
+        <td>
+            \(
+                \displaystyle
+                \frac
+                    {40 \mathop{\zeta}(3)}
+                    {63 \mathop{\zeta}(3) - 9 \pi^2 \ln 2}
+                    - \frac 8 9 \\
+                \approx 0.4974
+            \)
+        </td>
+        <td>
+            \(
+                \displaystyle
+                \frac{155}{2} \frac
+                    {3 \mathop{\zeta}(3) - 35 \pi^{-2} \mathop{\zeta}(5)}
+                    {21 \mathop{\zeta}(3) - 2 \pi^2 \ln 2}
+                + \frac{5}{6}\\
+                \approx 0.3572
+            \)
+        </td>
+    </tr>
+    <tr>
         <td>
             [Rayleigh](https://w.wiki/8gH3)<br>
             [`rayleigh()`][scipy.stats.rayleigh]
