@@ -736,6 +736,36 @@ Here, \( \jacobi{n}{\alpha}{\beta}{x} \) is a
     [J.V. Uspensky (1937)](https://www.worldcat.org/oclc/996937) --
     Introduction to mathematical probability
 
+### PFD
+
+With support on the interval \( (0, 1] \) and shape parameter
+\( \alpha > 0 \), the [power function distribution](https://w.wiki/8jFd) has
+the following CDF and PPF:
+
+\[
+\begin{align*}
+    F(x) &= x^\alpha \\
+    x(F) &= F^{\frac 1 \alpha}
+\end{align*}
+\]
+
+The trimmed L-moments of order \( r \in \naturals \setminus \{ 0 \} \) and trim
+\( (s, t) \in \naturals^2 \) are
+
+\[
+\tlmoment{s, t}{r} =
+    \frac{\ffact{\frac 1 \alpha}{r - 1}}{r}
+    \frac{\rfact{r + s}{1 + t}}{\rfact{\frac 1 \alpha + s}{r + t}}
+,
+\]
+
+where \( \ffact{x}{n} \) and \( \rfact{x}{n} \) are pochhammer
+symbols for the [falling](#def-ffact) and [rising factorials](#def-rfact),
+respectively.
+
+See [`scipy.stats.powerlaw`][scipy.stats.powerlaw] for an Lmo-compatible
+implementation.
+
 ### Gompertz
 
 The [Gompertz distribution](https://wikipedia.org/wiki/Gompertz_distribution)
@@ -1787,6 +1817,7 @@ and constants.
 *[CDF]: Cumulative distribution function
 *[PPF]: Percent point function, inverse of the CDF, a.k.a. quantile function
 *[QDF]: Quantile density function, derivative of the PPF
+*[PDF]: Power function distribution
 *[GEV]: Generalized (maximum) Extreme Value distribution
 *[GLO]: Generalized Logistic distribution
 *[GPD]: Generalized Pareto Distribution
