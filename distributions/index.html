@@ -443,6 +443,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pfd" class="md-nav__link">
+    <span class="md-ellipsis">
+      PFD
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#gompertz" class="md-nav__link">
     <span class="md-ellipsis">
       Gompertz
@@ -1314,6 +1323,29 @@ wolfram alpha / mathematica.</p>
 <p>Here, <span class="arithmatex">\( \jacobi{n}{\alpha}{\beta}{x} \)</span> is a
 <a href="#def-jacobi">Jacobi polynomial</a> (although it&rsquo;s not orthogonal for
 <span class="arithmatex">\( t &gt;= 0 \)</span>, since <span class="arithmatex">\( \beta &gt; -1 \)</span> does not hold).</p>
+<h3 id="pfd">PFD<a class="headerlink" href="#pfd" title="Permanent link">&para;</a></h3>
+<p>With support on the interval <span class="arithmatex">\( (0, 1] \)</span> and shape parameter
+<span class="arithmatex">\( \alpha &gt; 0 \)</span>, the <a href="https://w.wiki/8jFd">power function distribution</a> has
+the following <abbr title="Cumulative distribution function">CDF</abbr> and <abbr title="Percent point function, inverse of the CDF, a.k.a. quantile function">PPF</abbr>:</p>
+<div class="arithmatex">\[
+\begin{align*}
+    F(x) &amp;= x^\alpha \\
+    x(F) &amp;= F^{\frac 1 \alpha}
+\end{align*}
+\]</div>
+<p>The trimmed L-moments of order <span class="arithmatex">\( r \in \naturals \setminus \{ 0 \} \)</span> and trim
+<span class="arithmatex">\( (s, t) \in \naturals^2 \)</span> are</p>
+<div class="arithmatex">\[
+\tlmoment{s, t}{r} =
+    \frac{\ffact{\frac 1 \alpha}{r - 1}}{r}
+    \frac{\rfact{r + s}{1 + t}}{\rfact{\frac 1 \alpha + s}{r + t}}
+,
+\]</div>
+<p>where <span class="arithmatex">\( \ffact{x}{n} \)</span> and <span class="arithmatex">\( \rfact{x}{n} \)</span> are pochhammer
+symbols for the <a href="#def-ffact">falling</a> and <a href="#def-rfact">rising factorials</a>,
+respectively.</p>
+<p>See <a class="autorefs autorefs-external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.powerlaw.html#scipy.stats.powerlaw"><code>scipy.stats.powerlaw</code></a> for an Lmo-compatible
+implementation.</p>
 <h3 id="gompertz">Gompertz<a class="headerlink" href="#gompertz" title="Permanent link">&para;</a></h3>
 <p>The <a href="https://wikipedia.org/wiki/Gompertz_distribution">Gompertz distribution</a>
 <sup id="fnref:GOMP"><a class="footnote-ref" href="#fn:GOMP">2</a></sup> with shape parameter <span class="arithmatex">\( \alpha &gt; 0 \)</span> and <span class="arithmatex">\( x \ge 0 \)</span>, has the
@@ -1603,7 +1635,7 @@ trimmed L-moments.</p>
 </div>
 <h3 id="wakeby">Wakeby<a class="headerlink" href="#wakeby" title="Permanent link">&para;</a></h3>
 <p>The <a href="https://wikipedia.org/wiki/Wakeby_distribution"><em>Wakeby distribution</em></a>
-<sup id="fnref:WAK"><a class="footnote-ref" href="#fn:WAK">9</a></sup> is quantile-based &ndash; the <abbr title="Cumulative distribution function">CDF</abbr> and <abbr title="Probability density function">PDF</abbr> are not analytically expressible for the
+<sup id="fnref:WAK"><a class="footnote-ref" href="#fn:WAK">9</a></sup> is quantile-based &ndash; the <abbr title="Cumulative distribution function">CDF</abbr> and <abbr title="Power function distribution">PDF</abbr> are not analytically expressible for the
 general case.
 Without loss of generality, Lmo uses a 3-parameter &ldquo;standardized&rdquo;
 paremetrization, with shape parameters <span class="arithmatex">\( \beta,\ \delta,\ \phi \)</span>.</p>
@@ -1719,7 +1751,7 @@ paremetrization, with shape parameters <span class="arithmatex">\( \beta,\ \delt
 <span class="arithmatex">\( \alpha \mapsto 1 + \phi \)</span> and <span class="arithmatex">\( \gamma \mapsto 1 - \phi \)</span>.</p>
 <p>The <abbr title="Generalized Tukey–Lambda Distribution">GLD</abbr> is implemented as
 <a class="autorefs autorefs-internal" href="../api/#lmo.distributions.genlambda"><code>lmo.distributions.genlamda</code></a>.</p>
-<p>As with the Wakeby distribution, the <abbr title="Probability density function">PDF</abbr> and <abbr title="Cumulative distribution function">CDF</abbr> of the <abbr title="Generalized Tukey–Lambda Distribution">GLD</abbr> are not
+<p>As with the Wakeby distribution, the <abbr title="Power function distribution">PDF</abbr> and <abbr title="Cumulative distribution function">CDF</abbr> of the <abbr title="Generalized Tukey–Lambda Distribution">GLD</abbr> are not
 analytically expressible. Instead, the <abbr title="Generalized Tukey–Lambda Distribution">GLD</abbr> is defined through its <abbr title="Percent point function, inverse of the CDF, a.k.a. quantile function">PPF</abbr>:</p>
 <div class="arithmatex">\[
 x(F) = (\phi + 1) \qlog{1 - \beta}{F} + (\phi - 1) \qlog{1 - \delta}{1 - F}
@@ -2293,7 +2325,7 @@ generating asymmetric random variables&#160;<a class="footnote-backref" href="#f
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-01-02</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-01-04</span>
   </span>
 
     
