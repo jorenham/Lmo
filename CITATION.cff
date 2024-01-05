@@ -1,0 +1,19 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: Lmo
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Joren
+    name-particle: Joren
+    family-names: Hammudoglu
+    email: jhammudoglu@gmail.com
+    orcid: 'https://orcid.org/0009-0003-7341-5928'
+repository-code: 'https://github.com/jorenham/Lmo/'
+url: 'https://jorenham.github.io/Lmo/'
+abstract: Trimmed L-moments and L-comoments for robust statistics.
+license: BSD-3-Clause
