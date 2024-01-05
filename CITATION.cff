@@ -9,9 +9,7 @@ message: >-
 type: software
 authors:
   - given-names: Joren
-    name-particle: Joren
     family-names: Hammudoglu
-    email: jhammudoglu@gmail.com
     orcid: 'https://orcid.org/0009-0003-7341-5928'
 repository-code: 'https://github.com/jorenham/Lmo/'
 url: 'https://jorenham.github.io/Lmo/'
