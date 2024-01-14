@@ -305,6 +305,13 @@ class l_rv_generic(PatchClass):  # noqa: N801
         _r = clean_orders(r)
         _trim = clean_trim(trim)
 
+        if (
+            _trim[0] == _trim[1] == 0
+            and not np.isfinite(self.mean(*args, **kwds))
+        ):
+            # first moment condition not met
+            return np.full(_r.shape, np.nan)[()]
+
         args, loc, scale = self._parse_args(*args, **kwds)
         if not self._argcheck(*args):
             return np.full(_r.shape, np.nan)[()]
