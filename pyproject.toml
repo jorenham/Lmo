@@ -10,8 +10,8 @@ description = "L-Moments for robust statistics."
 authors = ["Joren Hammudoglu <jhammudoglu@gmail.com>"]
 readme = "README.md"
 license = "BSD-3-Clause"
-homepage = "https://jorenham.github.io/lmo/"
-repository = "https://github.com/jorenham/lmo/"
+homepage = "https://jorenham.github.io/Lmo/"
+repository = "https://github.com/jorenham/Lmo/"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -28,8 +28,8 @@ classifiers = [
 ]
 
 [tool.poetry.urls]
-Documentation = "https://jorenham.github.io/lmo/"
-"Bug Tracker" = "https://github.com/jorenham/lmo/issues"
+Documentation = "https://jorenham.github.io/Lmo/"
+"Bug Tracker" = "https://github.com/jorenham/Lmo/issues"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
