@@ -96,7 +96,6 @@ testpaths = ["tests", "lmo"]
 include = ["lmo"]
 exclude = [
     "**/__pycache__",
-    "**/.pytest_cache",
     "**/.hypothesis",
     "**/.pytest_cache",
     "**/.ruff_cache",
