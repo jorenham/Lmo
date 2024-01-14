@@ -139,14 +139,12 @@ class l_rv_generic(PatchClass):  # noqa: N801
         assert scale > 0
 
         _cdf, _ppf = self._cdf, self._ppf
-        if args or loc != 0 or scale != 1:
-            def cdf(x: float, /) -> float:
-                return _cdf((x - loc) / scale, *args)
 
-            def ppf(q: float, /):
-                return _ppf(q, *args) * scale + loc
-        else:
-            cdf, ppf = _cdf, _ppf
+        def cdf(x: float, /) -> float:
+            return _cdf(np.array([(x - loc) / scale], dtype=float), *args)[0]
+
+        def ppf(q: float, /):
+            return _ppf(np.array([q], dtype=float), *args)[0] * scale + loc
 
         return cdf, ppf
 
@@ -306,6 +304,13 @@ class l_rv_generic(PatchClass):  # noqa: N801
         """
         _r = clean_orders(r)
         _trim = clean_trim(trim)
+
+        if (
+            _trim[0] == _trim[1] == 0
+            and not np.isfinite(self.mean(*args, **kwds))
+        ):
+            # first moment condition not met
+            return np.full(_r.shape, np.nan)[()]
 
         args, loc, scale = self._parse_args(*args, **kwds)
         if not self._argcheck(*args):
