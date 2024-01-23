@@ -38,7 +38,7 @@ typing_extensions = { version = "^4.1", python = "<3.11"}
 # https://numpy.org/neps/nep-0029-deprecation_policy.html
 numpy = "^1.23.4"
 scipy = "^1.9.3"
-pandas = { version = ">=1.4,<2.2", optional = true }
+pandas = { version = ">=1.4,<3.0", optional = true }
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4"
@@ -89,6 +89,8 @@ filterwarnings = [
     "error",
     # https://github.com/dateutil/dateutil/issues/1314
     "ignore::DeprecationWarning:dateutil",
+    # https://github.com/pandas-dev/pandas/issues/54466
+    "ignore:(?s).*Pyarrow will become a required dependency of pandas:DeprecationWarning",
 ]
 log_cli_level = "info"
 testpaths = ["tests", "lmo"]
