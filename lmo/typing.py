@@ -103,17 +103,17 @@ AnyNDArray: TypeAlias = npt.NDArray[T] | SupportsArray[T]
 _ArrayZ: TypeAlias = AnyNDArray[_NpInt] | AnyNDArray[_NpBool]
 IntVector: TypeAlias = _ArrayZ | Sequence[AnyInt]
 IntMatrix: TypeAlias = _ArrayZ | Sequence[Sequence[AnyInt]]
-IntTensor: TypeAlias = _ArrayZ | Sequence[IntMatrix | 'IntTensor']
+IntTensor: TypeAlias = _ArrayZ | Sequence['IntMatrix | IntTensor']
 
 _ArrayR: TypeAlias = AnyNDArray[_NpFloat] | _ArrayZ
 FloatVector: TypeAlias = _ArrayR | Sequence[AnyFloat]
 FloatMatrix: TypeAlias = _ArrayR | Sequence[Sequence[AnyFloat]]
-FloatTensor: TypeAlias = _ArrayR | Sequence[FloatMatrix | 'FloatTensor']
+FloatTensor: TypeAlias = _ArrayR | Sequence['FloatMatrix | FloatTensor']
 
 _ArrayC: TypeAlias = AnyNDArray[_NpComplex] | _ArrayR
 ComplexVector: TypeAlias = _ArrayC | Sequence[AnyComplex]
 ComplexMatrix: TypeAlias = _ArrayC | Sequence[Sequence[AnyComplex]]
-ComplexTensor: TypeAlias = _ArrayC | Sequence[ComplexMatrix | 'ComplexTensor']
+ComplexTensor: TypeAlias = _ArrayC | Sequence['ComplexMatrix | ComplexTensor']
 
 # for numpy.sort
 SortKind: TypeAlias = Literal['quicksort', 'heapsort', 'stable']
