@@ -89,6 +89,8 @@ filterwarnings = [
     "error",
     # https://github.com/dateutil/dateutil/issues/1314
     "ignore::DeprecationWarning:dateutil",
+    # https://github.com/pandas-dev/pandas/issues/54466
+    "ignore:(?s).*Pyarrow will become a required dependency of pandas:DeprecationWarning",
 ]
 log_cli_level = "info"
 testpaths = ["tests", "lmo"]
