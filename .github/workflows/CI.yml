@@ -54,7 +54,7 @@ jobs:
         run: poetry run ruff check --output-format=github .
 
       - name: pyright
-        run: poetry run pyright >> $GITHUB_STEP_SUMMARY
+        run: poetry run pyright
 
       - name: pytest
         run: poetry run pytest
