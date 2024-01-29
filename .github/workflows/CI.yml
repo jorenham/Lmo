@@ -58,8 +58,7 @@ jobs:
       - name: pyright
         uses: jakebailey/pyright-action@v2
         with:
-          python-path: .venv/bin/python
-          project: pyproject.toml
+          python-path: $(poetry env info --path)/bin/python
 
       - name: pytest
         run: poetry run pytest
