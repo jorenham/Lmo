@@ -47,6 +47,8 @@ jobs:
           --without debug
           --${{ matrix.pandas }} pandas
 
+      - run: echo "$(poetry env info --path)/bin" >> $GITHUB_PATH
+
       - name: codespell
         run: poetry run codespell .
 
