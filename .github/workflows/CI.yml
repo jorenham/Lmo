@@ -25,25 +25,24 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - name: checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: install poetry
         run: pipx install poetry
 
-      - name: setup python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: poetry
 
-      - name: check
+      - name: poetry check
         run: poetry check
 
-      - name: install
+      - name: poetry install
         run: >
           poetry install
           --sync
+          --with github
           --without docs
           --without debug
           --${{ matrix.pandas }} pandas
@@ -51,11 +50,11 @@ jobs:
       - name: codespell
         run: poetry run codespell .
 
-      - name: ruff
+      - name: ruff check
         run: poetry run ruff check --output-format=github .
 
       - name: pyright
         run: poetry run pyright
 
       - name: pytest
-        run: poetry run py.test
+        run: poetry run pytest

@@ -64,6 +64,11 @@ line-profiler = ">=4.1"
 pandas = ">=1.4"
 pandas-stubs = ">=1.4"
 
+[tool.poetry.group.github]
+optional = true
+[tool.poetry.group.github.dependencies]
+pytest-github-actions-annotate-failures = ">=0.2,<1.0"
+
 [tool.poetry.extras]
 pandas = ["pandas"]
 
