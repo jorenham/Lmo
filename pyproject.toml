@@ -41,22 +41,22 @@ scipy = "^1.9.3"
 pandas = { version = ">=1.4,<3.0", optional = true }
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^7.4"
-hypothesis = { extras = ["numpy"], version = "^6.88" }
-pyright = "^1.1"
-ruff = ">=0.1.6,<1.0"
+pytest = "^8.0"
+hypothesis = { version = "^6.97", extras = ["numpy"] }
+pyright = "^1.1.349"
+ruff = ">=0.1.14,<1.0"
 codespell = "^2.2"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.5"
-mkdocs-material = "^9.4"
+mkdocs-material = "^9.5"
 mkdocs-include-markdown-plugin = "^6.0"
 mkdocstrings = {extras = ["python"], version = ">=0.24,<1.0"}
-mkdocs-git-revision-date-localized-plugin = "^1.2.1"
+mkdocs-git-revision-date-localized-plugin = "^1.2.2"
 
 [tool.poetry.group.debug.dependencies]
-ipython = ">=8.17"
-ipykernel = ">=6.26"
+ipython = ">=8.20"
+ipykernel = ">=6.29"
 matplotlib = ">=3.8"
 line-profiler = ">=4.1"
 
@@ -68,7 +68,7 @@ pandas-stubs = ">=1.4"
 pandas = ["pandas"]
 
 [tool.pytest.ini_options]
-minversion = "7.0"
+minversion = "8.0"
 addopts = [
     "-ra",
     "--exitfirst",
