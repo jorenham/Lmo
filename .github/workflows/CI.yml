@@ -57,6 +57,8 @@ jobs:
 
       - name: pyright
         uses: jakebailey/pyright-action@v2
+        with:
+          project: pyproject.toml
 
       - name: pytest
         run: poetry run pytest
