@@ -47,8 +47,6 @@ jobs:
           --without debug
           --${{ matrix.pandas }} pandas
 
-      - run: echo "$(poetry env info --path)/bin" >> $GITHUB_PATH
-
       - name: codespell
         run: poetry run codespell .
 
@@ -56,9 +54,7 @@ jobs:
         run: poetry run ruff check --output-format=github .
 
       - name: pyright
-        uses: jakebailey/pyright-action@v2
-        with:
-          python-path: $(poetry env info --path)/bin/python
+        run: poetry run pyright >> $GITHUB_STEP_SUMMARY
 
       - name: pytest
         run: poetry run pytest
