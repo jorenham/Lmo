@@ -47,17 +47,17 @@ jobs:
           --without debug
           --${{ matrix.pandas }} pandas
 
-      - name: poetry shell
-        run: poetry shell
-
       - name: codespell
-        run: codespell .
+        run: poetry run codespell .
 
       - name: ruff check
-        run: ruff check --output-format=github .
+        run: poetry run ruff check --output-format=github .
 
       - name: pyright
         uses: jakebailey/pyright-action@v2
+        with:
+          python-path: .venv/bin/python
+          project: pyproject.toml
 
       - name: pytest
-        run: pytest
+        run: poetry run pytest
