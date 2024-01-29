@@ -52,7 +52,7 @@ jobs:
         run: poetry run codespell .
 
       - name: ruff
-        run: poetry run ruff check .
+        run: poetry run ruff check --output-format=github .
 
       - name: pyright
         run: poetry run pyright
