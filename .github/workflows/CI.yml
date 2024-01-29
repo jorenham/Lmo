@@ -28,9 +28,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: install poetry
-        run: |
-          pipx install poetry
-          echo "$(poetry env info --path)/bin" >> $GITHUB_PATH
+        run: pipx install poetry
 
       - uses: actions/setup-python@v5
         with:
@@ -49,16 +47,17 @@ jobs:
           --without debug
           --${{ matrix.pandas }} pandas
 
+      - name: poetry shell
+        run: poetry shell
+
       - name: codespell
-        run: poetry run codespell .
+        run: codespell .
 
       - name: ruff check
-        run: poetry run ruff check --output-format=github .
+        run: ruff check --output-format=github .
 
       - name: pyright
         uses: jakebailey/pyright-action@v2
-        with:
-          project: pyproject.toml
 
       - name: pytest
-        run: poetry run pytest
+        run: pytest
