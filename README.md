@@ -10,6 +10,8 @@
 [![versions](https://img.shields.io/pypi/pyversions/lmo?style=flat-square)](https://github.com/jorenham/lmo)
 ![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/jorenham/lmo/CI.yml?branch=master&style=flat-square)
 ![GitHub commit activity (branch)](https://img.shields.io/github/commit-activity/m/jorenham/Lmo?style=flat-square)
+[![Checked with pyright](https://microsoft.github.io/pyright/img/pyright_badge.svg)](https://microsoft.github.io/pyright/)
+
 
 
 ~~~
