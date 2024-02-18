@@ -139,8 +139,6 @@ extend-exclude = [
 line-length = 79
 src = ["lmo"]
 target-version = "py310"
-typing-modules = ["lmo.typing", "numpy.typing"]
-task-tags = ["TODO", "Todo"]
 
 [tool.ruff.lint]
 preview = true
@@ -196,6 +194,8 @@ ignore = [
     "RUF021",   # parenthesize-chained-operators
     "RUF022",   # unsorted-dunder-all
 ]
+typing-modules = ["lmo.typing", "numpy.typing"]
+task-tags = ["TODO", "Todo"]
 
 [tool.ruff.lint.pycodestyle]
 max-line-length = 79
@@ -217,6 +217,7 @@ known-third-party = ["numpy", "pandas", "scipy"]
 [tool.ruff.format]
 exclude = ["__init__.py", "typing.py"]
 quote-style = "single"
+
 
 [tool.codespell]
 skip = './dist,./site,*.lock,*.pyc,*.js,*.css,*.svg,*.png,*.ico,*.ipynb'
