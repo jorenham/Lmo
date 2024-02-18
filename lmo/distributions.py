@@ -89,6 +89,7 @@ _F_EPS: Final[np.float64] = np.finfo(float).eps
 
 # Non-parametric
 
+
 class l_poly:  # noqa: N801
     """
     Polynomial quantile distribution with (only) the given L-moments.
@@ -258,6 +259,7 @@ class l_poly:  # noqa: N801
     def ppf(self, p: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
     @overload
     def ppf(self, p: AnyScalar) -> float: ...
+
     def ppf(self, p: npt.ArrayLike) -> float | _ArrF8:
         r"""
         [Percent point function](https://w.wiki/8cQU) \( Q(p) \) (inverse of
@@ -278,6 +280,7 @@ class l_poly:  # noqa: N801
     def isf(self, q: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
     @overload
     def isf(self, q: AnyScalar) -> float: ...
+
     def isf(self, q: npt.ArrayLike) -> float | _ArrF8:
         r"""
         Inverse survival function \( \bar{Q}(q) = Q(1 - q) \) (inverse of
@@ -295,6 +298,7 @@ class l_poly:  # noqa: N801
     def qdf(self, p: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
     @overload
     def qdf(self, p: AnyScalar) -> float: ...
+
     def qdf(self, p: npt.ArrayLike) -> float | _ArrF8:
         r"""
         Quantile density function \( q \equiv \frac{\dd{Q}}{\dd{p}} \) (
@@ -315,6 +319,7 @@ class l_poly:  # noqa: N801
     def cdf(self, x: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
     @overload
     def cdf(self, x: AnyScalar) -> float: ...
+
     def cdf(self, x: npt.ArrayLike) -> float | _ArrF8:
         r"""
         [Cumulative distribution function](https://w.wiki/3ota)
@@ -348,6 +353,7 @@ class l_poly:  # noqa: N801
     def sf(self, x: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
     @overload
     def sf(self, x: AnyScalar) -> float: ...
+
     def sf(self, x: npt.ArrayLike) -> float | _ArrF8:
         r"""
         Survival function \(S(x) = \mathrm{P}(X > x) =
@@ -378,6 +384,7 @@ class l_poly:  # noqa: N801
     def pdf(self, x: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
     @overload
     def pdf(self, x: AnyScalar) -> float: ...
+
     def pdf(self, x: npt.ArrayLike) -> float | _ArrF8:
         r"""
         Probability density function \( f \equiv \frac{\dd{F}}{\dd{x}} \)
@@ -396,6 +403,7 @@ class l_poly:  # noqa: N801
     def hf(self, x: AnyNDArray[Any] | Sequence[Any]) -> _ArrF8: ...
     @overload
     def hf(self, x: AnyScalar) -> float: ...
+
     def hf(self, x: npt.ArrayLike) -> float | _ArrF8:
         r"""
         [Hazard function
@@ -546,6 +554,7 @@ class l_poly:  # noqa: N801
     ) -> tuple[_ArrF8, _ArrF8]: ...
     @overload
     def interval(self, confidence: AnyScalar, /) -> tuple[float, float]: ...
+
     def interval(
         self,
         confidence: npt.ArrayLike,
@@ -839,6 +848,7 @@ class l_poly:  # noqa: N801
         """
         return float(self.l_ratio(4, 2, trim=trim))
 
+
 def _check_lmoments(
     l_r: npt.NDArray[np.floating[Any]],
     trim: AnyTrim = (0, 0),
@@ -885,6 +895,7 @@ def _ppf_poly_series(
         kind=npp.Legendre,
         symbol='q',
     )
+
 
 class l_rv_nonparametric(_rv_continuous):  # noqa: N801
     r"""
@@ -1202,6 +1213,7 @@ class l_rv_nonparametric(_rv_continuous):  # noqa: N801
 
 # Parametric
 
+
 def _kumaraswamy_lmo0(
     r: int,
     s: int,
@@ -1219,6 +1231,7 @@ def _kumaraswamy_lmo0(
         * cast(_ArrF8, sc.comb(r + s + t, k))  # type: ignore
         * cast(_ArrF8, sc.beta(1 / a, 1 + k * b)) / a  # type: ignore
     ).sum() / r
+
 
 _kumaraswamy_lmo = np.vectorize(_kumaraswamy_lmo0, [float], excluded={1, 2})
 
@@ -1331,6 +1344,7 @@ class kumaraswamy_gen(_rv_continuous):  # noqa: N801
 
         return np.atleast_1d(cast(_ArrF8, _kumaraswamy_lmo(r, s, t, a, b)))
 
+
 kumaraswamy: RVContinuous[float, float] = kumaraswamy_gen(
     a=0.0,
     b=1.0,
@@ -1393,6 +1407,7 @@ def _wakeby_isf0(
         v = -(q**(-d) - 1) / d
 
     return -f * u - (1 - f) * v
+
 
 _wakeby_isf = np.vectorize(_wakeby_isf0, [float])
 
@@ -1507,6 +1522,7 @@ def _wakeby_sf0(  # noqa: C901
 
 _wakeby_sf = np.vectorize(_wakeby_sf0, [float])
 
+
 def _wakeby_lmo0(
     r: int,
     s: float,
@@ -1536,7 +1552,9 @@ def _wakeby_lmo0(
 
     return _lmo0_partial(b, f) + _lmo0_partial(-d, 1 - f)
 
+
 _wakeby_lmo = np.vectorize(_wakeby_lmo0, [float], excluded={1, 2})
+
 
 class wakeby_gen(_rv_continuous):  # noqa: N801
     a: float
@@ -1729,10 +1747,12 @@ For a detailed description of the Wakeby distribution, refer to
 [Distributions - Wakeby](distributions.md#wakeby).
 """
 
+
 def _genlambda_support(b: float, d: float, f: float) -> tuple[float, float]:
     xa = -(1 + f) / b if b > 0 else -math.inf
     xb = (1 - f) / d if d > 0 else math.inf
     return xa, xb
+
 
 def _genlambda_ppf0(q: float, b: float, d: float, f: float) -> float:
     """PPF of the GLD."""
@@ -1747,11 +1767,14 @@ def _genlambda_ppf0(q: float, b: float, d: float, f: float) -> float:
     v = math.log(1 - q) if d == 0 else ((1 - q)**d - 1) / d
     return (1 + f) * u - (1 - f) * v
 
+
 _genlambda_ppf = np.vectorize(_genlambda_ppf0, [float])
+
 
 @np.errstate(divide='ignore')
 def _genlambda_qdf(q: V, b: float, d: float, f: float) -> V:
     return cast(V, (1 + f) * q**(b - 1) + (1 - f) * (1 - q)**(d - 1))
+
 
 def _genlambda_cdf0(  # noqa: C901
     x: float,
@@ -1817,6 +1840,7 @@ _genlambda_cdf = np.vectorize(
     excluded={'ptol', 'xtol', 'maxiter'},
 )
 
+
 def _genlambda_lmo0(
     r: int,
     s: float,
@@ -1848,7 +1872,9 @@ def _genlambda_lmo0(
         + (-1)**r * (1 - f) * _lmo0_partial(t, d)
     )
 
+
 _genlambda_lmo = np.vectorize(_genlambda_lmo0, [float], excluded={1, 2})
+
 
 class genlambda_gen(_rv_continuous):  # noqa: N801
     def _argcheck(self, b: float, d: float, f: float) -> int:

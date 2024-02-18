@@ -68,6 +68,7 @@ else:
 T = TypeVar('T', bound=np.generic)
 T_co = TypeVar('T_co', covariant=True, bound=np.generic)
 
+
 @runtime_checkable
 class SupportsArray(Protocol[T_co]):
     """
@@ -121,6 +122,7 @@ IndexOrder: TypeAlias = Literal['C', 'F', 'A', 'K']
 
 # numpy.polynomial
 
+
 @runtime_checkable
 class _SupportsCoef(Protocol):
     coef: npt.NDArray[Any] | SupportsArray[Any]
@@ -135,9 +137,11 @@ class _SupportsDomain(Protocol):
 class _SupportsWindow(Protocol):
     window: npt.NDArray[Any] | SupportsArray[Any]
 
+
 @runtime_checkable
 class _SupportsLessThanInt(Protocol):
     def __lt__(self, __other: int) -> bool: ...
+
 
 _P = TypeVar('_P', bound='PolySeries')
 
@@ -162,9 +166,13 @@ class PolySeries(Protocol):
     def symbol(self) -> str: ...
 
     def has_samecoef(self, __other: _SupportsCoef) -> bool: ...
+
     def has_samedomain(self, __other: _SupportsDomain) -> bool: ...
+
     def has_samewindow(self, __other: _SupportsWindow) -> bool: ...
+
     def has_sametype(self, __other: type[Any]) -> TypeGuard[type[Self]]: ...
+
     def __init__(
         self,
         coef: npt.ArrayLike,
@@ -172,6 +180,7 @@ class PolySeries(Protocol):
         window: ComplexVector | None = ...,
         symbol: str = ...,
     ) -> None: ...
+
     def __format__(self, __fmt_str: str) -> str: ...
     @overload
     def __call__(self, __arg: _P) -> _P: ...
@@ -184,37 +193,63 @@ class PolySeries(Protocol):
     ) -> npt.NDArray[_NpFloat] | npt.NDArray[_NpComplex]: ...
     @overload
     def __call__(self, __arg: AnyNumber) -> _NpFloat | _NpComplex: ...
+
     def __iter__(self) -> Iterator[_NpFloat | _NpComplex]: ...
+
     def __len__(self) -> int: ...
+
     def __neg__(self) -> Self: ...
+
     def __pos__(self) -> Self: ...
+
     def __add__(self, __other: npt.ArrayLike | Self) -> Self: ...
+
     def __sub__(self, __other: npt.ArrayLike | Self) -> Self: ...
+
     def __mul__(self, __other: npt.ArrayLike | Self) -> Self: ...
+
     def __truediv__(self, __other: AnyNumber) -> Self: ...
+
     def __floordiv__(self, __other: npt.ArrayLike | Self) -> Self: ...
+
     def __mod__(self, __other: npt.ArrayLike | Self) -> Self: ...
+
     def __divmod__(
         self,
         __other: npt.ArrayLike | Self,
     ) -> tuple[Self, Self]: ...
+
     def __radd__(self, __other: npt.ArrayLike | Self) -> Self: ...
+
     def __rsub__(self, __other: npt.ArrayLike | Self) -> Self: ...
+
     def __rmul__(self, __other: npt.ArrayLike | Self) -> Self: ...
+
     def __rtruediv__(self, __other: AnyNumber) -> Self: ...
+
     def __rfloordiv__(self, __other: npt.ArrayLike | Self) -> Self: ...
+
     def __rmod__(self, __other: npt.ArrayLike | Self) -> Self: ...
+
     def __rdivmod__(
         self,
         __other: npt.ArrayLike | Self,
     ) -> tuple[Self, Self]: ...
+
     def __pow__(self, __other: AnyInt) -> Self: ...
+
     def __eq__(self, __other: object) -> bool: ...
+
     def __ne__(self, __other: object) -> bool: ...
+
     def copy(self) -> Self: ...
+
     def degree(self) -> int: ...
+
     def cutdeg(self, deg: SupportsInt) -> Self: ...
+
     def trim(self, tol: AnyFloat | _SupportsLessThanInt = ...) -> Self: ...
+
     def truncate(self, size: AnyInt) -> Self: ...
     @overload
     def convert(
@@ -238,15 +273,20 @@ class PolySeries(Protocol):
         kind: type[Self] | None = ...,
         window: ComplexVector = ...,
     ) -> Self: ...
+
     def mapparms(self) -> tuple[_NpFloat, _NpFloat]: ...
+
     def integ(
         self,
         m: AnyInt = ...,
         k: npt.ArrayLike = ...,
         lbnd: AnyNumber | None = ...,
     ) -> Self: ...
+
     def deriv(self, m: AnyInt = ...) -> Self: ...
+
     def roots(self) -> npt.NDArray[_NpFloat | _NpComplex]: ...
+
     def linspace(
         self,
         n: AnyInt = ...,
@@ -331,17 +371,18 @@ class PolySeries(Protocol):
     ) -> Self: ...
 
 
-
 # PEP 692 precise **kwargs typing
 
 class _LOptions(TypedDict, total=False):
     sort: SortKind | None
     cache: bool
 
+
 class LMomentOptions(_LOptions, total=False):
     """Use like `def spam(**kwargs: Unpack[LMomentOptions]): ...`."""
     fweights: IntVector | None
     aweights: npt.ArrayLike | None
+
 
 class LComomentOptions(_LOptions, total=False):
     """Use like `def spam(**kwargs: Unpack[LComomentOptions]): ...`."""
@@ -390,9 +431,11 @@ class OptimizeResult(Protocol):
     nfev: int
     nit: int
 
+
 V = TypeVar('V', bound=float | npt.NDArray[np.float64])
 Ps = TypeVarTuple('Ps')
 RandomState: TypeAlias = np.random.RandomState | np.random.Generator
+
 
 class RVContinuousBase(Protocol[Unpack[Ps]]):
     """
@@ -993,6 +1036,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
         **kwds: Any,
     ) -> Callable[[V], V]: ...
 
+
 class RVContinuous(RVContinuousBase[Unpack[Ps]], Protocol[Unpack[Ps]]):
     """Generic type stub for [`rv_continuous`][scipy.stats.rv_continuous]."""
     badvalue: float
@@ -1075,6 +1119,7 @@ AnyTrim: TypeAlias = (
 
 
 Theta = ParamSpec('Theta')
+
 
 class DistributionFunction(Protocol[Theta]):
     """

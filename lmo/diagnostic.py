@@ -316,7 +316,6 @@ def l_stats_gof(
     return HypothesisTestResult(stat, pval)
 
 
-
 def _lm2_bounds_single(r: int, trim: tuple[float, float]) -> float:
     if r == 1:
         return float('inf')
@@ -343,6 +342,7 @@ def _lm2_bounds_single(r: int, trim: tuple[float, float]) -> float:
                 - lgamma(r + s + t + .5),
             ) / (np.pi * 2 * r**2)
 
+
 _lm2_bounds = cast(
     Callable[[IntVector, tuple[float, float]], _ArrF8],
     np.vectorize(
@@ -352,6 +352,7 @@ _lm2_bounds = cast(
         signature='()->()',
     ),
 )
+
 
 @overload
 def l_moment_bounds(
@@ -368,6 +369,7 @@ def l_moment_bounds(
     trim: AnyTrim = ...,
     scale: float = ...,
 ) -> float: ...
+
 
 def l_moment_bounds(
     r: AnyInt | IntVector,
@@ -471,6 +473,7 @@ def l_moment_bounds(
     _trim = clean_trim(trim)
     return scale * np.sqrt(_lm2_bounds(_r, _trim))[()]
 
+
 @overload
 def l_ratio_bounds(
     r: IntVector,
@@ -488,6 +491,7 @@ def l_ratio_bounds(
     *,
     legacy: bool = ...,
 ) -> tuple[float, float]: ...
+
 
 def l_ratio_bounds(
     r: IntVector | AnyInt,

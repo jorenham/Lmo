@@ -270,6 +270,7 @@ def l_moment(
     cache: bool = ...,
 ) -> npt.NDArray[T] | T: ...
 
+
 def l_moment(
     a: npt.ArrayLike,
     r: IntVector | AnyInt,
@@ -463,6 +464,7 @@ def l_ratio(
     **kwargs: Unpack[LMomentOptions],
 ) -> npt.NDArray[T] | T: ...
 
+
 def l_ratio(
     a: npt.ArrayLike,
     r: AnyInt | IntVector,
@@ -578,6 +580,7 @@ def l_loc(
     **kwargs: Unpack[LMomentOptions],
 ) -> npt.NDArray[T] | T: ...
 
+
 def l_loc(
     a: npt.ArrayLike,
     /,
@@ -639,6 +642,7 @@ def l_scale(
     **kwargs: Unpack[LMomentOptions],
 ) -> npt.NDArray[T] | T: ...
 
+
 def l_scale(
     a: npt.ArrayLike,
     /,
@@ -688,6 +692,7 @@ def l_variation(
 ) -> T:
     ...
 
+
 @overload
 def l_variation(
     a: npt.ArrayLike,
@@ -699,6 +704,7 @@ def l_variation(
     **kwargs: Unpack[LMomentOptions],
 ) -> npt.NDArray[T] | T:
     ...
+
 
 def l_variation(
     a: npt.ArrayLike,
@@ -768,6 +774,7 @@ def l_skew(
     **kwargs: Unpack[LMomentOptions],
 ) -> npt.NDArray[T] | T: ...
 
+
 def l_skew(
     a: npt.ArrayLike,
     /,
@@ -828,6 +835,7 @@ def l_kurtosis(
     dtype: np.dtype[T] | type[T] = np.float64,
     **kwargs: Unpack[LMomentOptions],
 ) -> npt.NDArray[T] | T: ...
+
 
 def l_kurtosis(
     a: npt.ArrayLike,

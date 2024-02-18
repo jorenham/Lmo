@@ -53,6 +53,7 @@ def fpow(
     out: npt.NDArray[np.float64] | None = ...,
 ) -> float | npt.NDArray[np.float64]: ...
 
+
 def fpow(
     x: npt.ArrayLike,
     n: npt.ArrayLike,
@@ -87,6 +88,7 @@ def fpow(
         return res[()]
     return res
 
+
 @overload
 def gamma2(
     a: float,
@@ -114,6 +116,7 @@ def gamma2(
     x: npt.ArrayLike,
     out: npt.NDArray[np.float64] | None = ...,
 ) -> float | npt.NDArray[np.float64]: ...
+
 
 def gamma2(
     a: float,
@@ -203,6 +206,7 @@ def harmonic(
 
     return _out[()] if np.isscalar(n) else _out
 
+
 @overload
 def norm_sh_jacobi(n: int, alpha: float, beta: float) -> float: ...
 
@@ -212,6 +216,7 @@ def norm_sh_jacobi(
     alpha: float,
     beta: float,
 ) -> npt.NDArray[np.float64]: ...
+
 
 def norm_sh_jacobi(
     n: int | IntVector,
@@ -273,6 +278,7 @@ def norm_sh_jacobi(
 
     return c[()] if np.isscalar(n) else c
 
+
 @overload
 def fourier_jacobi(
     x: AnyScalar,
@@ -288,6 +294,7 @@ def fourier_jacobi(
     a: float,
     b: float,
 ) -> npt.NDArray[np.float64]: ...
+
 
 def fourier_jacobi(
     x: npt.ArrayLike,

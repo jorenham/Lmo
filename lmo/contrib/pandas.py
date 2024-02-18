@@ -130,7 +130,6 @@ class Series(pd.Series):  # type: ignore [missingTypeArguments]
 
         pd.api.extensions.register_series_accessor(name)(fn)  # type: ignore
 
-
     def l_moment(
         self,
         r: AnyInt | IntVector,

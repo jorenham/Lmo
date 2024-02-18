@@ -159,6 +159,7 @@ def peaks_jacobi(n: int, a: float, b: float) -> npt.NDArray[np.float64]:
 
     return np.round(x, 15) + 0.0  # cleanup of numerical noise
 
+
 def arg_extrema_jacobi(n: int, a: float, b: float) -> tuple[float, float]:
     r"""
     Find the \( x \) of the minimum and maximum values of a Jacobi polynomial
@@ -205,6 +206,7 @@ def arg_extrema_jacobi(n: int, a: float, b: float) -> tuple[float, float]:
     p = eval_sh_jacobi(n, a, b, (x + 1) / 2)
 
     return x[np.argmin(p)], x[np.argmax(p)]
+
 
 def extrema_jacobi(n: int, a: float, b: float) -> tuple[float, float]:
     r"""

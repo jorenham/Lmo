@@ -55,6 +55,7 @@ V = TypeVar('V', bound=float | npt.NDArray[np.float64])
 
 _Tuple4: TypeAlias = tuple[T, T, T, T]
 
+
 class _ShapeInfo(Protocol):
     """Stub for `scipy.stats._distn_infrastructure._ShapeInfo`."""
     name: str
@@ -1025,7 +1026,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
         for i, param in enumerate(self._param_info()):
             name = param.name
             if param.integrality:
-                msg = 'integral parameter ({name!r}) fitting is not supported'
+                msg = f'integral parameter ({name!r}) fitting is not supported'
                 raise NotImplementedError(msg)
 
             a, b = param.domain
@@ -1231,7 +1232,6 @@ class l_rv_generic(PatchClass):  # noqa: N801
                 ).params,  # type: ignore
             )
 
-
         _lmo_cache = {}
         _lmo_fn = self._l_moment
 
@@ -1288,7 +1288,6 @@ class l_rv_generic(PatchClass):  # noqa: N801
         ]
         FitArgs = NamedTuple('FitArgs', params_and_types)
         return FitArgs(*result.args)
-
 
     def l_fit_loc_scale(
         self,
@@ -1429,14 +1428,11 @@ class l_rv_frozen(PatchClass):  # noqa: N801, D101
     def l_loc(self, trim: AnyTrim = (0, 0)) -> float:  # noqa: D102
         return self.dist.l_loc(*self.args, trim=trim, **self.kwds)
 
-
     def l_scale(self, trim: AnyTrim = (0, 0)) -> float:  # noqa: D102
         return self.dist.l_scale(*self.args, trim=trim, **self.kwds)
 
-
     def l_skew(self, trim: AnyTrim = (0, 0)) -> float:  # noqa: D102
         return self.dist.l_skew(*self.args, trim=trim, **self.kwds)
-
 
     def l_kurtosis(self, trim: AnyTrim = (0, 0)) -> float:  # noqa: D102
         return self.dist.l_kurtosis(*self.args, trim=trim, **self.kwds)
@@ -1505,6 +1501,7 @@ class l_rv_frozen(PatchClass):  # noqa: N801, D101
             tol=tol,
             **self.kwds,
         )
+
 
 def install() -> None:
     """

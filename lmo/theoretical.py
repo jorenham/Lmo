@@ -91,6 +91,7 @@ QUAD_LIMIT: Final[int] = 100
 
 # pyright: reportUnknownMemberType=false
 
+
 def _nquad(
     integrand: Callable[Concatenate[float, float, Theta], float],
     domains: Sequence[Pair[AnyFloat] | Callable[..., Pair[AnyFloat]]],
@@ -188,6 +189,7 @@ def l_moment_from_cdf(
     alpha: float = ...,
     ppf: UnivariatePPF | None = ...,
 ) -> np.float64: ...
+
 
 def l_moment_from_cdf(
     cdf: UnivariateCDF,
@@ -338,7 +340,6 @@ def l_moment_from_cdf(
 
     loc0 = a if np.isfinite(a) and a > 0 else 0
 
-
     kwds = quad_opts or {}
     kwds.setdefault('limit', QUAD_LIMIT)
 
@@ -388,6 +389,7 @@ def l_moment_from_ppf(
     quad_opts: QuadOptions | None = ...,
     alpha: float = ...,
 ) -> np.float64: ...
+
 
 def l_moment_from_ppf(
     ppf: UnivariatePPF,
@@ -524,6 +526,7 @@ def l_moment_from_ppf(
 
     return round0(l_r)[()]  # convert back to scalar if needed
 
+
 @overload
 def l_moment_from_qdf(
     qdf: UnivariateQDF,
@@ -547,6 +550,7 @@ def l_moment_from_qdf(
     quad_opts: QuadOptions | None = ...,
     alpha: float = ...,
 ) -> np.float64: ...
+
 
 def l_moment_from_qdf(
     qdf: UnivariateQDF,
@@ -626,6 +630,7 @@ def l_ratio_from_cdf(
     alpha: float = ...,
 ) -> np.float64: ...
 
+
 def l_ratio_from_cdf(
     cdf: UnivariateCDF,
     r: AnyInt | IntVector,
@@ -697,6 +702,7 @@ def l_ratio_from_ppf(
     alpha: float = ...,
 ) -> np.float64:
     ...
+
 
 def l_ratio_from_ppf(
     ppf: UnivariatePPF,
@@ -1606,6 +1612,7 @@ def l_coratio_from_pdf(
 
     return ll_r / np.expand_dims(ll_r0.diagonal(), -1)
 
+
 class _VectorizedPPF(Protocol):
     @overload
     def __call__(
@@ -1625,6 +1632,7 @@ class _VectorizedPPF(Protocol):
         *,
         r_max: int = ...,
     ) -> npt.NDArray[np.float64] | float: ...
+
 
 def _validate_l_bounds(
     l_r: npt.NDArray[np.float64],
@@ -1677,6 +1685,7 @@ def _validate_l_bounds(
         )
         raise ValueError(msg)
 
+
 def _monotonic(
     f: Callable[[npt.NDArray[np.float64]], npt.NDArray[np.float64]],
     a: float,
@@ -1691,6 +1700,7 @@ def _monotonic(
     dy = np.ediff1d(y)
 
     return bool(np.all(dy > 0 if strict else dy >= 0))
+
 
 def ppf_from_l_moments(
     lmbda: npt.ArrayLike,
@@ -1806,6 +1816,7 @@ def ppf_from_l_moments(
 
     return ppf  # type: ignore
 
+
 def qdf_from_l_moments(
     lmbda: npt.ArrayLike,
     /,
@@ -1880,6 +1891,7 @@ def qdf_from_l_moments(
 
     return qdf  # type: ignore
 
+
 def cdf_from_ppf(
     ppf: Callable[Concatenate[float, Theta], float],
     /,
@@ -1904,6 +1916,7 @@ def cdf_from_ppf(
         )
 
     return cdf
+
 
 def entropy_from_qdf(
     qdf: Callable[Concatenate[float, Theta], float],
