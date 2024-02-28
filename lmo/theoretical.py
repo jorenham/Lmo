@@ -45,12 +45,8 @@ from typing import (
 
 import numpy as np
 import numpy.typing as npt
-import scipy.integrate as sci  # type: ignore
-from scipy.stats.distributions import (  # type: ignore
-    rv_continuous,
-    rv_discrete,
-    rv_frozen,
-)
+import scipy.integrate as sci
+from scipy.stats.distributions import rv_continuous, rv_discrete, rv_frozen
 
 from ._poly import eval_sh_jacobi
 from ._utils import (
@@ -319,13 +315,13 @@ def l_moment_from_cdf(
     rs = clean_orders(np.asanyarray(r))
     s, t = clean_trim(trim)
 
-    from scipy.special import betainc  # type: ignore
+    from scipy.special import betainc
 
     def integrand(x: float, _r: int) -> float:
         p = cdf(x)
         if _r == 1:
             if s or t:  # noqa: SIM108
-                v = cast(float, betainc(s + 1, t + 1, p))  # type: ignore
+                v = cast(float, betainc(s + 1, t + 1, p))
             else:
                 v = p
             return np.heaviside(x, .5) - v
@@ -342,7 +338,7 @@ def l_moment_from_cdf(
     loc0 = a if np.isfinite(a) and a > 0 else 0
 
     kwds = quad_opts or {}
-    kwds.setdefault('limit', QUAD_LIMIT)
+    _ = kwds.setdefault('limit', QUAD_LIMIT)
 
     def _l_moment_single(_r: int) -> float:
         if _r == 0:
@@ -502,7 +498,7 @@ def l_moment_from_ppf(
         return p**s * (1 - p) ** t * eval_sh_jacobi(_r - 1, t, s, p) * ppf(p)
 
     quad_kwds = quad_opts or {}
-    quad_kwds.setdefault('limit', QUAD_LIMIT)
+    _ = quad_kwds.setdefault('limit', QUAD_LIMIT)
 
     def _l_moment_single(_r: int) -> float:
         if _r == 0:

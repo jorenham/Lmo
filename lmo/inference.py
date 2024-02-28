@@ -7,7 +7,7 @@ from typing import Any, NamedTuple, cast
 
 import numpy as np
 import numpy.typing as npt
-from scipy import optimize, special  # type: ignore
+from scipy import optimize, special
 
 from ._lm import l_moment as l_moment_est
 from ._lm_co import l_coscale as l_coscale_est
@@ -98,7 +98,7 @@ class GMMResult(NamedTuple):
             raise ValueError(msg)
 
         stat = self.statistic
-        pvalue = special.chdtr(df, stat)  # type: ignore
+        pvalue = special.chdtr(df, stat)
         return HypothesisTestResult(stat, pvalue)
 
     @property

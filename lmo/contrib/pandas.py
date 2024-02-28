@@ -278,10 +278,10 @@ class DataFrame(pd.DataFrame):
         method: Callable[..., _FloatOrFrame],
     ) -> None:
         def fn(obj: pd.DataFrame) -> Callable[..., _FloatOrFrame]:
-            # return functools.partial(method, obj)  # type: ignore
+            # return functools.partial(method, obj)
             return method.__get__(obj, cls)
 
-        pd.api.extensions.register_dataframe_accessor(name)(fn)  # type: ignore
+        pd.api.extensions.register_dataframe_accessor(name)(fn)
 
     def l_moment(
         self,

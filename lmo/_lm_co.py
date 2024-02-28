@@ -172,7 +172,7 @@ def l_comoment(
 
         l_ij[1:, :, j] = np.inner(p_r, x_k_ij)
 
-    return l_ij.take(_r, 0)  # pyright: ignore [reportUnknownMemberType]
+    return l_ij.take(_r, 0)
 
 
 def l_coratio(

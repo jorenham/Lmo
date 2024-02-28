@@ -72,7 +72,7 @@ def _l_weights_pwm(
     r0 = r + s + t
 
     p0 = sh_legendre(r0, dtype=np.int64 if r0 < 29 else dtype)
-    w0 = p0 @ pwm_beta.weights(r0, n, dtype=dtype)  # type: ignore
+    w0 = p0 @ pwm_beta.weights(r0, n, dtype=dtype)
     out = trim_matrix(r, trim, dtype=dtype) @ w0 if s or t else w0
     return cast(npt.NDArray[T], out)
 
@@ -1165,7 +1165,7 @@ def l_ratio_influence(
             The (vectorized) empirical influence function.
 
     """
-    _x = np.sort(a, kind=sort)  # type: ignore
+    _x = np.sort(a, kind=sort)
     _r, _k = clean_order(r), clean_order(k)
     n = len(_x)
 

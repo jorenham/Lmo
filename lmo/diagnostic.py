@@ -13,6 +13,7 @@ __all__ = (
     'shift_sensitivity',
 )
 
+import math
 import warnings
 from collections.abc import Callable
 from math import lgamma
@@ -28,18 +29,14 @@ from typing import (
 
 import numpy as np
 import numpy.typing as npt
-from scipy.integrate import quad  # type: ignore
-from scipy.optimize import (  # type: ignore
+from scipy.integrate import quad  # pyright: ignore[reportUnknownVariableType]
+from scipy.optimize import (
     OptimizeResult,
     OptimizeWarning,
     minimize,  # type: ignore
 )
-from scipy.special import chdtrc  # type: ignore
-from scipy.stats.distributions import (  # type: ignore
-    rv_continuous,
-    rv_discrete,
-    rv_frozen,
-)
+from scipy.special import chdtrc
+from scipy.stats.distributions import rv_continuous, rv_discrete, rv_frozen
 
 from ._lm import l_ratio
 from ._poly import extrema_jacobi
@@ -756,7 +753,7 @@ def rejection_point(
 def error_sensitivity(
     influence_fn: Callable[[float], float],
     /,
-    domain: tuple[float, float] = (float('-inf'), float('inf')),
+    domain: tuple[float, float] = (-math.inf, math.inf),
 ) -> float:
     r"""
     Evaluate the *gross-error sensitivity* of an influence function
@@ -818,7 +815,7 @@ def error_sensitivity(
             cast(str, res.message),  # type: ignore
             OptimizeWarning,
             stacklevel=1,
-        )  # type: ignore
+        )
 
     return -cast(float, res.fun)  # type: ignore
 
@@ -826,7 +823,7 @@ def error_sensitivity(
 def shift_sensitivity(
     influence_fn: Callable[[float], float],
     /,
-    domain: tuple[float, float] = (float('-inf'), float('inf')),
+    domain: tuple[float, float] = (-math.inf, math.inf),
 ) -> float:
     r"""
     Evaluate the *local-shift sensitivity* of an influence function
@@ -905,6 +902,6 @@ def shift_sensitivity(
             cast(str, res.message),  # type: ignore
             OptimizeWarning,
             stacklevel=1,
-        )  # type: ignore
+        )
 
     return -cast(float, res.fun)  # type: ignore

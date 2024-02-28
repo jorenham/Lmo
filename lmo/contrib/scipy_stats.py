@@ -2,6 +2,8 @@
 
 __all__ = ('l_rv_generic', 'l_rv_frozen', 'install')
 
+# pyright: reportUninitializedInstanceVariable=false
+
 from collections.abc import Callable, Mapping, Sequence
 from typing import (
     Any,
@@ -18,7 +20,7 @@ from typing import (
 import numpy as np
 import numpy.typing as npt
 from scipy.stats import fit as scipy_fit  # type: ignore
-from scipy.stats.distributions import rv_continuous, rv_frozen  # type: ignore
+from scipy.stats.distributions import rv_continuous, rv_frozen
 
 from lmo import (
     inference,
