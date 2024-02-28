@@ -8,6 +8,7 @@ __all__ = (
 )
 
 # pyright: reportIncompatibleMethodOverride=false
+# ruff: noqa: PLR2004
 
 import functools
 import math
@@ -28,11 +29,11 @@ from typing import (
 import numpy as np
 import numpy.polynomial as npp
 import numpy.typing as npt
-import scipy.special as sc  # type: ignore
-from scipy.stats._distn_infrastructure import _ShapeInfo  # type: ignore
-from scipy.stats.distributions import (  # type: ignore
-    rv_continuous as _rv_continuous,
+import scipy.special as sc
+from scipy.stats._distn_infrastructure import (
+    _ShapeInfo,  # type: ignore  # noqa: PLC2701
 )
+from scipy.stats.distributions import rv_continuous as _rv_continuous
 
 from ._poly import jacobi_series, roots
 from ._utils import (
@@ -64,6 +65,7 @@ from .typing import (
     QuadOptions,
     RVContinuous,
 )
+
 
 if sys.version_info < (3, 11):
     from typing_extensions import Self
@@ -155,7 +157,10 @@ class l_poly:  # noqa: N801
         return self._random_state
 
     @random_state.setter
-    def random_state(self, seed: int | np.random.Generator):
+    def random_state(
+        self,
+        seed: int | np.random.Generator,  # pyright: ignore[reportPropertyTypeMismatch]
+    ):
         self._random_state = np.random.default_rng(seed)
 
     @classmethod
@@ -897,7 +902,7 @@ def _ppf_poly_series(
     )
 
 
-class l_rv_nonparametric(_rv_continuous):  # noqa: N801
+class l_rv_nonparametric(_rv_continuous):
     r"""
     Warning:
         `l_rv_nonparametric` is deprecated, and will be removed in version
@@ -1070,13 +1075,13 @@ class l_rv_nonparametric(_rv_continuous):  # noqa: N801
         for k in range(max(k0 // 2, 2), k0 + max(k0 // 2, 8)):
             # fit
             cdf = ppf.fit(x, q, k - 1).trim(_F_EPS)
-            k = cdf.degree() + 1
+            _k = cdf.degree() + 1
 
             # according to the inverse function theorem, this should be 0
             eps = 1 / cdf.deriv()(x) - y
 
             # Bayesian information criterion (BIC)
-            bic = (k - 1) * np.log(n) + n * np.log(
+            bic = (_k - 1) * np.log(n) + n * np.log(
                 np.average(eps**2, weights=w),
             )
 
@@ -1106,7 +1111,7 @@ class l_rv_nonparametric(_rv_continuous):  # noqa: N801
         return np.where(
             (_q >= 0) & (_q <= 1),
             _q**s * (1 - _q) ** t,
-            cast(float, getattr(self, 'badvalue', np.nan)),  # type: ignore
+            cast(float, getattr(self, 'badvalue', np.nan)),
         )
 
     def _ppf(self, q: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
@@ -1140,9 +1145,9 @@ class l_rv_nonparametric(_rv_continuous):  # noqa: N801
     def _pdf(self, x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
         return np.clip(cast(npt.NDArray[np.float64], self.pdf_poly(x)), 0, 1)
 
-    def _munp(self, n: int):
+    def _munp(self, n: int) -> float:
         # non-central product-moment $E[X^n]$
-        return (self._ppf_poly**n).integ(lbnd=0)(1)
+        return cast(float, (self._ppf_poly**n).integ(lbnd=0)(1))
 
     def _updated_ctor_param(self) -> Mapping[str, Any]:
         return cast(
@@ -1229,14 +1234,14 @@ def _kumaraswamy_lmo0(
         (-1)**(k - 1)
         * cast(_ArrF8, sc.comb(r + k - 2, r + t - 1))  # type: ignore
         * cast(_ArrF8, sc.comb(r + s + t, k))  # type: ignore
-        * cast(_ArrF8, sc.beta(1 / a, 1 + k * b)) / a  # type: ignore
+        * cast(_ArrF8, sc.beta(1 / a, 1 + k * b)) / a
     ).sum() / r
 
 
 _kumaraswamy_lmo = np.vectorize(_kumaraswamy_lmo0, [float], excluded={1, 2})
 
 
-class kumaraswamy_gen(_rv_continuous):  # noqa: N801
+class kumaraswamy_gen(_rv_continuous):
     def _argcheck(self, a: float, b: float) -> bool:
         return (a > 0) & (b > 0)
 
@@ -1319,7 +1324,7 @@ class kumaraswamy_gen(_rv_continuous):  # noqa: N801
         a: float,
         b: float,
     ) -> float:
-        return b * cast(float, sc.beta(1 + n / a, b))  # type: ignore
+        return b * cast(float, sc.beta(1 + n / a, b))
 
     def _l_moment(
         self,
@@ -1544,9 +1549,9 @@ def _wakeby_lmo0(
             return cast(float, harmonic(s + t + 1) - harmonic(t))
 
         return scale * (
-            sc.poch(r + t, s + 1)  # type: ignore
-            * sc.poch(1 - theta, r - 2)  # type: ignore
-            / sc.poch(1 + theta + t, r + s)  # type: ignore
+            sc.poch(r + t, s + 1)
+            * sc.poch(1 - theta, r - 2)
+            / sc.poch(1 + theta + t, r + s)
             + (1 / theta if r == 1 else 0)
         ) / r
 
@@ -1556,7 +1561,7 @@ def _wakeby_lmo0(
 _wakeby_lmo = np.vectorize(_wakeby_lmo0, [float], excluded={1, 2})
 
 
-class wakeby_gen(_rv_continuous):  # noqa: N801
+class wakeby_gen(_rv_continuous):
     a: float
 
     def _argcheck(self, b: float, d: float, f: float) -> int:
@@ -1702,7 +1707,7 @@ class wakeby_gen(_rv_continuous):  # noqa: N801
                     r,
                     trim=trim,
                     quad_opts=quad_opts,
-                ),  # type: ignore
+                ),
             )
             return np.asarray(lmbda_r)
 
@@ -1730,7 +1735,7 @@ class wakeby_gen(_rv_continuous):  # noqa: N801
 
         return 1 - b + bd * cast(
             float,
-            sc.hyp2f1(1, 1 / bd, 1 + 1 / bd, -f / (1 - f)),  # type: ignore
+            sc.hyp2f1(1, 1 / bd, 1 + 1 / bd, -f / (1 - f)),
         )
 
 
@@ -1861,9 +1866,9 @@ def _genlambda_lmo0(
 
         return (
             (-1)**r *
-            sc.poch(r + trim, s + t - trim + 1)  # type: ignore
-            * sc.poch(1 - theta, r - 2)  # type: ignore
-            / sc.poch(1 + theta + trim, r + s + t - trim)  # type: ignore
+            sc.poch(r + trim, s + t - trim + 1)
+            * sc.poch(1 - theta, r - 2)
+            / sc.poch(1 + theta + trim, r + s + t - trim)
             - (1 / theta if r == 1 else 0)
         ) / r
 
@@ -1876,7 +1881,7 @@ def _genlambda_lmo0(
 _genlambda_lmo = np.vectorize(_genlambda_lmo0, [float], excluded={1, 2})
 
 
-class genlambda_gen(_rv_continuous):  # noqa: N801
+class genlambda_gen(_rv_continuous):
     def _argcheck(self, b: float, d: float, f: float) -> int:
         return np.isfinite(b) & np.isfinite(d) & (f >= -1) & (f <= 1)
 
@@ -1975,8 +1980,7 @@ class genlambda_gen(_rv_continuous):  # noqa: N801
                 (a / b1)**2 / (b1 + b)
                 + (c / d1)**2 / (d1 + d)
                 + 2 * a * c / (b * d) * (
-                    1 / (b1 * d1)
-                    - cast(float, sc.beta(b1, d1))  # type: ignore
+                    1 / (b1 * d1) - cast(float, sc.beta(b1, d1))
                 )
             )
 
@@ -2020,7 +2024,7 @@ class genlambda_gen(_rv_continuous):  # noqa: N801
                     r,
                     trim=trim,
                     quad_opts=quad_opts,
-                ),  # type: ignore
+                ),
             )
             return np.asarray(lmbda_r)
 

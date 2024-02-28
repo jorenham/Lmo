@@ -13,6 +13,7 @@ __all__ = (
     'shift_sensitivity',
 )
 
+import math
 import warnings
 from collections.abc import Callable
 from math import lgamma
@@ -28,18 +29,14 @@ from typing import (
 
 import numpy as np
 import numpy.typing as npt
-from scipy.integrate import quad  # type: ignore
-from scipy.optimize import (  # type: ignore
+from scipy.integrate import quad  # pyright: ignore[reportUnknownVariableType]
+from scipy.optimize import (
     OptimizeResult,
     OptimizeWarning,
     minimize,  # type: ignore
 )
-from scipy.special import chdtrc  # type: ignore
-from scipy.stats.distributions import (  # type: ignore
-    rv_continuous,
-    rv_discrete,
-    rv_frozen,
-)
+from scipy.special import chdtrc
+from scipy.stats.distributions import rv_continuous, rv_discrete, rv_frozen
 
 from ._lm import l_ratio
 from ._poly import extrema_jacobi
@@ -47,14 +44,16 @@ from ._utils import clean_orders, clean_trim
 from .special import fpow
 from .typing import AnyInt, AnyTrim, IntVector
 
+
 if TYPE_CHECKING:
     from .contrib.scipy_stats import l_rv_generic
 
 T = TypeVar('T', bound=np.floating[Any])
 
 AnyRV: TypeAlias = rv_continuous | rv_discrete
-
 _ArrF8: TypeAlias = npt.NDArray[np.float64]
+
+_MIN_RHO = 1e-5
 
 
 class HypothesisTestResult(NamedTuple):
@@ -612,7 +611,7 @@ def l_ratio_bounds(
         if _ri == 1:
             # L-loc / L-scale; unbounded
             t_min[i], t_max[i] = -np.inf, np.inf
-        elif _ri in (0, 2):  # or s == t == 0:
+        elif _ri in {0, 2}:  # or s == t == 0:
             t_min[i] = t_max[i] = 1
         elif legacy:
             t_absmax = (
@@ -745,7 +744,7 @@ def rejection_point(
     )
 
     rho = cast(float, res.x[0])  # type: ignore
-    if rho <= 1e-5 or influence_fn(-rho) or influence_fn(rho):
+    if rho <= _MIN_RHO or influence_fn(-rho) or influence_fn(rho):
         return np.nan
 
     return rho
@@ -754,7 +753,7 @@ def rejection_point(
 def error_sensitivity(
     influence_fn: Callable[[float], float],
     /,
-    domain: tuple[float, float] = (float('-inf'), float('inf')),
+    domain: tuple[float, float] = (-math.inf, math.inf),
 ) -> float:
     r"""
     Evaluate the *gross-error sensitivity* of an influence function
@@ -816,7 +815,7 @@ def error_sensitivity(
             cast(str, res.message),  # type: ignore
             OptimizeWarning,
             stacklevel=1,
-        )  # type: ignore
+        )
 
     return -cast(float, res.fun)  # type: ignore
 
@@ -824,7 +823,7 @@ def error_sensitivity(
 def shift_sensitivity(
     influence_fn: Callable[[float], float],
     /,
-    domain: tuple[float, float] = (float('-inf'), float('inf')),
+    domain: tuple[float, float] = (-math.inf, math.inf),
 ) -> float:
     r"""
     Evaluate the *local-shift sensitivity* of an influence function
@@ -903,6 +902,6 @@ def shift_sensitivity(
             cast(str, res.message),  # type: ignore
             OptimizeWarning,
             stacklevel=1,
-        )  # type: ignore
+        )
 
     return -cast(float, res.fun)  # type: ignore

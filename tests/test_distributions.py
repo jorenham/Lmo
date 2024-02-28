@@ -1,17 +1,17 @@
 from typing import cast
 
 import numpy as np
-from numpy.testing import assert_allclose
-
 import pytest
+from numpy.testing import assert_allclose
+from scipy.stats.distributions import tukeylambda, uniform  # type: ignore
 
 from lmo.distributions import genlambda, l_poly, wakeby
 from lmo.typing import AnyTrim, RVContinuous
 
-from scipy.stats.distributions import tukeylambda, uniform  # type: ignore
 
 ATOL = 1e-10
 Q = np.linspace(1 / 100, 1, 99, endpoint=False)
+
 
 @pytest.mark.parametrize(
     'trim',
@@ -50,7 +50,7 @@ def test_l_poly_eq_uniform(trim: AnyTrim):
 
 @pytest.mark.parametrize('scale', [1, .5, 2])
 @pytest.mark.parametrize('loc', [0, 1, -1])
-@pytest.mark.parametrize('b, d, f', [
+@pytest.mark.parametrize(('b', 'd', 'f'), [
     (1, 0, 1),
     (0, 0, 1),
     (0, 0.9, 0),
@@ -96,7 +96,7 @@ def test_wakeby(b: float, d: float, f: float, loc: float, scale: float):
 @pytest.mark.parametrize('lam', [0, 0.14, 1, -1])
 def test_genlambda_tukeylamba(lam: float):
     X0 = cast(RVContinuous[float], tukeylambda(lam))
-    X = genlambda(lam, lam, 0,)
+    X = genlambda(lam, lam, 0)
 
     x0 = X0.ppf(Q)
     x = X.ppf(Q)
@@ -127,6 +127,7 @@ def test_genlambda_tukeylamba(lam: float):
     tl_tau0 = X0.l_stats(trim=1)
     tl_tau = X.l_stats(trim=1)
     assert_allclose(tl_tau, tl_tau0, atol=ATOL)
+
 
 # @pytest.mark.parametrize('scale', [1, .5, 2])
 # @pytest.mark.parametrize('loc', [0, 1, -1])

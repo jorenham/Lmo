@@ -22,9 +22,10 @@ from typing import TypeVar, cast, overload
 import numpy as np
 import numpy.polynomial as npp
 import numpy.typing as npt
-import scipy.special as scs  # type: ignore
+import scipy.special as scs
 
 from .typing import FloatVector, PolySeries
+
 
 P = TypeVar('P', bound=PolySeries)
 
@@ -73,7 +74,7 @@ def eval_sh_jacobi(
         if n == 4:
             return 1 + 10 * v * (2 + 7 * v)
 
-        return scs.eval_sh_legendre(n, x)  # type: ignore
+        return scs.eval_sh_legendre(n, x)
 
     if n == 1:
         return (a + b + 2) * x - b - 1
@@ -98,7 +99,7 @@ def eval_sh_jacobi(
         ) / 6
 
     # don't use `eval_sh_jacobi`: https://github.com/scipy/scipy/issues/18988
-    return scs.eval_jacobi(n, a, b, u)  # type: ignore
+    return scs.eval_jacobi(n, a, b, u)
 
 
 def peaks_jacobi(n: int, a: float, b: float) -> npt.NDArray[np.float64]:

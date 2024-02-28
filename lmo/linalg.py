@@ -15,6 +15,7 @@ import sys
 from math import comb, lgamma
 from typing import Any, TypeVar, cast
 
+
 if sys.version_info < (3, 11):
     from typing_extensions import assert_never
 else:
@@ -24,6 +25,7 @@ import numpy as np
 import numpy.typing as npt
 
 from .typing import AnyFloat, AnyInt
+
 
 T = TypeVar('T', bound=np.object_ | np.integer[Any] | np.floating[Any])
 
