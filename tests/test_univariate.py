@@ -4,15 +4,13 @@ from typing import Any, cast
 
 import numpy as np
 import numpy.typing as npt
-
-from numpy.testing import assert_allclose, assert_equal
-
 from hypothesis import (
     given,
     strategies as st,
 )
 from hypothesis.extra import numpy as hnp
 from hypothesis.strategies import SearchStrategy
+from numpy.testing import assert_allclose, assert_equal
 from pytest import approx
 
 import lmo
@@ -36,11 +34,11 @@ __st_a_kwargs: dict[str, SearchStrategy[Any]] = {
 }
 st_a1 = cast(
     SearchStrategy[npt.NDArray[Any]],
-    hnp.arrays(shape=st_n, unique=False, **__st_a_kwargs)
+    hnp.arrays(shape=st_n, unique=False, **__st_a_kwargs),
 )
 st_a1_unique = cast(
     SearchStrategy[npt.NDArray[Any]],
-    hnp.arrays(shape=st_n, unique=True, **__st_a_kwargs)
+    hnp.arrays(shape=st_n, unique=True, **__st_a_kwargs),
 )
 st_a2 = cast(
     SearchStrategy[npt.NDArray[Any]],
@@ -170,7 +168,7 @@ def test_l_scale_const(
 def test_l_scale_invariant_loc(
     x: npt.NDArray[Any],
     trim: tuple[float, float],
-    dloc: float
+    dloc: float,
 ):
     l2 = lmo.l_scale(x, trim)
     assert np.isfinite(l2)

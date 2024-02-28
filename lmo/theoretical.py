@@ -75,6 +75,7 @@ from .typing import (
     QuadOptions,
 )
 
+
 T = TypeVar('T')
 V = TypeVar('V', bound=float | npt.NDArray[np.float64])
 Theta = ParamSpec('Theta')

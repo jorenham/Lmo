@@ -41,6 +41,7 @@ from ._utils import (
 from .linalg import ir_pascal, sandwich, sh_legendre, trim_matrix
 from .typing import AnyInt, AnyTrim, IntVector, LMomentOptions, SortKind
 
+
 if sys.version_info < (3, 11):
     from typing_extensions import Unpack
 else:

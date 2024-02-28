@@ -18,10 +18,7 @@ from typing import (
 import numpy as np
 import numpy.typing as npt
 from scipy.stats import fit as scipy_fit  # type: ignore
-from scipy.stats.distributions import (  # type: ignore
-    rv_continuous,
-    rv_frozen,
-)
+from scipy.stats.distributions import rv_continuous, rv_frozen  # type: ignore
 
 from lmo import (
     inference,
@@ -49,6 +46,7 @@ from lmo.typing import (
     IntVector,
     QuadOptions,
 )
+
 
 T = TypeVar('T')
 V = TypeVar('V', bound=float | npt.NDArray[np.float64])
@@ -94,7 +92,7 @@ class PatchClass:
         cls.patched.add(base)
 
 
-class l_rv_generic(PatchClass):  # noqa: N801
+class l_rv_generic(PatchClass):
     """
     Additional methods that are patched into
     [`scipy.stats.rv_continuous`][scipy.stats.rv_continuous] and
@@ -1336,7 +1334,7 @@ class l_rv_generic(PatchClass):  # noqa: N801
         return loc_hat, scale_hat
 
 
-class l_rv_frozen(PatchClass):  # noqa: N801, D101
+class l_rv_frozen(PatchClass):  # noqa: D101
     dist: l_rv_generic
     args: tuple[Any, ...]
     kwds: Mapping[str, Any]

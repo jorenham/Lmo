@@ -1,6 +1,5 @@
 from datetime import timedelta
 
-import lmo
 import numpy as np
 from hypothesis import (
     given,
@@ -8,6 +7,9 @@ from hypothesis import (
     strategies as st,
 )
 from hypothesis.extra import numpy as hnp
+
+import lmo
+
 
 _SEED = 12345
 

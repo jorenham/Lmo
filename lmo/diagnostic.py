@@ -47,6 +47,7 @@ from ._utils import clean_orders, clean_trim
 from .special import fpow
 from .typing import AnyInt, AnyTrim, IntVector
 
+
 if TYPE_CHECKING:
     from .contrib.scipy_stats import l_rv_generic
 

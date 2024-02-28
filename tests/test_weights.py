@@ -5,7 +5,9 @@ from hypothesis import (
     given,
     strategies as st,
 )
+
 from lmo._lm import l_weights
+
 
 MAX_N = 1 << 10
 MAX_R = 8
@@ -36,7 +38,7 @@ def test_l_weights_basic(n, r, trim):
 
     assert w.shape == (r, n)
     assert np.all(np.isfinite(n))
-    assert w.dtype.type is np.float_
+    assert w.dtype.type is np.float64
 
 
 # symmetries only apply for symmetric trimming, for obvious reasons

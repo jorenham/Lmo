@@ -7,6 +7,7 @@ __all__ = (
 
 from typing import Final
 
+
 theta_m: Final[float] = 0.955316618124509278163857102515757754
 r"""
 Magic angle \( \theta_m = \arctan \sqrt 2 \).

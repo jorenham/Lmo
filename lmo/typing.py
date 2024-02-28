@@ -60,6 +60,7 @@ from typing import (
 import numpy as np
 import numpy.typing as npt
 
+
 if sys.version_info < (3, 11):
     from typing_extensions import Self, TypeVarTuple, Unpack
 else:

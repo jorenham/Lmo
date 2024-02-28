@@ -26,6 +26,7 @@ import scipy.special as scs  # type: ignore
 
 from .typing import FloatVector, PolySeries
 
+
 P = TypeVar('P', bound=PolySeries)
 
 

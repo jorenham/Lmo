@@ -1,13 +1,13 @@
 # pyright: reportUnknownVariableType=false
 # pyright: reportMissingTypeStubs=false
 # pyright: reportUnknownArgumentType=false
-import pytest
-
 import numpy as np
+import pytest
 from numpy.polynomial.legendre import legval
 from numpy.testing import assert_allclose
-from lmo.special import fourier_jacobi
 from scipy.special import eval_jacobi
+
+from lmo.special import fourier_jacobi
 
 
 X = np.linspace(-1, 1, num=21, dtype=np.float64)
@@ -25,6 +25,7 @@ C_EXAMPLES = [
     np.log1p(np.arange(256, 0, -1)),
 ]
 
+
 @pytest.mark.parametrize('c', C_EXAMPLES)
 def test_fourier_legendre(c: list[float]):
     y_expect = legval(X, c)
@@ -35,7 +36,7 @@ def test_fourier_legendre(c: list[float]):
 
 @pytest.mark.parametrize(
     'a,b',
-    [(0, 1), (1, 0), (1, 1), (1/137, -1/12), (42, 69)],
+    [(0, 1), (1, 0), (1, 1), (1 / 137, -1 / 12), (42, 69)],
 )
 @pytest.mark.parametrize('c', C_EXAMPLES)
 def test_fourier_jacobi(a: float, b: float, c: list[float]):

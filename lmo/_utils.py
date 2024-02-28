@@ -22,6 +22,7 @@ import numpy.typing as npt
 
 from .typing import AnyInt, AnyTrim, IndexOrder, IntVector, SortKind
 
+
 T = TypeVar('T', bound=np.generic)
 FT = TypeVar('FT', bound=np.floating[Any])
 

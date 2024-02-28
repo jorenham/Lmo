@@ -65,6 +65,7 @@ from .typing import (
     RVContinuous,
 )
 
+
 if sys.version_info < (3, 11):
     from typing_extensions import Self
 else:
@@ -897,7 +898,7 @@ def _ppf_poly_series(
     )
 
 
-class l_rv_nonparametric(_rv_continuous):  # noqa: N801
+class l_rv_nonparametric(_rv_continuous):
     r"""
     Warning:
         `l_rv_nonparametric` is deprecated, and will be removed in version
@@ -1236,7 +1237,7 @@ def _kumaraswamy_lmo0(
 _kumaraswamy_lmo = np.vectorize(_kumaraswamy_lmo0, [float], excluded={1, 2})
 
 
-class kumaraswamy_gen(_rv_continuous):  # noqa: N801
+class kumaraswamy_gen(_rv_continuous):
     def _argcheck(self, a: float, b: float) -> bool:
         return (a > 0) & (b > 0)
 
@@ -1556,7 +1557,7 @@ def _wakeby_lmo0(
 _wakeby_lmo = np.vectorize(_wakeby_lmo0, [float], excluded={1, 2})
 
 
-class wakeby_gen(_rv_continuous):  # noqa: N801
+class wakeby_gen(_rv_continuous):
     a: float
 
     def _argcheck(self, b: float, d: float, f: float) -> int:
@@ -1876,7 +1877,7 @@ def _genlambda_lmo0(
 _genlambda_lmo = np.vectorize(_genlambda_lmo0, [float], excluded={1, 2})
 
 
-class genlambda_gen(_rv_continuous):  # noqa: N801
+class genlambda_gen(_rv_continuous):
     def _argcheck(self, b: float, d: float, f: float) -> int:
         return np.isfinite(b) & np.isfinite(d) & (f >= -1) & (f <= 1)
 

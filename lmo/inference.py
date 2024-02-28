@@ -14,12 +14,7 @@ from ._lm_co import l_coscale as l_coscale_est
 from ._utils import clean_orders, clean_trim
 from .diagnostic import HypothesisTestResult, l_moment_bounds
 from .theoretical import l_moment_from_ppf
-from .typing import (
-    AnyTrim,
-    DistributionFunction,
-    IntVector,
-    OptimizeResult,
-)
+from .typing import AnyTrim, DistributionFunction, IntVector, OptimizeResult
 
 
 class GMMResult(NamedTuple):

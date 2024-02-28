@@ -48,15 +48,7 @@ __all__ = (
 
 import sys
 from collections.abc import Callable
-from typing import (
-    Any,
-    Literal,
-    Protocol,
-    TypeAlias,
-    Union,
-    cast,
-    final,
-)
+from typing import Any, Literal, Protocol, TypeAlias, Union, cast, final
 
 import numpy as np
 import numpy.typing as npt
@@ -79,6 +71,7 @@ from lmo.typing import (
     LComomentOptions,
     LMomentOptions,
 )
+
 
 if sys.version_info < (3, 11):
     from typing_extensions import Unpack

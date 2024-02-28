@@ -11,8 +11,10 @@ def test_l_moment_bounds_00():
     assert l_moment_bounds(4) == approx(1 / np.sqrt(7))
     assert l_moment_bounds(42) == approx(1 / np.sqrt(83))
 
+
 def test_l_moment_bounds_scale():
     assert l_moment_bounds(42, scale=69) == approx(l_moment_bounds(42) * 69)
+
 
 def test_l_moment_bounds_vectorized():
     bounds = l_moment_bounds([1, 2, 42])
