@@ -104,10 +104,10 @@ testpaths = ["tests", "lmo"]
 include = ["lmo"]
 exclude = [
     "**/__pycache__",
-    "**/.hypothesis",
-    "**/.pytest_cache",
     ".git",
     ".github",
+    ".hypothesis",
+    ".pytest_cache",
     ".ruff_cache",
     ".vscode",
     "dist",
@@ -119,6 +119,7 @@ ignore = [
     # TODO: figure out how to do this conditionally
     "lmo/contrib/pandas.py",
 ]
+stubPath = './typings'
 venvPath = "."
 venv = ".venv"
 pythonVersion = "3.10"
@@ -126,6 +127,7 @@ pythonPlatform = "All"
 typeCheckingMode = "strict"
 useLibraryCodeForTypes = true
 
+deprecateTypingAliases = true
 disableBytesTypePromotions = true
 reportPropertyTypeMismatch = "warning"
 reportMissingTypeStubs = "none"
@@ -136,17 +138,13 @@ reportUnusedVariable = "warning"
 reportConstantRedefinition = "warning"
 reportInconsistentConstructor = "warning"
 reportMissingTypeArgument = "warning"
-reportUninitializedInstanceVariable = "warning"  # maybe
+reportUninitializedInstanceVariable = "warning"
 reportCallInDefaultInitializer = "warning"
 reportUnnecessaryIsInstance = "warning"
 reportUnnecessaryCast = "warning"
 reportUnnecessaryComparison = "warning"
 reportUnnecessaryContains = "warning"
-reportImplicitStringConcatenation = "none"
-reportInvalidStubStatement = "error"
-reportIncompleteStub = "error"
 reportUnusedCallResult = "warning"
-reportUnusedCoroutine = "error"
 reportUnusedExpression = "warning"
 reportUnnecessaryTypeIgnoreComment = "warning"
 reportMatchNotExhaustive = "error"
