@@ -50,7 +50,7 @@ def test_l_poly_eq_uniform(trim: AnyTrim):
 
 @pytest.mark.parametrize('scale', [1, .5, 2])
 @pytest.mark.parametrize('loc', [0, 1, -1])
-@pytest.mark.parametrize('b, d, f', [
+@pytest.mark.parametrize(('b', 'd', 'f'), [
     (1, 0, 1),
     (0, 0, 1),
     (0, 0.9, 0),

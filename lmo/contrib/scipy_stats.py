@@ -142,7 +142,7 @@ class l_rv_generic(PatchClass):
         def cdf(x: float, /) -> float:
             return _cdf(np.array([(x - loc) / scale], dtype=float), *args)[0]
 
-        def ppf(q: float, /):
+        def ppf(q: float, /) -> float:
             return _ppf(np.array([q], dtype=float), *args)[0] * scale + loc
 
         return cdf, ppf

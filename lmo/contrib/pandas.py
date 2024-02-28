@@ -90,9 +90,9 @@ def _setindex(
     axis: AxisDF,
     index: 'pd.Index[Any]',
 ) -> None:
-    if axis == 0 or axis == 'index':
+    if axis in {0, 'index'}:
         df.index = index
-    elif axis == 1 or axis == 'columns':
+    elif axis in {1, 'columns'}:
         df.columns = index
     else:
         msg = f"axis must be one of {{0, 'index', 1, 'columns'}}, got {axis}"

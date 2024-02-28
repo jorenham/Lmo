@@ -35,7 +35,7 @@ def test_fourier_legendre(c: list[float]):
 
 
 @pytest.mark.parametrize(
-    'a,b',
+    ('a', 'b'),
     [(0, 1), (1, 0), (1, 1), (1 / 137, -1 / 12), (42, 69)],
 )
 @pytest.mark.parametrize('c', C_EXAMPLES)

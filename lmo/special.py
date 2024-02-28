@@ -18,12 +18,11 @@ from ._utils import clean_orders
 from .typing import AnyNDArray, AnyScalar, IntVector
 
 
+_DTYPE_CHARS = '?bBhHiIlLqQpP'
+
+
 @overload
-def fpow(
-    x: AnyScalar,
-    n: AnyScalar,
-    out: None = ...,
-) -> float: ...
+def fpow(x: AnyScalar, n: AnyScalar, out: None = ...) -> float: ...
 
 @overload
 def fpow(
@@ -347,7 +346,7 @@ def fourier_jacobi(
     """
     _c: npt.NDArray[np.integer[Any] | np.floating[Any]]
     _c = np.array(c, ndmin=1, copy=False)
-    if _c.dtype.char in '?bBhHiIlLqQpP':
+    if _c.dtype.char in _DTYPE_CHARS:
         _c = _c.astype(np.float64)
 
     _x = np.asanyarray(x)

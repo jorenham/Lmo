@@ -8,6 +8,7 @@ __all__ = (
 )
 
 # pyright: reportIncompatibleMethodOverride=false
+# ruff: noqa: PLR2004
 
 import functools
 import math
@@ -29,7 +30,9 @@ import numpy as np
 import numpy.polynomial as npp
 import numpy.typing as npt
 import scipy.special as sc  # type: ignore
-from scipy.stats._distn_infrastructure import _ShapeInfo  # type: ignore
+from scipy.stats._distn_infrastructure import (
+    _ShapeInfo,  # type: ignore  # noqa: PLC2701
+)
 from scipy.stats.distributions import (  # type: ignore
     rv_continuous as _rv_continuous,
 )
@@ -1071,13 +1074,13 @@ class l_rv_nonparametric(_rv_continuous):
         for k in range(max(k0 // 2, 2), k0 + max(k0 // 2, 8)):
             # fit
             cdf = ppf.fit(x, q, k - 1).trim(_F_EPS)
-            k = cdf.degree() + 1
+            _k = cdf.degree() + 1
 
             # according to the inverse function theorem, this should be 0
             eps = 1 / cdf.deriv()(x) - y
 
             # Bayesian information criterion (BIC)
-            bic = (k - 1) * np.log(n) + n * np.log(
+            bic = (_k - 1) * np.log(n) + n * np.log(
                 np.average(eps**2, weights=w),
             )
 
@@ -1141,9 +1144,9 @@ class l_rv_nonparametric(_rv_continuous):
     def _pdf(self, x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
         return np.clip(cast(npt.NDArray[np.float64], self.pdf_poly(x)), 0, 1)
 
-    def _munp(self, n: int):
+    def _munp(self, n: int) -> float:
         # non-central product-moment $E[X^n]$
-        return (self._ppf_poly**n).integ(lbnd=0)(1)
+        return cast(float, (self._ppf_poly**n).integ(lbnd=0)(1))
 
     def _updated_ctor_param(self) -> Mapping[str, Any]:
         return cast(

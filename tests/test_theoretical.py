@@ -73,8 +73,8 @@ def gumbel_ppf(p: float, loc: float = 0, scale: float = 1) -> float:
 
 @np.errstate(over='ignore', under='ignore', divide='ignore')
 def gumbel_qdf(p: float, loc: float = 0, scale: float = 1) -> float:
-    # return -scale / (p * np.log(p))
-    return scale / np.log(np.exp(-p * np.log(p)))
+    # return loc - scale / (p * np.log(p))
+    return loc + scale / np.log(np.exp(-p * np.log(p)))
 
 
 def rayleigh_cdf(x: float) -> float:
@@ -128,17 +128,17 @@ def test_lm_normal():
     r = [1, 2, 3, 4]
 
     l2 = sigma / np.sqrt(np.pi)
-    l = np.array([mu, l2, 0, l2 * (60 * constants.theta_m_bar - 9)])
+    lr = np.array([mu, l2, 0, l2 * (60 * constants.theta_m_bar - 9)])
 
     l_ppf = l_moment_from_ppf(IQ.inv_cdf, r)
-    assert_allclose(l_ppf, l)
+    assert_allclose(l_ppf, lr)
 
     l_cdf = l_moment_from_cdf(IQ.cdf, r)
-    assert_allclose(l_cdf, l)
+    assert_allclose(l_cdf, lr)
 
     # QDF is shift-invariant, so it can't be used to find the L-loc
     l_qdf = l_moment_from_qdf(lambda u: 1 / IQ.pdf(IQ.inv_cdf(u)), r[1:])
-    assert_allclose(l_qdf, l[1:])
+    assert_allclose(l_qdf, lr[1:])
 
 
 def test_tlm_normal():
@@ -171,35 +171,35 @@ def test_tlm_cauchy():
 
     z3 = zeta(3)
     l2 = 18 * z3 / np.pi**3
-    l = l2 * np.array([0, 1, 0, 25 / 6 - 175 * zeta(5) / (4 * np.pi**2 * z3)])
+    lr = l2 * np.array([0, 1, 0, 25 / 6 - 175 * zeta(5) / (4 * np.pi**2 * z3)])
 
     l_ppf = l_moment_from_ppf(cauchy_ppf, r, trim=1)
-    assert_allclose(l_ppf, l)
+    assert_allclose(l_ppf, lr)
 
     l_cdf = l_moment_from_cdf(cauchy_cdf, r, trim=1)
-    assert_allclose(l_cdf, l)
+    assert_allclose(l_cdf, lr)
 
     l_qdf = l_moment_from_qdf(cauchy_qdf, r[1:], trim=1)
-    assert_allclose(l_qdf, l[1:])
+    assert_allclose(l_qdf, lr[1:])
 
 
 @given(a=st.floats(0.1, 10))
 def test_lhm_expon(a: float):
     r = [1, 2, 3, 4]
-    l = a * np.array([1, 1 / 2, 1 / 9, 1 / 24]) / 2
+    lr = a * np.array([1, 1 / 2, 1 / 9, 1 / 24]) / 2
 
     ppf = functools.partial(expon_ppf, a=a)
     cdf = functools.partial(expon_cdf, a=a)
     qdf = functools.partial(expon_qdf, a=a)
 
     l_ppf = l_moment_from_ppf(ppf, r, trim=(0, 1))
-    assert_allclose(l_ppf, l)
+    assert_allclose(l_ppf, lr)
 
     l_cdf = l_moment_from_cdf(cdf, r, trim=(0, 1))
-    assert_allclose(l_cdf, l)
+    assert_allclose(l_cdf, lr)
 
     l_qdf = l_moment_from_qdf(qdf, r[1:], trim=(0, 1))
-    assert_allclose(l_qdf, l[1:])
+    assert_allclose(l_qdf, lr[1:])
 
 
 def test_lm_cov_uniform():

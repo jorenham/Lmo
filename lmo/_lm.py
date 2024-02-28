@@ -95,7 +95,8 @@ def _l_weights_ostat(
 
     assert 0 < r + s + t <= N, (r, N, trim)
     assert r >= 1, r
-    assert s >= 0 and t >= 0, trim
+    assert s >= 0, trim
+    assert t >= 0, trim
 
     c = ir_pascal(r, dtype=dtype)
     jnj = np.arange(N, dtype=dtype)

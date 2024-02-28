@@ -151,7 +151,9 @@ def _loss_step(
     return np.sqrt(g_r.T @ w_rr @ g_r)  # type: ignore
 
 
-def _get_l_moment_fn(ppf: DistributionFunction[...]):
+def _get_l_moment_fn(
+    ppf: DistributionFunction[...],
+) -> Callable[..., npt.NDArray[np.float64]]:
     def l_moment_fn(
         r: IntVector,
         *args: Any,

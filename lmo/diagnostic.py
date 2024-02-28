@@ -54,8 +54,9 @@ if TYPE_CHECKING:
 T = TypeVar('T', bound=np.floating[Any])
 
 AnyRV: TypeAlias = rv_continuous | rv_discrete
-
 _ArrF8: TypeAlias = npt.NDArray[np.float64]
+
+_MIN_RHO = 1e-5
 
 
 class HypothesisTestResult(NamedTuple):
@@ -613,7 +614,7 @@ def l_ratio_bounds(
         if _ri == 1:
             # L-loc / L-scale; unbounded
             t_min[i], t_max[i] = -np.inf, np.inf
-        elif _ri in (0, 2):  # or s == t == 0:
+        elif _ri in {0, 2}:  # or s == t == 0:
             t_min[i] = t_max[i] = 1
         elif legacy:
             t_absmax = (
@@ -746,7 +747,7 @@ def rejection_point(
     )
 
     rho = cast(float, res.x[0])  # type: ignore
-    if rho <= 1e-5 or influence_fn(-rho) or influence_fn(rho):
+    if rho <= _MIN_RHO or influence_fn(-rho) or influence_fn(rho):
         return np.nan
 
     return rho
