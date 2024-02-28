@@ -106,10 +106,10 @@ exclude = [
     "**/__pycache__",
     "**/.hypothesis",
     "**/.pytest_cache",
-    "**/.ruff_cache",
-    "**/.vscode",
     ".git",
     ".github",
+    ".ruff_cache",
+    ".vscode",
     "dist",
     "docs",
     "site",
@@ -119,12 +119,38 @@ ignore = [
     # TODO: figure out how to do this conditionally
     "lmo/contrib/pandas.py",
 ]
+venvPath = "."
 venv = ".venv"
 pythonVersion = "3.10"
 pythonPlatform = "All"
 typeCheckingMode = "strict"
-reportMissingImports = true
-reportMissingTypeStubs = false
+useLibraryCodeForTypes = true
+
+disableBytesTypePromotions = true
+reportPropertyTypeMismatch = "warning"
+reportMissingTypeStubs = "none"
+reportUnusedImport = "warning"
+reportUnusedClass = "warning"
+reportUnusedFunction = "warning"
+reportUnusedVariable = "warning"
+reportConstantRedefinition = "warning"
+reportInconsistentConstructor = "warning"
+reportMissingTypeArgument = "warning"
+reportUninitializedInstanceVariable = "warning"  # maybe
+reportCallInDefaultInitializer = "warning"
+reportUnnecessaryIsInstance = "warning"
+reportUnnecessaryCast = "warning"
+reportUnnecessaryComparison = "warning"
+reportUnnecessaryContains = "warning"
+reportImplicitStringConcatenation = "none"
+reportInvalidStubStatement = "error"
+reportIncompleteStub = "error"
+reportUnusedCallResult = "warning"
+reportUnusedCoroutine = "error"
+reportUnusedExpression = "warning"
+reportUnnecessaryTypeIgnoreComment = "warning"
+reportMatchNotExhaustive = "error"
+reportShadowedImports = "warning"
 
 
 [tool.ruff]
