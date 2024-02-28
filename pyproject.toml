@@ -33,32 +33,31 @@ Documentation = "https://jorenham.github.io/Lmo/"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
-typing_extensions = { version = "^4.1", python = "<3.11"}
+typing_extensions = {version = "^4.1", python = "<3.11"}
 
 # https://numpy.org/neps/nep-0029-deprecation_policy.html
 numpy = "^1.23.4"
 scipy = "^1.9.3"
-pandas = { version = ">=1.4,<3.0", optional = true }
+pandas = {version = ">=1.4,<3.0", optional = true}
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.0"
-hypothesis = { version = "^6.97", extras = ["numpy"] }
-pyright = "^1.1.349"
-ruff = ">=0.1.14,<1.0"
-codespell = "^2.2"
+pytest = "^8.0.2"
+hypothesis = {version = "^6.98.13", extras = ["numpy"]}
+pyright = "^1.1.351"
+ruff = "^0.2.2"
+codespell = "^2.2.6"
 
 [tool.poetry.group.docs.dependencies]
-mkdocs = "^1.5"
-mkdocs-material = "^9.5"
-mkdocs-include-markdown-plugin = "^6.0"
-mkdocstrings = {extras = ["python"], version = ">=0.24,<1.0"}
-mkdocs-git-revision-date-localized-plugin = "^1.2.2"
+mkdocs = "^1.5.3"
+mkdocs-material = "^9.5.11"
+mkdocs-include-markdown-plugin = "^6.0.4"
+mkdocstrings = {extras = ["python"], version = "^0.24.1"}
+mkdocs-git-revision-date-localized-plugin = "^1.2.4"
 
 [tool.poetry.group.debug.dependencies]
-ipython = ">=8.20"
-ipykernel = ">=6.29"
-matplotlib = ">=3.8"
-line-profiler = ">=4.1"
+ipython = "^8.22.1"
+ipykernel = "^6.29.3"
+matplotlib = "^3.8.3"
 
 [tool.poetry.group.pandas.dependencies]
 pandas = ">=1.4"
