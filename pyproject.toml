@@ -41,21 +41,21 @@ scipy = "^1.9.3"
 pandas = {version = ">=1.4,<3.0", optional = true}
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.0.2"
-hypothesis = {version = "^6.98.13", extras = ["numpy"]}
-pyright = "^1.1.351"
-ruff = "^0.2.2"
+pytest = "^8.1.1"
+hypothesis = {version = "^6.99.13", extras = ["numpy"]}
+pyright = "^1.1.355"
+ruff = "^0.3.4"
 codespell = "^2.2.6"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.5.3"
-mkdocs-material = "^9.5.11"
-mkdocs-include-markdown-plugin = "^6.0.4"
+mkdocs-material = "^9.5.15"
+mkdocs-include-markdown-plugin = "^6.0.5"
 mkdocstrings = {extras = ["python"], version = "^0.24.1"}
 mkdocs-git-revision-date-localized-plugin = "^1.2.4"
 
 [tool.poetry.group.debug.dependencies]
-ipython = "^8.22.1"
+ipython = "^8.22.2"
 ipykernel = "^6.29.3"
 matplotlib = "^3.8.3"
 
