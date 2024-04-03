@@ -32,31 +32,31 @@ Documentation = "https://jorenham.github.io/Lmo/"
 "Bug Tracker" = "https://github.com/jorenham/Lmo/issues"
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.13"
+python = ">=3.10,<3.14"
 typing_extensions = {version = "^4.1", python = "<3.11"}
 
 # https://numpy.org/neps/nep-0029-deprecation_policy.html
-numpy = "^1.23.4"
-scipy = "^1.9.3"
-pandas = {version = ">=1.4,<3.0", optional = true}
+numpy = ">=1.23.5"
+scipy = ">=1.9.3"
+pandas = {version = ">=1.4", optional = true}
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.1.1"
-hypothesis = {version = "^6.99.13", extras = ["numpy"]}
-pyright = "^1.1.355"
-ruff = "^0.3.4"
+hypothesis = {version = "^6.100.0", extras = ["numpy"]}
+pyright = "^1.1.356"
+ruff = "^0.3.5"
 codespell = "^2.2.6"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.5.3"
-mkdocs-material = "^9.5.15"
+mkdocs-material = "^9.5.17"
 mkdocs-include-markdown-plugin = "^6.0.5"
-mkdocstrings = {extras = ["python"], version = "^0.24.1"}
+mkdocstrings = {version = "^0.24.2", extras = ["python"]}
 mkdocs-git-revision-date-localized-plugin = "^1.2.4"
 
 [tool.poetry.group.debug.dependencies]
-ipython = "^8.22.2"
-ipykernel = "^6.29.3"
+ipython = "^8.23.0"
+ipykernel = "^6.29.4"
 matplotlib = "^3.8.3"
 
 [tool.poetry.group.pandas.dependencies]
@@ -75,11 +75,6 @@ pandas = ["pandas"]
 minversion = "8.0"
 addopts = [
     "-ra",
-    "--exitfirst",
-    "--import-mode=importlib",
-    "--showlocals",
-    "--strict-markers",
-    "--strict-config",
     "--doctest-modules",
     "--doctest-ignore-import-errors",
 ]
@@ -89,14 +84,7 @@ doctest_optionflags = [
     "ELLIPSIS",
 ]
 xfail_strict = true
-filterwarnings = [
-    "error",
-    # https://github.com/dateutil/dateutil/issues/1314
-    "ignore::DeprecationWarning:dateutil",
-    # https://github.com/pandas-dev/pandas/issues/54466
-    "ignore:(?s).*Pyarrow will become a required dependency of pandas:DeprecationWarning",
-]
-log_cli_level = "info"
+filterwarnings = ["error"]
 testpaths = ["tests", "lmo"]
 
 
@@ -119,7 +107,7 @@ ignore = [
     # TODO: figure out how to do this conditionally
     "lmo/contrib/pandas.py",
 ]
-stubPath = './typings'
+stubPath = 'typings'
 venvPath = "."
 venv = ".venv"
 pythonVersion = "3.10"
@@ -160,7 +148,7 @@ show-fixes = true
 force-exclude = true
 extend-exclude = [
     ".github",
-    ".hyptohesis",
+    ".hypothesis",
     ".pytest_cache",
     ".ruff_cache",
     ".venv",
