@@ -75,11 +75,6 @@ pandas = ["pandas"]
 minversion = "8.0"
 addopts = [
     "-ra",
-    "--exitfirst",
-    "--import-mode=importlib",
-    "--showlocals",
-    "--strict-markers",
-    "--strict-config",
     "--doctest-modules",
     "--doctest-ignore-import-errors",
 ]
@@ -89,14 +84,7 @@ doctest_optionflags = [
     "ELLIPSIS",
 ]
 xfail_strict = true
-filterwarnings = [
-    "error",
-    # https://github.com/dateutil/dateutil/issues/1314
-    "ignore::DeprecationWarning:dateutil",
-    # https://github.com/pandas-dev/pandas/issues/54466
-    "ignore:(?s).*Pyarrow will become a required dependency of pandas:DeprecationWarning",
-]
-log_cli_level = "info"
+filterwarnings = ["error"]
 testpaths = ["tests", "lmo"]
 
 
