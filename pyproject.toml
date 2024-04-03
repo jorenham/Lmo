@@ -119,7 +119,7 @@ ignore = [
     # TODO: figure out how to do this conditionally
     "lmo/contrib/pandas.py",
 ]
-stubPath = './typings'
+stubPath = 'typings'
 venvPath = "."
 venv = ".venv"
 pythonVersion = "3.10"
@@ -160,7 +160,7 @@ show-fixes = true
 force-exclude = true
 extend-exclude = [
     ".github",
-    ".hyptohesis",
+    ".hypothesis",
     ".pytest_cache",
     ".ruff_cache",
     ".venv",
