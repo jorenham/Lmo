@@ -1,3 +1,4 @@
+<!-- markdownlint-disable MD051 MD052 -->
 # L-moments of common probability distributions
 
 This page lists theoretical L-moments of popular probability distributions.
@@ -772,7 +773,6 @@ The [Gompertz distribution](https://wikipedia.org/wiki/Gompertz_distribution)
 [^GOMP] with shape parameter \( \alpha > 0 \) and \( x \ge 0 \), has the
 following CDF and PPF:
 
-
 \[
 \begin{align*}
     F(x) &= 1 - e^{\alpha (1 - e^x)} \\
@@ -800,7 +800,8 @@ The general trimmed L-moments of the Gompertz distribution are:
 
 ### GEV
 
-The [GEV](https://wikipedia.org/wiki/GEV_distribution) unifies the
+The [GEV](https://wikipedia.org/wiki/GEV_distribution) distribution [^GEV]
+unifies  the
 [Gumbel](https://wikipedia.org/wiki/Gumbel_distribution),
 [Fréchet](https://wikipedia.org/wiki/Fr%C3%A9chet_distribution),
 and [Weibull](https://wikipedia.org/wiki/Weibull_distribution) distributions.
@@ -1038,9 +1039,12 @@ The distribution functions for \( x > 0 \) are defined as:
 \end{align*}
 \]
 
-<img src="../gallery/burr12.svg" width="100%"
+<img
+    src="../gallery/burr12.svg"
+    width="100%"
     style="height: auto; aspect-ratio: 16/9;"
-    alt="Burr XII distribution PDF" />
+    alt="Burr XII distribution PDF"
+/>
 
 When \( \beta > 1 / \alpha \), the general \( r \)-th trimmed L-moment is:
 
@@ -1090,7 +1094,7 @@ shapes \( \gamma \equiv 1 / \alpha \) and \( \alpha' \equiv \beta \), location
 
 For [Kumaraswamy's distribution
 ](https://wikipedia.org/wiki/Kumaraswamy_distribution) [^KUM1] with parameters
-\( \alpha \in \mathbb{R}_{>0} \) and \( \beta \in \mathbb{R}_{>0} \),
+<!-- markdownlint-disable-line -->\( \alpha \in \mathbb{R}_{>0} \) and \( \beta \in \mathbb{R}_{>0} \),
 the general solution for the \( r \)th (untrimmed L-moment has been derived by
 M.C. Jones in 2009 [^KUM2]. Lmo has extended these results for the general
 trimmed L-moments.
@@ -1147,8 +1151,8 @@ There are several notable special cases of the Kumaraswamy distribution:
 ### Wakeby
 
 The [*Wakeby distribution*](https://wikipedia.org/wiki/Wakeby_distribution)
-[^WAK] is quantile-based -- the CDF and PDF are not analytically expressible for the
-general case.
+[^WAK] is quantile-based -- the CDF and PDF are not analytically expressible
+for the general case.
 Without loss of generality, Lmo uses a 3-parameter "standardized"
 paremetrization, with shape parameters \( \beta,\ \delta,\ \phi \).
 
@@ -1331,6 +1335,7 @@ r \tlmoment{s, t}{r}
 
 and the arbitrarily-trimmed L-location is
 
+<!-- markdownlint-disable -->
 \[
 \tlmoment{s, t}{1}
     = -(1 + \phi) \mathfrak{L}_{1}^{(s)}(\beta)
@@ -1351,6 +1356,7 @@ where
         & \text{otherwise.}
 \end{cases}
 \]
+<!-- markdownlint-enable -->
 
 These equations look scarier that they actually are. To see why, take a look
 at the first 4 L-moment, with 4 styles of trimming:
@@ -1549,6 +1555,7 @@ There are several notable special cases of the GLD:
     generating asymmetric random variables
 
 ## Constants and special functions
+<!-- markdownlint-disable MD051 MD052 -->
 
 An overview of the (non-obvious) mathematical notation of special functions
 and constants.
@@ -1807,7 +1814,6 @@ and constants.
         <td>[`scipy.special.boxcox`][scipy.special.boxcox]</td>
     </tr>
 </table>
-
 
 *[STD]: Standard deviation
 *[MAD]: Median absolute deviation
