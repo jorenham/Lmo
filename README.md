@@ -4,10 +4,10 @@
 
 ![GitHub Workflow Status][IMG-GHA]
 ![license][IMG-BSD]
-[![PyPI][IMG-PYPI]](https://pypi.org/project/Lmo/)
-[![versions][IMG-VER]](https://github.com/jorenham/Lmo)
+[![Lmo - PyPI][IMG-PYPI]](https://pypi.org/project/Lmo/)
+[![Lmo - Versions][IMG-VER]](https://github.com/jorenham/Lmo)
 [![Ruff][IMG-RUFF]](https://github.com/astral-sh/ruff)
-[![Checked with pyright][IMG-PYRIGHT]](https://microsoft.github.io/pyright/)
+[![Pyright][IMG-PYRIGHT]](https://microsoft.github.io/pyright/)
 
 [IMG-GHA]: https://img.shields.io/github/actions/workflow/status/jorenham/Lmo/CI.yml?branch=master
 [IMG-BSD]: https://img.shields.io/github/license/jorenham/Lmo
