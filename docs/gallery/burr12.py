@@ -1,11 +1,11 @@
-# pyright: reportUnknownMemberType=false
+# pyright: reportUnknownMemberType=false, reportUnusedCallResult=false
 from pathlib import Path
 
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 
-from scipy.stats import burr12  # type: ignore
+from scipy.stats import burr12
 
 GALLERY_PATH = Path(__file__).resolve().parent
 TEX_LABEL_TEMPLATE = r'$\alpha = {},\ \beta = {}$'
@@ -55,4 +55,3 @@ if __name__ == '__main__':
         format='svg',
         bbox_inches='tight'
     )
-

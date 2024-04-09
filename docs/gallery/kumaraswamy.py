@@ -1,4 +1,4 @@
-# pyright: reportUnknownMemberType=false
+# pyright: reportUnknownMemberType=false, reportUnusedCallResult=false
 from pathlib import Path
 
 import numpy as np
@@ -54,4 +54,3 @@ if __name__ == '__main__':
         format='svg',
         bbox_inches='tight'
     )
-
