@@ -1,35 +1,26 @@
 <!--overview-start-->
 
-<img src="https://jorenham.github.io/Lmo/img/lmo.svg" alt="jorenham/lmo" width="128" align="right">
-
 # Lmo - Trimmed L-moments and L-comoments
 
-[![license](https://img.shields.io/github/license/jorenham/lmo?style=flat-square)](https://github.com/jorenham/lmo/blob/master/LICENSE?)
-[![PyPI](https://img.shields.io/pypi/v/lmo?style=flat-square)](https://pypi.org/project/lmo/)
-[![PyPI - Downloads](https://img.shields.io/pypi/dm/Lmo?style=flat-square)](https://pypi.org/project/lmo/)
-[![versions](https://img.shields.io/pypi/pyversions/lmo?style=flat-square)](https://github.com/jorenham/lmo)
-![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/jorenham/lmo/CI.yml?branch=master&style=flat-square)
-![GitHub commit activity (branch)](https://img.shields.io/github/commit-activity/m/jorenham/Lmo?style=flat-square)
-[![Checked with pyright](https://microsoft.github.io/pyright/img/pyright_badge.svg)](https://microsoft.github.io/pyright/)
+![GitHub Workflow Status][IMG-GHA]
+![license][IMG-BSD]
+[![PyPI][IMG-PYPI]](https://pypi.org/project/Lmo/)
+[![versions][IMG-VER]](https://github.com/jorenham/Lmo)
+[![Ruff][IMG-RUFF]](https://github.com/astral-sh/ruff)
+[![Checked with pyright][IMG-PYRIGHT]](https://microsoft.github.io/pyright/)
 
+[IMG-GHA]: https://img.shields.io/github/actions/workflow/status/jorenham/Lmo/CI.yml?branch=master
+[IMG-BSD]: https://img.shields.io/github/license/jorenham/Lmo
+[IMG-PYPI]: https://img.shields.io/pypi/v/Lmo
+[IMG-VER]: https://img.shields.io/pypi/pyversions/Lmo
+[IMG-RUFF]: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json
+[IMG-PYRIGHT]: https://microsoft.github.io/pyright/img/pyright_badge.svg
 
-
-~~~
-
-Is your tail too heavy?
-Can't find a moment?
-Are the swans black?
-The distribution pathological?
-
-... then look no further: Lmo's got you covered!
-
-Uniform or multi-dimensional, Lmo can summarize it all with one quick glance!
-
-~~~
-
-Unlike the legacy [moments](https://wikipedia.org/wiki/Moment_(mathematics)),
-[L-moments](https://wikipedia.org/wiki/L-moment) **uniquely describe** a
+Unlike the legacy
+[product-moments](https://wikipedia.org/wiki/Moment_(mathematics)), the
+[*L-moments*](https://wikipedia.org/wiki/L-moment) **uniquely describe** a
 probability distribution, and are more robust and efficient.
+
 The "L" stands for Linear; it is a linear combination of order statistics.
 So Lmo is as fast as sorting your samples (in terms of time-complexity).
 
@@ -98,17 +89,24 @@ pip install lmo
 
 These are automatically installed by your package manager, alongside `lmo`.
 
-| Package | Minimum version |
-| --- | --- |
-| [Python](https://github.com/python/cpython) | `3.10` |
-| [NumPy](https://github.com/numpy/numpy) | `1.22` |
-| [SciPy](https://github.com/scipy/scipy) | `1.9` |
+| Package      | Minimum version     |
+| ------------ | ------------------- |
+| [Python][PY] | `3.10`              |
+| [NumPy][NP]  | See [NEP 29][NEP29] |
+| [SciPy][SP]  | `1.9`               |
+
+[PY]: https://github.com/python/cpython
+[NP]: https://github.com/numpy/numpy
+[SP]: https://github.com/scipy/scipy
+[NEP29]: https://numpy.org/neps/nep-0029-deprecation_policy.html#support-table
 
 ### Optional dependencies
 
-| Package | Minimum version | Notes
-| --- | --- | --- |
-| [Pandas](https://github.com/pandas-dev/pandas) | `1.4` | Lmo extends `pd.Series` and `pd.DataFrame` with convenient methods, e.g. `df.l_scale(trim=1)`. Install as `pip install lmo[pandas]` to ensure compatibility. |
+| Package      | Minimum version | Notes                        |
+| ------------ | --------------- | ---------------------------- |
+| [Pandas][PD] | `1.4`           | Installable as `lmo[pandas]` |
+
+[PD]: https://github.com/pandas-dev/pandas
 
 ## Foundational Literature
 
