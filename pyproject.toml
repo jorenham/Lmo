@@ -48,7 +48,7 @@ pandas = {version = ">=1.4", optional = true}
 codespell = "^2.2.6"
 hypothesis = {version = "^6.100.1", extras = ["numpy"]}
 pre-commit = "^3.7.0"
-pyright = "^1.1.357"
+pyright = "^1.1.358"
 pytest = "^8.1.1"
 ruff = "^0.3.5"
 tomli = {version = "^2.0.1", python = "<3.11"}
