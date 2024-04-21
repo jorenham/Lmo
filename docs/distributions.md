@@ -193,7 +193,6 @@ exist (in closed form).
         <td>
             \(
                 \displaystyle
-                % \frac{23 - 33 \ln 2}{3 - 3 \ln 2} \\
                 \frac 1 3 \left(
                     \frac{-10}{1 - \ln 2} + 33
                 \right) \\
@@ -540,7 +539,6 @@ Right-trimmed LL-stats of some simple left-bound distributions.
             \(
                 \displaystyle
                 \frac{5}{36} \left(
-                    % \frac{233 - 336 \ln 2}{3 - 4 \ln 2}
                     \frac{-19}{3 - 4 \ln 2} + 84
                 \right) \\
                 \approx 0.06263
