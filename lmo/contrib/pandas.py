@@ -512,7 +512,7 @@ class DataFrame(pd.DataFrame):
             msg = 'rowvar=True is not supported; use df.T instead'
             raise TypeError(msg)
 
-        kwargs = kwargs | {'rowvar': False}
+        kwargs |= {'rowvar': False}
         out = pd.DataFrame(
             _l_comoment(self, _r := int(r), trim=trim, **kwargs),
             index=self.columns,
@@ -554,7 +554,7 @@ class DataFrame(pd.DataFrame):
             msg = 'rowvar=True is not supported; use df.T instead'
             raise TypeError(msg)
 
-        kwargs = kwargs | {'rowvar': False}
+        kwargs |= {'rowvar': False}
         out = pd.DataFrame(
             _l_coratio(self, _r := int(r), _k := int(k), trim=trim, **kwargs),
             index=self.columns,
