@@ -131,14 +131,15 @@ markdown_extensions:
       custom_checkbox: true
 
 extra_css:
-  - styles/theme.css
   - https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css
+  - styles/theme.css
+  - styles/katex.css
 
 extra_javascript:
-  - scripts/katex.js
   - https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js
   - https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js
   - https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/copy-tex.min.js
+  - scripts/katex.js
 
 watch:
   - docs
