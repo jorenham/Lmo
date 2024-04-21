@@ -19,6 +19,7 @@ from ._lm import l_weights
 from ._utils import broadstack, clean_order, ordered
 from .typing import AnyInt, AnyTrim, IntVector, LComomentOptions, SortKind
 
+
 if sys.version_info < (3, 11):
     from typing_extensions import Unpack
 else:
@@ -171,7 +172,7 @@ def l_comoment(
 
         l_ij[1:, :, j] = np.inner(p_r, x_k_ij)
 
-    return l_ij.take(_r, 0)  # pyright: ignore [reportUnknownMemberType]
+    return l_ij.take(_r, 0)
 
 
 def l_coratio(

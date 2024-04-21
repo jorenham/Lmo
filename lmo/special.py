@@ -12,18 +12,17 @@ from typing import Any, cast, overload
 
 import numpy as np
 import numpy.typing as npt
-import scipy.special as sc  # type: ignore
+import scipy.special as sc
 
 from ._utils import clean_orders
 from .typing import AnyNDArray, AnyScalar, IntVector
 
 
+_DTYPE_CHARS = '?bBhHiIlLqQpP'
+
+
 @overload
-def fpow(
-    x: AnyScalar,
-    n: AnyScalar,
-    out: None = ...,
-) -> float: ...
+def fpow(x: AnyScalar, n: AnyScalar, out: None = ...) -> float: ...
 
 @overload
 def fpow(
@@ -80,10 +79,7 @@ def fpow(
         - [`scipy.special.poch`][scipy.special.poch] -- the rising factorial
     """
     _x, _n = np.asanyarray(x), np.asanyarray(n)
-    res = cast(
-        npt.NDArray[np.float64],
-        sc.poch(_x - _n + 1, _n, out=out),  # type: ignore
-    )
+    res = cast(npt.NDArray[np.float64], sc.poch(_x - _n + 1, _n, out=out))
     if res.ndim == 0 and np.isscalar(x) and np.isscalar(n):
         return res[()]
     return res
@@ -147,16 +143,10 @@ def gamma2(
           regularized gamma function \( Q(a,\ x) \).
     """
     if a == 0:
-        return cast(
-            float | npt.NDArray[np.float64],
-            sc.exp1(x, out=out),  # type: ignore
-        )
+        return cast(float | npt.NDArray[np.float64], sc.exp1(x, out=out))
 
-    res = cast(
-        float | npt.NDArray[np.float64],
-        sc.gammaincc(a, x, out=out),  # type: ignore
-    )
-    res *= cast(float, sc.gamma(a))  # type: ignore
+    res = cast(float | npt.NDArray[np.float64], sc.gammaincc(a, x, out=out))
+    res *= cast(float, sc.gamma(a))
     return res
 
 
@@ -200,7 +190,7 @@ def harmonic(
 
     _out = cast(
         npt.NDArray[np.float64] | npt.NDArray[np.complex128],
-        sc.digamma(_n + 1, out),  # type: ignore
+        sc.digamma(_n + 1, out),
     )
     _out += np.euler_gamma
 
@@ -262,19 +252,13 @@ def norm_sh_jacobi(
         c = np.ones(r.shape)
     elif alpha == beta == -1 / 2:
         # shifted Chebychev of the first kind
-        c = np.exp(2 * (
-            sc.gammaln(r - 1 / 2) - sc.gammaln(r)  # type: ignore
-        )) / 2
+        c = np.exp(2 * (sc.gammaln(r - 1 / 2) - sc.gammaln(r))) / 2
     elif alpha == beta == 1 / 2:
         # shifted Chebychev of the second kind
-        c = np.exp(2 * (
-            sc.gammaln(r + 1 / 2) - sc.gammaln(r + 1)  # type: ignore
-        )) / 2
+        c = np.exp(2 * (sc.gammaln(r + 1 / 2) - sc.gammaln(r + 1))) / 2
     else:
         p, q = r + alpha, r + beta
-        c = np.exp(
-            sc.betaln(p, q) - sc.betaln(r, p + beta),  # type: ignore
-        ) / (p + q - 1)
+        c = np.exp(sc.betaln(p, q) - sc.betaln(r, p + beta)) / (p + q - 1)
 
     return c[()] if np.isscalar(n) else c
 
@@ -347,7 +331,7 @@ def fourier_jacobi(
     """
     _c: npt.NDArray[np.integer[Any] | np.floating[Any]]
     _c = np.array(c, ndmin=1, copy=False)
-    if _c.dtype.char in '?bBhHiIlLqQpP':
+    if _c.dtype.char in _DTYPE_CHARS:
         _c = _c.astype(np.float64)
 
     _x = np.asanyarray(x)

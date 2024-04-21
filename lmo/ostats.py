@@ -15,7 +15,7 @@ from typing import Any, cast, overload
 
 import numpy as np
 import numpy.typing as npt
-from scipy.special import betainc, betaln  # type: ignore
+from scipy.special import betainc, betaln
 
 from .typing import AnyNDArray
 
@@ -146,4 +146,4 @@ def from_cdf(
         msg = 'F must lie between 0 and 1'
         raise ValueError(msg)
 
-    return betainc(i + 1, n - i, F)  # type: ignore
+    return betainc(i + 1, n - i, F)

@@ -3,7 +3,7 @@
 __all__ = ('install',)
 
 try:
-    import pandas as pd  # type: ignore
+    import pandas as pd
 except ImportError:
     pd = None
 

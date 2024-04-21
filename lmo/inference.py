@@ -7,19 +7,14 @@ from typing import Any, NamedTuple, cast
 
 import numpy as np
 import numpy.typing as npt
-from scipy import optimize, special  # type: ignore
+from scipy import optimize, special
 
 from ._lm import l_moment as l_moment_est
 from ._lm_co import l_coscale as l_coscale_est
 from ._utils import clean_orders, clean_trim
 from .diagnostic import HypothesisTestResult, l_moment_bounds
 from .theoretical import l_moment_from_ppf
-from .typing import (
-    AnyTrim,
-    DistributionFunction,
-    IntVector,
-    OptimizeResult,
-)
+from .typing import AnyTrim, DistributionFunction, IntVector, OptimizeResult
 
 
 class GMMResult(NamedTuple):
@@ -103,7 +98,7 @@ class GMMResult(NamedTuple):
             raise ValueError(msg)
 
         stat = self.statistic
-        pvalue = special.chdtr(df, stat)  # type: ignore
+        pvalue = special.chdtr(df, stat)
         return HypothesisTestResult(stat, pvalue)
 
     @property
@@ -156,7 +151,9 @@ def _loss_step(
     return np.sqrt(g_r.T @ w_rr @ g_r)  # type: ignore
 
 
-def _get_l_moment_fn(ppf: DistributionFunction[...]):
+def _get_l_moment_fn(
+    ppf: DistributionFunction[...],
+) -> Callable[..., npt.NDArray[np.float64]]:
     def l_moment_fn(
         r: IntVector,
         *args: Any,

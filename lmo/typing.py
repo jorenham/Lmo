@@ -60,6 +60,7 @@ from typing import (
 import numpy as np
 import numpy.typing as npt
 
+
 if sys.version_info < (3, 11):
     from typing_extensions import Self, TypeVarTuple, Unpack
 else:
@@ -147,7 +148,7 @@ _P = TypeVar('_P', bound='PolySeries')
 
 
 @runtime_checkable
-class PolySeries(Protocol):
+class PolySeries(Protocol):  # noqa: PLW1641
     """
     Annotations for the (private) `numpy.polynomial._polybase.ABCPolyBase`
     subtypes, e.g. [`numpy.polynomial.Legendre`][numpy.polynomial.Legendre].

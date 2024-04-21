@@ -48,15 +48,7 @@ __all__ = (
 
 import sys
 from collections.abc import Callable
-from typing import (
-    Any,
-    Literal,
-    Protocol,
-    TypeAlias,
-    Union,
-    cast,
-    final,
-)
+from typing import Any, Literal, Protocol, TypeAlias, Union, cast, final
 
 import numpy as np
 import numpy.typing as npt
@@ -80,6 +72,7 @@ from lmo.typing import (
     LMomentOptions,
 )
 
+
 if sys.version_info < (3, 11):
     from typing_extensions import Unpack
 else:
@@ -97,9 +90,9 @@ def _setindex(
     axis: AxisDF,
     index: 'pd.Index[Any]',
 ) -> None:
-    if axis == 0 or axis == 'index':
+    if axis in {0, 'index'}:
         df.index = index
-    elif axis == 1 or axis == 'columns':
+    elif axis in {1, 'columns'}:
         df.columns = index
     else:
         msg = f"axis must be one of {{0, 'index', 1, 'columns'}}, got {axis}"
@@ -285,10 +278,10 @@ class DataFrame(pd.DataFrame):
         method: Callable[..., _FloatOrFrame],
     ) -> None:
         def fn(obj: pd.DataFrame) -> Callable[..., _FloatOrFrame]:
-            # return functools.partial(method, obj)  # type: ignore
+            # return functools.partial(method, obj)
             return method.__get__(obj, cls)
 
-        pd.api.extensions.register_dataframe_accessor(name)(fn)  # type: ignore
+        pd.api.extensions.register_dataframe_accessor(name)(fn)
 
     def l_moment(
         self,
@@ -519,7 +512,7 @@ class DataFrame(pd.DataFrame):
             msg = 'rowvar=True is not supported; use df.T instead'
             raise TypeError(msg)
 
-        kwargs = kwargs | {'rowvar': False}
+        kwargs |= {'rowvar': False}
         out = pd.DataFrame(
             _l_comoment(self, _r := int(r), trim=trim, **kwargs),
             index=self.columns,
@@ -561,7 +554,7 @@ class DataFrame(pd.DataFrame):
             msg = 'rowvar=True is not supported; use df.T instead'
             raise TypeError(msg)
 
-        kwargs = kwargs | {'rowvar': False}
+        kwargs |= {'rowvar': False}
         out = pd.DataFrame(
             _l_coratio(self, _r := int(r), _k := int(k), trim=trim, **kwargs),
             index=self.columns,

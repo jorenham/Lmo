@@ -1,3 +1,4 @@
+<!-- markdownlint-disable MD051 MD052 -->
 # L-moments of common probability distributions
 
 This page lists theoretical L-moments of popular probability distributions.
@@ -56,9 +57,9 @@ exist (in closed form).
             [Uniform](https://w.wiki/8gGh)<br>
             [`uniform()`][scipy.stats.uniform]
         </td>
-        <td>\( [0, 1] \)</td>
-        <td>\( \displaystyle \frac 1 2 \)</td>
-        <td>\( \displaystyle \frac 1 6 \)</td>
+        <td></td>
+        <td>\( \dfrac 1 2 \\ = 0.5 \)</td>
+        <td>\( \dfrac 1 6 \\ = 0.16\overline{6} \dots \)</td>
         <td>\( 0 \)</td>
         <td>\( 0 \)</td>
     </tr>
@@ -69,12 +70,11 @@ exist (in closed form).
         </td>
         <td></td>
         <td>\( 0 \)</td>
-        <td>\( \displaystyle \frac{1}{\sqrt \pi} \\ \approx 0.5642 \)</td>
+        <td>\( \dfrac{1}{\sqrt \pi} \\ \approx 0.5642 \)</td>
         <td>\( 0 \)</td>
         <td>
             \(
-                \displaystyle 30 \
-                \frac{\href{#const-theta_m}{\theta_m}}{\pi} - 9 \\
+                30 \dfrac{\href{#const-theta_m}{\theta_m}}{\pi} - 9 \\
                 \approx 0.1226
             \)
         </td>
@@ -88,7 +88,7 @@ exist (in closed form).
         <td>\( 0 \)</td>
         <td>\( 1 \)</td>
         <td>\( 0 \)</td>
-        <td>\( \displaystyle 1 / 6 \)<br></td>
+        <td>\( \dfrac 1 6 \\ = 0.16\overline{6} \dots \)</td>
     </tr>
     <tr>
         <td>
@@ -97,9 +97,9 @@ exist (in closed form).
         </td>
         <td></td>
         <td>\( 0 \)</td>
-        <td>\( \displaystyle \frac 3 4 \)</td>
+        <td>\( \dfrac 3 4 \\ = 0.75 \)</td>
         <td>\( 0 \)</td>
-        <td>\( \displaystyle \frac{17}{72} \\ \approx 0.2361 \)</td>
+        <td>\( \dfrac{17}{72} \\ \approx 0.2361 \)</td>
     </tr>
     <tr>
         <td>
@@ -108,9 +108,9 @@ exist (in closed form).
         </td>
         <td>\( \nu = 2 \)</td>
         <td>\( 0 \)</td>
-        <td>\( \displaystyle \frac{\pi}{2 \sqrt 2} \\ \approx 1.1107 \)</td>
+        <td>\( \dfrac{\pi}{2 \sqrt 2} \\ \approx 1.1107 \)</td>
         <td>\( 0 \)</td>
-        <td>\( \displaystyle \frac 3 8 \\ = 0.375 \)</td>
+        <td>\( \dfrac 3 8 \\ = 0.375 \)</td>
     </tr>
     <tr>
         <td>
@@ -119,19 +119,9 @@ exist (in closed form).
         </td>
         <td>\( \nu = 3 \)</td>
         <td>\( 0 \)</td>
-        <td>
-            \(
-                \displaystyle \frac{3 \sqrt 3}{\vphantom{\pi^2}2 \pi} \\
-                \approx 0.8270
-            \)
-        </td>
+        <td>\( \dfrac{3 \sqrt 3}{2 \pi} \\ \approx 0.8270 \)</td>
         <td>\( 0 \)</td>
-        <td>
-            \(
-                \displaystyle 1 - \frac{\vphantom{\sqrt 3}175}{24 \pi^2} \\
-                \approx 0.2612
-            \)
-        </td>
+        <td>\( 1 - \dfrac{175}{24 \pi^2} \\ \approx 0.2612 \)</td>
     </tr>
     <tr>
         <td>
@@ -140,9 +130,9 @@ exist (in closed form).
         </td>
         <td>\( \nu = 4 \)</td>
         <td>\( 0 \)</td>
-        <td>\( \displaystyle \frac{15}{64} \pi \\ \approx 0.7363 \)</td>
+        <td>\( \dfrac{15}{64} \pi \\ \approx 0.7363 \)</td>
         <td>\( 0 \)</td>
-        <td>\( \displaystyle \frac{111}{512} \\ \approx 0.2168 \)</td>
+        <td>\( \dfrac{111}{512} \\ \approx 0.2168 \)</td>
     </tr>
     <tr>
         <td>
@@ -150,10 +140,10 @@ exist (in closed form).
             [`expon()`][scipy.stats.expon]
         </td>
         <td></td>
-        <td>\( \displaystyle 1 \)</td>
-        <td>\( \displaystyle \frac 1 2 \)</td>
-        <td>\( \displaystyle \frac 1 3 \)</td>
-        <td>\( \displaystyle \frac 1 6 \)</td>
+        <td>\( 1 \)</td>
+        <td>\( \dfrac 1 2 \\ = 0.5 \)</td>
+        <td>\( \dfrac 1 3 \\ = 0.3\overline{3} \dots \)</td>
+        <td>\( \dfrac 1 6 \\ = 0.16\overline{6} \dots \)</td>
     </tr>
     <tr>
         <td>
@@ -165,10 +155,9 @@ exist (in closed form).
         <td>\( \sqrt 2 - 1 \\ \approx 0.4142 \)</td>
         <td>
             \(
-                \displaystyle
-                7 + 4 \sqrt 2 - 12 (2 - \sqrt 2) \frac
-                    {\href{#const-theta_m}{\theta_m}}
-                    {\pi}
+                7
+                + 4 \sqrt 2
+                - 12 (2 - \sqrt 2) \dfrac{\href{#const-theta_m}{\theta_m}}{\pi}
                 \\
                 \approx 0.1983
             \)
@@ -182,23 +171,8 @@ exist (in closed form).
         </td>
         <td>\( 2 \ln 2 \\ \approx 1.386 \)</td>
         <td>\( 1 \)</td>
-        <td>
-            \(
-                \displaystyle
-                \frac{1}{1 - \ln 2} - 3 \\
-                \approx 0.2589
-            \)
-        </td>
-        <td>
-            \(
-                \displaystyle
-                % \frac{23 - 33 \ln 2}{3 - 3 \ln 2} \\
-                \frac 1 3 \left(
-                    \frac{-10}{1 - \ln 2} + 33
-                \right) \\
-                \approx 0.1370
-            \)
-        </td>
+        <td>\( \dfrac{1}{1 - \ln 2} - 3 \\ \approx 0.2589 \)</td>
+        <td>\( 11 - \dfrac{10}{3 - \ln 8} \\ \approx 0.1370 \)</td>
     </tr>
     <tr>
         <td>
@@ -206,33 +180,23 @@ exist (in closed form).
             [`rayleigh()`][scipy.stats.rayleigh]
         </td>
         <td></td>
+        <td>\( \sqrt{\pi / 2} \\ \approx 1.253 \)</td>
         <td>
             \(
-                \displaystyle
-                \frac 1 2 \sqrt{2 \pi}  \\
-                \approx 1.253
-            \)
-        </td>
-        <td>
-            \(
-                \displaystyle
-                \frac {\sqrt 2 - 1}{2} \sqrt{\pi} \\
+                \sqrt{\pi / 2} - \sqrt{\pi / 4} \\
                 \approx 0.3671
             \)
         </td>
         <td>
             \(
-                \displaystyle
-                \frac{2 + \sqrt 2}{\sqrt 3}
-                - \frac{4 + \sqrt{2}}{\sqrt 2} \\
+                \dfrac{2 + \sqrt 2}{\sqrt 3} - \dfrac{4 + \sqrt 2}{\sqrt 2} \\
                 \approx 0.1140
             \)
         </td>
         <td>
             \(
-                \displaystyle
-                10 \frac{2 + \sqrt 2}{\sqrt 3}
-                - 3 \frac{5 + 3 \sqrt 2}{\sqrt 2} \\
+                10 \dfrac{2 + \sqrt 2}{\sqrt 3}
+                - 3 \dfrac{5 + 3 \sqrt 2}{\sqrt 2} \\
                 \approx 0.1054
             \)
         </td>
@@ -256,8 +220,8 @@ exist (in closed form).
         <td>\( k = 2 \)</td>
         <td>\( 2 \)</td>
         <td>\( 1 \)</td>
-        <td>\( \displaystyle \frac 1 3 \)</td>
-        <td>\( \displaystyle \frac 1 6 \)</td>
+        <td>\( \dfrac 1 3 \\ = 0.3\overline{3} \dots \)</td>
+        <td>\( \dfrac 1 6 \\ = 0.16\overline{6} \dots \)</td>
     </tr>
     <tr>
         <td>
@@ -266,15 +230,9 @@ exist (in closed form).
         </td>
         <td>\( k = 4 \)</td>
         <td>\( 4 \)</td>
-        <td>\( \displaystyle \frac 3 2 \)</td>
-        <td>\( \displaystyle \frac{19}{81} \\ \approx 0.2346 \)</td>
-        <td>
-            \(
-                \displaystyle
-                \frac{367}{2^5 \cdot 3^4} \\
-                \approx 0.1416
-            \)
-        </td>
+        <td>\( \dfrac 3 2 \\ = 1.5 \)</td>
+        <td>\( \dfrac{19}{81} \\ \approx 0.2346 \)</td>
+        <td>\( \dfrac{367}{2^5 \cdot 3^4} \\ \approx 0.1416 \)</td>
     </tr>
     <tr>
         <td>
@@ -283,15 +241,9 @@ exist (in closed form).
         </td>
         <td>\( k = 6 \)</td>
         <td>\( 6 \)</td>
-        <td>\( \displaystyle \frac{15}{8} \)</td>
-        <td>\( \displaystyle \frac{139}{729} \\ \approx 0.2346 \)</td>
-        <td>
-            \(
-                \displaystyle
-                \frac{200\ 827}{2^{11} \cdot 3^6} \\
-                \approx 0.1345
-            \)
-        </td>
+        <td>\( \dfrac{15}{8} \\ = 1.875  \)</td>
+        <td>\( \dfrac{139}{729} \\ \approx 0.1907 \)</td>
+        <td>\( \dfrac{200\ 827}{2^{11} \cdot 3^6} \\ \approx 0.1345 \)</td>
     </tr>
 </table>
 
@@ -313,9 +265,9 @@ Symmetrically trimmed TL-stats of some symmetric distributions.
             [Uniform](https://w.wiki/8gGh)<br>
             [`uniform()`][scipy.stats.uniform]
         </td>
-        <td>\( [0, 1] \)</td>
-        <td>\( \displaystyle \frac 1 2 \)</td>
-        <td>\( \displaystyle \frac{1}{10} \)</td>
+        <td></td>
+        <td>\( \dfrac 1 2 \\ = 0.5 \)</td>
+        <td>\( \dfrac{1}{10} \\ = 0.1 \)</td>
         <td>\( 0 \)</td>
         <td>\( 0 \)</td>
     </tr>
@@ -328,11 +280,9 @@ Symmetrically trimmed TL-stats of some symmetric distributions.
         <td>\( 0 \)</td>
         <td>
             \(
-                \displaystyle
-                \frac{6}{\sqrt \pi}
-                \left(
-                    1 - 3 \frac{\href{#const-theta_m}{\theta_m}}{\pi}
-                \right) \\
+                \dfrac{6}{\sqrt \pi} \left(
+                    1 - 3 \dfrac{\href{#const-theta_m}{\theta_m}}{\pi}\right
+                ) \\
                 \approx 0.2970
             \)
         </td>
@@ -346,9 +296,9 @@ Symmetrically trimmed TL-stats of some symmetric distributions.
         </td>
         <td></td>
         <td>\( 0 \)</td>
-        <td>\( \displaystyle \frac 1 2 \)</td>
+        <td>\( \dfrac 1 2 \\ = 0.5 \)</td>
         <td>\( 0 \)</td>
-        <td>\( \displaystyle \frac{1}{12} \\ = 0.083\overline{3} \dots \)</td>
+        <td>\( \dfrac{1}{12} \\ = 0.083\overline{3} \dots \)</td>
     </tr>
     <tr>
         <td>
@@ -357,9 +307,9 @@ Symmetrically trimmed TL-stats of some symmetric distributions.
         </td>
         <td></td>
         <td>\( 0 \)</td>
-        <td>\( \displaystyle \frac{11}{32} \\ = 0.34375 \)</td>
+        <td>\( \dfrac{11}{32} \\ = 0.34375 \)</td>
         <td>\( 0 \)</td>
-        <td>\( \displaystyle \frac{3}{22} \\ = 0.136\overline{36} \dots \)</td>
+        <td>\( \dfrac{3}{22} \\ = 0.136\overline{36} \dots \)</td>
     </tr>
     <tr>
         <td>
@@ -368,21 +318,12 @@ Symmetrically trimmed TL-stats of some symmetric distributions.
         </td>
         <td></td>
         <td>\( 0 \)</td>
-        <td>
-            \(
-                \displaystyle
-                \frac{18}{\pi^3} \ \href{#const-zeta}{\zeta}(3) \\
-                \approx 0.6978
-            \)
-        </td>
+        <td>\( \dfrac{18}{\pi^3} \ \zeta(3) \\ \approx 0.6978 \)</td>
         <td>\( 0 \)</td>
         <td>
             \(
-                \displaystyle
-                \frac{25}{6} - \frac{175}{4 \pi^2} \frac
-                    {\href{#const-zeta}{\zeta}(5)}
-                    {\href{#const-zeta}{\zeta}(3)}
-                \\
+                \dfrac{25}{6}
+                - \dfrac{175}{4 \pi^2} \frac \zeta(5) \zeta(3) \\
                 \approx 0.3428
             \)
         </td>
@@ -394,9 +335,9 @@ Symmetrically trimmed TL-stats of some symmetric distributions.
         </td>
         <td>\( \nu = 2 \)</td>
         <td>\( 0 \)</td>
-        <td>\( \displaystyle \frac{3 \pi}{16 \sqrt 2} \\ \approx 0.4165 \)</td>
+        <td>\( \dfrac{3 \pi}{16 \sqrt 2} \\ \approx 0.4165 \)</td>
         <td>\( 0 \)</td>
-        <td>\( \displaystyle \frac{5}{32} \\ = 0.15625 \)</td>
+        <td>\( \dfrac{5}{32} \\ = 0.15625 \)</td>
     </tr>
     <tr>
         <td>
@@ -405,18 +346,11 @@ Symmetrically trimmed TL-stats of some symmetric distributions.
         </td>
         <td>\( \nu = 3 \)</td>
         <td>\( 0 \)</td>
-        <td>
-            \(
-                \displaystyle
-                \frac{105 \sqrt 3}{16 \pi^3} \\
-                \approx 0.3666
-            \)
-        </td>
+        <td>\( \dfrac{105 \sqrt 3}{16 \pi^3} \\ \approx 0.3666 \)</td>
         <td>\( 0 \)</td>
         <td>
             \(
-                \displaystyle
-                \frac{25}{6} -  \frac{23 \ 023}{(24 \pi)^2} \\
+                \dfrac{25}{6} -  \frac{23 \ 023}{(24 \pi)^2} \\
                 \approx 0.1168
             \)
         </td>
@@ -428,21 +362,9 @@ Symmetrically trimmed TL-stats of some symmetric distributions.
         </td>
         <td>\( \nu = 4 \)</td>
         <td>\( 0 \)</td>
-        <td>
-            \(
-                \displaystyle
-                \frac{3\ 609\ \pi}{32\ 768} \\
-                \approx 0.3460
-            \)
-        </td>
+        <td>\( \dfrac{3\ 609\ \pi}{32\ 768} \\ \approx 0.3460 \)</td>
         <td>\( 0 \)</td>
-        <td>
-            \(
-                \displaystyle
-                \frac{164 \ 975}{1 \ 642 \ 496} \\
-                \approx 0.1004
-            \)
-        </td>
+        <td>\( \dfrac{164 \ 975}{1 \ 642 \ 496} \\ \approx 0.1004 \) </td>
     </tr>
     <tr>
         <td>
@@ -452,25 +374,22 @@ Symmetrically trimmed TL-stats of some symmetric distributions.
         <td></td>
         <td>
             \(
-                \displaystyle
                 \href{#const-euler}{\gamma_e} - 2 \ln 3 + 3 \ln 2 \\
                 \approx 0.4594
             \)
         </td>
-        <td>\( \displaystyle 6 \ln 3 - 9 \ln 2 \\ \approx 0.3533 \)</td>
+        <td>\( 6 \ln 3 - 9 \ln 2 \\ \approx 0.3533 \)</td>
         <td>
             \(
-                \displaystyle
-                -\frac{10}{9}
-                \frac{5 - 2 \log_2(5)}{3 - 2 \log_2(3)} - \frac{20}{9} \\
+                - \dfrac{10}{9} \dfrac{5 - 2 \log_2(5)}{3 - 2 \log_2(3)}
+                - \frac{20}{9} \\
                 \approx 0.1065
             \)
         </td>
         <td>
             \(
-                \displaystyle
-                \frac{35}{6}
-                \frac{7 - 3 \log_2(5)}{3 - 2 \log_2(3)} + \frac{5}{4} \\
+                \dfrac{35}{6} \dfrac{7 - 3 \log_2(5)}{3 - 2 \log_2(3)}
+                + \dfrac{5}{4} \\
                 \approx 0.07541
             \)
         </td>
@@ -496,10 +415,10 @@ Right-trimmed LL-stats of some simple left-bound distributions.
             [`expon()`][scipy.stats.expon]
         </td>
         <td></td>
-        <td>\( \displaystyle \frac 1 2 \)</td>
-        <td>\( \displaystyle \frac 1 4 \)</td>
-        <td>\( \displaystyle \frac 2 9 \\ = 0.2\overline{2} \dots  \)</td>
-        <td>\( \displaystyle \frac{1}{12} \\ = 0.083\overline{3} \dots  \)</td>
+        <td>\( \dfrac 1 2 \\ = 0.5 \)</td>
+        <td>\( \dfrac 1 4 \\ = 0.25 \)</td>
+        <td>\( \dfrac 2 9 \\ = 0.2\overline{2} \dots  \)</td>
+        <td>\( \dfrac{1}{12} \\ = 0.083\overline{3} \dots  \)</td>
     </tr>
     <tr>
         <td>
@@ -510,9 +429,8 @@ Right-trimmed LL-stats of some simple left-bound distributions.
         <td>\( 2 - \sqrt 2 \\ \approx 0.5858 \)</td>
         <td>
             \(
-                \displaystyle
-                9 \sqrt 2 \ \frac{\href{#const-theta_m}{\theta_m}}{\pi}
-                - 3 \frac{1 + \sqrt 2}{2} \\
+                9 \sqrt 2 \ \dfrac{\href{#const-theta_m}{\theta_m}}{\pi}
+                - 3 \dfrac{1 + \sqrt 2}{2} \\
                 \approx 0.2491
             \)
         </td>
@@ -528,20 +446,14 @@ Right-trimmed LL-stats of some simple left-bound distributions.
         <td>\( 1 \)</td>
         <td>
             \(
-                \displaystyle
-                \frac{4}{27} \left(
-                    \frac{5}{3 - 4 \ln 2} - 21
-                \right) \\
+                \dfrac{4}{27} \left( \dfrac{5}{3 - 4 \ln 2} - 21 \right) \\
                 \approx 0.1462
             \)
         </td>
         <td>
             \(
-                \displaystyle
-                \frac{5}{36} \left(
-                    % \frac{233 - 336 \ln 2}{3 - 4 \ln 2}
-                    \frac{-19}{3 - 4 \ln 2} + 84
-                \right) \\
+                \dfrac{5}{36}
+                \left( \dfrac{-19}{3 - 4 \ln 2} + 84 \right) \\
                 \approx 0.06263
             \)
         </td>
@@ -551,32 +463,30 @@ Right-trimmed LL-stats of some simple left-bound distributions.
             [Half-Cauchy](https://w.wiki/8hTq)<br>
             [`halfcauchy()`][scipy.stats.halfcauchy]
         </td>
-        <td>\( \displaystyle \frac{4 \ln 2}{\pi} \\ \approx 0.8825 \)</td>
+        <td>\( \dfrac{4 \ln 2}{\pi} \\ \approx 0.8825 \)</td>
         <td>
             \(
-                \displaystyle
-                \frac{63 \href{#const-zeta}{\mathop{\zeta}}(3)}{2 \pi^3}
-                - \frac{3 \ln 2}{\pi} \\
+                \dfrac{63 \href{#const-zeta}{\mathop{\zeta}}(3)}{2 \pi^3}
+                - \dfrac{3 \ln 2}{\pi} \\
                 \approx 0.5593
             \)
         </td>
         <td>
             \(
-                \displaystyle
-                \frac
+                \dfrac
                     {40 \mathop{\zeta}(3)}
                     {63 \mathop{\zeta}(3) - 9 \pi^2 \ln 2}
-                    - \frac 8 9 \\
+                - \frac 8 9 \\
                 \approx 0.4974
             \)
         </td>
         <td>
             \(
-                \displaystyle
-                \frac{155}{2} \frac
+                \dfrac{155}{2}
+                \dfrac
                     {3 \mathop{\zeta}(3) - 35 \pi^{-2} \mathop{\zeta}(5)}
                     {21 \mathop{\zeta}(3) - 2 \pi^2 \ln 2}
-                + \frac{5}{6}\\
+                + \dfrac 5 6 \\
                 \approx 0.3572
             \)
         </td>
@@ -587,30 +497,19 @@ Right-trimmed LL-stats of some simple left-bound distributions.
             [`rayleigh()`][scipy.stats.rayleigh]
         </td>
         <td></td>
-        <td>\( \displaystyle \frac{\sqrt \pi}{2} \\ \approx 0.8862 \)</td>
+        <td>\( \dfrac{\sqrt \pi}{2} \\ \approx 0.8862 \)</td>
+        <td>\( \dfrac{3 - \sqrt 6}{4} \sqrt \pi \\ \approx 0.2439 \)</td>
         <td>
             \(
-                \displaystyle
-                \frac{3 - \sqrt 6}{4} \sqrt \pi \\
-                \approx 0.2439
-            \)
-        </td>
-        <td>
-            \(
-                \displaystyle
-                \frac{10}{9} \left(
-                    3 \sqrt 2 + 2 \sqrt 3 - 2 \sqrt 6
-                \right) - \frac{28}{9}  \\
+                \dfrac{10}{9}  \left( 3 \sqrt 2 + 2 \sqrt 3 - 2 \sqrt 6 \right)
+                - \frac{28}{9}  \\
                 \approx 0.008\ 625
             \)
         </td>
         <td>
             \(
-                \displaystyle
-                \frac{1}{4} \frac
-                    {80 - 75 \sqrt 2 + 14 \sqrt{10}}
-                    {\sqrt 6 - 3}
-                + \frac{25}{3} \\
+                \dfrac 1 4 \dfrac{80 - 75 \sqrt 2 + 14 \sqrt{10}}{\sqrt 6 - 3}
+                + \dfrac{25}{3} \\
                 \approx 0.06561
             \)
         </td>
@@ -621,35 +520,19 @@ Right-trimmed LL-stats of some simple left-bound distributions.
             [`gumbel_r()`][scipy.stats.gumbel_r]
         </td>
         <td></td>
-        <td>
-            \(
-                \displaystyle
-                \href{#const-euler}{\gamma_e} - \ln 2 \\
-                \approx -0.1159
-            \)
+        <td>\( \href{#const-euler}{\gamma_e} - \ln 2 \\ \approx -0.1159 \)</td>
+        <td>\( 3 \ln 2 - \dfrac 3 2 \ln 3 \\ \approx 0.4315 \)
         </td>
         <td>
             \(
-                \displaystyle
-                3 \ln 2 - \frac{3}{2} \ln 3 \\
-                \approx 0.4315
-            \)
-        </td>
-        <td>
-            \(
-                \displaystyle
-                \frac{4}{9} \left(
-                    \frac{5}{2 - \log_2(3)} - 12
-                \right) \\
+                \dfrac 4 9 \left( \dfrac{5}{2 - \log_2(3)} - 12 \right) \\
                 \approx 0.02094
             \)
         </td>
         <td>
             \(
-                \displaystyle
-                \frac{5}{6} \left(
-                    \frac{8 - 7 \log_2(5)}{2 - \hphantom{1}\log_2(3)} + 20
-                \right) \\
+                \dfrac 5 6
+                \left( \dfrac{8 - 7 \log_2(5)}{2 - \log_2(3)} + 20 \right) \\
                 \approx 0.09488
             \)
         </td>
@@ -661,9 +544,9 @@ Right-trimmed LL-stats of some simple left-bound distributions.
         </td>
         <td>\( k = 2 \)</td>
         <td>\( 1 \)</td>
-        <td>\( \displaystyle \frac 1 2 \)</td>
-        <td>\( \displaystyle \frac 2 9 \)</td>
-        <td>\( \displaystyle \frac{1}{12} \)</td>
+        <td>\( \dfrac 1 2 \\ = 0.5 \)</td>
+        <td>\( \dfrac 2 9 \\ = 0.2\overline{2}\ldots \)</td>
+        <td>\( \dfrac{1}{12} \\ = 0.083\overline{3}\ldots \)</td>
     </tr>
     <tr>
         <td>
@@ -671,16 +554,10 @@ Right-trimmed LL-stats of some simple left-bound distributions.
             [`chi2(4)`][scipy.stats.chi2]
         </td>
         <td>\( k = 4 \)</td>
-        <td>\( \displaystyle \frac 5 2 \)</td>
-        <td>\( \displaystyle \frac{31}{36} \\ = 0.861\overline{1}\dots \)</td>
-        <td>\( \displaystyle \frac{241}{2\ 232} \\ \approx 0.1080 \)</td>
-        <td>
-            \(
-                \displaystyle
-                \frac{282\ 127}{372 \cdot 10^4} \\
-                \approx 0.07584
-            \)
-        </td>
+        <td>\( \dfrac 5 2 \\ = 2.5 \)</td>
+        <td>\( \dfrac{31}{36} \\ = 0.861\overline{1}\dots \)</td>
+        <td>\( \dfrac{241}{2\ 232} \\ \approx 0.1080 \)</td>
+        <td>\( \dfrac{282\ 127}{372 \cdot 10^4} \\ \approx 0.07584 \)</td>
     </tr>
     <tr>
         <td>
@@ -688,19 +565,12 @@ Right-trimmed LL-stats of some simple left-bound distributions.
             [`chi2(6)`][scipy.stats.chi2]
         </td>
         <td>\( k = 6 \)</td>
-        <td>\( \displaystyle \frac{33}{8} \)</td>
-        <td>\( \displaystyle \frac{1\ 475}{1\ 296} \\ \approx 1.138 \)</td>
+        <td>\( \dfrac{33}{8} \\ = 4.125 \)</td>
+        <td>\( \dfrac{1\ 475}{1\ 296} \\ \approx 1.138 \)</td>
+        <td>\( \dfrac{16\ 769}{271\ 872} \\ \approx 0.06168 \)</td>
         <td>
             \(
-                \displaystyle
-                \frac{16\ 769}{271\ 872} \\
-                \approx 0.06168
-            \)
-        </td>
-        <td>
-            \(
-                \displaystyle
-                \frac{550\ 465\ 668\ 887}{708 \cdot 10^{10}} \\
+                \dfrac{550\ 465\ 668\ 887}{708 \cdot 10^{10}} \\
                 \approx 0.07775
             \)
         </td>
@@ -772,7 +642,6 @@ The [Gompertz distribution](https://wikipedia.org/wiki/Gompertz_distribution)
 [^GOMP] with shape parameter \( \alpha > 0 \) and \( x \ge 0 \), has the
 following CDF and PPF:
 
-
 \[
 \begin{align*}
     F(x) &= 1 - e^{\alpha (1 - e^x)} \\
@@ -800,7 +669,8 @@ The general trimmed L-moments of the Gompertz distribution are:
 
 ### GEV
 
-The [GEV](https://wikipedia.org/wiki/GEV_distribution) unifies the
+The [GEV](https://wikipedia.org/wiki/GEV_distribution) distribution [^GEV]
+unifies  the
 [Gumbel](https://wikipedia.org/wiki/Gumbel_distribution),
 [Fréchet](https://wikipedia.org/wiki/Fr%C3%A9chet_distribution),
 and [Weibull](https://wikipedia.org/wiki/Weibull_distribution) distributions.
@@ -1038,9 +908,12 @@ The distribution functions for \( x > 0 \) are defined as:
 \end{align*}
 \]
 
-<img src="../gallery/burr12.svg" width="100%"
+<img
+    src="../gallery/burr12.svg"
+    width="100%"
     style="height: auto; aspect-ratio: 16/9;"
-    alt="Burr XII distribution PDF" />
+    alt="Burr XII distribution PDF"
+/>
 
 When \( \beta > 1 / \alpha \), the general \( r \)-th trimmed L-moment is:
 
@@ -1070,12 +943,12 @@ There are several notable special cases of the Burr XII distribution:
 
 [Pareto IV](https://w.wiki/8htG#Pareto_types_I–IV)
 :   Burr XII is a reparametrized standard *Pareto type IV* distribution with
-shapes \( \gamma \equiv 1 / \alpha \) and \( \alpha' \equiv \beta \), location
-\( \mu = 0 \), and scale \( \sigma = 1 \).
+shapes \( \gamma \equiv 1 / \alpha \) and \( \alpha^{\prime} \equiv \beta \),
+location \( \mu = 0 \), and scale \( \sigma = 1 \).
 
 [Lomax](https://wikipedia.org/wiki/Lomax_distribution)
 :   With \( \alpha = 1 \) Burr XII is *Lomax* with shape
-\( \alpha' \equiv \beta \) and scale \( \sigma = 1 \).
+\( \alpha^{\prime} \equiv \beta \) and scale \( \sigma = 1 \).
 
 [Log-logistic / Fisk](https://wikipedia.org/wiki/Log-logistic_distribution)
 :   With \( \beta = 1 \) Burr XII is *Log-logistic* with shape
@@ -1090,7 +963,7 @@ shapes \( \gamma \equiv 1 / \alpha \) and \( \alpha' \equiv \beta \), location
 
 For [Kumaraswamy's distribution
 ](https://wikipedia.org/wiki/Kumaraswamy_distribution) [^KUM1] with parameters
-\( \alpha \in \mathbb{R}_{>0} \) and \( \beta \in \mathbb{R}_{>0} \),
+<!-- markdownlint-disable-line -->\( \alpha \in \mathbb{R}_{>0} \) and \( \beta \in \mathbb{R}_{>0} \),
 the general solution for the \( r \)th (untrimmed L-moment has been derived by
 M.C. Jones in 2009 [^KUM2]. Lmo has extended these results for the general
 trimmed L-moments.
@@ -1147,8 +1020,8 @@ There are several notable special cases of the Kumaraswamy distribution:
 ### Wakeby
 
 The [*Wakeby distribution*](https://wikipedia.org/wiki/Wakeby_distribution)
-[^WAK] is quantile-based -- the CDF and PDF are not analytically expressible for the
-general case.
+[^WAK] is quantile-based -- the CDF and PDF are not analytically expressible
+for the general case.
 Without loss of generality, Lmo uses a 3-parameter "standardized"
 paremetrization, with shape parameters \( \beta,\ \delta,\ \phi \).
 
@@ -1331,6 +1204,7 @@ r \tlmoment{s, t}{r}
 
 and the arbitrarily-trimmed L-location is
 
+<!-- markdownlint-disable -->
 \[
 \tlmoment{s, t}{1}
     = -(1 + \phi) \mathfrak{L}_{1}^{(s)}(\beta)
@@ -1351,6 +1225,7 @@ where
         & \text{otherwise.}
 \end{cases}
 \]
+<!-- markdownlint-enable -->
 
 These equations look scarier that they actually are. To see why, take a look
 at the first 4 L-moment, with 4 styles of trimming:
@@ -1549,6 +1424,7 @@ There are several notable special cases of the GLD:
     generating asymmetric random variables
 
 ## Constants and special functions
+<!-- markdownlint-disable MD051 MD052 -->
 
 An overview of the (non-obvious) mathematical notation of special functions
 and constants.
@@ -1567,17 +1443,15 @@ and constants.
         </td>
         <td>\( \gamma_e \)</td>
         <td>
-            $$
-            \begin{align\*}
-                &= \lim_{x \to 0} \left( \frac 1 x - \Gamma(x) \right) \\\\
-                &= \int_1^\infty
-                    \left(
-                        \frac{1}{\lfloor x \rfloor} - \frac 1 x
-                    \right) \
-                    \mathrm{d} x \\\\
-                &\approx 0.5772 \vphantom{\frac 1 1}
-            \end{align\*}
-            $$
+            \(
+                \displaystyle
+                = \lim_{x \to 0}
+                    \left( {1 \over x} - \Gamma(x) \right) \\
+                = \int_1^\infty
+                    \left( {1 \over \lfloor x \rfloor} - {1 \over x} \right)
+                    \dd{x} \\
+                \approx 0.5772 \vphantom{\frac 1 1}
+            \)
         </td>
         <td>[`numpy.euler_gamma`][numpy.euler_gamma]</td>
     </tr>
@@ -1587,12 +1461,11 @@ and constants.
         </td>
         <td>\( \theta_m \)</td>
         <td>
-            $$
-            \begin{align\*}
-                &= \tan^{-1} \sqrt 2 = \cos^{-1} \frac{1}{\sqrt 3} \\\\
-                &\approx 0.9553
-            \end{align\*}
-            $$
+            \(
+                = \arctan \sqrt 2 \\
+                = \arccos \dfrac{1}{\sqrt 3} \\
+                \approx 0.9553
+            \)
         </td>
         <td>[`lmo.constants.theta_m`][lmo.constants.theta_m]</td>
     </tr>
@@ -1603,9 +1476,10 @@ and constants.
         </td>
         <td>\( \Gamma_a(z) \)</td>
         <td>
-            $$
-            = \int_a^\infty t^{z - 1} e^{-t} \, \mathrm{d} t
-            $$
+            \(
+                \displaystyle
+                = \int_a^\infty t^{z - 1} \ e^{-t} \dd{t}
+            \)
         </td>
         <td>[`lmo.special.gamma2`][lmo.special.gamma2]</td>
     </tr>
@@ -1629,13 +1503,18 @@ and constants.
         </td>
         <td>\( \digamma(z) \)</td>
         <td>
-            $$
-            \begin{align\*}
-            &= \frac{\mathrm{d}}{\mathrm{d}z} \ln \Gamma(z)
-                = \frac{\Gamma'(z)}{\Gamma(z)} \\\\
-            &= \int_0^1 \frac{1 - t^z}{1 - t} \mathrm{d} t - \gamma_e
-            \end{align\*}
-            $$
+            \(
+                \displaystyle
+                = \frac
+                    {\Gamma^{\prime}(z)}
+                    {\Gamma(z)} \\
+                = \int_{\lbrack 0, 1 \rbrack}
+                    \frac
+                        {1 - t^z}
+                        {1 - t^{\hphantom{1}}}
+                    \dd{t}
+                - \gamma_e
+            \)
         </td>
         <td>[`scipy.special.digamma`][scipy.special.digamma]</td>
     </tr>
@@ -1645,12 +1524,14 @@ and constants.
         </td>
         <td>\( \B(x,\ y) \)</td>
         <td>
-            $$
-            \begin{align\*}
-            &= \frac{\Gamma(x) \Gamma(y)}{\Gamma(x + y)} \\\\
-            &= \int_0^1 t^{x - 1} (1 - t)^{y - 1} \ \mathrm{d} t
-            \end{align\*}
-            $$
+            \(
+                \displaystyle
+                = \frac
+                    {\Gamma(x) \ \Gamma(y)}
+                    {\Gamma(x + y)} \\
+                = \int_{\lbrack 0, 1 \rbrack}
+                    t^{x - 1} \ (1 - t)^{y - 1} \dd{t}
+            \)
         </td>
         <td>[`scipy.special.beta`][scipy.special.beta]</td>
     </tr>
@@ -1661,9 +1542,9 @@ and constants.
         </td>
         <td>\( \zeta(z) \)</td>
         <td>
-            $$
-            = \sum_{n = 1}^{\infty} \frac{1}{n^z}
-            $$
+            \(
+                = \displaystyle \sum_{n = 1}^{\infty} n^{-z}
+            \)
         </td>
         <td>[`scipy.special.zeta`][scipy.special.zeta]</td>
     </tr>
@@ -1671,16 +1552,12 @@ and constants.
         <td>
             [Factorial](https://wikipedia.org/wiki/Factorial)
         </td>
-        <td>$$ n! \vphantom{\prod_{k=1}^n k} $$</td>
+        <td>\( n! \vphantom{\prod_{k=1}^n k} \)</td>
         <td>
-            $$
-            = \begin{cases}
-                \displaystyle \prod_{k=1}^n k
-                    & \text{if } n \in \mathbb{N} \\\\
-                \displaystyle \Gamma(n - 1)
-                    & \text{otherwise}
-            \end{cases}
-            $$
+            \(
+                = \displaystyle \prod_{k = 1}^n n \\
+                = \Gamma(n - 1)
+            \)
         </td>
         <td>
             [`math.factorial`][math.factorial]<br>
@@ -1695,11 +1572,12 @@ and constants.
         </td>
         <td>\( \ffact{x}{n} \)</td>
         <td>
-            $$
-                = \frac{x!}{(x - n)!}
-                = \frac{\Gamma(x + 1)}{\Gamma(x - n + 1)}
-                = \rfact{x - n + 1}{n}
-            $$
+            \(
+                \displaystyle
+                = \frac{x!}{(x - n)!} \\
+                = \frac{\Gamma(x + 1)}{\Gamma(x - n + 1)} \\
+                = \rfact{x - n + 1}{n} \\
+            \)
         </td>
         <td>[`lmo.special.fpow`][lmo.special.fpow]</td>
     </tr>
@@ -1711,11 +1589,12 @@ and constants.
         </td>
         <td>\( \rfact{x}{n} \)</td>
         <td>
-            $$
-                = \frac{\Gamma(x + n)}{\Gamma(x)}
-                = \frac{(x + n - 1)!}{(x - 1)!}
+            \(
+                \displaystyle
+                = \frac{\Gamma(x + n)}{\Gamma(x)} \\
+                = \frac{(x + n - 1)!}{(x - 1)!} \\
                 = \ffact{x + n - 1}{n}
-            $$
+            \)
         </td>
         <td>[`scipy.special.poch`][scipy.special.poch]</td>
     </tr>
@@ -1724,12 +1603,13 @@ and constants.
             [Binomial coefficient
             ](https://wikipedia.org/wiki/Binomial_coefficient)
         </td>
-        <td>$$ \binom n k $$</td>
+        <td>\( \displaystyle \binom n k \)</td>
         <td>
-            $$
-                = \frac{n!}{k! \ (n - k)!}
+            \(
+                \displaystyle
+                = \frac{n!}{k! \ (n - k)!} \\
                 = \frac{1}{k \ \B(k,\ n - k + 1)}
-            $$
+            \)
         </td>
         <td>
             [`math.comb`][math.comb]<br>
@@ -1743,14 +1623,14 @@ and constants.
         </td>
         <td>\( H_n \)</td>
         <td>
-            $$
-            = \begin{cases}
-                \displaystyle \sum_{k=1}^n \frac{1}{k}
-                    & \text{if } n \in \mathbb{N} \\\\
-                \displaystyle \digamma(n + 1) + \gamma_e
-                    & \text{otherwise}
-            \end{cases}
-            $$
+            \(
+                = \begin{cases}
+                    \displaystyle \sum_{k=1}^n \frac 1 k
+                        & \text{if } n \in \naturals \\
+                    \digamma(n + 1) + \gamma_e
+                        & \text{otherwise}
+                \end{cases}
+            \)
         </td>
         <td>[`lmo.special.harmonic`][lmo.special.harmonic]</td>
     </tr>
@@ -1760,13 +1640,15 @@ and constants.
         </td>
         <td>\( \jacobi{n}{\alpha}{\beta}{x} \)</td>
         <td>
-            $$
-            = \frac{1}{2^n} \sum_{k=0}^n
-                \binom{n + \alpha}{k}
-                \binom{n + \beta}{n - k}
-                (x + 1)^{n + k}
-                (x - 1)^{n - k}
-            $$
+            \(
+                = \displaystyle
+                \frac{1}{2^n}
+                \sum_{k=0}^n
+                    \binom{n + \alpha}{k}
+                    \binom{n + \beta}{n - k}
+                    (x + 1)^{n + k}
+                    (x - 1)^{n - k}
+            \)
         </td>
         <td>[`scipy.special.eval_jacobi`][scipy.special.eval_jacobi]</td>
     </tr>
@@ -1776,14 +1658,12 @@ and constants.
         </td>
         <td>\( \qexp{1 - q}{x} \)</td>
         <td>
-            $$
-            = \begin{cases}
-                \displaystyle e^x
-                    & \text{if } q = 0 \\\\
-                \displaystyle (1 + q x)^{\frac{1}{q}}
-                    & \text{otherwise}
-            \end{cases}
-            $$
+            \(
+                = \begin{cases}
+                    e^x                         & \text{if } q = 0 \\
+                    (1 + q x)^{\frac{1}{q}}     & \text{otherwise}
+                \end{cases}
+            \)
         </td>
         <td>[`scipy.special.inv_boxcox`][scipy.special.boxcox]</td>
     </tr>
@@ -1795,19 +1675,16 @@ and constants.
         </td>
         <td>\( \qlog{1 - q}{y} \)</td>
         <td>
-            $$
-            = \begin{cases}
-                \displaystyle \ln y
-                    & \text{if } q = 0 \\\\
-                \displaystyle \frac{y^q - 1}{q}
-                    & \text{otherwise}
+            \(
+                = \begin{cases}
+                    \ln y           & \text{if } q = 0 \\
+                    (y^q - 1) / q   & \text{otherwise}
             \end{cases}
-            $$
+            \)
         </td>
         <td>[`scipy.special.boxcox`][scipy.special.boxcox]</td>
     </tr>
 </table>
-
 
 *[STD]: Standard deviation
 *[MAD]: Median absolute deviation

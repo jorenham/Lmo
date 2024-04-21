@@ -6,10 +6,12 @@ from hypothesis import (
     strategies as st,
 )
 from hypothesis.extra import numpy as hnp
+
 from lmo._utils import ordered
 
+
 st_n = st.integers(2, 50)
-st_x1 = hnp.arrays(shape=st_n, dtype=np.float_, elements=st.floats(-10, 10))
+st_x1 = hnp.arrays(shape=st_n, dtype=np.float64, elements=st.floats(-10, 10))
 
 
 @given(x=st_x1)

@@ -1,13 +1,15 @@
 document$.subscribe(({ body }) => {
     renderMathInElement(body, {
+        // strict: "error",
+        strict: "error",
+        throwOnError: true,
+        trust: true,
         delimiters: [
             {left: "$$", right: "$$", display: true},
             {left: "$", right: "$", display: false},
             {left: "\\(", right: "\\)", display: false},
             {left: "\\[", right: "\\]", display: true},
         ],
-        throwOnError: false,
-        trust: true,
         macros: {
             // Statistical operators
             "\\E": "\\mathop{\\mathrm{E}}",

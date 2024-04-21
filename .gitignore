@@ -4,51 +4,21 @@ __pycache__/
 *$py.class
 
 # Distribution / packaging
-.Python
 build/
-develop-eggs/
 dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
 site/
-var/
-wheels/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
 
-# Unit test / coverage reports
-.coverage
-.coverage.*
+# Cache
 .cache
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
+.hypothesis
 .pytest_cache/
-cover/
 .ruff_cache/
-.pyright/
-
-# Jupyter Notebook
-.ipynb_checkpoints
 
 # Environments
 .env
 .venv/
-env/
 venv/
-ENV/
-env.bak/
-venv.bak/
 
-# IDE configuration
+# IntelliJ
 .idea/
-.vscode/
+.run/

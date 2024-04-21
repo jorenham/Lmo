@@ -13,6 +13,7 @@ import numpy.typing as npt
 
 from ._utils import ordered
 
+
 T = TypeVar('T', bound=np.floating[Any])
 
 

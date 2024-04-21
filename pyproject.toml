@@ -5,8 +5,8 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "lmo"
-version = "0.13.0"
-description = "L-Moments for robust statistics."
+version = "0.13.1"
+description = "L-Moments for robust statistics & inference."
 authors = ["Joren Hammudoglu <jhammudoglu@gmail.com>"]
 readme = "README.md"
 license = "BSD-3-Clause"
@@ -15,16 +15,20 @@ repository = "https://github.com/jorenham/Lmo/"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
+    "Intended Audience :: Education",
     "Intended Audience :: Financial and Insurance Industry",
     "Intended Audience :: Science/Research",
     "Natural Language :: English",
     "Operating System :: OS Independent",
+    "Topic :: Office/Business :: Financial",
     "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Hydrology",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Scientific/Engineering :: Physics",
     "Topic :: Utilities",
     "Typing :: Typed",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
 ]
 
 [tool.poetry.urls]
@@ -32,33 +36,35 @@ Documentation = "https://jorenham.github.io/Lmo/"
 "Bug Tracker" = "https://github.com/jorenham/Lmo/issues"
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.13"
-typing_extensions = { version = "^4.1", python = "<3.11"}
+python = ">=3.10,<3.14"
+typing_extensions = {version = "^4.1", python = "<3.11"}
 
 # https://numpy.org/neps/nep-0029-deprecation_policy.html
-numpy = "^1.23.4"
-scipy = "^1.9.3"
-pandas = { version = ">=1.4,<3.0", optional = true }
+numpy = ">=1.23.5"
+scipy = ">=1.9.3"
+pandas = {version = ">=1.4", optional = true}
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.0"
-hypothesis = { version = "^6.97", extras = ["numpy"] }
-pyright = "^1.1.349"
-ruff = ">=0.1.14,<1.0"
-codespell = "^2.2"
+codespell = "^2.2.6"
+hypothesis = {version = "^6.100.1", extras = ["numpy"]}
+pre-commit = "^3.7.0"
+pyright = "^1.1.359"
+pytest = "^8.1.1"
+ruff = "^0.4.1"
+tomli = {version = "^2.0.1", python = "<3.11"}
 
 [tool.poetry.group.docs.dependencies]
-mkdocs = "^1.5"
-mkdocs-material = "^9.5"
-mkdocs-include-markdown-plugin = "^6.0"
-mkdocstrings = {extras = ["python"], version = ">=0.24,<1.0"}
-mkdocs-git-revision-date-localized-plugin = "^1.2.2"
+mkdocs = "^1.5.3"
+mkdocs-material = "^9.5.18"
+mkdocs-include-markdown-plugin = "^6.0.5"
+mkdocstrings = {version = "^0.24.3", extras = ["python"]}
+mkdocs-git-revision-date-localized-plugin = "^1.2.4"
+mkdocs-minify-plugin = "^0.8.0"
 
 [tool.poetry.group.debug.dependencies]
-ipython = ">=8.20"
-ipykernel = ">=6.29"
-matplotlib = ">=3.8"
-line-profiler = ">=4.1"
+ipython = "^8.23.0"
+ipykernel = "^6.29.4"
+matplotlib = "^3.8.4"
 
 [tool.poetry.group.pandas.dependencies]
 pandas = ">=1.4"
@@ -67,7 +73,7 @@ pandas-stubs = ">=1.4"
 [tool.poetry.group.github]
 optional = true
 [tool.poetry.group.github.dependencies]
-pytest-github-actions-annotate-failures = ">=0.2,<1.0"
+pytest-github-actions-annotate-failures = ">=0.2.0,<1.0"
 
 [tool.poetry.extras]
 pandas = ["pandas"]
@@ -76,11 +82,6 @@ pandas = ["pandas"]
 minversion = "8.0"
 addopts = [
     "-ra",
-    "--exitfirst",
-    "--import-mode=importlib",
-    "--showlocals",
-    "--strict-markers",
-    "--strict-config",
     "--doctest-modules",
     "--doctest-ignore-import-errors",
 ]
@@ -90,14 +91,7 @@ doctest_optionflags = [
     "ELLIPSIS",
 ]
 xfail_strict = true
-filterwarnings = [
-    "error",
-    # https://github.com/dateutil/dateutil/issues/1314
-    "ignore::DeprecationWarning:dateutil",
-    # https://github.com/pandas-dev/pandas/issues/54466
-    "ignore:(?s).*Pyarrow will become a required dependency of pandas:DeprecationWarning",
-]
-log_cli_level = "info"
+filterwarnings = ["error"]
 testpaths = ["tests", "lmo"]
 
 
@@ -105,12 +99,12 @@ testpaths = ["tests", "lmo"]
 include = ["lmo"]
 exclude = [
     "**/__pycache__",
-    "**/.hypothesis",
-    "**/.pytest_cache",
-    "**/.ruff_cache",
-    "**/.vscode",
     ".git",
     ".github",
+    ".hypothesis",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".vscode",
     "dist",
     "docs",
     "site",
@@ -120,27 +114,59 @@ ignore = [
     # TODO: figure out how to do this conditionally
     "lmo/contrib/pandas.py",
 ]
+stubPath = 'typings'
+venvPath = "."
 venv = ".venv"
 pythonVersion = "3.10"
 pythonPlatform = "All"
 typeCheckingMode = "strict"
-reportMissingImports = true
-reportMissingTypeStubs = true
+useLibraryCodeForTypes = true
+
+deprecateTypingAliases = true
+disableBytesTypePromotions = true
+reportPropertyTypeMismatch = "warning"
+reportMissingTypeStubs = "none"
+reportUnusedImport = "warning"
+reportUnusedClass = "warning"
+reportUnusedFunction = "warning"
+reportUnusedVariable = "warning"
+reportConstantRedefinition = "warning"
+reportInconsistentConstructor = "warning"
+reportMissingTypeArgument = "warning"
+reportUninitializedInstanceVariable = "warning"
+reportCallInDefaultInitializer = "warning"
+reportUnnecessaryIsInstance = "warning"
+reportUnnecessaryCast = "warning"
+reportUnnecessaryComparison = "warning"
+reportUnnecessaryContains = "warning"
+reportUnusedCallResult = "warning"
+reportUnusedExpression = "warning"
+reportUnnecessaryTypeIgnoreComment = "warning"
+reportMatchNotExhaustive = "error"
+reportShadowedImports = "warning"
 
 
 [tool.ruff]
+src = ["lmo", "tests"]
+target-version = "py310"
+line-length = 79
+indent-width = 4
+show-fixes = true
+force-exclude = true
 extend-exclude = [
     ".github",
-    ".run",
+    ".hypothesis",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".venv",
+    ".vscode",
+    "dist",
     "docs",
-    "tests",
-    "py.typed",
+    "site",
 ]
-line-length = 79
-src = ["lmo"]
-target-version = "py310"
 
 [tool.ruff.lint]
+ignore-init-module-imports = true
 preview = true
 select = [
     "F",        # pyflakes
@@ -152,13 +178,14 @@ select = [
     "D",        # pydocstyle
     "UP",       # pyupgrade
     "YTT",      # flake8-2020
+    "ANN",      # flake8-annotations
     "BLE",      # flake8-blind-except
     "B",        # flake8-bugbear
     "A",        # flake8-builtins
     "COM",      # flake8-commas
     "C4",       # flake8-comprehensions
     "T10",      # flake8-debugger
-    "EM",       # flake8-errmsg
+    "EXE",      # flake8-executable
     "FA",       # flake8-future-annotations
     "ISC",      # flake8-implicit-str-concat
     "ICN",      # flake8-import-conventions
@@ -166,6 +193,7 @@ select = [
     "PIE",      # flake8-pie
     "T20",      # flake8-print
     "PYI",      # flake8-pyi
+    "PT",       # flake8-pytest-style
     "Q",        # flake8-quotes
     "RSE",      # flake8-raise
     "RET",      # flake8-return
@@ -179,33 +207,67 @@ select = [
     "TD",       # flake8-todos
     "PD",       # pandas-vet
     "PGH",      # pygrep-hooks
+    "PL",       # pylint
     "TRY",      # tryceratops
     "FLY",      # flynt
     "NPY",      # NumPy-specific rules
     "PERF",     # perflint,
     "FURB",     # refurb
-    "RUF",      # Ruff-specific rules
+    "RUF",      # ruff
 ]
 ignore = [
+    # pydocstyle
+    "D200",     # fits-on-one-line
     "D205",     # blank-line-after-summary
     "D212",     # multi-line-summary-first-line
+
+    # flake8-annotations
+    "ANN101",   # missing-type-self (deprecated)
+    "ANN102",   # missing-type-cls (deprecated)
+
+    # flake8-bugbear
     "B023",     # function-uses-loop-variable
+
+    # pygrep-hooks
     "PGH003",   # blanket-type-ignore
+
+    # pylint
+    "PLC0415",  # import-outside-top-level
+    "PLR0904",  # too-many-arguments
+    "PLR0911",  # too-many-return-statements
+    "PLR0912",  # too-many-branches
+    "PLR0913",  # too-many-public-methods
+    "PLR0914",  # too-many-locals
+    "PLR0915",  # too-many-statements
+    "PLR0917",  # too-many-positional
+    "PLR6301",  # no-self-use
+
+    # ruff
     "RUF021",   # parenthesize-chained-operators
     "RUF022",   # unsorted-dunder-all
 ]
-typing-modules = ["lmo.typing", "numpy.typing"]
-task-tags = ["TODO", "Todo"]
+typing-modules = [
+    "lmo.typing",
+    "numpy.typing",
+    "typing_extensions",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["D", "N806", "ANN", "PLC2701"]
+
+[tool.ruff.lint.pep8-naming]
+extend-ignore-names = ["*_gen", "l_rv_*"]
 
 [tool.ruff.lint.pycodestyle]
 max-line-length = 79
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
-ignore-decorators = ["typing.overload"]
-
-[tool.ruff.lint.flake8-quotes]
-inline-quotes = "single"
+ignore-decorators = [
+    "typing.overload",
+    "typing.override",
+    "typing_extensions.override",
+]
 
 [tool.ruff.lint.isort]
 case-sensitive = true
@@ -213,12 +275,54 @@ combine-as-imports = true
 force-wrap-aliases = true
 known-first-party = ["lmo"]
 known-third-party = ["numpy", "pandas", "scipy"]
+lines-after-imports = 2
+lines-between-types = 0
+no-lines-before = ["future", "local-folder"]
+split-on-trailing-comma = false
+
+[tool.ruff.lint.flake8-annotations]
+allow-star-arg-any = true
+suppress-dummy-args = true
+suppress-none-returning = true
+
+[tool.ruff.lint.flake8-quotes]
+inline-quotes = "single"
+
+[tool.ruff.lint.pylint]
+allow-dunder-method-names = [
+    "__array__",
+    "__array_ufunc__",
+    "__lmo_register__",
+]
+allow-magic-value-types = ["int"]
 
 [tool.ruff.format]
-exclude = ["__init__.py", "typing.py"]
+docstring-code-format = true
+indent-style = "space"
+line-ending = "lf"
 quote-style = "single"
+skip-magic-trailing-comma = true
+exclude = ["typing.py"]
 
 
 [tool.codespell]
-skip = './dist,./site,*.lock,*.pyc,*.js,*.css,*.svg,*.png,*.ico,*.ipynb'
+skip = """\
+    ./.git,\
+    ./.github,\
+    ./.hypothesis,\
+    ./.pytest_cache,\
+    ./.ruff_cache,\
+    ./.venv,\
+    ./.vscode,\
+    ./dist,\
+    ./site,\
+    *.lock,\
+    *.pyc,\
+    *.js,\
+    *.css,\
+    *.svg,\
+    *.png,\
+    *.ico,\
+    *.ipynb\
+"""
 context = 2

@@ -22,6 +22,7 @@ import numpy.typing as npt
 
 from .typing import AnyInt, AnyTrim, IndexOrder, IntVector, SortKind
 
+
 T = TypeVar('T', bound=np.generic)
 FT = TypeVar('FT', bound=np.floating[Any])
 
@@ -125,7 +126,7 @@ def _apply_aweights(
         # linearly interpolate to effectively "stretch" samples with large
         # weight, and "compress" those with small weights
         v_jk = np.linspace(w_jk[0], w_jk[-1], len(w_jk), dtype=np.float64)
-        out[j] = np.interp(v_jk, w_jk, x_jk)  # pyright: ignore
+        out[j] = np.interp(v_jk, w_jk, x_jk)
 
     # unswap the axes if previously swapped
     return np.swapaxes(out, -1, axis) if swap_axes else out
