@@ -9,6 +9,7 @@ dist/
 site/
 
 # Cache
+.cache
 .hypothesis
 .pytest_cache/
 .ruff_cache/
