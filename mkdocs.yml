@@ -37,6 +37,9 @@ theme:
     accent: skin
 
 extra:
+  analytics:
+    provider: google
+    property: G-KH79N7XQCE
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/jorenham/
