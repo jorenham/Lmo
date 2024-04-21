@@ -530,8 +530,6 @@ def l_ratio_bounds(
 
     \[
         \dot{w}_r^{(s, t)} =
-            % \frac{r + s + t}{r (r - 1)}
-            % \frac{\B(r,\ r + s + t)}{\B(r + s,\ r + t)}.
             \frac{\B(r - 1,\ r + s + t + 1)}{r \B(r + s,\ r + t)}.
     \]
 
