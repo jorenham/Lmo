@@ -10,14 +10,14 @@ strict: true
 
 nav:
   - Overview: index.md
+  - Reference: api.md
   - Distributions: distributions.md
-  - API Reference: api.md
   - Contributing: contributing.md
 
 theme:
   name: material
-  logo: img/logo.png
   favicon: img/favicon.ico
+  logo: img/logo.png
   features:
     - content.tabs.link
     - content.tooltips
@@ -28,23 +28,46 @@ theme:
     - navigation.tracking
     - toc.follow
     - toc.integrate
+  font:
+    text: Fira Sans
+    code: Fira Mono
   palette:
     scheme: slate
     primary: nose
     accent: skin
-  font:
-    text: Fira Sans
-    code: Fira Mono
 
 extra:
+  analytics:
+    provider: google
+    property: G-KH79N7XQCE
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/jorenham/
 
 plugins:
-  - include-markdown
+  # https://github.com/mkdocstrings/autorefs
   - autorefs
-  - search
+
+  # https://github.com/timvink/mkdocs-git-revision-date-localized-plugin
+  - git-revision-date-localized:
+      type: iso_date
+
+  # https://github.com/mondeja/mkdocs-include-markdown-plugin
+  - include-markdown
+
+  # https://github.com/byrnereese/mkdocs-minify-plugin
+  - minify:
+      cache_safe: true
+      minify_css: true
+      minify_html: true
+      minify_js: true
+      js_files:
+        - scripts/katex.js
+      css_files:
+        - styles/theme.css
+
+  # https://github.com/mkdocstrings/mkdocstrings
+  # https://github.com/mkdocstrings/python
   - mkdocstrings:
       default_handler: python
       handlers:
@@ -68,14 +91,17 @@ plugins:
             show_source: false
             show_submodules: false
             signature_crossrefs: true
-  - git-revision-date-localized:
-      type: iso_date
+
+  # https://squidfunk.github.io/mkdocs-material/plugins/search/
+  - search
 
 markdown_extensions:
   # https://python-markdown.github.io/extensions/
   - abbr
   - attr_list
+  - def_list
   - extra
+  - footnotes
   - md_in_html
   - sane_lists
   - smarty
@@ -95,7 +121,7 @@ markdown_extensions:
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.highlight
   - pymdownx.inlinehilite
-  - pymdownx.snippets:
+  - pymdownx.snippets
   - pymdownx.striphtml
   - pymdownx.superfences
   - pymdownx.tabbed:
@@ -108,15 +134,15 @@ markdown_extensions:
       custom_checkbox: true
 
 extra_css:
-  - styles/theme.css
   - https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css
+  - styles/theme.css
+  - styles/katex.css
 
 extra_javascript:
-  - scripts/katex.js
   - https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js
   - https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js
   - https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/copy-tex.min.js
-
+  - scripts/katex.js
 
 watch:
   - docs

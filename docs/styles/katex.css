@@ -1,0 +1,18 @@
+.katex {
+    font-size: 1.125em;
+}
+
+.katex-display {
+    margin: 0;
+    overflow: auto hidden;
+}
+.katex-display > .katex {
+    font-size: 1.2em;
+}
+.katex-display > .base {
+    margin: 0.25em 0;
+}
+
+.katex-html .newline {
+    min-height: 0.375em;
+}
