@@ -46,23 +46,23 @@ pandas = {version = ">=1.4", optional = true}
 
 [tool.poetry.group.dev.dependencies]
 codespell = "^2.2.6"
-hypothesis = {version = "^6.100.1", extras = ["numpy"]}
+hypothesis = {version = "^6.100.2", extras = ["numpy"]}
 pre-commit = "^3.7.0"
-pyright = "^1.1.359"
-pytest = "^8.1.1"
-ruff = "^0.4.1"
+pyright = "^1.1.361"
+pytest = "^8.2.0"
+ruff = "^0.4.2"
 tomli = {version = "^2.0.1", python = "<3.11"}
 
 [tool.poetry.group.docs.dependencies]
-mkdocs = "^1.5.3"
-mkdocs-material = "^9.5.18"
+mkdocs = "^1.6.0"
+mkdocs-material = "^9.5.20"
 mkdocs-include-markdown-plugin = "^6.0.5"
-mkdocstrings = {version = "^0.24.3", extras = ["python"]}
-mkdocs-git-revision-date-localized-plugin = "^1.2.4"
+mkdocstrings = {version = "^0.25.0", extras = ["python"]}
+mkdocs-git-revision-date-localized-plugin = "^1.2.5"
 mkdocs-minify-plugin = "^0.8.0"
 
 [tool.poetry.group.debug.dependencies]
-ipython = "^8.23.0"
+ipython = "^8.24.0"
 ipykernel = "^6.29.4"
 matplotlib = "^3.8.4"
 
