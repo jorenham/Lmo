@@ -435,6 +435,7 @@ class OptimizeResult(Protocol):
 
 V = TypeVar('V', bound=float | npt.NDArray[np.float64])
 Ps = TypeVarTuple('Ps')
+
 RandomState: TypeAlias = np.random.RandomState | np.random.Generator
 
 
@@ -452,11 +453,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
     def pdf(
         self,
         x: _ArrayR,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
     ) -> npt.NDArray[np.float64]: ...
@@ -465,11 +462,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
     def pdf(
         self,
         x: AnyFloat,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
     ) -> float: ...
@@ -478,11 +471,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
     def logpdf(
         self,
         x: _ArrayR,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
     ) -> npt.NDArray[np.float64]: ...
@@ -491,11 +480,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
     def logpdf(
         self,
         x: AnyFloat,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
     ) -> float: ...
@@ -504,11 +489,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
     def cdf(
         self,
         x: _ArrayR,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
     ) -> npt.NDArray[np.float64]: ...
@@ -517,11 +498,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
     def cdf(
         self,
         x: AnyFloat,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
     ) -> float: ...
@@ -530,11 +507,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
     def logcdf(
         self,
         x: _ArrayR,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
     ) -> npt.NDArray[np.float64]: ...
@@ -543,11 +516,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
     def logcdf(
         self,
         x: AnyFloat,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
     ) -> float: ...
@@ -556,11 +525,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
     def sf(
         self,
         x: _ArrayR,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
     ) -> npt.NDArray[np.float64]: ...
@@ -569,11 +534,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
     def sf(
         self,
         x: AnyFloat,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
     ) -> float: ...
@@ -582,11 +543,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
     def logsf(
         self,
         x: _ArrayR,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
     ) -> npt.NDArray[np.float64]: ...
@@ -595,11 +552,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
     def logsf(
         self,
         x: AnyFloat,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
     ) -> float: ...
@@ -608,11 +561,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
     def ppf(
         self,
         q: _ArrayR,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
     ) -> npt.NDArray[np.float64]: ...
@@ -621,11 +570,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
     def ppf(
         self,
         q: AnyFloat,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
     ) -> float: ...
@@ -634,11 +579,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
     def isf(
         self,
         q: _ArrayR,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
     ) -> npt.NDArray[np.float64]: ...
@@ -647,11 +588,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
     def isf(
         self,
         q: AnyFloat,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
     ) -> float: ...
@@ -697,11 +634,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
     @overload
     def rvs(
         self,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
         size: int = ...,
@@ -711,11 +644,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
     @overload
     def rvs(
         self,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
         size: tuple[int, ...],
@@ -724,11 +653,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
 
     def stats(
         self,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
         moments: str = ...,
@@ -737,66 +662,42 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
     def moment(
         self,
         order: int,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
     ) -> float: ...
 
     def entropy(
         self,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
     ) -> float: ...
 
     def median(
         self,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
     ) -> float: ...
 
     def mean(
         self,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
     ) -> float: ...
 
     def var(
         self,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
     ) -> float: ...
 
     def std(
         self,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
     ) -> float: ...
@@ -805,11 +706,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
     def interval(
         self,
         confidence: float,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
     ) -> tuple[float, float]: ...
@@ -818,22 +715,14 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
     def interval(
         self,
         confidence: npt.NDArray[np.floating[Any]],
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
     ) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]: ...
 
     def support(
         self,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
     ) -> tuple[float, float]: ...
@@ -843,11 +732,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
         self,
         r: IntVector,
         /,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
         trim: 'AnyTrim' = ...,
@@ -860,11 +745,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
         self,
         r: AnyInt,
         /,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
         trim: 'AnyTrim' = ...,
@@ -877,11 +758,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
         order: IntVector,
         order_denom: AnyInt | IntVector,
         /,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
         trim: 'AnyTrim' = ...,
@@ -894,11 +771,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
         order: AnyInt,
         order_denom: AnyInt | IntVector,
         /,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
         trim: 'AnyTrim' = ...,
@@ -907,11 +780,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
 
     def l_stats(
         self,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
         trim: 'AnyTrim' = ...,
@@ -921,11 +790,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
 
     def l_loc(
         self,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
         trim: 'AnyTrim' = ...,
@@ -934,11 +799,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
 
     def l_scale(
         self,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
         trim: 'AnyTrim' = ...,
@@ -947,11 +808,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
 
     def l_skew(
         self,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
         trim: 'AnyTrim' = ...,
@@ -960,11 +817,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
 
     def l_kurtosis(
         self,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
         trim: 'AnyTrim' = ...,
@@ -975,11 +828,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
         self,
         r_max: int,
         /,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
         trim: 'AnyTrim' = ...,
@@ -989,11 +838,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
 
     def l_stats_cov(
         self,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
         moments: int = 4,
@@ -1006,11 +851,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
         self,
         r: AnyInt,
         /,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
         trim: 'AnyTrim' = ...,
@@ -1024,11 +865,7 @@ class RVContinuousBase(Protocol[Unpack[Ps]]):
         r: AnyInt,
         k: AnyInt,
         /,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
         trim: 'AnyTrim' = ...,
@@ -1062,22 +899,14 @@ class RVContinuous(RVContinuousBase[Unpack[Ps]], Protocol[Unpack[Ps]]):
 
     def __call__(
         self,
-        *__args: (
-            Unpack[Ps]
-            | Unpack[tuple[Unpack[Ps], float]]
-            | Unpack[tuple[Unpack[Ps], float, float]]
-        ),
+        *__args: Unpack[Ps],
         loc: float = ...,
         scale: float = ...,
     ) -> 'RVContinuousFrozen[Unpack[Ps]]': ...
 
     def nnlf(
         self,
-        theta: (
-            tuple[Unpack[Ps]]
-            | tuple[Unpack[Ps], float]
-            | tuple[Unpack[Ps], float, float]
-        ),
+        theta: tuple[Unpack[Ps]],
         x: npt.ArrayLike,
     ) -> float: ...
 
