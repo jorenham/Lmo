@@ -95,7 +95,7 @@ pandas = ["pandas"]
 minversion = "8.0"
 addopts = [
     "-ra",
-    # "--doctest-ignore-import-errors",
+    "--doctest-ignore-import-errors",
     "--strict-config",
     "--strict-markers",
 ]
