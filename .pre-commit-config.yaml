@@ -1,3 +1,7 @@
+ci:
+  autoupdate_branch: "dev"
+  autoupdate_commit_msg: "update pre-commit hooks"
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
