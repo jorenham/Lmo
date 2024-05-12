@@ -33,6 +33,7 @@ __all__ = (
     'l_costats',
 )
 
+import sys
 from typing import TYPE_CHECKING, Final
 
 from ._lm import (
@@ -69,6 +70,16 @@ if not TYPE_CHECKING:
     from .contrib import install as _install
 
     _install()
+
+
+if 'pytest' in sys.modules:  # noqa: PLR2004
+    import numpy as np
+
+    if np.__version__.startswith('2.'):
+        np.set_printoptions(legacy='1.25')  # pyright: ignore[reportArgumentType]
+
+    del np
+
 
 __version__: Final[str] = _get_version()
 __author__: Final[str] = 'Joren Hammdugolu'
