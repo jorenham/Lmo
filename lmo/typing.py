@@ -45,6 +45,7 @@ from collections.abc import Callable, Iterator, Sequence
 from typing import (
     Any,
     ClassVar,
+    Final,
     Literal,
     ParamSpec,
     Protocol,
@@ -70,6 +71,9 @@ T = TypeVar('T', bound=np.generic)
 T_co = TypeVar('T_co', covariant=True, bound=np.generic)
 
 
+NP_V2: Final[bool] = np.__version__.startswith('2.')
+
+
 @runtime_checkable
 class SupportsArray(Protocol[T_co]):
     """
@@ -82,11 +86,14 @@ class SupportsArray(Protocol[T_co]):
 
 
 # scalar types
-_NpBool: TypeAlias = np.bool_
+if NP_V2:
+    _NpBool: TypeAlias = np.bool  # noqa: NPY001
+else:
+    _NpBool: TypeAlias = np.bool_
+_NpNumber: TypeAlias = np.number[Any] | _NpBool
 _NpInt: TypeAlias = np.integer[Any]
 _NpFloat: TypeAlias = np.floating[Any]
 _NpComplex: TypeAlias = np.complexfloating[Any, Any]
-_NpNumber: TypeAlias = np.number[Any] | _NpBool
 _NpScalar: TypeAlias = np.generic
 
 AnyBool: TypeAlias = bool | _NpBool
