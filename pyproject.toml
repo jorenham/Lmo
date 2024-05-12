@@ -50,6 +50,7 @@ hypothesis = {version = "^6.100.7", extras = ["numpy"]}
 pre-commit = "^3.7.1"
 pyright = "^1.1.362"
 pytest = "^8.2.0"
+pytest-doctestplus = "^1.2.1"
 ruff = "^0.4.4"
 tomli = {version = "^2.0.1", python = "<3.11"}
 
@@ -94,8 +95,7 @@ pandas = ["pandas"]
 minversion = "8.0"
 addopts = [
     "-ra",
-    "--doctest-modules",
-    "--doctest-ignore-import-errors",
+    # "--doctest-ignore-import-errors",
     "--strict-config",
     "--strict-markers",
 ]
@@ -103,7 +103,10 @@ doctest_optionflags = [
     "NORMALIZE_WHITESPACE",
     "IGNORE_EXCEPTION_DETAIL",
     "ELLIPSIS",
+    # "FLOAT_CMP",
 ]
+doctest_plus = "enabled"
+doctest_subpackage_requires = {"lmo/contrib/pandas" = "pandas>=1.4"}
 filterwarnings = ["error"]
 log_cli_level = "INFO"
 testpaths = ["tests", "lmo"]
