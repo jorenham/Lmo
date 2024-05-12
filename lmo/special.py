@@ -329,8 +329,10 @@ def fourier_jacobi(
         - [Jacobi Polynomial - Worlfram Mathworld](
         https://mathworld.wolfram.com/JacobiPolynomial.html)
     """
-    _c: npt.NDArray[np.integer[Any] | np.floating[Any]]
-    _c = np.array(c, ndmin=1, copy=False)
+    _c = cast(
+        npt.NDArray[np.integer[Any] | np.floating[Any]],
+        np.array(c, ndmin=1, copy=2),  # pyright: ignore[reportCallIssue,reportArgumentType]
+    )
     if _c.dtype.char in _DTYPE_CHARS:
         _c = _c.astype(np.float64)
 
