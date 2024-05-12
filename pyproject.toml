@@ -106,7 +106,7 @@ doctest_optionflags = [
     # "FLOAT_CMP",
 ]
 doctest_plus = "enabled"
-doctest_subpackage_requires = {"lmo/contrib/pandas" = "pandas>=1.4"}
+doctest_subpackage_requires = {"lmo/contrib/pandas.py" = "pandas>=1.4"}
 filterwarnings = ["error"]
 log_cli_level = "INFO"
 testpaths = ["tests", "lmo"]
