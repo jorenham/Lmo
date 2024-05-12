@@ -1,6 +1,7 @@
 ci:
   autoupdate_branch: "dev"
   autoupdate_commit_msg: "update pre-commit hooks"
+  skip: [markdownlint, poetry-check, codespell, ruff, pyright]
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks

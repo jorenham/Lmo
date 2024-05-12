@@ -1,5 +1,5 @@
 [build-system]
-requires = ["poetry-core", "oldest-supported-numpy"]
+requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 
@@ -50,6 +50,7 @@ hypothesis = {version = "^6.100.7", extras = ["numpy"]}
 pre-commit = "^3.7.1"
 pyright = "^1.1.362"
 pytest = "^8.2.0"
+pytest-doctestplus = "^1.2.1"
 ruff = "^0.4.4"
 tomli = {version = "^2.0.1", python = "<3.11"}
 
@@ -65,6 +66,7 @@ mkdocs-minify-plugin = "^0.8.0"
 ipython = "^8.24.0"
 ipykernel = "^6.29.4"
 matplotlib = "^3.8.4"
+typing-extensions = "^4.11.0"
 
 [tool.poetry.group.pandas.dependencies]
 pandas = ">=1.4"
@@ -75,6 +77,17 @@ optional = true
 [tool.poetry.group.github.dependencies]
 pytest-github-actions-annotate-failures = ">=0.2.0,<1.0"
 
+[tool.poetry.group.numpy1]
+optional = true
+[tool.poetry.group.numpy1.dependencies]
+numpy = "<=2"
+
+[tool.poetry.group.numpy2]
+optional = true
+[tool.poetry.group.numpy2.dependencies]
+numpy = {version = ">=2.0.0rc2", allow-prereleases = true}
+scipy = ">=1.13.0"
+
 [tool.poetry.extras]
 pandas = ["pandas"]
 
@@ -82,17 +95,22 @@ pandas = ["pandas"]
 minversion = "8.0"
 addopts = [
     "-ra",
-    "--doctest-modules",
-    "--doctest-ignore-import-errors",
+    # "--doctest-ignore-import-errors",
+    "--strict-config",
+    "--strict-markers",
 ]
 doctest_optionflags = [
     "NORMALIZE_WHITESPACE",
     "IGNORE_EXCEPTION_DETAIL",
     "ELLIPSIS",
+    # "FLOAT_CMP",
 ]
-xfail_strict = true
+doctest_plus = "enabled"
+doctest_subpackage_requires = {"lmo/contrib/pandas.py" = "pandas>=1.4"}
 filterwarnings = ["error"]
+log_cli_level = "INFO"
 testpaths = ["tests", "lmo"]
+xfail_strict = true
 
 
 [tool.pyright]
@@ -114,6 +132,7 @@ ignore = [
     # TODO: figure out how to do this conditionally
     "lmo/contrib/pandas.py",
 ]
+defineConstant = { NP_V2 = true }
 stubPath = 'typings'
 venvPath = "."
 venv = ".venv"
