@@ -39,10 +39,10 @@ Documentation = "https://jorenham.github.io/Lmo/"
 python = ">=3.10,<3.14"
 typing_extensions = {version = "^4.1", python = "<3.11"}
 
-# https://numpy.org/neps/nep-0029-deprecation_policy.html
-numpy = ">=1.23.5"
-scipy = ">=1.9.3"
-pandas = {version = ">=1.4", optional = true}
+# https://scientific-python.org/specs/spec-0000/
+numpy = ">=1.23"
+scipy = ">=1.9"
+pandas = {version = ">=1.5", optional = true}
 
 [tool.poetry.group.dev.dependencies]
 codespell = "^2.2.6"
