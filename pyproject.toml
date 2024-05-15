@@ -101,12 +101,11 @@ addopts = [
 ]
 doctest_optionflags = [
     "NORMALIZE_WHITESPACE",
-    "IGNORE_EXCEPTION_DETAIL",
     "ELLIPSIS",
-    # "FLOAT_CMP",
+    "FLOAT_CMP",
 ]
 doctest_plus = "enabled"
-doctest_subpackage_requires = {"lmo/contrib/pandas.py" = "pandas>=1.4"}
+doctest_subpackage_requires = {"lmo/contrib/pandas.py" = "pandas>=1.5"}
 filterwarnings = ["error"]
 log_cli_level = "INFO"
 testpaths = ["tests", "lmo"]
