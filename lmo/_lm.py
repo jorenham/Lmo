@@ -207,7 +207,11 @@ def l_weights(
             assert w.shape == (r, n)
             return w.astype(dtype)
 
-    if isinstance(s, int | np.integer) and isinstance(t, int | np.integer):
+    if (
+        r + s + t <= 24
+        and isinstance(s, int | np.integer)
+        and isinstance(t, int | np.integer)
+    ):
         w = _l_weights_pwm(r, n, trim=(int(s), int(t)), dtype=dtype)
 
         # ensure that the trimmed ends are 0
@@ -479,14 +483,12 @@ def l_ratio(
     **kwargs: Unpack[LMomentOptions],
 ) -> npt.NDArray[T] | T:
     r"""
-    Estimates the generalized L-moment ratio:
+    Estimates the generalized L-moment ratio.
 
     $$
-    \tau^{(s, t)}_{rs} = \frac{
-        \lambda^{(s, t)}_r
-    }{
-        \lambda^{(s, t)}_s
-    }
+    \tau^{(s, t)}_{rs} = \frac
+        {\lambda^{(s, t)}_r}
+        {\lambda^{(s, t)}_s}
     $$
 
     Equivalent to `lmo.l_moment(a, r, *, **) / lmo.l_moment(a, s, *, **)`.
@@ -510,8 +512,10 @@ def l_ratio(
         Estimate the L-location, L-scale, L-skewness and L-kurtosis
         simultaneously:
 
-        >>> import lmo, numpy as np
-        >>> x = np.random.default_rng(12345).lognormal(size=99)
+        >>> import lmo
+        >>> import numpy as np
+        >>> rng = np.random.default_rng(12345)
+        >>> x = rng.lognormal(size=99)
         >>> lmo.l_ratio(x, [1, 2, 3, 4], [0, 0, 2, 2])
         array([1.53196368, 0.77549561, 0.4463163 , 0.29752178])
         >>> lmo.l_ratio(x, [1, 2, 3, 4], [0, 0, 2, 2], trim=(0, 1))
@@ -519,7 +523,7 @@ def l_ratio(
 
     See Also:
         - [`lmo.l_moment`][lmo.l_moment]
-    """  # noqa: D415
+    """
     rs = np.stack(np.broadcast_arrays(np.asarray(r), np.asarray(s)))
     l_rs = l_moment(a, rs, trim, axis=axis, dtype=dtype, **kwargs)
 
@@ -599,21 +603,66 @@ def l_loc(
     Alias for [`lmo.l_moment(a, 1, *, **)`][lmo.l_moment].
 
     Examples:
-        >>> import lmo, numpy as np
-        >>> x = np.random.default_rng(12345).standard_cauchy(99)
-        >>> x.mean()
-        -7.5648...
-        >>> lmo.l_loc(x)  # no trim; equivalent to the (arithmetic) mean
-        -7.5648...
-        >>> lmo.l_loc(x, trim=(1, 1))  # TL-location
-        -0.15924...
-        >>> lmo.l_loc(x, trim=(3/2, 3/2))  # Fractional trimming (only in Lmo)
-        -0.085845...
+        The first moment (i.e. the mean) of the Cauchy distribution does not
+        exist. This means that estimating the location of a Cauchy
+        distribution from its samples, cannot be done using the traditional
+        average (i.e. the arithmetic mean).
+        Instead, a robust location measure should be used, e.g. the median,
+        or the TL-location.
 
+        To illustrate, let's start by drawing some samples from the standard
+        Cauchy distribution, which is centered around the origin.
+
+        >>> import lmo
+        >>> import numpy as np
+        >>> rng = np.random.default_rng(12345)
+        >>> x = rng.standard_cauchy(200)
+
+        The mean and the untrimmed L-location (which are equivalent) give
+        wrong results, so don't do this:
+
+        >>> np.mean(x)
+        -3.6805
+        >>> lmo.l_loc(x)
+        -3.6805
+
+        Usually, the answer to this problem is to use the median.
+        However, the median only considers one or two samples (depending on
+        whether the amount of samples is odd or even, respectively).
+        So the median ignores most of the available information.
+
+        >>> np.median(x)
+        0.096825
+        >>> lmo.l_loc(x, trim=(len(x) - 1) // 2)
+        0.096825
+
+        Luckily for us, Lmo knows how to deal with longs tails, as well --
+        trimming them (specifically, by skipping the first $s$ and last $t$
+        expected order statistics).
+
+        Let's try the TL-location (which is equivalent to the median)
+
+        >>> lmo.l_loc(x, trim=1)  # equivalent to `trim=(1, 1)`
+        0.06522
 
     Notes:
-        If `trim = (0, 0)` (default), the L-location is equivalent to the
-        [arithmetic mean](https://wikipedia.org/wiki/Arithmetic_mean).
+        The trimmed L-location naturally unifies the arithmetic mean, the
+        median, the minimum and the maximum. In particular, the following are
+        equivalent, given `n = len(x)`:
+
+        - `l_loc(x, trim=0)` / `statistics.mean(x)` / `np.mean(x)`
+        - `l_loc(x, trim=(n-1) // 2)` / `statistics.median(x)` / `np.median(x)`
+        - `l_loc(x, trim=(0, n-1))` / `min(x)` / `np.min(x)`
+        - `l_loc(x, trim=(n-1, 0))` / `max(x)` / `np.max(x)`
+
+        Note that numerical noise might cause slight differences between
+        their results.
+
+        Even though `lmo` is built with performance in mind, the equivalent
+        `numpy` functions are always faster, as they don't need to
+        sort *all* samples. Specifically, the time complexity of `lmo.l_loc`
+        (and `l_moment` in general) is $O(n \log n)$, whereas that of
+        `numpy.{mean,median,min,max}` is `O(n)`
 
     See Also:
         - [`lmo.l_moment`][lmo.l_moment]
@@ -655,7 +704,7 @@ def l_scale(
     **kwargs: Unpack[LMomentOptions],
 ) -> npt.NDArray[T] | T:
     r"""
-    *L-scale*: unbiased estimator of the second L-moment,
+    *L-scale* unbiased estimator for the second L-moment,
     $\lambda^{(s, t)}_2$.
 
     Alias for [`lmo.l_moment(a, 2, *, **)`][lmo.l_moment].
@@ -664,11 +713,11 @@ def l_scale(
         >>> import lmo, numpy as np
         >>> x = np.random.default_rng(12345).standard_cauchy(99)
         >>> x.std()
-        72.87715244...
+        72.87715244
         >>> lmo.l_scale(x)
-        9.501123995...
+        9.501123995
         >>> lmo.l_scale(x, trim=(1, 1))
-        0.658993279...
+        0.658993279
 
     Notes:
         If `trim = (0, 0)` (default), the L-scale is equivalent to half the
@@ -721,11 +770,9 @@ def l_variation(
     The *coefficient of L-variation* (or *L-CV*) unbiased sample estimator:
 
     $$
-    \tau^{(s, t)} = \frac{
-        \lambda^{(s, t)}_2
-    }{
-        \lambda^{(s, t)}_1
-    }
+    \tau^{(s, t)} = \frac
+        {\lambda^{(s, t)}_2}
+        {\lambda^{(s, t)}_1}
     $$
 
     Alias for [`lmo.l_ratio(a, 2, 1, *, **)`][lmo.l_ratio].
@@ -734,11 +781,11 @@ def l_variation(
         >>> import lmo, numpy as np
         >>> x = np.random.default_rng(12345).pareto(4.2, 99)
         >>> x.std() / x.mean()
-        1.32161112...
+        1.32161112
         >>> lmo.l_variation(x)
-        0.59073639...
+        0.59073639
         >>> lmo.l_variation(x, trim=(0, 1))
-        0.55395044...
+        0.55395044
 
     Notes:
         If `trim = (0, 0)` (default), this is equivalent to the
@@ -787,16 +834,12 @@ def l_skew(
     **kwargs: Unpack[LMomentOptions],
 ) -> npt.NDArray[T] | T:
     r"""
-    Unbiased sample estimator of the *coefficient of L-skewness*, or *L-skew*
-    for short:
+    Unbiased sample estimator for the *L-skewness* coefficient.
 
     $$
-    \tau^{(s, t)}_3
-        = \frac{
-            \lambda^{(s, t)}_3
-        }{
-            \lambda^{(s, t)}_2
-        }
+    \tau^{(s, t)}_3 = \frac
+        {\lambda^{(s, t)}_3}
+        {\lambda^{(s, t)}_2}
     $$
 
     Alias for [`lmo.l_ratio(a, 3, 2, *, **)`][lmo.l_ratio].
@@ -805,14 +848,14 @@ def l_skew(
         >>> import lmo, numpy as np
         >>> x = np.random.default_rng(12345).standard_exponential(99)
         >>> lmo.l_skew(x)
-        0.38524343...
+        0.38524343
         >>> lmo.l_skew(x, trim=(0, 1))
-        0.27116139...
+        0.27116139
 
     See Also:
         - [`lmo.l_ratio`][lmo.l_ratio]
         - [`scipy.stats.skew`][scipy.stats.skew]
-    """  # noqa: D415
+    """
     return l_ratio(a, 3, 2, trim, axis=axis, dtype=dtype, **kwargs)
 
 
@@ -852,12 +895,9 @@ def l_kurtosis(
     L-kurtosis coefficient; the 4th sample L-moment ratio.
 
     $$
-    \tau^{(s, t)}_4
-        = \frac{
-            \lambda^{(s, t)}_4
-        }{
-            \lambda^{(s, t)}_2
-        }
+    \tau^{(s, t)}_4 = \frac
+        {\lambda^{(s, t)}_4}
+        {\lambda^{(s, t)}_2}
     $$
 
     Alias for [`lmo.l_ratio(a, 4, 2, *, **)`][lmo.l_ratio].
@@ -866,9 +906,9 @@ def l_kurtosis(
         >>> import lmo, numpy as np
         >>> x = np.random.default_rng(12345).standard_t(2, 99)
         >>> lmo.l_kurtosis(x)
-        0.28912787...
+        0.28912787
         >>> lmo.l_kurtosis(x, trim=(1, 1))
-        0.19928182...
+        0.19928182
 
     Notes:
         The L-kurtosis $\tau_4$ lies within the interval
