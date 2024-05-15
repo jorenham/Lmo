@@ -261,7 +261,7 @@ class l_rv_generic(PatchClass):
             >>> norm(100, 15).l_moment([1, 2, 3, 4]).round(6)
             array([100.      ,   8.462844,   0.      ,   1.037559])
             >>> _[1] * np.sqrt(np.pi)
-            15.000000...
+            15.0000004
 
             Discrete distributions are also supported, e.g. the Binomial
             distribution:
@@ -392,22 +392,22 @@ class l_rv_generic(PatchClass):
             >>> from scipy.stats import distributions
             >>> X = distributions.rayleigh()
             >>> X.std() / X.mean()  # legacy CV
-            0.5227232...
+            0.5227232
             >>> X.l_ratio(2, 1)
-            0.2928932...
+            0.2928932
             >>> X.l_ratio(2, 1, trim=(0, 1))
-            0.2752551...
+            0.2752551
 
             And similarly, for the (discrete) Poisson distribution with rate
             parameter set to 2, the L-CF and LL-CV evaluate to:
 
             >>> X = distributions.poisson(2)
             >>> X.std() / X.mean()
-            0.7071067...
+            0.7071067
             >>> X.l_ratio(2, 1)
-            0.3857527...
+            0.3857527
             >>> X.l_ratio(2, 1, trim=(0, 1))
-            0.4097538...
+            0.4097538
 
             Note that (untrimmed) L-CV requires a higher (subdivision) limit in
             the integration routine, otherwise it'll complain that it didn't
@@ -1135,24 +1135,24 @@ class l_rv_generic(PatchClass):
             >>> rng = np.random.default_rng(12345)
             >>> x = rng.standard_normal(200)
             >>> norm.fit(x)
-            (0.0033..., 0.9555...)
+            (0.0033254, 0.95554)
 
             Better results can be obtained different by using Lmo's L-MM
             (Method of L-moment):
 
             >>> norm.l_fit(x, random_state=rng)
-            FitArgs(loc=0.0033..., scale=0.9617...)
+            FitArgs(loc=0.0033145, scale=0.96179)
             >>> norm.l_fit(x, trim=1, random_state=rng)
-            FitArgs(loc=0.0197..., scale=0.9674...)
+            FitArgs(loc=0.019765, scale=0.96749)
 
             To use more L-moments than the number of parameters, two in this
             case, `n_extra` can be used. This will use the L-GMM (Generalized
             Method of L-Moments), which results in slightly better estimates:
 
             >>> norm.l_fit(x, n_extra=1, random_state=rng)
-            FitArgs(loc=0.0039..., scale=0.9623...)
+            FitArgs(loc=0.0039747, scale=0.96233)
             >>> norm.l_fit(x, trim=1, n_extra=1, random_state=rng)
-            FitArgs(loc=-0.0012..., scale=0.9685...)
+            FitArgs(loc=-0.00127874, scale=0.968547)
 
         Parameters:
             data:

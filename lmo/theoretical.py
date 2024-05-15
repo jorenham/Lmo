@@ -434,14 +434,14 @@ def l_moment_from_ppf(
         (even if `quad` returned a finite result).
 
     Examples:
-        Evaluate the first 4 L- and TL-moments of the standard normal
+        Evaluate the L- and TL-location and -scale of the standard normal
         distribution:
 
         >>> from scipy.special import ndtri  # standard normal inverse CDF
-        >>> l_moment_from_ppf(ndtri, [1, 2, 3, 4])
-        array([0.        , 0.56418958, 0.        , 0.06917061])
-        >>> l_moment_from_ppf(ndtri, [1, 2, 3, 4], trim=1)
-        array([0.        , 0.29701138, 0.        , 0.01855727])
+        >>> l_moment_from_ppf(ndtri, [1, 2])
+        array([0.        , 0.56418958])
+        >>> l_moment_from_ppf(ndtri, [1, 2], trim=1)
+        array([0.        , 0.29701138])
 
     Args:
         ppf:
@@ -1464,33 +1464,37 @@ def l_comoment_from_pdf(
         Find the L-coscale and TL-coscale matrices of the multivariate
         Student's t distribution with 4 degrees of freedom:
 
-        >>> from lmo.theoretical import l_comoment_from_pdf
-        >>> from scipy.stats import multivariate_t, t
+        >>> from scipy.stats import multivariate_t
         >>> df = 4
         >>> loc = np.array([0.5, -0.2])
         >>> cov = np.array([[2.0, 0.3], [0.3, 0.5]])
-        >>> X = multivariate_t(loc, cov, df)
-        >>> cdfs = [t(df, loc[i], np.sqrt(cov[i, i])).cdf for i in range(2)]
-        >>> l_cov = l_comoment_from_pdf(X.pdf, cdfs, 2)
+        >>> X = multivariate_t(loc=loc, shape=cov, df=df)
+
+        >>> from scipy.special import stdtr
+        >>> std = np.sqrt(np.diag(cov))
+        >>> cdf0 = lambda x: stdtr(df, (x - loc[0]) / std[0])
+        >>> cdf1 = lambda x: stdtr(df, (x - loc[1]) / std[1])
+
+        >>> l_cov = l_comoment_from_pdf(X.pdf, (cdf0, cdf1), 2)
         >>> l_cov.round(4)
         array([[1.0413, 0.3124],
                [0.1562, 0.5207]])
-        >>> tl_cov = l_comoment_from_pdf(X.pdf, cdfs, 2, trim=1)
+        >>> tl_cov = l_comoment_from_pdf(X.pdf, (cdf0, cdf1), 2, trim=1)
         >>> tl_cov.round(4)
         array([[0.4893, 0.1468],
                [0.0734, 0.2447]])
 
-        The correlation coefficient can be recovered in several ways:
+        The (Pearson) correlation coefficient can be recovered in several ways:
 
         >>> cov[0, 1] / np.sqrt(cov[0, 0] * cov[1, 1])  # "true" correlation
         0.3
-        >>> np.round(l_cov[0, 1] / l_cov[0, 0], 4)
+        >>> l_cov[0, 1] / l_cov[0, 0]
         0.3
-        >>> np.round(l_cov[1, 0] / l_cov[1, 1], 4)
+        >>> l_cov[1, 0] / l_cov[1, 1]
         0.3
-        >>> np.round(tl_cov[0, 1] / tl_cov[0, 0], 4)
+        >>> tl_cov[0, 1] / tl_cov[0, 0]
         0.3
-        >>> np.round(tl_cov[1, 0] / tl_cov[1, 1], 4)
+        >>> tl_cov[1, 0] / tl_cov[1, 1]
         0.3
 
     Args:

@@ -266,9 +266,9 @@ def extrema_jacobi(n: int, a: float, b: float) -> tuple[float, float]:
         >>> extrema_jacobi(3, 0, 3)
         (-20.0, 1.0)
         >>> extrema_jacobi(3, 0, 4)
-        (-35.0, 1.13541...)
+        (-35.0, 1.13541)
         >>> extrema_jacobi(3, 0, 5)
-        (-56.0, 1.25241...)
+        (-56.0, 1.25241)
 
         Looking at the corresponding \( x \) can help to understand the
         "movement" of the maximum.
@@ -278,9 +278,9 @@ def extrema_jacobi(n: int, a: float, b: float) -> tuple[float, float]:
         >>> arg_extrema_jacobi(3, 0, 3)
         (-1.0, 0.0)
         >>> arg_extrema_jacobi(3, 0, 4)
-        (-1.0, 0.09449...)
+        (-1.0, 0.094495)
         >>> arg_extrema_jacobi(3, 0, 5)
-        (-1.0, 0.17287...)
+        (-1.0, 0.172874)
 
     """
     x = peaks_jacobi(n, a, b)
@@ -290,7 +290,7 @@ def extrema_jacobi(n: int, a: float, b: float) -> tuple[float, float]:
 
 def _jacobi_coefs(n: int, a: float, b: float) -> npt.NDArray[np.float64]:
     p_n: np.poly1d
-    p_n = scs.jacobi(n, a, b)  # type: ignore [reportUnknownMemberType]
+    p_n = scs.jacobi(n, a, b)  # pyright: ignore[reportUnknownMemberType]
     return p_n.coef[::-1]
 
 
@@ -332,9 +332,6 @@ def jacobi_series(
         msg = 'coefs must be 1-D'
         raise ValueError(msg)
 
-    # if a == b == 0:
-    #     p = npp.Legendre(w, symbol=symbol, **kwargs)
-    # else:
     n = len(w)
     p = cast(
         PolySeries,
