@@ -120,9 +120,9 @@ def normaltest(
         >>> n = 10_000
         >>> x = 0.9 * rng.normal(0, 1, n) + 0.1 * rng.normal(0, 9, n)
         >>> normaltest(x)[1]
-        0.04806618...
+        0.04806618
         >>> normaltest_scipy(x)[1]
-        0.08435627...
+        0.08435627
 
         At a 5% significance level, Lmo's test is significant (i.e. indicating
         non-normality), whereas scipy's test isn't (i.e. inconclusive).
@@ -240,16 +240,16 @@ def l_moment_gof(
         >>> x = X.rvs(n, random_state=rng)
         >>> x_lm = lmo.l_moment(x, [1, 2, 3, 4])
         >>> l_moment_gof(X, x_lm, n).pvalue
-        0.8259...
+        0.82597
 
         Contaminated samples:
 
         >>> y = 0.9 * x + 0.1 * rng.normal(X.mean(), X.std() * 10, n)
-        >>> y_lm = lmo.l_moment(y, [1,2,3,4])
+        >>> y_lm = lmo.l_moment(y, [1, 2, 3, 4])
         >>> y_lm.round(3)
-        array([1.3193e+01, 1.2860e+00, 6.0000e-03, 1.6800e-01])
+        array([13.193, 1.286, 0.006, 0.168])
         >>> l_moment_gof(X, y_lm, n).pvalue
-        1.2668...e-60
+        0.0
 
 
     See Also:
@@ -560,7 +560,7 @@ def l_ratio_bounds(
         >>> l_ratio_bounds(3, trim=(0, 3))
         (-0.8, 2.0)
         >>> l_ratio_bounds(4, trim=(0, 3))
-        (-0.2333..., 3.5)
+        (-0.233333, 3.5)
 
         The LH-skewness bounds are "flipped" w.r.t to the LL-skewness,
         but they are the same for the L*-kurtosis:
@@ -568,12 +568,12 @@ def l_ratio_bounds(
         >>> l_ratio_bounds(3, trim=(3, 0))
         (-2.0, 0.8)
         >>> l_ratio_bounds(4, trim=(3, 0))
-        (-0.2333..., 3.5)
+        (-0.233333, 3.5)
 
         The bounds of multiple L-ratio's can be calculated in one shot:
-        >>> l_ratio_bounds([3, 4, 5, 6], trim=(1, 2))
-        (array([-1.        , -0.194..., -1.12      , -0.149...]),
-         array([1.333..., 1.75      , 2.24      , 2.8       ]))
+        >>> np.stack(l_ratio_bounds([3, 4, 5, 6], trim=(1, 2)))
+        array([[-1.        , -0.19444444, -1.12      , -0.14945848],
+               [ 1.33333333,  1.75      ,  2.24      ,  2.8       ]])
 
 
     Args:
@@ -684,11 +684,11 @@ def rejection_point(
         Student's t distribution with 4 degrees of freedom (3 also works, but
         is very slow), they exist.
 
-        >>> if_tl_loc_norm = dists.norm.l_moment_influence(1, trim=1)
-        >>> if_tl_loc_t4 = dists.t(4).l_moment_influence(1, trim=1)
-        >>> if_tl_loc_norm(np.inf), if_tl_loc_t4(np.inf)
+        >>> influence_norm = dists.norm.l_moment_influence(1, trim=1)
+        >>> influence_t4 = dists.t(4).l_moment_influence(1, trim=1)
+        >>> influence_norm(np.inf), influence_t4(np.inf)
         (0.0, 0.0)
-        >>> rejection_point(if_tl_loc_norm), rejection_point(if_tl_loc_t4)
+        >>> rejection_point(influence_norm), rejection_point(influence_t4)
         (6.0, 206.0)
 
     Notes:
@@ -772,9 +772,9 @@ def error_sensitivity(
         >>> ll_skew_if = expon.l_ratio_influence(3, 2, trim=(0, 1))
         >>> ll_kurt_if = expon.l_ratio_influence(4, 2, trim=(0, 1))
         >>> error_sensitivity(ll_skew_if, domain=(0, float('inf')))
-        1.814657...
+        1.814657
         >>> error_sensitivity(ll_kurt_if, domain=(0, float('inf')))
-        1.377743...
+        1.377743
 
     Args:
         influence_fn: Univariate influence function.
@@ -848,16 +848,16 @@ def shift_sensitivity(
         >>> ll_kurt_if = expon.l_ratio_influence(4, 2, trim=(0, 1))
         >>> domain = 0, float('inf')
         >>> shift_sensitivity(ll_skew_if, domain)
-        0.837735...
+        0.837735
         >>> shift_sensitivity(ll_kurt_if, domain)
-        1.442062...
+        1.442062
 
         Let's compare these with the untrimmed ones:
 
         >>> shift_sensitivity(expon.l_ratio_influence(3, 2), domain)
-        1.920317...
+        1.920317
         >>> shift_sensitivity(expon.l_ratio_influence(4, 2), domain)
-        1.047565...
+        1.047565
 
     Args:
         influence_fn: Univariate influence function.

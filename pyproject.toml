@@ -101,7 +101,6 @@ addopts = [
 ]
 doctest_optionflags = [
     "NORMALIZE_WHITESPACE",
-    "ELLIPSIS",
     "FLOAT_CMP",
 ]
 doctest_plus = "enabled"
