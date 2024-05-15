@@ -69,8 +69,8 @@ matplotlib = "^3.8.4"
 typing-extensions = "^4.11.0"
 
 [tool.poetry.group.pandas.dependencies]
-pandas = ">=1.4"
-pandas-stubs = ">=1.4"
+pandas = "*"
+pandas-stubs = ">=1.5"
 
 [tool.poetry.group.github]
 optional = true
