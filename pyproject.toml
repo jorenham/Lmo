@@ -65,7 +65,7 @@ mkdocs-minify-plugin = "^0.8.0"
 [tool.poetry.group.debug.dependencies]
 ipython = "^8.24.0"
 ipykernel = "^6.29.4"
-matplotlib = "^3.8.4"
+matplotlib = "^3.9.0"
 typing-extensions = "^4.11.0"
 
 [tool.poetry.group.pandas.dependencies]
