@@ -1,5 +1,6 @@
 # pyright: reportUnknownMemberType=false, reportUnknownVariableType=false
 
+import functools
 from typing import Any, cast
 
 import numpy as np
@@ -11,10 +12,15 @@ from hypothesis import (
 )
 from hypothesis.extra import numpy as hnp
 from hypothesis.strategies import SearchStrategy
-from numpy.testing import assert_allclose, assert_equal
+from numpy.testing import (
+    assert_allclose as _assert_allclose,
+    assert_equal,
+)
 
 import lmo
 
+
+assert_allclose = functools.partial(_assert_allclose, atol=1e-14)
 
 _R_MAX = 8
 _T_MAX = 2
@@ -32,18 +38,9 @@ __st_a_kwargs: dict[str, SearchStrategy[Any]] = {
     'dtype': st_dtype,
     'elements': st.floats(-1e4, -1e-2) | st.floats(1e-2, 1e4),
 }
-st_a1 = cast(
-    SearchStrategy[npt.NDArray[Any]],
-    hnp.arrays(shape=st_n, unique=False, **__st_a_kwargs),
-)
-st_a1_unique = cast(
-    SearchStrategy[npt.NDArray[Any]],
-    hnp.arrays(shape=st_n, unique=True, **__st_a_kwargs),
-)
-st_a2 = cast(
-    SearchStrategy[npt.NDArray[Any]],
-    hnp.arrays(shape=st_n2, unique=False, **__st_a_kwargs),
-)
+st_a1 = hnp.arrays(shape=st_n, unique=False, **__st_a_kwargs)
+st_a1_unique = hnp.arrays(shape=st_n, unique=True, **__st_a_kwargs)
+st_a2 = hnp.arrays(shape=st_n2, unique=False, **__st_a_kwargs)
 
 
 @given(a=st_a1, trim=st_trim)

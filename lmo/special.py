@@ -153,8 +153,8 @@ def gamma2(
 def harmonic(
     n: npt.ArrayLike,
     /,
-    out: npt.NDArray[np.float64] | npt.NDArray[np.complex128] | None = None,
-) -> float | complex | npt.NDArray[np.float64] | npt.NDArray[np.complex128]:
+    out: npt.NDArray[np.float64 | np.complex128] | None = None,
+) -> float | complex | npt.NDArray[np.float64 | np.complex128]:
     r"""
     Harmonic number \( H_n = \sum_{k=1}^{n} 1 / k \), extended for real and
     complex argument via analytic contunuation.
@@ -167,12 +167,12 @@ def harmonic(
         >>> harmonic(2)
         1.5
         >>> harmonic(42)
-        4.3267...
+        4.32674
         >>> harmonic(np.pi)
-        1.8727...
+        1.87274
         >>> harmonic(-1 / 12)
-        -0.1461...
-        >>> harmonic(1 - 1j)
+        -0.146106
+        >>> harmonic(1 - 1j)  # doctest: -FLOAT_CMP, +ELLIPSIS
         (1.1718...-0.5766...j)
 
     Args:
@@ -183,8 +183,7 @@ def harmonic(
         out: Array or scalar with the value(s) of the function.
 
     See Also:
-        - [Harmonic number - Wikipedia
-        ](https://wikipedia.org/wiki/Harmonic_number)
+        - [Harmonic number - Wikipedia](https://w.wiki/A63b)
     """
     _n = np.asanyarray(n)
 
@@ -329,8 +328,10 @@ def fourier_jacobi(
         - [Jacobi Polynomial - Worlfram Mathworld](
         https://mathworld.wolfram.com/JacobiPolynomial.html)
     """
-    _c: npt.NDArray[np.integer[Any] | np.floating[Any]]
-    _c = np.array(c, ndmin=1, copy=False)
+    _c = cast(
+        npt.NDArray[np.integer[Any] | np.floating[Any]],
+        np.array(c, ndmin=1, copy=2),  # pyright: ignore[reportCallIssue,reportArgumentType]
+    )
     if _c.dtype.char in _DTYPE_CHARS:
         _c = _c.astype(np.float64)
 

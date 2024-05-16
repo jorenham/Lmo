@@ -29,7 +29,7 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.10"
           cache: poetry
 
       - name: poetry check
@@ -38,10 +38,11 @@ jobs:
       - name: poetry install
         run: >
           poetry install
-          --sync
           --without docs
           --without debug
           --with pandas
+          --with numpy2
+          --sync
 
       - name: codespell
         run: poetry run codespell .
@@ -60,6 +61,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         python-version: ["3.10", "3.12"]
+        numpy: ["1", "2"]
         pandas: ["without", "with"]
 
     runs-on: ${{ matrix.os }}
@@ -75,9 +77,6 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: poetry
 
-      - name: poetry check
-        run: poetry check
-
       - name: poetry install
         run: >
           poetry install
@@ -85,6 +84,7 @@ jobs:
           --with github
           --without docs
           --without debug
+          --with numpy${{ matrix.numpy }}
           --${{ matrix.pandas }} pandas
 
       - name: pytest

@@ -85,28 +85,29 @@ Lmo is on [PyPI](https://pypi.org/project/lmo/), so you can do something like:
 pip install lmo
 ```
 
-### Required dependencies
+### Dependencies
 
-These are automatically installed by your package manager, alongside `lmo`.
+These are automatically installed by your package manager when installing Lmo.
 
-| Package      | Minimum version     |
-| ------------ | ------------------- |
-| [Python][PY] | `3.10`              |
-| [NumPy][NP]  | See [NEP 29][NEP29] |
-| [SciPy][SP]  | `1.9`               |
+| Package      | Supported versions |
+| ------------ | ------------------ |
+| [Python][PY] | `>=3.10`           |
+| [NumPy][NP]  | `>=1.23`           |
+| [SciPy][SP]  | `>=1.9`            |
+
+Additionally, Lmo supports the following optional packages:
+
+| Package      | Supported versions | Installation              |
+| ------------ | ------------------ | ------------------------- |
+| [Pandas][PD] | `>=1.5`            | `pip install Lmo[pandas]` |
+
+See [SPEC 0][SPEC0] for more information.
 
 [PY]: https://github.com/python/cpython
 [NP]: https://github.com/numpy/numpy
 [SP]: https://github.com/scipy/scipy
-[NEP29]: https://numpy.org/neps/nep-0029-deprecation_policy.html#support-table
-
-### Optional dependencies
-
-| Package      | Minimum version | Notes                        |
-| ------------ | --------------- | ---------------------------- |
-| [Pandas][PD] | `1.4`           | Installable as `lmo[pandas]` |
-
 [PD]: https://github.com/pandas-dev/pandas
+[SPEC0]: https://scientific-python.org/specs/spec-0000/
 
 ## Foundational Literature
 
@@ -115,13 +116,9 @@ These are automatically installed by your package manager, alongside `lmo`.
   ](https://doi.org/10.1111/j.2517-6161.1990.tb01775.x)
 - [*E.A.H. Elamir & A.H. Seheult* (2003) &ndash; Trimmed L-moments
   ](https://doi.org/10.1016/S0167-9473(02)00250-5)
-- [*E.A.H. Elamir & A.H. Seheult* (2004) &ndash; Exact variance structure of
-  sample L-moments](https://doi.org/10.1016/S0378-3758(03)00213-1)
 - [*J.R.M. Hosking* (2007) &ndash; Some theory and practical uses of trimmed
   L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
 - [*R. Serﬂing & P. Xiao* (2007) &ndash; A contribution to multivariate
   L-moments: L-comoment matrices](https://doi.org/10.1016/j.jmva.2007.01.008)
-- [*W.H. Asquith* (2011) &ndash; Univariate Distributional Analysis with
-  L-moment Statistics](https://hdl.handle.net/2346/ETD-TTU-2011-05-1319)
 
 <!--overview-end-->

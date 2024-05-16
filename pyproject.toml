@@ -1,11 +1,11 @@
 [build-system]
-requires = ["poetry-core", "oldest-supported-numpy"]
+requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 
 [tool.poetry]
 name = "lmo"
-version = "0.13.1"
+version = "0.13.2"
 description = "L-Moments for robust statistics & inference."
 authors = ["Joren Hammudoglu <jhammudoglu@gmail.com>"]
 readme = "README.md"
@@ -39,41 +39,54 @@ Documentation = "https://jorenham.github.io/Lmo/"
 python = ">=3.10,<3.14"
 typing_extensions = {version = "^4.1", python = "<3.11"}
 
-# https://numpy.org/neps/nep-0029-deprecation_policy.html
-numpy = ">=1.23.5"
-scipy = ">=1.9.3"
-pandas = {version = ">=1.4", optional = true}
+# https://scientific-python.org/specs/spec-0000/
+numpy = ">=1.23"
+scipy = ">=1.9"
+pandas = {version = ">=1.5", optional = true}
 
 [tool.poetry.group.dev.dependencies]
 codespell = "^2.2.6"
-hypothesis = {version = "^6.100.1", extras = ["numpy"]}
-pre-commit = "^3.7.0"
-pyright = "^1.1.359"
-pytest = "^8.1.1"
-ruff = "^0.4.1"
+hypothesis = {version = "^6.102.4", extras = ["numpy"]}
+pre-commit = "^3.7.1"
+pyright = "^1.1.363"
+pytest = "^8.2.0"
+pytest-doctestplus = "^1.2.1"
+ruff = "^0.4.4"
 tomli = {version = "^2.0.1", python = "<3.11"}
 
 [tool.poetry.group.docs.dependencies]
-mkdocs = "^1.5.3"
-mkdocs-material = "^9.5.18"
-mkdocs-include-markdown-plugin = "^6.0.5"
-mkdocstrings = {version = "^0.24.3", extras = ["python"]}
-mkdocs-git-revision-date-localized-plugin = "^1.2.4"
+mkdocs = "^1.6.0"
+mkdocs-material = "^9.5.23"
+mkdocs-include-markdown-plugin = "^6.0.6"
+mkdocstrings = {version = "^0.25.1", extras = ["python"]}
+mkdocs-git-revision-date-localized-plugin = "^1.2.5"
 mkdocs-minify-plugin = "^0.8.0"
 
 [tool.poetry.group.debug.dependencies]
-ipython = "^8.23.0"
+ipython = "^8.24.0"
 ipykernel = "^6.29.4"
-matplotlib = "^3.8.4"
+matplotlib = "^3.9.0"
+typing-extensions = "^4.11.0"
 
 [tool.poetry.group.pandas.dependencies]
-pandas = ">=1.4"
-pandas-stubs = ">=1.4"
+pandas = "*"
+pandas-stubs = ">=1.5"
 
 [tool.poetry.group.github]
 optional = true
 [tool.poetry.group.github.dependencies]
 pytest-github-actions-annotate-failures = ">=0.2.0,<1.0"
+
+[tool.poetry.group.numpy1]
+optional = true
+[tool.poetry.group.numpy1.dependencies]
+numpy = "<=2"
+
+[tool.poetry.group.numpy2]
+optional = true
+[tool.poetry.group.numpy2.dependencies]
+numpy = {version = ">=2.0.0rc2", allow-prereleases = true}
+scipy = ">=1.13.0"
 
 [tool.poetry.extras]
 pandas = ["pandas"]
@@ -82,17 +95,20 @@ pandas = ["pandas"]
 minversion = "8.0"
 addopts = [
     "-ra",
-    "--doctest-modules",
     "--doctest-ignore-import-errors",
+    "--strict-config",
+    "--strict-markers",
 ]
 doctest_optionflags = [
     "NORMALIZE_WHITESPACE",
-    "IGNORE_EXCEPTION_DETAIL",
-    "ELLIPSIS",
+    "FLOAT_CMP",
 ]
-xfail_strict = true
+doctest_plus = "enabled"
+doctest_subpackage_requires = {"lmo/contrib/pandas.py" = "pandas>=1.5"}
 filterwarnings = ["error"]
+log_cli_level = "INFO"
 testpaths = ["tests", "lmo"]
+xfail_strict = true
 
 
 [tool.pyright]
@@ -114,6 +130,7 @@ ignore = [
     # TODO: figure out how to do this conditionally
     "lmo/contrib/pandas.py",
 ]
+defineConstant = { NP_V2 = true }
 stubPath = 'typings'
 venvPath = "."
 venv = ".venv"
