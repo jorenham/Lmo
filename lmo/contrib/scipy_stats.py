@@ -1251,10 +1251,10 @@ class l_rv_generic(PatchClass):
                 lmbda_r = _lmo_fn(r, *shapes, trim=trim)
                 _lmo_cache[shapes] = tuple(lmbda_r)
 
+            if scale != 1:
+                lmbda_r[r >= 1] *= scale
             if loc != 0:
                 lmbda_r[r == 1] += loc
-            if scale != 1:
-                lmbda_r[r > 1] *= scale
             return lmbda_r
 
         kwargs0: dict[str, Any] = {
