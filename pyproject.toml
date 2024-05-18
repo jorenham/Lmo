@@ -37,7 +37,7 @@ Documentation = "https://jorenham.github.io/Lmo/"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.14"
-typing_extensions = {version = "^4.1", python = "<3.11"}
+typing_extensions = {version = ">=4.10", python = "<3.13"}
 
 # https://scientific-python.org/specs/spec-0000/
 numpy = ">=1.23"
@@ -106,61 +106,32 @@ doctest_optionflags = [
 doctest_plus = "enabled"
 doctest_subpackage_requires = {"lmo/contrib/pandas.py" = "pandas>=1.5"}
 filterwarnings = ["error"]
-log_cli_level = "INFO"
+log_cli_level = "info"
 testpaths = ["tests", "lmo"]
 xfail_strict = true
 
 
 [tool.pyright]
-include = ["lmo"]
-exclude = [
-    "**/__pycache__",
-    ".git",
-    ".github",
-    ".hypothesis",
-    ".pytest_cache",
-    ".ruff_cache",
-    ".vscode",
-    "dist",
-    "docs",
-    "site",
-    "tests",
-]
-ignore = [
-    # TODO: figure out how to do this conditionally
-    "lmo/contrib/pandas.py",
-]
-defineConstant = { NP_V2 = true }
-stubPath = 'typings'
+include = ["lmo", "typetests"]
+ignore = ["lmo/contrib/pandas.py"]
+defineConstant = {NP_V2 = true}
 venvPath = "."
 venv = ".venv"
 pythonVersion = "3.10"
 pythonPlatform = "All"
 typeCheckingMode = "strict"
-useLibraryCodeForTypes = true
 
 deprecateTypingAliases = true
-disableBytesTypePromotions = true
-reportPropertyTypeMismatch = "warning"
-reportMissingTypeStubs = "none"
-reportUnusedImport = "warning"
-reportUnusedClass = "warning"
-reportUnusedFunction = "warning"
-reportUnusedVariable = "warning"
-reportConstantRedefinition = "warning"
-reportInconsistentConstructor = "warning"
-reportMissingTypeArgument = "warning"
-reportUninitializedInstanceVariable = "warning"
-reportCallInDefaultInitializer = "warning"
-reportUnnecessaryIsInstance = "warning"
-reportUnnecessaryCast = "warning"
-reportUnnecessaryComparison = "warning"
-reportUnnecessaryContains = "warning"
-reportUnusedCallResult = "warning"
-reportUnusedExpression = "warning"
-reportUnnecessaryTypeIgnoreComment = "warning"
-reportMatchNotExhaustive = "error"
-reportShadowedImports = "warning"
+reportCallInDefaultInitializer = true
+reportImplicitOverride = true
+reportImplicitStringConcatenation = true
+reportImportCycles = true
+reportMissingSuperCall = true
+reportPropertyTypeMismatch = true
+reportShadowedImports = true
+reportUninitializedInstanceVariable = true
+reportUnnecessaryTypeIgnoreComment = true
+reportUnusedCallResult = true
 
 
 [tool.ruff]
