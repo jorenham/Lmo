@@ -1419,6 +1419,20 @@ files = [
 ]
 
 [[package]]
+name = "optype"
+version = "0.4.0"
+description = "Building blocks for precise & flexible type hints"
+optional = false
+python-versions = "<4.0,>=3.10"
+files = [
+    {file = "optype-0.4.0-py3-none-any.whl", hash = "sha256:1548654f9b063e199a46a0429fa143d1b2c4b0f3dc66e9d051f5d85c1426a9b5"},
+    {file = "optype-0.4.0.tar.gz", hash = "sha256:f0cc8931e14017394e667c1691f3a1ee6fcec5ccc53b956c0dd1b7798c1bbe53"},
+]
+
+[package.dependencies]
+typing-extensions = {version = ">=4.5", markers = "python_version < \"3.12\""}
+
+[[package]]
 name = "packaging"
 version = "24.0"
 description = "Core utilities for Python packages"
@@ -2550,4 +2564,4 @@ pandas = ["pandas"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.14"
-content-hash = "5d3a96652533e491d6ed373a9a99f38f21b1c634c05863023f14424eefef3d48"
+content-hash = "ebb7629a10c3a1d55f88c3e4f2f95882ca1cd7b8fb0a393223903ac88b6bab1e"

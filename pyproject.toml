@@ -43,6 +43,7 @@ typing_extensions = {version = "^4.1", python = "<3.11"}
 numpy = ">=1.23"
 scipy = ">=1.9"
 pandas = {version = ">=1.5", optional = true}
+optype = "^0.4.0"
 
 [tool.poetry.group.dev.dependencies]
 codespell = "^2.2.6"
@@ -271,6 +272,7 @@ typing-modules = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["D", "N806", "ANN", "PLC2701"]
+"typetests/*" = ["D"]
 
 [tool.ruff.lint.pep8-naming]
 extend-ignore-names = ["*_gen", "l_rv_*"]
