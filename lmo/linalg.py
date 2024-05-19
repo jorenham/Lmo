@@ -1,5 +1,16 @@
 # ruff: noqa: N803
 """Linear algebra and linearized orthogonal polynomials."""
+from __future__ import annotations
+
+from math import comb, lgamma
+from typing import TypeAlias, TypeVar, cast, overload
+
+import numpy as np
+import numpy.typing as npt
+
+from .typing import np as lnpt
+from .typing.compat import Unpack, assert_never
+
 
 __all__ = (
     'sandwich',
@@ -11,42 +22,41 @@ __all__ = (
     'trim_matrix',
 )
 
-import sys
-from math import comb, lgamma
-from typing import Any, TypeVar, cast
+_T = TypeVar('_T', bound=lnpt.Real | np.object_)
+_DType: TypeAlias = np.dtype[_T] | type[_T]
 
+_K = TypeVar('_K', bound=int)
+_R = TypeVar('_R', bound=int)
 
-if sys.version_info < (3, 11):
-    from typing_extensions import assert_never
-else:
-    from typing import assert_never
-
-import numpy as np
-import numpy.typing as npt
-
-from .typing import AnyFloat, AnyInt
-
-
-T = TypeVar('T', bound=np.object_ | np.integer[Any] | np.floating[Any])
+_Square: TypeAlias = lnpt.Array[tuple[_K, _K], _T]
 
 
 def sandwich(
-    A: npt.NDArray[np.number[Any]],
-    X: npt.NDArray[T | np.number[Any]],
+    A: lnpt.Array[
+        tuple[_K, _R],
+        _T | lnpt.Real,
+    ],
+    X: lnpt.Array[
+        tuple[_R, Unpack[tuple[_R, ...]]],
+        _T | lnpt.Real,
+    ],
     /,
-    dtype: np.dtype[T] | type[T] = np.float64,
-) -> npt.NDArray[T]:
+    dtype: _DType[_T] = np.float64,
+) -> lnpt.Array[
+    tuple[_K, Unpack[tuple[_K, ...]]],
+    _T | lnpt.Real,
+]:
     """
     Calculates the "sandwich" matrix product (`A @ X @ A.T`) along the
     specified `X` axis.
 
     Args:
-        A: 2-D array of shape `(s, r)`, the "bread".
-        dtype: The data type of the result.
+        A: 2-D array of shape `(k, r)`, the "bread".
         X: Array of shape `(r, r, ...)`.
+        dtype: The data type of the result.
 
     Returns:
-        C: Array of shape `(s, s, ...)`.
+        C: Array of shape `(k, k, ...)`.
 
     See Also:
         - https://wikipedia.org/wiki/Covariance_matrix
@@ -57,12 +67,12 @@ def sandwich(
 
 
 def pascal(
-    k: int,
+    k: _K,
     /,
-    dtype: np.dtype[T] | type[T] = np.int64,
+    dtype: _DType[_T] = np.int64,
     *,
     inv: bool = False,
-) -> npt.NDArray[T]:
+) -> _Square[_K, _T]:
     r"""
     Construct the lower-diagonal Pascal matrix $L_{k \times k$}$, or its matrix
     inverse $L^{-1}$.
@@ -93,7 +103,6 @@ def pascal(
 
     Examples:
         >>> import numpy as np
-        >>> from lmo.linalg import pascal
         >>> pascal(4, dtype=np.int_)
         array([[1, 0, 0, 0],
                [1, 1, 0, 0],
@@ -104,7 +113,7 @@ def pascal(
                [-1,  1,  0,  0],
                [ 1, -2,  1,  0],
                [-1,  3, -3,  1]])
-        >>> np.rint(np.linalg.inv(pascal(4))).astype(int)
+        >>> np.rint(np.linalg.inv(pascal(4))).astype(np.int_)
         array([[ 1,  0,  0,  0],
                [-1,  1,  0,  0],
                [ 1, -2,  1,  0],
@@ -112,8 +121,8 @@ def pascal(
 
         Now, let's compare with scipy:
 
-        >>> from scipy.linalg import invpascal
-        >>> invpascal(4, kind='lower').astype(int)
+        >>> import scipy.linalg
+        >>> scipy.linalg.invpascal(4, kind='lower').astype(np.int_)
         array([[ 1,  0,  0,  0],
                [-1,  1,  0,  0],
                [ 1, -2,  1,  0],
@@ -136,11 +145,19 @@ def pascal(
     return out
 
 
+@overload
+def ir_pascal(k: _K, /, dtype: _DType[_T]) -> _Square[_K, _T]: ...
+@overload
 def ir_pascal(
-    k: int,
+    k: _K, /, dtype: _DType[np.float64] = ...,
+) -> _Square[_K, np.float64]: ...
+
+
+def ir_pascal(
+    k: _K,
     /,
-    dtype: np.dtype[T] | type[T] = np.float64,
-) -> npt.NDArray[np.float64]:
+    dtype: _DType[_T] = np.float64,
+) -> _Square[_K, _T | np.float64]:
     r"""
     Inverse regulatized lower-diagonal Pascal matrix,
     $\bar{L}_{ij} = L^{-1}_ij / i$.
@@ -158,12 +175,12 @@ def ir_pascal(
 
 
 def _sh_jacobi_i(
-    k: int,
+    k: _K,
     a: int,
     b: int,
     /,
-    dtype: np.dtype[T] | type[T],
-) -> npt.NDArray[T]:
+    dtype: _DType[_T],
+) -> _Square[_K, _T]:
     out = np.zeros((k, k), dtype=dtype)
     for r in range(k):
         for j in range(r + 1):
@@ -174,12 +191,12 @@ def _sh_jacobi_i(
 
 
 def _sh_jacobi_f(
-    k: int,
+    k: _K,
     a: float,
     b: float,
     /,
-    dtype: np.dtype[T] | type[T],
-) -> npt.NDArray[T]:
+    dtype: _DType[_T],
+) -> _Square[_K, _T]:
     out = np.zeros((k, k), dtype=dtype)
 
     # semi dynamic programming
@@ -202,11 +219,19 @@ def _sh_jacobi_f(
     return out
 
 
+@overload
+def sh_legendre(k: _K, /, dtype: _DType[_T]) -> _Square[_K, _T]: ...
+@overload
 def sh_legendre(
-    k: int,
+    k: _K, /, dtype: _DType[np.int64] = ...,
+) -> _Square[_K, np.int64]: ...
+
+
+def sh_legendre(
+    k: _K,
     /,
-    dtype: np.dtype[T] | type[T] = np.int64,
-) -> npt.NDArray[T]:
+    dtype: _DType[_T] = np.int64,
+) -> _Square[_K, _T | np.int64]:
     r"""
     Shifted Legendre polynomial coefficient matrix $\widetilde{P}$ of
     shape `(k, k)`.
@@ -262,13 +287,23 @@ def sh_legendre(
     return _sh_jacobi_i(k, 0, 0, dtype=dtype)
 
 
+@overload
 def sh_jacobi(
-    k: AnyInt,
-    a: AnyFloat,
-    b: AnyFloat,
+    k: _K, a: float, b: float, /, dtype: _DType[_T],
+) -> _Square[_K, _T]: ...
+@overload
+def sh_jacobi(
+    k: _K, a: float, b: float, /, dtype: None = ...,
+) -> _Square[_K, np.int64]: ...
+
+
+def sh_jacobi(
+    k: _K,
+    a: float,
+    b: float,
     /,
-    dtype: np.dtype[T] | type[T] | None = None,
-) -> npt.NDArray[T | np.int64]:
+    dtype: _DType[_T] | None = None,
+) -> _Square[_K, _T | np.int64]:
     r"""
     Shifted Jacobi polynomial coefficient matrix $\widetilde{P}^{(a,b)}$ of
     shape `(k, k)`.
@@ -324,19 +359,20 @@ def sh_jacobi(
         - https://mathworld.wolfram.com/JacobiPolynomial.html
         - [`scipy.special.jacobi`][scipy.special.jacobi]
     """
-    _k, _a, _b = int(k), float(a), float(b)
-    if _k < 0 or _a < 0 or _b < 0:
+    if k < 0 or a < 0 or b < 0:
         msg = 'k, a, and b must be >= 0'
         raise ValueError(msg)
 
-    _dtype = dtype or np.asarray([a, b]).dtype.type
-    if np.issubdtype(_dtype, np.integer) or np.issubdtype(_dtype, np.bool_):
-        return _sh_jacobi_i(_k, int(a), int(b), dtype=_dtype)
+    _sctype = dtype or np.array([a, b]).dtype.type
+    if np.issubdtype(_sctype, np.integer) or np.issubdtype(_sctype, np.bool_):
+        return _sh_jacobi_i(k, int(a), int(b), dtype=_sctype)
+    return _sh_jacobi_f(k, float(a), float(b), dtype=_sctype)
 
-    return _sh_jacobi_f(_k, float(a), float(b), dtype=_dtype)
 
-
-def succession_matrix(c: npt.NDArray[T], /) -> npt.NDArray[T]:
+def succession_matrix(
+    c: lnpt.Array[tuple[_K, int], _T],
+    /,
+) -> lnpt.Array[tuple[_K, int], _T]:
     r"""
     A toeplitz-like transformation matrix construction, that prepends $i$
     zeroes to $i$-th row, so that the input shape is mapped from `(n, k)`
@@ -375,12 +411,22 @@ def succession_matrix(c: npt.NDArray[T], /) -> npt.NDArray[T]:
     return out
 
 
+@overload
 def trim_matrix(
-    r: int,
+    r: _R, /, trim: tuple[int, int], dtype: _DType[_T],
+) -> lnpt.Array[tuple[_R, int], _T]: ...
+@overload
+def trim_matrix(
+    r: _R, /, trim: tuple[int, int], dtype: _DType[np.float64] = ...,
+) -> lnpt.Array[tuple[_R, int], np.float64]: ...
+
+
+def trim_matrix(
+    r: _R,
     /,
     trim: tuple[int, int],
-    dtype: np.dtype[T] | type[T] = np.float64,
-) -> npt.NDArray[T]:
+    dtype: _DType[_T] = np.float64,
+) -> lnpt.Array[tuple[_R, int], _T | np.float64]:
     r"""
     Linearization of the trimmed L-moment recurrence relations, following
     the (corrected) derivation by Hosking (2007) from the (shifted) Jacobi
@@ -470,4 +516,4 @@ def trim_matrix(
         case _ as wtf:  # type: ignore [reportUnnecessaryComparison]
             assert_never(wtf)
 
-    return cast(npt.NDArray[T], out)
+    return cast(npt.NDArray[_T], out)
