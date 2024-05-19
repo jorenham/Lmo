@@ -2,10 +2,11 @@ from typing import Any, TypeAlias, TypedDict
 
 import numpy as np
 
-from .np import AnyArrayFloat, AnyArrayInt, AnyVectorInt, Real, SortKind
+from .np import AnyArrayFloat, AnyArrayInt, AnyVectorInt, SortKind
 
 
-AnyTrim: TypeAlias = Real | tuple[Real, Real]
+_AnyTrimOrder = float | np.integer[Any] | np.floating[Any]
+AnyTrim: TypeAlias = _AnyTrimOrder | tuple[_AnyTrimOrder, _AnyTrimOrder]
 
 AnyOrder: TypeAlias = int | np.integer[Any]
 AnyOrderND: TypeAlias = AnyArrayInt
