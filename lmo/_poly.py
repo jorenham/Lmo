@@ -17,17 +17,25 @@ __all__ = (
     'roots',
 )
 
-from typing import TypeVar, cast, overload
+from typing import TypeAlias, TypeVar, cast, overload
 
 import numpy as np
 import numpy.polynomial as npp
-import numpy.typing as npt
 import scipy.special as scs
 
-from .typing import FloatVector, PolySeries
+from .typing import np as lnpt
 
 
-P = TypeVar('P', bound=PolySeries)
+PolySeries: TypeAlias = (
+    npp.Polynomial
+    | npp.Chebyshev
+    | npp.Hermite
+    | npp.HermiteE
+    | npp.Legendre
+)
+
+_T_shape = TypeVar('_T_shape', bound=lnpt.AtLeast1D)
+_T_poly = TypeVar('_T_poly', bound=PolySeries)
 
 
 @overload
@@ -40,8 +48,8 @@ def eval_sh_jacobi(
     n: int,
     a: float,
     b: float,
-    x: npt.NDArray[np.float64],
-) -> npt.NDArray[np.float64]:
+    x: lnpt.Array[_T_shape, lnpt.Float],
+) -> lnpt.Array[_T_shape, np.float64]:
     ...
 
 
@@ -49,8 +57,8 @@ def eval_sh_jacobi(
     n: int,
     a: float,
     b: float,
-    x: float | npt.NDArray[np.float64],
-) -> float | npt.NDArray[np.float64]:
+    x: float | lnpt.Array[_T_shape, lnpt.Float],
+) -> float | lnpt.Array[_T_shape, np.float64]:
     """
     Fast evaluation of the n-th shifted Jacobi polynomial.
     Faster than pre-computing using np.Polynomial, and than
@@ -102,7 +110,11 @@ def eval_sh_jacobi(
     return scs.eval_jacobi(n, a, b, u)
 
 
-def peaks_jacobi(n: int, a: float, b: float) -> npt.NDArray[np.float64]:
+def peaks_jacobi(
+    n: int,
+    a: float,
+    b: float,
+) -> lnpt.Array[tuple[int], np.float64]:
     r"""
     Finds the \( x \in [-1, 1] \) s.t.
     \( /frac{\dd{\shjacobi{n}{a}{b}{x}}}{\dd{x}} = 0 \) of a Jacobi polynomial,
@@ -288,7 +300,11 @@ def extrema_jacobi(n: int, a: float, b: float) -> tuple[float, float]:
     return cast(float, np.min(p)), cast(float, np.max(p))
 
 
-def _jacobi_coefs(n: int, a: float, b: float) -> npt.NDArray[np.float64]:
+def _jacobi_coefs(
+    n: int,
+    a: float,
+    b: float,
+) -> lnpt.Array[tuple[int], np.float64]:
     p_n: np.poly1d
     p_n = scs.jacobi(n, a, b)  # pyright: ignore[reportUnknownMemberType]
     return p_n.coef[::-1]
@@ -299,24 +315,24 @@ def jacobi(
     /,
     a: float,
     b: float,
-    domain: FloatVector = (-1, 1),
-    window: FloatVector = (-1, 1),
+    domain: tuple[float, float] = (-1, 1),
+    window: tuple[float, float] = (-1, 1),
     symbol: str = 'x',
 ) -> npp.Polynomial:
     return npp.Polynomial(_jacobi_coefs(n, a, b), domain, window, symbol)
 
 
 def jacobi_series(
-    coef: npt.ArrayLike,
+    coef: lnpt.AnyArrayFloat,
     /,
     a: float,
     b: float,
     *,
-    domain: FloatVector = (-1, 1),
-    kind: type[P] | None = None,
-    window: FloatVector = (-1, 1),
+    domain: tuple[float, float] = (-1, 1),
+    kind: type[_T_poly] | None = None,
+    window: tuple[float, float] = (-1, 1),
     symbol: str = 'x',
-) -> P:
+) -> _T_poly:
     r"""
     Construct a polynomial from the weighted sum of shifted Jacobi
     polynomials.
@@ -334,32 +350,42 @@ def jacobi_series(
 
     n = len(w)
     p = cast(
-        PolySeries,
+        npp.Polynomial,
         sum(
             w[r] * jacobi(r, a, b, domain=domain, symbol=symbol, window=window)
             for r in range(n)
         ),
     )
 
-    return cast(P, p.convert(domain=domain, kind=kind, window=window))
+    return cast(
+        _T_poly,
+        p.convert(  # pyright: ignore[reportUnknownMemberType]
+            domain=domain,
+            kind=kind,
+            window=window,
+        ),
+    )
 
 
 def roots(
     p: PolySeries,
     /,
     outside: bool = False,
-) -> npt.NDArray[np.float64]:
+) -> lnpt.Array[tuple[int], np.float64]:
     """
     Return the $x$ in the domain of $p$, where $p(x) = 0$.
 
     If outside=False (default), the values that fall outside of the domain
     interval will be not be included.
     """
-    z = p.roots()
+    z = cast(
+        lnpt.Array[tuple[int], np.float64],
+        p.roots(),  # pyright: ignore[reportUnknownMemberType]
+    )
     if not np.isrealobj(z) and np.isrealobj(p.domain):
         x = z[np.isreal(z)].real
     else:
-        x = cast(npt.NDArray[np.float64], z)
+        x = z
 
     if not outside and len(x):
         a, b = np.sort(p.domain)
