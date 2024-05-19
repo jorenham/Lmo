@@ -4,11 +4,9 @@
     "codezombiech.gitignore",
     "davidanson.vscode-markdownlint",
     "editorconfig.editorconfig",
-    "elagil.pre-commit-helper",
+    "eeyore.yapf",
     "ms-python.python",
     "ms-python.vscode-pylance",
-    "serhioromano.vscode-gitflow",
-    "yzhang.markdown-all-in-one",
-    "zeshuaro.vscode-python-poetry"
+    "yzhang.markdown-all-in-one"
   ]
 }

@@ -345,3 +345,25 @@ skip = """\
     *.ipynb\
 """
 context = 2
+
+
+[tool.yapf]
+based_on_style = 'pep8'
+
+align_closing_bracket_with_visual_indent = false
+blank_lines_around_top_level_definition = 1
+blank_line_before_nested_class_or_def = false
+blank_lines_between_top_level_imports_and_variables = 2
+coalesce_brackets = true
+continuation_align_style = 'space'
+dedent_closing_brackets = true
+force_multiline_dict = true
+indent_dictionary_value = true
+spaces_around_power_operator = true
+split_all_top_level_comma_separated_values = true
+split_arguments_when_comma_terminated = true
+split_before_arithmetic_operator = true
+split_before_dot = true
+split_before_expression_after_opening_paren = true
+split_before_first_argument = true
+split_complex_comprehension = true
