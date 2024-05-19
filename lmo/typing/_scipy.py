@@ -1,5 +1,4 @@
 # pyright: reportPropertyTypeMismatch=false
-# ruff: noqa: TD002, TD003
 from __future__ import annotations
 
 from typing import (
@@ -40,7 +39,7 @@ if TYPE_CHECKING:
         ValuesView,
     )
 
-    from .compat import LiteralString, Self
+    from .compat import LiteralString, Self, Unpack
 
 
 __all__ = (
@@ -165,6 +164,8 @@ class RV(Protocol):
     @random_state.setter
     def random_state(self, seed: _Seed) -> None: ...
 
+    def __init__(self, seed: _Seed = ...) -> None: ...
+
     def freeze(self, *args: _Real0D, **kwds: _Real0D) -> RVFrozen[Self]: ...
     def __call__(self, *args: _Real0D, **kwds: _Real0D) -> RVFrozen[Self]: ...
 
@@ -271,11 +272,22 @@ class RV(Protocol):
 
 @runtime_checkable
 class RVDiscrete(RV, Protocol):
-    # TODO: __init__
-    # TODO: expect
-
     @property
     def inc(self) -> int: ...
+
+    def __init__(
+        self,
+        a: float | None = ...,
+        b: float | None = ...,
+        name: LiteralString | None = ...,
+        badvalue: float | None = ...,
+        moment_tol: float = ...,
+        values: tuple[npt.ArrayLike, npt.ArrayLike] | None = ...,
+        inc: int = ...,
+        longname: LiteralString | None = ...,
+        shapes: LiteralString | None = ...,
+        seed: _Seed = ...,
+    ) -> None: ...
 
     @overload
     def pmf(self, k: _Real0D, *args: _Real0D, **kwds: _Real0D) -> _F8: ...
@@ -357,11 +369,34 @@ class RVDiscrete(RV, Protocol):
         **kwds: _Real0D,
     ) -> Array[_ND1, _F8]: ...
 
+    def expect(
+        self,
+        func: Callable[[_F8], float] | None = ...,
+        args: tuple[_Real0D, ...] = ...,
+        loc: _Real0D = ...,
+        lb: _Real0D | None = ...,
+        ub: _Real0D | None = ...,
+        conditional: bool = ...,
+        maxcount: int = ...,
+        tolerance: float = ...,
+        chunksize: int = ...,
+    ) -> _F8: ...
+
 
 @runtime_checkable
 class RVContinuous(RV, Protocol):
-    # TODO: __init__
-    # TODO: expect
+    def __init__(
+        self,
+        momtype: Literal[0, 1] = ...,
+        a: float | None = ...,
+        b: float | None = ...,
+        xtol: float = ...,
+        badvalue: float | None = ...,
+        name: LiteralString | None = ...,
+        longname: LiteralString | None = ...,
+        shapes: LiteralString | None = ...,
+        seed: _Seed = ...,
+    ) -> None: ...
 
     @overload
     def pdf(self, x: _Real0D, *args: _Real0D, **kwds: _Real0D) -> _F8: ...
@@ -459,6 +494,18 @@ class RVContinuous(RV, Protocol):
         data: npt.ArrayLike,
         *args: _Real0D,
     ) -> tuple[_F8, _F8]: ...
+
+    def expect(
+        self,
+        func: Callable[[_F8], float] | None = ...,
+        args: tuple[_Real0D, ...] = ...,
+        loc: _Real0D = ...,
+        scale: _Real0D = ...,
+        lb: _Real0D | None = ...,
+        ub: _Real0D | None = ...,
+        conditional: bool = ...,
+        **kwds: Unpack[QuadOptions],
+    ) -> _F8: ...
 
 
 _RV_co = TypeVar('_RV_co', bound=RV, covariant=True)

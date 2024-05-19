@@ -1,5 +1,4 @@
 """Typing compatibility for Python <3.11."""
-
 import sys
 
 
@@ -9,10 +8,25 @@ if sys.version_info < (3, 11):
         Self,
         TypeVarTuple,
         Unpack,
+        assert_never,
         assert_type,
     )
 else:
-    from typing import LiteralString, Self, TypeVarTuple, Unpack, assert_type
+    from typing import (
+        LiteralString,
+        Self,
+        TypeVarTuple,
+        Unpack,
+        assert_never,
+        assert_type,
+    )
 
 
-__all__ = 'LiteralString', 'Self', 'TypeVarTuple', 'Unpack', 'assert_type'
+__all__ = (
+    'LiteralString',
+    'Self',
+    'TypeVarTuple',
+    'Unpack',
+    'assert_never',
+    'assert_type',
+)

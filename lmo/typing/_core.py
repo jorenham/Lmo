@@ -1,20 +1,25 @@
-from typing import TypeAlias, TypedDict
+from typing import Any, TypeAlias, TypedDict
 
-import numpy.typing as npt
+import numpy as np
 
-from .np import SortKind
+from .np import AnyArrayFloat, AnyArrayInt, AnyVectorInt, Real, SortKind
 
 
-_TrimOrder = int | float
-AnyTrim: TypeAlias = _TrimOrder | tuple[_TrimOrder, _TrimOrder]
+AnyTrim: TypeAlias = Real | tuple[Real, Real]
+
+AnyOrder: TypeAlias = int | np.integer[Any]
+AnyOrderND: TypeAlias = AnyArrayInt
+
+AnyFWeights: TypeAlias = AnyVectorInt
+AnyAWeights: TypeAlias = AnyArrayFloat
 
 
 class LMomentOptions(TypedDict, total=False):
     """Use as e.g. `def spam(**kwargs: Unpack[LMomentOptions]): ...`."""
     sort: SortKind
     cache: bool
-    fweights: npt.ArrayLike
-    aweights: npt.ArrayLike
+    fweights: AnyFWeights
+    aweights: AnyAWeights
 
 
 class LComomentOptions(TypedDict, total=False):

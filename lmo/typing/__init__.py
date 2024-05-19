@@ -4,14 +4,25 @@ from . import (
     compat,
     np,
 )
-from ._core import AnyTrim, LComomentOptions, LMomentOptions
+from ._core import (
+    AnyAWeights,
+    AnyFWeights,
+    AnyOrder,
+    AnyOrderND,
+    AnyTrim,
+    LComomentOptions,
+    LMomentOptions,
+)
 
 
 __all__ = (
+    'AnyAWeights',
+    'AnyFWeights',
     'AnyTrim',
     'LComomentOptions',
     'LMomentOptions',
     'AnyTrim',
+    'AnyOrder', 'AnyOrderND',
     'compat',
     'np',
     'scipy',
