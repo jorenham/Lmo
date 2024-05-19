@@ -4,9 +4,9 @@ probability-weighted moments (PWM's), $\beta_k = M_{1,k,0}$.
 
 Primarily used as an intermediate step for L-moment estimation.
 """
-__all__ = 'weights', 'cov'
+from __future__ import annotations
 
-from typing import Any, TypeVar, cast
+from typing import TYPE_CHECKING, Any, TypeAlias, TypeVar, cast, overload
 
 import numpy as np
 import numpy.typing as npt
@@ -14,15 +14,28 @@ import numpy.typing as npt
 from ._utils import ordered
 
 
-T = TypeVar('T', bound=np.floating[Any])
+if TYPE_CHECKING:
+    from .typing import np as lnpt
+
+
+__all__ = (
+    'weights',
+    'cov',
+)
+
+
+_T_float = TypeVar('_T_float', bound=np.floating[Any])
+_T_order = TypeVar('_T_order', bound=int)
+
+_DType: TypeAlias = np.dtype[_T_float] | type[_T_float]
 
 
 def weights(
     r: int,
     n: int,
     /,
-    dtype: np.dtype[T] | type[T] = np.float64,
-) -> npt.NDArray[T]:
+    dtype: _DType[_T_float] = np.float64,
+) -> npt.NDArray[_T_float]:
     r"""
     Probability Weighted moment (PWM) projection matrix $B$ of the
     unbiased estimator for $\beta_k = M_{1,k,0}$ for $k = 0, \dots, r - 1$.
@@ -63,31 +76,73 @@ def weights(
         w_r[k, k:] = w_r[k - 1, k:] * i1[:-k] / (n - k)
 
     # the + 0. eliminates negative zeros
-    return cast(npt.NDArray[T], w_r + 0.0)
+    return cast(npt.NDArray[_T_float], w_r + 0.0)
+
+
+@overload
+def cov(
+    a: lnpt.Array[lnpt.AtLeast1D, _T_float],
+    r: _T_order,
+    /,
+    axis: None = ...,
+    dtype: _DType[np.float64] = ...,
+    **kwargs: Any,
+) -> lnpt.Array[tuple[_T_order, _T_order], np.float64]: ...
+@overload
+def cov(
+    a: lnpt.Array[lnpt.AtLeast1D, _T_float],
+    r: _T_order,
+    /,
+    axis: int,
+    dtype: _DType[np.float64] = ...,
+    **kwargs: Any,
+) -> lnpt.Array[tuple[_T_order, _T_order, int], np.float64]: ...
+@overload
+def cov(
+    a: lnpt.Array[lnpt.AtLeast1D, _T_float],
+    r: _T_order,
+    /,
+    axis: None = ...,
+    *,
+    dtype: _DType[_T_float],
+    **kwargs: Any,
+) -> lnpt.Array[tuple[_T_order, _T_order], _T_float]: ...
+@overload
+def cov(
+    a: lnpt.Array[lnpt.AtLeast1D, _T_float],
+    r: _T_order,
+    /,
+    axis: int,
+    dtype: _DType[_T_float],
+    **kwargs: Any,
+) -> lnpt.Array[tuple[_T_order, _T_order, int], _T_float]: ...
 
 
 def cov(
-    a: npt.ArrayLike,
-    r: int,
+    a: lnpt.Array[lnpt.AtLeast1D, _T_float],
+    r: _T_order,
     /,
     axis: int | None = None,
-    dtype: np.dtype[T] | type[T] = np.float64,
+    dtype: _DType[_T_float] = np.float64,
     **kwargs: Any,
-) -> npt.NDArray[T]:
+) -> (
+    lnpt.Array[tuple[_T_order, _T_order], lnpt.Float]
+    | lnpt.Array[tuple[_T_order, _T_order, int], lnpt.Float]
+):
     r"""
     Distribution-free variance-covariance matrix of the probability weighted
     moment (PWM) point estimates $\beta_k = M_{1,k,0}$, with orders
     $k = 0, \dots, r - 1$.
 
     Parameters:
-        a: Array-like with observations.
+        a: 1-D or 2-D array-like with observations.
         r: The amount of orders to evaluate, i.e. $k = 0, \dots, r - 1$.
         axis: The axis along which to calculate the covariance matrices.
         dtype: Desired output floating data type.
         **kwargs: Additional keywords to pass to `lmo.stats.ordered`.
 
     Returns:
-        S_b: Variance-covariance matrix/tensor of shape `(r, ...)`
+        S_b: Variance-covariance matrix/tensor of shape `(r, r)` or (r, r, n)
 
     See Also:
         - https://wikipedia.org/wiki/Covariance_matrix
