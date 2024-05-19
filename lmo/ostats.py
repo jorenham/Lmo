@@ -1,3 +1,4 @@
+# ruff: noqa: N803
 r"""
 Order statistics $X_{i:n}$, with $i \in [0, n)$.
 
@@ -8,38 +9,45 @@ References:
     ](https://books.google.com/books?id=bdhzFXg6xFkC)
 """
 
+from __future__ import annotations
+
 import functools
-from collections.abc import Sequence
 from math import floor
-from typing import Any, cast, overload
+from typing import TYPE_CHECKING, TypeVar, overload
 
 import numpy as np
-import numpy.typing as npt
 from scipy.special import betainc, betaln
 
-from .typing import AnyNDArray
+
+if TYPE_CHECKING:
+    from .typing import np as lnpt
+
+
+__all__ = (
+    'weights',
+    'from_cdf',
+)
+
+
+_T_size = TypeVar('_T_size', bound=int)
 
 
 def _weights(
-    i: float,
-    n: float,
-    N: int,  # noqa: N803
+    i: float | lnpt.Float,
+    n: float | lnpt.Float,
+    N: _T_size,
     /,
-) -> npt.NDArray[np.float64]:
+) -> lnpt.Array[tuple[_T_size], np.float64]:
     assert 0 <= i < n <= N
 
     j = np.arange(floor(i), N)
-
     return np.r_[
         np.zeros(j[0]),
         np.exp(
-            cast(
-                float,
-                betaln(j + 1, N - j)
-                - betaln(i + 1, n - i)
-                - betaln(j - i + 1, N - j - (n - i) + 1)
-                - np.log(N - n + 1),
-            ),
+            betaln(j + 1, N - j)
+            - betaln(i + 1, n - i)
+            - betaln(j - i + 1, N - j - (n - i) + 1)
+            - np.log(N - n + 1),
         ),
     ]
 
@@ -48,13 +56,13 @@ _weights_cached = functools.lru_cache(1 << 10)(_weights)
 
 
 def weights(
-    i: float,
-    n: float,
-    N: int,  # noqa: N803
+    i: float | lnpt.Float,
+    n: float | lnpt.Float,
+    N: _T_size,
     /,
     *,
     cached: bool = False,
-) -> npt.NDArray[np.float64]:
+) -> lnpt.Array[tuple[_T_size], np.float64]:
     r"""
     Compute the linear weights $w_{i:n|j:N}$ for $j = 0, \dots, N-1$.
 
@@ -88,7 +96,8 @@ def weights(
         literature.
 
     Args:
-        i: 0-indexed sample (fractional) index, $0 \le i \lt n$. Negative
+        i:
+            0-indexed sample (fractional) index, $0 \le i \lt n$. Negative
             indexing is allowed.
         n: Subsample size, optionally fractional, $0 \le n0$
         N: Sample size, i.e. the observation count.
@@ -109,34 +118,34 @@ def weights(
         # impossible case
         return np.full(N, np.nan)
 
-    return (_weights_cached if cached else _weights)(i, n, N)
+    _fn = _weights_cached if cached else _weights
+    # this return type incosnsitency is due to the first `np.ndarray` type
+    # parameter not being covariant, which is incorrect, but is being worked on
+    return _fn(i, n, N)  # pyright: ignore[reportReturnType]
 
 
 @overload
-def from_cdf(F: float, i: float, n: float) -> float:  # noqa: N803
-    ...
-
-
+def from_cdf(F: lnpt.AnyScalarFloat, i: float, n: float) -> np.float64: ...
 @overload
 def from_cdf(
-    F: AnyNDArray[np.floating[Any]] | Sequence[float],  # noqa: N803
+    F: lnpt.AnyArrayFloat,
     i: float,
     n: float,
-) -> npt.NDArray[np.float64]:
-    ...
+) -> lnpt.Array[lnpt.AtLeast1D, np.float64]: ...
 
 
 def from_cdf(
-    F: npt.ArrayLike,  # noqa: N803
+    F: lnpt.AnyScalarFloat | lnpt.AnyArrayFloat,
     i: float,
     n: float,
-) -> float | npt.NDArray[np.float64]:
+) -> np.float64 | lnpt.Array[lnpt.AtLeast1D, np.float64]:
     r"""
     Transform $F(X)$ to $F_{i:n}(X)$, of the $i$th variate within subsamples
     of size, i.e. $0 \le i \le n - 1$.
 
     Args:
-        F: Scalar or array-like with the returned value of some cdf, i.e.
+        F:
+            Scalar or array-like with the returned value of some cdf, i.e.
             $F_X(x) = P(X \le x)$. Must be between 0 and 1.
         i: 0-indexed sample (fractional) index, $0 \le i < n$.
         n: Subsample size, optionally fractional, $0 \le n0$
