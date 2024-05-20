@@ -18,7 +18,10 @@ AnyAWeights: TypeAlias = lnpt.Array[lnpt.AtLeast1D, np.floating[Any]]
 
 
 class LMomentOptions(TypedDict, total=False):
-    """Use as e.g. `def spam(**kwargs: Unpack[LMomentOptions]): ...`."""
+    """
+    Use as e.g. `**kwds: Unpack[LMomentOptions]` (on `python<3.11`) or
+    `**kwds: *LMomentOptions` (on `python>=3.11`).
+    """
     sort: lnpt.SortKind
     cache: bool
     fweights: AnyFWeights
@@ -26,7 +29,10 @@ class LMomentOptions(TypedDict, total=False):
 
 
 class LComomentOptions(TypedDict, total=False):
-    """Use as e.g. `def spam(**kwargs: Unpack[LComomentOptions]): ...`."""
+    """
+    Use as e.g. `**kwds: Unpack[LComomentOptions]` (on `python<3.11`) or
+    `**kwds: *LComomentOptions` (on `python>=3.11`).
+    """
     sort: lnpt.SortKind
     cache: bool
     rowvar: bool
