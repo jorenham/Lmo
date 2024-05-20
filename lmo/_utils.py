@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Literal, TypeAlias, TypeVar, overload
+import math
+from typing import TYPE_CHECKING, Any, Final, Literal, TypeVar
 
 import numpy as np
 import numpy.typing as npt
@@ -242,51 +243,47 @@ def clean_orders(
     return _r
 
 
-_T = TypeVar('_T')
-_OneOrTwo: TypeAlias = tuple[_T, _T] | _T
-
-
-@overload
-def clean_trim(
-    trim: _OneOrTwo[int | np.integer[Any]], /,
-) -> tuple[int, int]: ...
-@overload
-def clean_trim(
-    trim: _OneOrTwo[float | np.floating[Any]], /,
-) -> tuple[float, float]: ...
+_COMMON_TRIM1: Final[frozenset[int]] = frozenset({0, 1, 2})
+_COMMON_TRIM2: Final[frozenset[tuple[int, int]]] = frozenset(
+    {(0, 0), (1, 1), (2, 2), (0, 1), (0, 2), (1, 0), (2, 0)},
+)
 
 
 def clean_trim(trim: AnyTrim, /) -> tuple[int, int] | tuple[float, float]:
-    """Cleans the passed trim; and return a 2-tuple of ints or floats."""
-    _trim = np.asarray_chkfinite(trim)
+    """
+    Validates and cleans the passed trim; and return a 2-tuple of either ints
+    or floats.
 
-    if not np.isrealobj(_trim):
-        msg = 'trim orders must be real'
-        raise TypeError(msg)
+    Notes:
+        - This uses `.is_integer()`, instead of `isinstance(int)`.
+          So e.g. `clean_trim(1.0)` will return `tuple[int, int]`.
+        - Although not allowed by typecheckers, numpy integer or floating
+          scalars are also accepted, and will be converted to `int` or `float`.
+    """
+    # fast pass-through for the common cases
+    if trim in _COMMON_TRIM1:
+        return trim, trim
+    if trim in _COMMON_TRIM2:
+        return trim
 
-    if _trim.ndim > 1:
-        msg = 'trim orders cannot be vectorized'
-        raise TypeError(trim)
+    match trim:
+        case s, t:
+            pass
+        case st:
+            s = t = st
 
-    n = _trim.size
-    if n == 0:
-        _trim = np.array([0, 0])
-    if n == 1:
-        _trim = np.repeat(_trim, 2)
-    elif n > 2:
-        msg = f'expected two trim orders, got {n} instead'
-        raise TypeError(msg)
+    fractional = False
+    for f in map(float, (s, t)):
+        if not math.isfinite(f):
+            msg = 'trim orders must be finite'
+            raise ValueError(msg)
+        if f <= -1 / 2:
+            msg = 'trim orders must be greater than -1/2'
+            raise ValueError(msg)
+        if not f.is_integer():
+            fractional = True
 
-    s, t = _trim
-
-    if s <= -1 / 2 or t <= -1 / 2:
-        msg = f'trim orders must both be >-1/2, got {(s, t)}'
-        raise ValueError(msg)
-
-    if s.is_integer() and t.is_integer():
-        return int(s), int(t)
-
-    return float(s), float(t)
+    return (float(s), float(t)) if fractional else (int(s), int(t))
 
 
 def moments_to_ratio(

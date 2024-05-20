@@ -1,23 +1,25 @@
 from typing import Any, TypeAlias, TypedDict
 
 import numpy as np
+import optype as opt
 
-from .np import AnyArrayFloat, AnyArrayInt, AnyVectorInt, SortKind
+from . import np as lnpt
 
 
-_AnyTrimOrder = float | np.integer[Any] | np.floating[Any]
-AnyTrim: TypeAlias = _AnyTrimOrder | tuple[_AnyTrimOrder, _AnyTrimOrder]
+_AnyTrimI: TypeAlias = int | tuple[int, int]
+_AnyTrimF: TypeAlias = float | tuple[float, float]
+AnyTrim: TypeAlias = _AnyTrimI | _AnyTrimF
 
 AnyOrder: TypeAlias = int | np.integer[Any]
-AnyOrderND: TypeAlias = AnyArrayInt
+AnyOrderND: TypeAlias = opt.CanSequence[int, int] | lnpt.AnyArrayInt
 
-AnyFWeights: TypeAlias = AnyVectorInt
-AnyAWeights: TypeAlias = AnyArrayFloat
+AnyFWeights: TypeAlias = lnpt.Array[tuple[int], np.integer[Any]]
+AnyAWeights: TypeAlias = lnpt.Array[lnpt.AtLeast1D, np.floating[Any]]
 
 
 class LMomentOptions(TypedDict, total=False):
     """Use as e.g. `def spam(**kwargs: Unpack[LMomentOptions]): ...`."""
-    sort: SortKind
+    sort: lnpt.SortKind
     cache: bool
     fweights: AnyFWeights
     aweights: AnyAWeights
@@ -25,6 +27,6 @@ class LMomentOptions(TypedDict, total=False):
 
 class LComomentOptions(TypedDict, total=False):
     """Use as e.g. `def spam(**kwargs: Unpack[LComomentOptions]): ...`."""
-    sort: SortKind
+    sort: lnpt.SortKind
     cache: bool
     rowvar: bool

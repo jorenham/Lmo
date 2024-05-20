@@ -63,6 +63,7 @@ AtLeast3D: TypeAlias = tuple[int, Unpack[AtLeast2D]]
 # Array and array-likes, with generic shape
 
 _DN = TypeVar('_DN', bound=tuple[int, ...])
+_DN_co = TypeVar('_DN_co', bound=tuple[int, ...], covariant=True)
 _ST = TypeVar('_ST', bound=np.generic)
 _ST_co = TypeVar('_ST_co', bound=np.generic, covariant=True)
 
@@ -70,7 +71,7 @@ Array: TypeAlias = np.ndarray[_DN, np.dtype[_ST]]
 
 
 @runtime_checkable
-class CanArray(Protocol[_DN, _ST_co]):
+class CanArray(Protocol[_DN_co, _ST_co]):  # pyright: ignore[reportInvalidTypeVarUse]
     """
     Anything that can be converted to a (numpy) array, e.g. with `np.asarray`,
     similarly to `collections.abc.Sequence`.
@@ -104,7 +105,7 @@ class CanArray(Protocol[_DN, _ST_co]):
         >>> isinstance(np.uint(42), CanArray)
         True
     """
-    def __array__(self) -> Array[_DN, _ST_co]: ...
+    def __array__(self) -> Array[_DN_co, _ST_co]: ...
 
 
 # `str` and `bytes` tend to complicate things because they're sequences
