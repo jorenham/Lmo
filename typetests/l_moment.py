@@ -1,20 +1,28 @@
 # pyright: reportUnusedCallResult=false
+from typing import TypeAlias
+
 import numpy as np
 import numpy.typing as npt
 
 import lmo
+from lmo.typing import np as lnpt
 from lmo.typing.compat import assert_type
 
 
+_ArrayF8: TypeAlias = lnpt.Array[lnpt.AtLeast1D, np.float64]
+
 X = [0.14543334, 2.17509751, 0.60844233, 1.47809552, -1.32510269, 1.0979731]
+XX = [X, X]
 
 # default
 assert_type(lmo.l_moment(X, 2), np.float64)
-assert_type(lmo.l_moment(np.asarray(X), 2), np.float64)
-assert_type(lmo.l_moment(np.asarray(X, dtype=np.float32), 2), np.float64)
-assert_type(lmo.l_moment(np.asarray(X, dtype=np.int32), 2), np.float64)
+assert_type(lmo.l_moment(np.array(X), 2), np.float64)
+assert_type(lmo.l_moment(np.array(X, dtype=np.float32), 2), np.float64)
+assert_type(lmo.l_moment(np.array(X, dtype=np.int32), 2), np.float64)
 assert_type(lmo.l_moment(X, np.intp(2)), np.float64)
 assert_type(lmo.l_moment(X, np.uint8(2)), np.float64)
+assert_type(lmo.l_moment(XX, np.uint8(2)), np.float64)
+assert_type(lmo.l_moment(np.array(XX), np.uint8(2)), np.float64)
 
 # trim
 assert_type(lmo.l_moment(X, 2, 0), np.float64)
@@ -24,6 +32,10 @@ assert_type(lmo.l_moment(X, 2, trim=(1, 1)), np.float64)
 assert_type(lmo.l_moment(X, 2, trim=(.5, .5)), np.float64)
 assert_type(lmo.l_moment(X, 2, trim=(1, .5)), np.float64)
 assert_type(lmo.l_moment(X, 2, trim=(.5, 1)), np.float64)
+
+# axis
+assert_type(lmo.l_moment(XX, 2, axis=0), _ArrayF8)
+assert_type(lmo.l_moment(np.array(XX), 2, axis=0), _ArrayF8)
 
 # sctype
 assert_type(lmo.l_moment(X, 2, dtype=np.float32), np.float32)
