@@ -8,7 +8,6 @@ import numpy.typing as npt
 
 from . import ostats, pwm_beta
 from ._utils import (
-    broadstack,
     clean_order,
     clean_trim,
     ensure_axis_at,
@@ -543,7 +542,7 @@ def l_ratio(
         - [`lmo.l_moment`][lmo.l_moment]
     """
     # rs = np.stack(np.broadcast_arrays(np.asarray(r), np.asarray(s)))
-    rs = broadstack(r, s, dtype=np.intp)
+    rs = np.stack(np.broadcast_arrays(np.asarray(r), np.asarray(s)))
     l_rs = l_moment(a, rs, trim=trim, axis=axis, dtype=dtype, **kwds)
     return moments_to_ratio(rs, l_rs)
 

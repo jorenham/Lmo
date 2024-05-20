@@ -39,20 +39,14 @@ _T_poly = TypeVar('_T_poly', bound=PolySeries)
 
 
 @overload
-def eval_sh_jacobi(n: int, a: float, b: float, x: float) -> float:
-    ...
-
-
+def eval_sh_jacobi(n: int, a: float, b: float, x: float) -> float: ...
 @overload
 def eval_sh_jacobi(
     n: int,
     a: float,
     b: float,
     x: lnpt.Array[_T_shape, lnpt.Float],
-) -> lnpt.Array[_T_shape, np.float64]:
-    ...
-
-
+) -> lnpt.Array[_T_shape, np.float64]: ...
 def eval_sh_jacobi(
     n: int,
     a: float,

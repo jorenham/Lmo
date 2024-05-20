@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import math
-from typing import TYPE_CHECKING, Any, Final, Literal, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Final, Literal, TypeAlias, overload
 
 import numpy as np
 import numpy.typing as npt
 
 from .typing import np as lnpt
+from .typing.compat import TypeVar
 
 
 if TYPE_CHECKING:
@@ -31,9 +32,9 @@ __all__ = (
 
 
 _T_scalar = TypeVar('_T_scalar', bound=np.generic)
-_T_real = TypeVar('_T_real', bound=lnpt.Real)
-_T_float = TypeVar('_T_float', bound=lnpt.Float)
-_T_int = TypeVar('_T_int', bound=lnpt.UInt | lnpt.Int)
+_T_number = TypeVar('_T_number', bound=np.number[Any])
+_T_int = TypeVar('_T_int', bound=np.integer[Any], default=np.intp)
+_T_float = TypeVar('_T_float', bound=np.floating[Any], default=np.float64)
 
 _T_size = TypeVar('_T_size', bound=int)
 
@@ -41,66 +42,32 @@ _T_shape0 = TypeVar('_T_shape0', bound=lnpt.AtLeast0D)
 _T_shape1 = TypeVar('_T_shape1', bound=lnpt.AtLeast1D)
 _T_shape2 = TypeVar('_T_shape2', bound=lnpt.AtLeast2D)
 
+_DType: TypeAlias = np.dtype[_T_scalar] | type[_T_scalar]
+
 
 @overload
 def broadstack(
     *args: _T_scalar | lnpt.CanArray[Any, _T_scalar],
     axis: int = ...,
-    out: lnpt.Array[lnpt.AtLeast1D, _T_scalar] | None = ...,
-    dtype: None = ...,
-    casting: lnpt.Casting = ...,
 ) -> lnpt.Array[Any, _T_scalar]: ...
 @overload
 def broadstack(
     *args: lnpt.AnyScalarInt | lnpt.AnyArrayInt,
     axis: int = ...,
-    out: lnpt.Array[lnpt.AtLeast1D, np.integer[Any]] | None = ...,
-    dtype: None = ...,
-    casting: lnpt.Casting = ...,
 ) -> lnpt.Array[Any, np.integer[Any]]: ...
 @overload
 def broadstack(
     *args: lnpt.AnyScalar | lnpt.AnyArray,
     axis: int = ...,
-    out: lnpt.Array[_T_shape1, _T_scalar],
-    dtype: None = ...,
-    casting: lnpt.Casting = ...,
 ) -> lnpt.Array[_T_shape1, _T_scalar]: ...
-@overload
-def broadstack(
-    *args: lnpt.AnyScalar | lnpt.AnyArray,
-    axis: int = ...,
-    out: lnpt.Array[lnpt.AtLeast1D, _T_scalar] | None = ...,
-    dtype: np.dtype[_T_scalar] | type[_T_scalar],
-    casting: lnpt.Casting = ...,
-) -> lnpt.Array[Any, _T_scalar]: ...
-@overload
-def broadstack(
-    *args: lnpt.AnyScalar | lnpt.AnyArray,
-    axis: int = ...,
-    out: None = ...,
-    dtype: None = ...,
-    casting: lnpt.Casting = ...,
-) -> lnpt.Array[Any, _T_scalar]: ...
 def broadstack(
     *args: lnpt.AnyScalar | lnpt.AnyArray,
     axis: int = 0,
-    out: lnpt.Array[lnpt.AtLeast1D, Any] | None = None,
-    dtype: np.dtype[Any] | type[np.generic] | None = None,
-    casting: lnpt.Casting = 'same_kind',
 ) -> lnpt.Array[Any, Any]:
     """Broadcasts two array-likes and stacks them."""
-    kwds: dict[str, Any]
-    if lnpt.NP_VERSION < (1, 24):
-        kwds = {}
-    else:
-        kwds = {'dtype': dtype, 'casting': casting}
-
     return np.stack(
         np.broadcast_arrays(*(np.asarray(arg) for arg in args)),
         axis=axis,
-        out=out,
-        **kwds,
     )
 
 
@@ -189,11 +156,11 @@ def _apply_aweights(
 
 
 def _sort_like(
-    a: lnpt.Array[_T_shape1, _T_real],
-    i: lnpt.Array[tuple[int], lnpt.UInt | lnpt.Int],
+    a: lnpt.Array[_T_shape1, _T_number],
+    i: lnpt.Array[tuple[int], np.integer[Any]],
     /,
     axis: int | None,
-) -> lnpt.Array[_T_shape1, _T_real]:
+) -> lnpt.Array[_T_shape1, _T_number]:
     return (
         np.take(a, i, axis=None if a.ndim == i.ndim else axis)
         if min(a.ndim, i.ndim) <= 1
@@ -206,7 +173,7 @@ def ordered(  # noqa: C901
     y: lnpt.AnyArrayFloat | None = None,
     /,
     axis: int | None = None,
-    dtype: lnpt.AnyFloatDType | None = None,
+    dtype: _DType[np.floating[Any]] | None = None,
     *,
     fweights: AnyFWeights | None = None,
     aweights: AnyAWeights | None = None,
@@ -287,7 +254,7 @@ def clean_orders(
     /,
     name: str = 'r',
     rmin: int = 0,
-    dtype: np.dtype[_T_int] | type[_T_int] = np.intp,
+    dtype: _DType[_T_int] = np.intp,
 ) -> lnpt.Array[Any, _T_int]:
     """Validates and cleans an array-like of (L-)moment orders."""
     _r = np.asarray_chkfinite(r, dtype=dtype)
@@ -344,7 +311,10 @@ def clean_trim(trim: AnyTrim, /) -> tuple[int, int] | tuple[float, float]:
 
 
 def moments_to_ratio(
-    rs: lnpt.Array[tuple[Literal[2], Unpack[tuple[int, ...]]], lnpt.Int],
+    rs: lnpt.Array[
+        tuple[Literal[2], Unpack[tuple[int, ...]]],
+        np.integer[Any],
+    ],
     l_rs: lnpt.Array[lnpt.AtLeast1D, _T_float],
     /,
 ) -> _T_float | npt.NDArray[_T_float]:
@@ -371,7 +341,7 @@ def moments_to_ratio(
 
 
 def moments_to_stats_cov(
-    t_0r: lnpt.Array[tuple[int], _T_float | lnpt.Float],
+    t_0r: lnpt.Array[tuple[int], np.floating[Any]],
     ll_kr: lnpt.Array[_T_shape2, _T_float],
 ) -> lnpt.Array[_T_shape2, _T_float]:
     # t_0r are L-ratio's for r = 0, 1, ..., R (t_0r[0] == 1 / L-scale)
@@ -403,7 +373,7 @@ def moments_to_stats_cov(
 def l_stats_orders(
     num: _T_size,
     /,
-    dtype: np.dtype[_T_int] | type[_T_int] = np.intp,
+    dtype: _DType[_T_int] = np.intp,
 ) -> tuple[
     lnpt.Array[tuple[_T_size], _T_int],
     lnpt.Array[tuple[_T_size], _T_int],
