@@ -17,24 +17,27 @@ from .compat import Unpack
 
 
 __all__ = (
-    'NP_V2',
+    'NP_VERSION', 'NP_V2',
     'Bool', 'Int', 'Float', 'Natural', 'Integer', 'Real',
     'AtLeast0D', 'AtLeast1D', 'AtLeast2D', 'AtLeast3D',
     'Array', 'CanArray',
-    'AnyScalarBool', 'AnyScalarInt', 'AnyScalarFloat',
-    'AnyVectorBool', 'AnyVectorFloat', 'AnyVectorFloat',
-    'AnyMatrixBool', 'AnyMatrixInt', 'AnyMatrixFloat',
-    'AnyTensorBool', 'AnyTensorInt', 'AnyTensorFloat',
-    'AnyArrayBool', 'AnyArrayInt', 'AnyArrayFloat',
+    'AnyScalar', 'AnyScalarBool', 'AnyScalarInt', 'AnyScalarFloat',
+    'AnyVector', 'AnyVectorBool', 'AnyVectorFloat', 'AnyVectorFloat',
+    'AnyMatrix', 'AnyMatrixBool', 'AnyMatrixInt', 'AnyMatrixFloat',
+    'AnyTensor', 'AnyTensorBool', 'AnyTensorInt', 'AnyTensorFloat',
+    'AnyArray', 'AnyArrayBool', 'AnyArrayInt', 'AnyArrayFloat',
     'AnyObjectDType', 'AnyBoolDType',
     'AnyUIntDType', 'AnyIntDType', 'AnyFloatDType',
     'SortKind',
     'Order', 'OrderReshape', 'OrderCopy',
     'RandomState',
+    'Casting',
 )
 
-
-NP_V2: Final[bool] = np.__version__.startswith('2.')
+_NP_MAJOR: Final[int] = int(np.__version__.split('.', 1)[0])
+_NP_MINOR: Final[int] = int(np.__version__.split('.', 2)[1])
+NP_VERSION: Final[tuple[int, int]] = _NP_MAJOR, _NP_MINOR
+NP_V2: Final[bool] = _NP_MAJOR == 2
 
 
 # Some handy scalar type aliases
@@ -62,8 +65,8 @@ AtLeast3D: TypeAlias = tuple[int, Unpack[AtLeast2D]]
 
 # Array and array-likes, with generic shape
 
-_DN = TypeVar('_DN', bound=tuple[int, ...])
-_DN_co = TypeVar('_DN_co', bound=tuple[int, ...], covariant=True)
+_DN = TypeVar('_DN', bound=tuple[()] | tuple[int, ...])
+_DN_co = TypeVar('_DN_co', bound=tuple[()] | tuple[int, ...], covariant=True)
 _ST = TypeVar('_ST', bound=np.generic)
 _ST_co = TypeVar('_ST_co', bound=np.generic, covariant=True)
 
@@ -108,9 +111,8 @@ class CanArray(Protocol[_DN_co, _ST_co]):  # pyright: ignore[reportInvalidTypeVa
     def __array__(self) -> Array[_DN_co, _ST_co]: ...
 
 
-# `str` and `bytes` tend to complicate things because they're sequences
-# themselves, and aren't even relevant for Lmo, so they're omitted here.
-_ST_py = TypeVar('_ST_py', bool, int, float, complex)
+_PyScalar: TypeAlias = bool | int | float | complex | str | bytes
+_ST_py = TypeVar('_ST_py', bound=_PyScalar)
 
 _T = TypeVar('_T')
 _PyVector: TypeAlias = CanSequence[int, _T]
@@ -128,6 +130,16 @@ _AnyMatrix: TypeAlias = (
 
 # these will result in {0,1,2,N}-D arrays when passed to `np.array` (no need
 # for a broken "nested sequence" type)
+
+AnyScalar: TypeAlias = _AnyScalar[np.generic, _PyScalar]
+AnyVector: TypeAlias = _AnyVector[np.generic, _PyScalar]
+AnyMatrix: TypeAlias = _AnyMatrix[np.generic, _PyScalar]
+AnyTensor: TypeAlias = (
+    CanArray[AtLeast3D, np.generic]
+    | _PyVector[AnyMatrix]
+    | _PyVector['AnyTensor']
+)
+AnyArray: TypeAlias = AnyScalar | AnyVector | AnyMatrix | AnyTensor
 
 AnyScalarBool: TypeAlias = _AnyScalar[Bool, bool]
 AnyVectorBool: TypeAlias = _AnyVector[Bool, bool]
@@ -245,3 +257,6 @@ Seed: TypeAlias = (
 Any acceptable "seed" type that can be passed to
 [`numpy.random.default_rng`][numpy.random.default_rng].
 """
+
+Casting: TypeAlias = Literal['no', 'equiv', 'safe', 'same_kind', 'unsafe']
+"""See [`numpy.can_cast`][numpy.can_cast]."""
