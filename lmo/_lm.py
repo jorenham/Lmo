@@ -541,7 +541,6 @@ def l_ratio(
     See Also:
         - [`lmo.l_moment`][lmo.l_moment]
     """
-    # rs = np.stack(np.broadcast_arrays(np.asarray(r), np.asarray(s)))
     rs = np.stack(np.broadcast_arrays(np.asarray(r), np.asarray(s)))
     l_rs = l_moment(a, rs, trim=trim, axis=axis, dtype=dtype, **kwds)
     return moments_to_ratio(rs, l_rs)

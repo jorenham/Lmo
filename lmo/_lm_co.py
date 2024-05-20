@@ -1,3 +1,23 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, Literal, TypeAlias, cast
+
+import numpy as np
+
+from ._lm import l_weights
+from ._utils import clean_order, clean_orders, ordered
+from .typing import AnyOrder, AnyOrderND
+from .typing.compat import TypeVar, Unpack
+
+
+if TYPE_CHECKING:
+    from .typing import (
+        AnyTrim,
+        LComomentOptions,
+        np as lnpt,
+    )
+
+
 __all__ = (
     'l_comoment',
     'l_coratio',
@@ -9,55 +29,48 @@ __all__ = (
     'l_cokurtosis',
 )
 
-import sys
-from typing import Any, TypeVar, cast
 
-import numpy as np
-from numpy import typing as npt
+_T_scalar = TypeVar('_T_scalar', bound=np.generic)
+_T_float = TypeVar('_T_float', bound=np.floating[Any], default=np.float64)
+_DType: TypeAlias = np.dtype[_T_scalar] | type[_T_scalar]
 
-from ._lm import l_weights
-from ._utils import broadstack, clean_order, ordered
-from .typing import AnyInt, AnyTrim, IntVector, LComomentOptions, SortKind
-
-
-if sys.version_info < (3, 11):
-    from typing_extensions import Unpack
-else:
-    from typing import Unpack
-
-T = TypeVar('T', bound=np.floating[Any])
+_N0 = TypeVar('_N0', bound=int)
+_N1 = TypeVar('_N1', bound=int)
+_N2 = TypeVar('_N2', bound=int)
+_Array2D: TypeAlias = np.ndarray[tuple[_N0, _N1], np.dtype[_T_scalar]]
+_Array3D: TypeAlias = np.ndarray[tuple[_N0, _N1, _N2], np.dtype[_T_scalar]]
 
 
 def l_comoment(
-    a: npt.ArrayLike,
-    r: AnyInt | IntVector,
+    a: lnpt.AnyVectorFloat | lnpt.AnyMatrixFloat,
+    r: AnyOrder | AnyOrderND,
     /,
-    trim: AnyTrim = (0, 0),
+    trim: AnyTrim = 0,
     *,
-    dtype: np.dtype[T] | type[T] = np.float64,
+    dtype: _DType[_T_float] = np.float64,
     rowvar: bool = True,
-    sort: SortKind | None = None,
+    sort: lnpt.SortKind | None = None,
     cache: bool = False,
-) -> npt.NDArray[T]:
+) -> lnpt.Array[Any, _T_float]:
     r"""
     Multivariate extension of [`lmo.l_moment`][lmo.l_moment].
 
     Estimates the L-comoment matrix:
 
     $$
-    \Lambda_{r}^{(t_1, t_2)} =
+    \Lambda_{r}^{(s, t)} =
         \left[
-            \lambda_{r [ij]}^{(t_1, t_2)}
+            \lambda_{r [ij]}^{(s, t)}
         \right]_{m \times m}
     $$
 
     Whereas the L-moments are calculated using the order statistics of the
     observations, i.e. by sorting, the L-comoment sorts $x_i$ using the
     order of $x_j$. This means that in general,
-    $\lambda_{r [ij]}^{(t_1, t_2)} \neq \lambda_{r [ji]}^{(t_1, t_2)}$, i.e.
-    $\Lambda_{r}^{(t_1, t_2)}$ is not symmetric.
+    $\lambda_{r [ij]}^{(s, t)} \neq \lambda_{r [ji]}^{(s, t)}$, i.e.
+    $\Lambda_{r}^{(s, t)}$ is not symmetric.
 
-    The $r$-th L-comoment $\lambda_{r [ij]}^{(t_1, t_2)}$ reduces to the
+    The $r$-th L-comoment $\lambda_{r [ij]}^{(s, t)}$ reduces to the
     L-moment if $i=j$, and can therefore be seen as a generalization of the
     (univariate) L-moments. Similar to how the diagonal of a covariance matrix
     contains the variances, the diagonal of the L-comoment matrix contains the
@@ -72,13 +85,11 @@ def l_comoment(
             observations.  Each row of `a` represents a variable, and each
             column a single observation of all those variables. Also see
             `rowvar` below.  If `a` is not an array, a conversion is attempted.
-
         r:
             The L-moment order(s), non-negative integer or array.
-
         trim:
-            Left- and right-trim orders $(t_1, t_2)$, non-negative ints or
-            floats that are bound by $t_1 + t_2 < n - r$.
+            Left- and right-trim orders $(s, t)$, non-negative ints or
+            floats that are bound by $s + t < n - r$.
 
             Some special cases include:
 
@@ -97,20 +108,17 @@ def l_comoment(
                 Generally more robust than L-moments.
                 Useful for fitting heavy-tailed distributions, such as the
                 Cauchy distribution.
-
         rowvar:
             If `rowvar` is True (default), then each row (axis 0) represents a
             variable, with observations in the columns (axis 1).
             Otherwise, the relationship is transposed: each column represents
             a variable, while the rows contain observations.
-
         dtype:
             Floating type to use in computing the L-moments. Default is
             [`numpy.float64`][numpy.float64].
 
         sort ('quick' | 'stable' | 'heap'):
             Sorting algorithm, see [`numpy.sort`][numpy.sort].
-
         cache:
             Set to `True` to speed up future L-moment calculations that have
             the same number of observations in `a`, equal `trim`, and equal or
@@ -136,63 +144,76 @@ def l_comoment(
         array([1.2766793 , 1.05990727])
 
     References:
-        * [R. Serfling & P. Xiao (2007) - A Contribution to Multivariate
+        - [R. Serfling & P. Xiao (2007) - A Contribution to Multivariate
           L-Moments: L-Comoment Matrices](https://doi.org/10.1016/j.jmva.2007.01.008)
     """
-
-    def _clean_array(arr: npt.ArrayLike) -> npt.NDArray[T]:
-        out = np.asanyarray(arr, dtype=dtype)
-        return out if rowvar else out.T
-
-    x = np.atleast_2d(_clean_array(a))
+    x = np.array(
+        a,
+        order='C' if rowvar else 'F',
+        subok=True,
+        ndmin=2,
+    )
     if x.ndim != 2:
-        msg = f'sample array must be 2-D, got {x.ndim}'
+        msg = f'sample array must be 2-D, got shape {x.shape}'
         raise ValueError(msg)
-
-    _r = np.asarray(r)
-    r_max = clean_order(cast(int, np.max(_r)))
+    if not rowvar:
+        x = x.T
     m, n = x.shape
+
+    if np.isscalar(r):
+        _r = np.array(clean_order(cast(AnyOrder, r)))
+    else:
+        _r = clean_orders(cast(AnyOrderND, r))
+
+    r_min = int(np.min(_r))
+    r_max = int(np.max(_r))
+
+    if r_min == r_max == 0 and _r.ndim == 0:
+        return np.identity(m, dtype=dtype)
 
     if not m:
         return np.empty((*np.shape(_r), 0, 0), dtype=dtype)
 
-    # projection matrix of shape (r, n)
-    p_r = l_weights(r_max, n, trim, cache=cache)
+    # projection/hat matrix of shape (r_max - r_min, n)
+    p_k = l_weights(r_max, n, trim=trim, dtype=dtype, cache=cache)
+    if r_min > 1:
+        p_k = p_k[r_min - 1:]
 
-    # L-comoment matrices for r = 0, ..., r_max
-    l_ij = np.empty((r_max + 1, m, m), dtype=dtype)
-
-    # the zeroth L-comoment is the delta function, so the L-comoment
-    # matrix is the identity matrix
-    l_ij[0] = np.eye(m, dtype=dtype)
+    # L-comoment matrices for k = r_min, ..., r_max
+    l_kij = np.empty((p_k.shape[0], m, m), dtype=dtype, order='F')
 
     for j in range(m):
-        # concomitants of x[i] w.r.t. x[j] for all i
-        x_k_ij = ordered(x, x[j], axis=-1, dtype=dtype, sort=sort)
+        # *concomitants* of x[i] w.r.t. x[j] for all i
+        x_kij = ordered(x, x[j], axis=-1, sort=sort)
+        l_kij[:, :, j] = np.inner(p_k, x_kij)
 
-        l_ij[1:, :, j] = np.inner(p_r, x_k_ij)
+    if r_min == 0:
+        # the zeroth L-comoment is the delta function, so the L-comoment
+        # matrix is the identity matrix
+        l_0ij = np.identity(m, dtype=dtype)[None, :]
+        return np.concat((l_0ij, l_kij)).take(_r, 0)
 
-    return l_ij.take(_r, 0)
+    return l_kij.take(_r - r_min, 0)
 
 
 def l_coratio(
-    a: npt.ArrayLike,
-    r: AnyInt | IntVector,
-    s: AnyInt | IntVector,
+    a: lnpt.AnyVectorFloat | lnpt.AnyMatrixFloat,
+    r: AnyOrder | AnyOrderND,
+    s: AnyOrder | AnyOrderND,
     /,
-    trim: AnyTrim = (0, 0),
+    trim: AnyTrim = 0,
     *,
-    dtype: np.dtype[T] | type[T] = np.float64,
-    **kwargs: Unpack[LComomentOptions],
-) -> npt.NDArray[T]:
+    dtype: _DType[_T_float] = np.float64,
+    **kwds: Unpack[LComomentOptions],
+) -> lnpt.Array[Any, _T_float]:
     r"""
     Estimate the generalized matrix of L-comoment ratio's.
 
     $$
-    \tilde \Lambda_{rs}^{(t_1, t_2)} =
+    \tilde \Lambda_{rk}^{(s, t)} =
         \left[
-            \left. \lambda_{r [ij]}^{(t_1, t_2)} \right/
-            \lambda_{s [ii]}^{(t_1, t_2)}
+            \left. \lambda_{r [ij]}^{(s, t)} \right/
+            \lambda_{k [ii]}^{(s, t)}
         \right]_{m \times m}
     $$
 
@@ -200,18 +221,19 @@ def l_coratio(
         - [`lmo.l_comoment`][lmo.l_comoment]
         - [`lmo.l_ratio`][lmo.l_ratio]
     """
-    l_r, l_s = l_comoment(a, broadstack(r, s), trim, dtype=dtype, **kwargs)
+    rs = np.stack(np.broadcast_arrays(np.asarray(r), np.asarray(s)))
+    l_r, l_s = l_comoment(a, rs, trim=trim, dtype=dtype, **kwds)
     return l_r / np.expand_dims(np.diagonal(l_s, axis1=-2, axis2=-1), -1)
 
 
 def l_costats(
-    a: npt.ArrayLike,
+    a: lnpt.AnyVectorFloat | lnpt.AnyMatrixFloat,
     /,
-    trim: AnyTrim = (0, 0),
+    trim: AnyTrim = 0,
     *,
-    dtype: np.dtype[T] | type[T] = np.float64,
-    **kwargs: Unpack[LComomentOptions],
-) -> npt.NDArray[T]:
+    dtype: _DType[_T_float] = np.float64,
+    **kwds: Unpack[LComomentOptions],
+) -> _Array3D[Literal[4], Any, Any, _T_float]:
     """
     Calculates the L-*co*scale, L-corr(elation), L-*co*skew(ness) and
     L-*co*kurtosis.
@@ -223,19 +245,19 @@ def l_costats(
         - [`lmo.l_coratio`][lmo.l_coratio]
     """
     r, s = [2, 2, 3, 4], [0, 2, 2, 2]
-    return l_coratio(a, r, s, trim=trim, dtype=dtype, **kwargs)
+    return l_coratio(a, r, s, trim=trim, dtype=dtype, **kwds)
 
 
 def l_coloc(
-    a: npt.ArrayLike,
+    a: lnpt.AnyVectorFloat | lnpt.AnyMatrixFloat,
     /,
-    trim: AnyTrim = (0, 0),
+    trim: AnyTrim = 0,
     *,
-    dtype: np.dtype[T] | type[T] = np.float64,
-    **kwargs: Unpack[LComomentOptions],
-) -> npt.NDArray[T]:
+    dtype: _DType[_T_float] = np.float64,
+    **kwds: Unpack[LComomentOptions],
+) -> _Array2D[Any, Any, _T_float]:
     r"""
-    L-colocation matrix of 1st L-comoment estimates, $\Lambda^{(t_1, t_2)}_1$.
+    L-colocation matrix of 1st L-comoment estimates, $\Lambda^{(s, t)}_1$.
 
     Alias for [`lmo.l_comoment(a, 1, *, **)`][lmo.l_comoment].
 
@@ -272,19 +294,19 @@ def l_coloc(
         - [`lmo.l_loc`][lmo.l_loc]
         - [`numpy.mean`][numpy.mean]
     """
-    return l_comoment(a, 1, trim, dtype=dtype, **kwargs)
+    return l_comoment(a, 1, trim=trim, dtype=dtype, **kwds)
 
 
 def l_coscale(
-    a: npt.ArrayLike,
+    a: lnpt.AnyVectorFloat | lnpt.AnyMatrixFloat,
     /,
-    trim: AnyTrim = (0, 0),
+    trim: AnyTrim = 0,
     *,
-    dtype: np.dtype[T] | type[T] = np.float64,
-    **kwargs: Unpack[LComomentOptions],
-) -> npt.NDArray[T]:
+    dtype: _DType[_T_float] = np.float64,
+    **kwds: Unpack[LComomentOptions],
+) -> _Array2D[Any, Any, _T_float]:
     r"""
-    L-coscale matrix of 2nd L-comoment estimates, $\Lambda^{(t_1, t_2)}_2$.
+    L-coscale matrix of 2nd L-comoment estimates, $\Lambda^{(s, t)}_2$.
 
     Alias for [`lmo.l_comoment(a, 2, *, **)`][lmo.l_comoment].
 
@@ -308,19 +330,19 @@ def l_coscale(
         - [`lmo.l_scale`][lmo.l_scale]
         - [`numpy.cov`][numpy.cov]
     """
-    return l_comoment(a, 2, trim, dtype=dtype, **kwargs)
+    return l_comoment(a, 2, trim=trim, dtype=dtype, **kwds)
 
 
 def l_corr(
-    a: npt.ArrayLike,
+    a: lnpt.AnyVectorFloat | lnpt.AnyMatrixFloat,
     /,
-    trim: AnyTrim = (0, 0),
+    trim: AnyTrim = 0,
     *,
-    dtype: np.dtype[T] | type[T] = np.float64,
-    **kwargs: Unpack[LComomentOptions],
-) -> npt.NDArray[T]:
+    dtype: _DType[_T_float] = np.float64,
+    **kwds: Unpack[LComomentOptions],
+) -> _Array2D[Any, Any, _T_float]:
     r"""
-    Sample L-correlation coefficient matrix $\tilde\Lambda^{(t_1, t_2)}_2$;
+    Sample L-correlation coefficient matrix $\tilde\Lambda^{(s, t)}_2$;
     the ratio of the L-coscale matrix over the L-scale **column**-vectors.
 
     Alias for [`lmo.l_coratio(a, 2, 2, *, **)`][lmo.l_coratio].
@@ -354,19 +376,19 @@ def l_corr(
         - [`lmo.l_coratio`][lmo.l_coratio]
         - [`numpy.corrcoef`][numpy.corrcoef]
     """
-    return l_coratio(a, 2, 2, trim, dtype=dtype, **kwargs)
+    return l_coratio(a, 2, 2, trim=trim, dtype=dtype, **kwds)
 
 
 def l_coskew(
-    a: npt.ArrayLike,
+    a: lnpt.AnyVectorFloat | lnpt.AnyMatrixFloat,
     /,
-    trim: AnyTrim = (0, 0),
+    trim: AnyTrim = 0,
     *,
-    dtype: np.dtype[T] | type[T] = np.float64,
-    **kwargs: Unpack[LComomentOptions],
-) -> npt.NDArray[T]:
+    dtype: _DType[_T_float] = np.float64,
+    **kwds: Unpack[LComomentOptions],
+) -> _Array2D[Any, Any, _T_float]:
     r"""
-    Sample L-coskewness coefficient matrix $\tilde\Lambda^{(t_1, t_2)}_3$.
+    Sample L-coskewness coefficient matrix $\tilde\Lambda^{(s, t)}_3$.
 
     Alias for [`lmo.l_coratio(a, 3, 2, *, **)`][lmo.l_coratio].
 
@@ -374,19 +396,19 @@ def l_coskew(
         - [`lmo.l_coratio`][lmo.l_coratio]
         - [`lmo.l_skew`][lmo.l_skew]
     """
-    return l_coratio(a, 3, 2, trim, dtype=dtype, **kwargs)
+    return l_coratio(a, 3, 2, trim=trim, dtype=dtype, **kwds)
 
 
 def l_cokurtosis(
-    a: npt.ArrayLike,
+    a: lnpt.AnyVectorFloat | lnpt.AnyMatrixFloat,
     /,
-    trim: AnyTrim = (0, 0),
+    trim: AnyTrim = 0,
     *,
-    dtype: np.dtype[T] | type[T] = np.float64,
-    **kwargs: Unpack[LComomentOptions],
-) -> npt.NDArray[T]:
+    dtype: _DType[_T_float] = np.float64,
+    **kwds: Unpack[LComomentOptions],
+) -> _Array2D[Any, Any, _T_float]:
     r"""
-    Sample L-cokurtosis coefficient matrix $\tilde\Lambda^{(t_1, t_2)}_4$.
+    Sample L-cokurtosis coefficient matrix $\tilde\Lambda^{(s, t)}_4$.
 
     Alias for [`lmo.l_coratio(a, 4, 2, *, **)`][lmo.l_coratio].
 
@@ -394,4 +416,4 @@ def l_cokurtosis(
         - [`lmo.l_coratio`][lmo.l_coratio]
         - [`lmo.l_kurtosis`][lmo.l_kurtosis]
     """
-    return l_coratio(a, 4, 2, trim, dtype=dtype, **kwargs)
+    return l_coratio(a, 4, 2, trim=trim, dtype=dtype, **kwds)
