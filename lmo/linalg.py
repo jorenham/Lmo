@@ -151,8 +151,6 @@ def ir_pascal(k: _K, /, dtype: _DType[_T]) -> _Square[_K, _T]: ...
 def ir_pascal(
     k: _K, /, dtype: _DType[np.float64] = ...,
 ) -> _Square[_K, np.float64]: ...
-
-
 def ir_pascal(
     k: _K,
     /,
@@ -225,8 +223,6 @@ def sh_legendre(k: _K, /, dtype: _DType[_T]) -> _Square[_K, _T]: ...
 def sh_legendre(
     k: _K, /, dtype: _DType[np.int64] = ...,
 ) -> _Square[_K, np.int64]: ...
-
-
 def sh_legendre(
     k: _K,
     /,
@@ -295,8 +291,6 @@ def sh_jacobi(
 def sh_jacobi(
     k: _K, a: float, b: float, /, dtype: None = ...,
 ) -> _Square[_K, np.int64]: ...
-
-
 def sh_jacobi(
     k: _K,
     a: float,
@@ -419,8 +413,6 @@ def trim_matrix(
 def trim_matrix(
     r: _R, /, trim: tuple[int, int], dtype: _DType[np.float64] = ...,
 ) -> lnpt.Array[tuple[_R, int], np.float64]: ...
-
-
 def trim_matrix(
     r: _R,
     /,

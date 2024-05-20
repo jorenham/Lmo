@@ -26,16 +26,31 @@ __all__ = (
 
 _T_float = TypeVar('_T_float', bound=np.floating[Any])
 _T_order = TypeVar('_T_order', bound=int)
+_T_size = TypeVar('_T_size', bound=int)
 
 _DType: TypeAlias = np.dtype[_T_float] | type[_T_float]
 
 
+@overload
 def weights(
-    r: int,
-    n: int,
+    r: _T_order,
+    n: _T_size,
+    /,
+    dtype: _DType[_T_float],
+) -> lnpt.Array[tuple[_T_order, _T_size], _T_float]: ...
+@overload
+def weights(
+    r: _T_order,
+    n: _T_size,
+    /,
+    dtype: _DType[np.float64] = ...,
+) -> lnpt.Array[tuple[_T_order, _T_size], np.float64]: ...
+def weights(
+    r: _T_order,
+    n: _T_size,
     /,
     dtype: _DType[_T_float] = np.float64,
-) -> npt.NDArray[_T_float]:
+) -> lnpt.Array[tuple[_T_order, _T_size], np.floating[Any]]:
     r"""
     Probability Weighted moment (PWM) projection matrix $B$ of the
     unbiased estimator for $\beta_k = M_{1,k,0}$ for $k = 0, \dots, r - 1$.
@@ -116,8 +131,6 @@ def cov(
     dtype: _DType[_T_float],
     **kwargs: Any,
 ) -> lnpt.Array[tuple[_T_order, _T_order, int], _T_float]: ...
-
-
 def cov(
     a: lnpt.Array[lnpt.AtLeast1D, _T_float],
     r: _T_order,
