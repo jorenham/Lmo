@@ -37,7 +37,7 @@ Documentation = "https://jorenham.github.io/Lmo/"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.14"
-typing_extensions = {version = "^4.1", python = "<3.11"}
+typing_extensions = {version = "^4.5", python = "<3.13"}
 
 # https://scientific-python.org/specs/spec-0000/
 numpy = ">=1.23"

@@ -2,10 +2,12 @@
 import sys
 
 
-if sys.version_info < (3, 11):
+if sys.version_info < (3, 13):
     from typing_extensions import (
         LiteralString,
+        ParamSpec,
         Self,
+        TypeVar,
         TypeVarTuple,
         Unpack,
         assert_never,
@@ -14,7 +16,9 @@ if sys.version_info < (3, 11):
 else:
     from typing import (
         LiteralString,
+        ParamSpec,
         Self,
+        TypeVar,
         TypeVarTuple,
         Unpack,
         assert_never,
@@ -24,7 +28,9 @@ else:
 
 __all__ = (
     'LiteralString',
+    'ParamSpec',
     'Self',
+    'TypeVar',
     'TypeVarTuple',
     'Unpack',
     'assert_never',
