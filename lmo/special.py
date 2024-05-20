@@ -291,21 +291,18 @@ def norm_sh_jacobi(
 
 @overload
 def fourier_jacobi(
+    x: lnpt.AnyArrayFloat,
+    c: lnpt.AnyArrayFloat,
+    a: float,
+    b: float,
+) -> lnpt.Array[Any, np.float64]: ...
+@overload
+def fourier_jacobi(
     x: lnpt.AnyScalarFloat,
     c: lnpt.AnyArrayFloat,
     a: float,
     b: float,
 ) -> np.float64: ...
-
-@overload
-def fourier_jacobi(
-    x: lnpt.AnyArrayFloat,
-    c: lnpt.AnyArrayFloat,
-    a: float,
-    b: float,
-) -> lnpt.Array[lnpt.AtLeast1D, np.float64]: ...
-
-
 def fourier_jacobi(
     x: lnpt.AnyScalarFloat | lnpt.AnyArrayFloat,
     c: lnpt.AnyArrayFloat,
