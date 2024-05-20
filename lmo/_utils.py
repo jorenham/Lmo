@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from typing import TYPE_CHECKING, Any, Final, Literal, TypeVar
+from typing import TYPE_CHECKING, Any, Final, Literal, TypeVar, overload
 
 import numpy as np
 import numpy.typing as npt
@@ -42,9 +42,66 @@ _T_shape1 = TypeVar('_T_shape1', bound=lnpt.AtLeast1D)
 _T_shape2 = TypeVar('_T_shape2', bound=lnpt.AtLeast2D)
 
 
-def broadstack(r: AnyOrderND, s: AnyOrderND) -> npt.NDArray[lnpt.Int]:
+@overload
+def broadstack(
+    *args: _T_scalar | lnpt.CanArray[Any, _T_scalar],
+    axis: int = ...,
+    out: lnpt.Array[lnpt.AtLeast1D, _T_scalar] | None = ...,
+    dtype: None = ...,
+    casting: lnpt.Casting = ...,
+) -> lnpt.Array[Any, _T_scalar]: ...
+@overload
+def broadstack(
+    *args: lnpt.AnyScalarInt | lnpt.AnyArrayInt,
+    axis: int = ...,
+    out: lnpt.Array[lnpt.AtLeast1D, np.integer[Any]] | None = ...,
+    dtype: None = ...,
+    casting: lnpt.Casting = ...,
+) -> lnpt.Array[Any, np.integer[Any]]: ...
+@overload
+def broadstack(
+    *args: lnpt.AnyScalar | lnpt.AnyArray,
+    axis: int = ...,
+    out: lnpt.Array[_T_shape1, _T_scalar],
+    dtype: None = ...,
+    casting: lnpt.Casting = ...,
+) -> lnpt.Array[_T_shape1, _T_scalar]: ...
+@overload
+def broadstack(
+    *args: lnpt.AnyScalar | lnpt.AnyArray,
+    axis: int = ...,
+    out: lnpt.Array[lnpt.AtLeast1D, _T_scalar] | None = ...,
+    dtype: np.dtype[_T_scalar] | type[_T_scalar],
+    casting: lnpt.Casting = ...,
+) -> lnpt.Array[Any, _T_scalar]: ...
+@overload
+def broadstack(
+    *args: lnpt.AnyScalar | lnpt.AnyArray,
+    axis: int = ...,
+    out: None = ...,
+    dtype: None = ...,
+    casting: lnpt.Casting = ...,
+) -> lnpt.Array[Any, _T_scalar]: ...
+def broadstack(
+    *args: lnpt.AnyScalar | lnpt.AnyArray,
+    axis: int = 0,
+    out: lnpt.Array[lnpt.AtLeast1D, Any] | None = None,
+    dtype: np.dtype[Any] | type[np.generic] | None = None,
+    casting: lnpt.Casting = 'same_kind',
+) -> lnpt.Array[Any, Any]:
     """Broadcasts two array-likes and stacks them."""
-    return np.stack(np.broadcast_arrays(np.asarray(r), np.asarray(s)))
+    kwds: dict[str, Any]
+    if lnpt.NP_VERSION < (1, 24):
+        kwds = {}
+    else:
+        kwds = {'dtype': dtype, 'casting': casting}
+
+    return np.stack(
+        np.broadcast_arrays(*(np.asarray(arg) for arg in args)),
+        axis=axis,
+        out=out,
+        **kwds,
+    )
 
 
 def ensure_axis_at(
