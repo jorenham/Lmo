@@ -115,7 +115,7 @@ _PyScalar: TypeAlias = bool | int | float | complex | str | bytes
 _ST_py = TypeVar('_ST_py', bound=_PyScalar)
 
 _T = TypeVar('_T')
-_PyVector: TypeAlias = CanSequence[int, _T]
+_PyVector: TypeAlias = CanSequence[Any, _T]
 
 
 _AnyScalar: TypeAlias = _ST | _ST_py | CanArray[tuple[()], _ST]
