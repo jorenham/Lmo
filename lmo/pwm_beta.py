@@ -6,16 +6,18 @@ Primarily used as an intermediate step for L-moment estimation.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, TypeAlias, TypeVar, cast, overload
+from typing import TYPE_CHECKING, Any, TypeAlias, cast, overload
 
 import numpy as np
 import numpy.typing as npt
 
 from ._utils import ordered
+from .typing.compat import TypeVar
 
 
 if TYPE_CHECKING:
     from .typing import np as lnpt
+    from .typing.compat import Unpack
 
 
 __all__ = (
@@ -24,33 +26,19 @@ __all__ = (
 )
 
 
-_T_float = TypeVar('_T_float', bound=np.floating[Any])
-_T_order = TypeVar('_T_order', bound=int)
-_T_size = TypeVar('_T_size', bound=int)
+_F = TypeVar('_F', bound=np.floating[Any], default=np.float64)
+_R = TypeVar('_R', bound=int)
+_N = TypeVar('_N', bound=int)
 
-_DType: TypeAlias = np.dtype[_T_float] | type[_T_float]
+_DType: TypeAlias = np.dtype[_F] | type[_F]
 
 
-@overload
 def weights(
-    r: _T_order,
-    n: _T_size,
+    r: _R,
+    n: _N,
     /,
-    dtype: _DType[_T_float],
-) -> lnpt.Array[tuple[_T_order, _T_size], _T_float]: ...
-@overload
-def weights(
-    r: _T_order,
-    n: _T_size,
-    /,
-    dtype: _DType[np.float64] = ...,
-) -> lnpt.Array[tuple[_T_order, _T_size], np.float64]: ...
-def weights(
-    r: _T_order,
-    n: _T_size,
-    /,
-    dtype: _DType[_T_float] = np.float64,
-) -> lnpt.Array[tuple[_T_order, _T_size], np.floating[Any]]:
+    dtype: _DType[_F] = np.float64,
+) -> lnpt.Array[tuple[_R, _N], _F]:
     r"""
     Probability Weighted moment (PWM) projection matrix $B$ of the
     unbiased estimator for $\beta_k = M_{1,k,0}$ for $k = 0, \dots, r - 1$.
@@ -91,57 +79,36 @@ def weights(
         w_r[k, k:] = w_r[k - 1, k:] * i1[:-k] / (n - k)
 
     # the + 0. eliminates negative zeros
-    return cast(npt.NDArray[_T_float], w_r + 0.0)
+    return cast(npt.NDArray[_F], w_r + 0.0)
 
 
 @overload
 def cov(
-    a: lnpt.Array[lnpt.AtLeast1D, _T_float],
-    r: _T_order,
-    /,
-    axis: None = ...,
-    dtype: _DType[np.float64] = ...,
-    **kwargs: Any,
-) -> lnpt.Array[tuple[_T_order, _T_order], np.float64]: ...
-@overload
-def cov(
-    a: lnpt.Array[lnpt.AtLeast1D, _T_float],
-    r: _T_order,
-    /,
-    axis: int,
-    dtype: _DType[np.float64] = ...,
-    **kwargs: Any,
-) -> lnpt.Array[tuple[_T_order, _T_order, int], np.float64]: ...
-@overload
-def cov(
-    a: lnpt.Array[lnpt.AtLeast1D, _T_float],
-    r: _T_order,
+    a: lnpt.AnyArrayFloat,
+    r: _R,
     /,
     axis: None = ...,
     *,
-    dtype: _DType[_T_float],
-    **kwargs: Any,
-) -> lnpt.Array[tuple[_T_order, _T_order], _T_float]: ...
+    dtype: _DType[_F] = np.float64,
+    **kwds: Any,
+) -> lnpt.Array[tuple[_R, _R], _F]: ...
 @overload
 def cov(
-    a: lnpt.Array[lnpt.AtLeast1D, _T_float],
-    r: _T_order,
+    a: lnpt.AnyArrayFloat,
+    r: _R,
     /,
     axis: int,
-    dtype: _DType[_T_float],
-    **kwargs: Any,
-) -> lnpt.Array[tuple[_T_order, _T_order, int], _T_float]: ...
+    dtype: _DType[_F] = np.float64,
+    **kwds: Any,
+) -> lnpt.Array[tuple[_R, _R, Unpack[tuple[int, ...]]], _F]: ...
 def cov(
-    a: lnpt.Array[lnpt.AtLeast1D, _T_float],
-    r: _T_order,
+    a: lnpt.AnyArrayFloat,
+    r: int,
     /,
     axis: int | None = None,
-    dtype: _DType[_T_float] = np.float64,
-    **kwargs: Any,
-) -> (
-    lnpt.Array[tuple[_T_order, _T_order], lnpt.Float]
-    | lnpt.Array[tuple[_T_order, _T_order, int], lnpt.Float]
-):
+    dtype: _DType[_F] = np.float64,
+    **kwds: Any,
+) -> lnpt.Array[Any, _F]:
     r"""
     Distribution-free variance-covariance matrix of the probability weighted
     moment (PWM) point estimates $\beta_k = M_{1,k,0}$, with orders
@@ -164,7 +131,7 @@ def cov(
         - [E. Elmamir & A. Seheult (2004) - Exact variance structure of sample
             L-moments](https://doi.org/10.1016/S0378-3758(03)00213-1)
     """
-    x = ordered(a, axis=axis, dtype=dtype, **kwargs)
+    x = ordered(a, axis=axis, dtype=dtype, **kwds)
 
     # ensure the samples are "in front" (along axis=0)
     if axis and x.ndim > 1:
