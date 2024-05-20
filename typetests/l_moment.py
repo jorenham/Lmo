@@ -1,5 +1,5 @@
 # pyright: reportUnusedCallResult=false
-from typing import TypeAlias
+from typing import Any, TypeAlias
 
 import numpy as np
 import numpy.typing as npt
@@ -9,7 +9,7 @@ from lmo.typing import np as lnpt
 from lmo.typing.compat import assert_type
 
 
-_ArrayF8: TypeAlias = lnpt.Array[lnpt.AtLeast1D, np.float64]
+_ArrayF8: TypeAlias = lnpt.Array[Any, np.float64]
 
 X = [0.14543334, 2.17509751, 0.60844233, 1.47809552, -1.32510269, 1.0979731]
 XX = [X, X]
@@ -33,18 +33,18 @@ assert_type(lmo.l_moment(X, 2, trim=(.5, .5)), np.float64)
 assert_type(lmo.l_moment(X, 2, trim=(1, .5)), np.float64)
 assert_type(lmo.l_moment(X, 2, trim=(.5, 1)), np.float64)
 
-# axis
-assert_type(lmo.l_moment(XX, 2, axis=0), _ArrayF8)
-assert_type(lmo.l_moment(np.array(XX), 2, axis=0), _ArrayF8)
+# vectorized r
+assert_type(lmo.l_moment(X, [1, 2, 3, 4]), _ArrayF8)
+assert_type(lmo.l_moment(X, (1, 2, 3, 4)), _ArrayF8)
+assert_type(lmo.l_moment(X, np.arange(1, 5)), _ArrayF8)
 
 # sctype
 assert_type(lmo.l_moment(X, 2, dtype=np.float32), np.float32)
 assert_type(lmo.l_moment(X, 2, dtype=np.longdouble), np.longdouble)
 assert_type(lmo.l_moment(X, 2, dtype=np.dtype(np.float16)), np.float16)
+assert_type(lmo.l_moment(X, [1, 2, 3, 4], dtype=np.half), npt.NDArray[np.half])
 
-# vectorized r
-assert_type(lmo.l_moment(X, [2]), npt.NDArray[np.float64])
-assert_type(lmo.l_moment(X, (2,)), npt.NDArray[np.float64])
-assert_type(lmo.l_moment(X, [1, 2, 3, 4]), npt.NDArray[np.float64])
-assert_type(lmo.l_moment(X, (1, 2, 3, 4)), npt.NDArray[np.float64])
-assert_type(lmo.l_moment(X, np.arange(1, 5)), npt.NDArray[np.float64])
+# axis
+assert_type(lmo.l_moment(XX, 2, axis=0), _ArrayF8)
+assert_type(lmo.l_moment(np.array(XX), 2, axis=0), _ArrayF8)
+assert_type(lmo.l_moment(XX, 2, axis=0, dtype=np.half), npt.NDArray[np.half])
