@@ -12,6 +12,7 @@ X = [0.14543334, 2.17509751, 0.60844233, 1.47809552, -1.32510269, 1.0979731]
 assert_type(lmo.l_moment(X, 2), np.float64)
 assert_type(lmo.l_moment(np.asarray(X), 2), np.float64)
 assert_type(lmo.l_moment(np.asarray(X, dtype=np.float32), 2), np.float64)
+assert_type(lmo.l_moment(np.asarray(X, dtype=np.int32), 2), np.float64)
 assert_type(lmo.l_moment(X, np.intp(2)), np.float64)
 assert_type(lmo.l_moment(X, np.uint8(2)), np.float64)
 
