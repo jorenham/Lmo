@@ -1,5 +1,6 @@
 # ruff: noqa: D105
 """Numpy-related type aliases for internal use."""
+from collections.abc import Sequence
 from typing import (
     Any,
     Final,
@@ -11,7 +12,6 @@ from typing import (
 )
 
 import numpy as np
-from optype import CanSequence
 
 from .compat import Unpack
 
@@ -112,10 +112,11 @@ class CanArray(Protocol[_DN_co, _ST_co]):  # pyright: ignore[reportInvalidTypeVa
 
 
 _PyScalar: TypeAlias = bool | int | float | complex | str | bytes
+# _PyScalar: TypeAlias = bool | int | float | complex
 _ST_py = TypeVar('_ST_py', bound=_PyScalar)
 
 _T = TypeVar('_T')
-_PyVector: TypeAlias = CanSequence[Any, _T]
+_PyVector: TypeAlias = Sequence[_T]
 
 
 _AnyScalar: TypeAlias = _ST | _ST_py | CanArray[tuple[()], _ST]
