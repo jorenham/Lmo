@@ -41,7 +41,6 @@ Examples:
 
     ```
 """
-import datetime
 from collections.abc import Callable
 from typing import Any, Literal, Protocol, TypeAlias, cast, final
 
@@ -75,35 +74,32 @@ __all__ = (
     'install',
 )
 
-_AnyScalar: TypeAlias = (
-    str
-    | bytes
-    | bool
-    | int
-    | float
-    | complex
-    | datetime.date
-    | datetime.datetime
-    | datetime.time
-    | datetime.timedelta
-    | pd.CategoricalDtype
-    | pd.Period
-    | pd.Interval[Any]
-    | pd.tseries.offsets.BaseOffset
-)
 
-_T_scalar = TypeVar('_T_scalar', bound=_AnyScalar, default=Any)
-_Series: TypeAlias = 'pd.Series[_T_scalar]'
-_Index: TypeAlias = 'pd.Index[_T_scalar]'
-_AnyFloatND: TypeAlias = float | _Series[float] | pd.DataFrame
+_T = TypeVar('_T', bound=object)
 
 _Axis: TypeAlias = Literal[0, 'index', 1, 'columns']
+
+
+# `from __future__ import annotations` won't solve this;
+# see https://github.com/pandas-dev/pandas-stubs/discussions/308
+def __ensure_generic(tp: type[_T]):
+    if hasattr(tp, '__class_getitem__'):
+        return
+
+    def __class_getitem__(cls: _T, _: Any, /) -> _T:  # noqa: N807
+        return cls
+
+    tp.__class_getitem__ = classmethod(__class_getitem__)  # pyright: ignore[reportArgumentType,reportAttributeAccessIssue]
+
+
+__ensure_generic(pd.Series)
+__ensure_generic(pd.Index)
 
 
 def _setindex(
     df: pd.DataFrame,
     axis: _Axis,
-    index: _Index,
+    index: pd.Index[Any],
 ) -> None:
     if axis in {0, 'index'}:
         df.index = index
@@ -131,9 +127,9 @@ class Series(pd.Series):  # pyright: ignore[reportMissingTypeArgument]
     def __lmo_register__(  # noqa: D105
         cls,
         name: str,
-        method: Callable[..., _Series],
+        method: Callable[..., pd.Series[float]],
     ) -> None:
-        def fn(obj: _Series) -> Callable[..., float | _Series[float]]:
+        def fn(obj: pd.Series[Any]) -> Callable[..., float | pd.Series[float]]:
             return method.__get__(obj, Series)
 
         pd.api.extensions.register_series_accessor(name)(fn)
@@ -144,7 +140,7 @@ class Series(pd.Series):  # pyright: ignore[reportMissingTypeArgument]
         /,
         trim: AnyTrim = 0,
         **kwargs: Unpack[LMomentOptions],
-    ) -> float | _Series[float]:
+    ) -> float | pd.Series[float]:
         """
         See [`lmo.l_moment`][lmo.l_moment].
 
@@ -170,7 +166,7 @@ class Series(pd.Series):  # pyright: ignore[reportMissingTypeArgument]
         /,
         trim: AnyTrim = 0,
         **kwargs: Unpack[LMomentOptions],
-    ) -> float | _Series[float]:
+    ) -> float | pd.Series[float]:
         """
         See [`lmo.l_ratio`][lmo.l_ratio].
 
@@ -195,7 +191,7 @@ class Series(pd.Series):  # pyright: ignore[reportMissingTypeArgument]
         trim: AnyTrim = 0,
         num: int = 4,
         **kwargs: Unpack[LMomentOptions],
-    ) -> _Series[float]:
+    ) -> pd.Series[float]:
         """
         See [`lmo.l_stats`][lmo.l_stats].
 
@@ -290,9 +286,12 @@ class DataFrame(pd.DataFrame):
     def __lmo_register__(  # noqa: D105
         cls,
         name: str,
-        method: Callable[..., _AnyFloatND],
+        method: Callable[..., float | pd.Series[float] | pd.DataFrame],
     ) -> None:
-        def fn(obj: pd.DataFrame) -> Callable[..., _AnyFloatND]:
+        def fn(
+            obj: pd.DataFrame,
+            /,
+        ) -> Callable[..., float | pd.Series[float] | pd.DataFrame]:
             # return functools.partial(method, obj)
             return method.__get__(obj, cls)
 
@@ -305,7 +304,7 @@ class DataFrame(pd.DataFrame):
         trim: AnyTrim = 0,
         axis: _Axis = 0,
         **kwargs: Unpack[LMomentOptions],
-    ) -> _Series[float] | pd.DataFrame:
+    ) -> pd.Series[float] | pd.DataFrame:
         """
         See [`lmo.l_moment`][lmo.l_moment].
 
@@ -336,7 +335,7 @@ class DataFrame(pd.DataFrame):
         trim: AnyTrim = 0,
         axis: _Axis = 0,
         **kwargs: Unpack[LMomentOptions],
-    ) -> _Series[float] | pd.DataFrame:
+    ) -> pd.Series[float] | pd.DataFrame:
         """
         See [`lmo.l_ratio`][lmo.l_ratio].
 
@@ -413,7 +412,7 @@ class DataFrame(pd.DataFrame):
         trim: AnyTrim = 0,
         axis: _Axis = 0,
         **kwargs: Unpack[LMomentOptions],
-    ) -> 'pd.Series[float]':
+    ) -> pd.Series[float]:
         """
         Alias for
         [`l_moment(2, ...)`][lmo.contrib.pandas.DataFrame.l_moment].
@@ -431,7 +430,7 @@ class DataFrame(pd.DataFrame):
         trim: AnyTrim = 0,
         axis: _Axis = 0,
         **kwargs: Unpack[LMomentOptions],
-    ) -> 'pd.Series[float]':
+    ) -> pd.Series[float]:
         """
         Alias for
         [`l_ratio(2, 1, ...)`][lmo.contrib.pandas.DataFrame.l_ratio].
@@ -449,7 +448,7 @@ class DataFrame(pd.DataFrame):
         trim: AnyTrim = 0,
         axis: _Axis = 0,
         **kwargs: Unpack[LMomentOptions],
-    ) -> 'pd.Series[float]':
+    ) -> pd.Series[float]:
         """
         Alias for
         [`l_ratio(3, 2, ...)`][lmo.contrib.pandas.DataFrame.l_ratio].
@@ -467,7 +466,7 @@ class DataFrame(pd.DataFrame):
         trim: AnyTrim = 0,
         axis: _Axis = 0,
         **kwargs: Unpack[LMomentOptions],
-    ) -> 'pd.Series[float]':
+    ) -> pd.Series[float]:
         """
         Alias for
         [`l_ratio(4, 2, ...)`][lmo.contrib.pandas.DataFrame.l_ratio].
@@ -485,7 +484,7 @@ class DataFrame(pd.DataFrame):
         trim: AnyTrim = 0,
         axis: _Axis = 0,
         **kwargs: Unpack[LMomentOptions],
-    ) -> 'pd.Series[float]':
+    ) -> pd.Series[float]:
         """
         Alias for
         [`l_kurtosis`][lmo.contrib.pandas.DataFrame.l_kurtosis].
