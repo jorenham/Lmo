@@ -1,4 +1,47 @@
 """Hypothesis tests, estimator properties, and performance metrics."""
+from __future__ import annotations
+
+import math
+import warnings
+from collections.abc import Callable
+from math import lgamma
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Final,
+    NamedTuple,
+    TypeAlias,
+    TypeVar,
+    cast,
+    overload,
+)
+
+import numpy as np
+import numpy.typing as npt
+from scipy.integrate import quad  # pyright: ignore[reportUnknownVariableType]
+from scipy.optimize import (
+    OptimizeResult,
+    OptimizeWarning,
+    minimize,  # pyright: ignore[reportUnknownVariableType]
+)
+from scipy.special import chdtrc
+from scipy.stats.distributions import rv_continuous, rv_discrete, rv_frozen
+
+from . import constants
+from ._lm import l_ratio
+from ._poly import extrema_jacobi
+from ._utils import clean_orders, clean_trim
+from .special import fpow
+from .typing import AnyOrder, AnyOrderND
+
+
+if TYPE_CHECKING:
+    from .contrib.scipy_stats import l_rv_generic
+    from .typing import (
+        AnyTrim,
+        np as lnpt,
+    )
+
 
 __all__ = (
     'normaltest',
@@ -13,47 +56,14 @@ __all__ = (
     'shift_sensitivity',
 )
 
-import math
-import warnings
-from collections.abc import Callable
-from math import lgamma
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    NamedTuple,
-    TypeAlias,
-    TypeVar,
-    cast,
-    overload,
-)
 
-import numpy as np
-import numpy.typing as npt
-from scipy.integrate import quad  # pyright: ignore[reportUnknownVariableType]
-from scipy.optimize import (
-    OptimizeResult,
-    OptimizeWarning,
-    minimize,  # type: ignore
-)
-from scipy.special import chdtrc
-from scipy.stats.distributions import rv_continuous, rv_discrete, rv_frozen
+_T = TypeVar('_T')
 
-from ._lm import l_ratio
-from ._poly import extrema_jacobi
-from ._utils import clean_orders, clean_trim
-from .special import fpow
-from .typing import AnyInt, AnyTrim, IntVector
-
-
-if TYPE_CHECKING:
-    from .contrib.scipy_stats import l_rv_generic
-
-T = TypeVar('T', bound=np.floating[Any])
-
-AnyRV: TypeAlias = rv_continuous | rv_discrete
+_Tuple2: TypeAlias = tuple[_T, _T]
+_AnyRV: TypeAlias = rv_continuous | rv_discrete
 _ArrF8: TypeAlias = npt.NDArray[np.float64]
 
-_MIN_RHO = 1e-5
+_MIN_RHO: Final[float] = 1e-5
 
 
 class HypothesisTestResult(NamedTuple):
@@ -73,15 +83,15 @@ class HypothesisTestResult(NamedTuple):
     pvalue: float | _ArrF8
 
     @property
-    def is_valid(self) -> bool | npt.NDArray[np.bool_]:
+    def is_valid(self) -> np.bool_ | npt.NDArray[np.bool_]:
         """Check if the statistic is finite and not `nan`."""
         return np.isfinite(self.statistic)
 
     def is_significant(
         self,
-        level: float = 0.05,
+        level: float | np.floating[Any] = 0.05,
         /,
-    ) -> bool | npt.NDArray[np.bool_]:
+    ) -> np.bool_ | npt.NDArray[np.bool_]:
         """
         Whether or not the null hypothesis can be rejected, with a certain
         confidence level (5% by default).
@@ -89,11 +99,11 @@ class HypothesisTestResult(NamedTuple):
         if not (0 < level < 1):
             msg = 'significance level must lie between 0 and 1'
             raise ValueError(msg)
-        return self.pvalue < level
+        return self.pvalue < np.float64(level)
 
 
 def normaltest(
-    a: npt.ArrayLike,
+    a: lnpt.AnyArrayFloat,
     /,
     *,
     axis: int | None = None,
@@ -147,11 +157,11 @@ def normaltest(
     n = x.size if axis is None else x.shape[axis]
 
     # L-skew and L-kurtosis
-    t3, t4 = l_ratio(a, [3, 4], [2, 2], axis=axis)
+    t3, t4 = l_ratio(a, [3, 4], 2, axis=axis)
 
     # theoretical L-skew and L-kurtosis of the normal distribution (for all
     # loc/mu and scale/sigma)
-    tau3, tau4 = 0.0, 30 / np.pi * np.arctan(np.sqrt(2)) - 9
+    tau3, tau4 = .0, 60 * constants.theta_m_bar - 9
 
     z3 = (t3 - tau3) / np.sqrt(
         0.1866 / n + (np.sqrt(0.8000) / n) ** 2,
@@ -168,10 +178,10 @@ def normaltest(
     return HypothesisTestResult(k2, p_value)
 
 
-def _gof_stat_single(l_obs: _ArrF8, l_exp: _ArrF8, cov: _ArrF8) -> float:
+def _gof_stat_single(l_obs: _ArrF8, l_exp: _ArrF8, cov: _ArrF8) -> np.float64:
     err = l_obs - l_exp
     prec = np.linalg.inv(cov)  # precision matrix
-    return cast(float, err.T @ prec @ err)
+    return cast(np.float64, err.T @ prec @ err)
 
 
 _gof_stat = cast(
@@ -186,11 +196,11 @@ _gof_stat = cast(
 
 
 def l_moment_gof(
-    rv_or_cdf: AnyRV | Callable[[float], float],
+    rv_or_cdf: _AnyRV | Callable[[float], float],
     l_moments: _ArrF8,
     n_obs: int,
     /,
-    trim: AnyTrim = (0, 0),
+    trim: AnyTrim = 0,
     **kwargs: Any,
 ) -> HypothesisTestResult:
     r"""
@@ -282,11 +292,11 @@ def l_moment_gof(
 
 
 def l_stats_gof(
-    rv_or_cdf: AnyRV | Callable[[float], float],
+    rv_or_cdf: _AnyRV | Callable[[float], float],
     l_stats: _ArrF8,
     n_obs: int,
     /,
-    trim: AnyTrim = (0, 0),
+    trim: AnyTrim = 0,
     **kwargs: Any,
 ) -> HypothesisTestResult:
     """
@@ -315,7 +325,7 @@ def l_stats_gof(
     return HypothesisTestResult(stat, pval)
 
 
-def _lm2_bounds_single(r: int, trim: tuple[float, float]) -> float:
+def _lm2_bounds_single(r: int, trim: _Tuple2[float]) -> float:
     if r == 1:
         return float('inf')
 
@@ -343,7 +353,7 @@ def _lm2_bounds_single(r: int, trim: tuple[float, float]) -> float:
 
 
 _lm2_bounds = cast(
-    Callable[[IntVector, tuple[float, float]], _ArrF8],
+    Callable[[AnyOrderND, _Tuple2[float]], _ArrF8],
     np.vectorize(
         _lm2_bounds_single,
         otypes=[float],
@@ -355,25 +365,20 @@ _lm2_bounds = cast(
 
 @overload
 def l_moment_bounds(
-    r: IntVector,
-    /,
+    r: AnyOrderND, /,
     trim: AnyTrim = ...,
     scale: float = ...,
 ) -> _ArrF8: ...
-
 @overload
 def l_moment_bounds(
-    r: AnyInt,
-    /,
+    r: AnyOrder, /,
     trim: AnyTrim = ...,
     scale: float = ...,
 ) -> float: ...
-
-
 def l_moment_bounds(
-    r: AnyInt | IntVector,
+    r: AnyOrder | AnyOrderND,
     /,
-    trim: AnyTrim = (0, 0),
+    trim: AnyTrim = 0,
     scale: float = 1.0,
 ) -> float | _ArrF8:
     r"""
@@ -468,37 +473,34 @@ def l_moment_bounds(
         - [`lmo.l_moment`][lmo.l_moment]
 
     """
-    _r = clean_orders(r, rmin=1)
+    _r = clean_orders(np.asarray(r), rmin=1)
     _trim = clean_trim(trim)
     return scale * np.sqrt(_lm2_bounds(_r, _trim))[()]
 
 
 @overload
 def l_ratio_bounds(
-    r: IntVector,
+    r: AnyOrderND,
     /,
     trim: AnyTrim = ...,
     *,
     legacy: bool = ...,
-) -> tuple[_ArrF8, _ArrF8]: ...
-
+) -> _Tuple2[_ArrF8]: ...
 @overload
 def l_ratio_bounds(
-    r: AnyInt,
+    r: AnyOrder,
     /,
     trim: AnyTrim = ...,
     *,
     legacy: bool = ...,
-) -> tuple[float, float]: ...
-
-
+) -> _Tuple2[float]: ...
 def l_ratio_bounds(
-    r: IntVector | AnyInt,
+    r: AnyOrder | AnyOrderND,
     /,
-    trim: AnyTrim = (0, 0),
+    trim: AnyTrim = 0,
     *,
     legacy: bool = False,
-) -> tuple[float | _ArrF8, float | _ArrF8]:
+) -> _Tuple2[float | _ArrF8]:
     r"""
     Unlike the standardized product-moments, the L-moment ratio's with
     \( r \ge 2 \) are bounded above and below.
@@ -594,13 +596,13 @@ def l_ratio_bounds(
         L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
 
     """
-    _r = clean_orders(r)
+    _r = clean_orders(np.asarray(r))
     s, t = clean_trim(trim)
 
     t_min = np.empty(_r.shape)
     t_max = np.empty(_r.shape)
 
-    _cache: dict[int, tuple[float, float]] = {}
+    _cache: dict[int, _Tuple2[float]] = {}
     for i, ri in np.ndenumerate(_r):
         _ri = cast(int, ri)
         if _ri in _cache:
@@ -751,7 +753,7 @@ def rejection_point(
 def error_sensitivity(
     influence_fn: Callable[[float], float],
     /,
-    domain: tuple[float, float] = (-math.inf, math.inf),
+    domain: _Tuple2[float] = (-math.inf, math.inf),
 ) -> float:
     r"""
     Evaluate the *gross-error sensitivity* of an influence function
@@ -821,7 +823,7 @@ def error_sensitivity(
 def shift_sensitivity(
     influence_fn: Callable[[float], float],
     /,
-    domain: tuple[float, float] = (-math.inf, math.inf),
+    domain: _Tuple2[float] = (-math.inf, math.inf),
 ) -> float:
     r"""
     Evaluate the *local-shift sensitivity* of an influence function

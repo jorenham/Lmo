@@ -8,6 +8,7 @@ See Also:
 """
 
 __all__ = (
+    'PolySeries',
     'eval_sh_jacobi',
     'peaks_jacobi',
     'arg_extrema_jacobi',

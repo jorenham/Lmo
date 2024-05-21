@@ -5,6 +5,7 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Literal,
+    ParamSpec,
     Protocol,
     TypeAlias,
     TypeVar,
@@ -16,17 +17,7 @@ from typing import (
 import numpy as np
 import numpy.typing as npt
 
-from .np import (
-    AnyScalarFloat,
-    AnyVectorFloat,
-    Array,
-    AtLeast0D,
-    AtLeast1D,
-    AtLeast2D,
-    CanArray,
-    Integer,
-    Real,
-)
+from . import np as lnpt
 
 
 if TYPE_CHECKING:
@@ -45,24 +36,42 @@ if TYPE_CHECKING:
 __all__ = (
     'QuadOptions',
     'OptimizeResult',
-    'RV', 'RVFrozen',
-    'RVDiscrete', 'RVContinuous',
-    'RVDiscreteFrozen', 'RVContinuousFrozen',
+    'RVFunction',
+    'RV',
+    'RVFrozen',
+    'RVDiscrete',
+    'RVContinuous',
+    'RVDiscreteFrozen',
+    'RVContinuousFrozen',
 )
 
-V = TypeVar('V', bound=float | Array[Any, np.float64])
+_T = TypeVar('_T')
+_Tuple2: TypeAlias = tuple[_T, _T]
+
+_RNG: TypeAlias = np.random.Generator | np.random.RandomState
+_Seed: TypeAlias = _RNG | int | None
+
+_Moments1: TypeAlias = Literal['m', 'v', 's', 'k']
+_Moments2: TypeAlias = Literal['mv', 'ms', 'mk', 'vs', 'vk', 'sk']
+_Moments3: TypeAlias = Literal['mvs', 'mvk', 'msk', 'vsk']
+_Moments4: TypeAlias = Literal['mvsk']
+
+_F8: TypeAlias = np.float64
+_Real0D: TypeAlias = lnpt.AnyScalarInt | lnpt.AnyScalarFloat
+_Real1D: TypeAlias = lnpt.AnyVectorInt | lnpt.AnyVectorFloat
+_Real2D: TypeAlias = lnpt.AnyMatrixInt | lnpt.AnyMatrixFloat
+_Real3ND: TypeAlias = lnpt.AnyTensorInt | lnpt.AnyTensorFloat
+
+_ND0 = TypeVar('_ND0', bound=lnpt.AtLeast0D)
+_ND1 = TypeVar('_ND1', bound=lnpt.AtLeast1D)
+
+_Tss = ParamSpec('_Tss')
 
 
 # scipy.integrate
 
 QuadWeights: TypeAlias = Literal[
-    'cos',
-    'sin',
-    'alg',
-    'alg-loga',
-    'alg-logb',
-    'alg-log',
-    'cauchy',
+    'cos', 'sin', 'alg', 'alg-loga', 'alg-logb', 'alg-log', 'cauchy',
 ]
 
 
@@ -75,10 +84,10 @@ class QuadOptions(TypedDict, total=False):
     epsrel: float
     limit: int
     limlst: int
-    points: Array[tuple[int], np.floating[Any]] | Sequence[float]
+    points: lnpt.Array[tuple[int], np.floating[Any]] | Sequence[float]
     weight: QuadWeights
     wvar: float | tuple[float, float]
-    wopts: tuple[int, Array[tuple[Literal[25], int], np.floating[Any]]]
+    wopts: tuple[int, lnpt.Array[tuple[Literal[25], int], np.floating[Any]]]
     maxp1: int
 
 
@@ -102,7 +111,7 @@ class OptimizeResult(Protocol):
     means that nothing in `collections.abc` can be used when writing type
     stubs...
     """
-    x: Array[tuple[int], np.float64]
+    x: lnpt.Array[tuple[int], np.float64]
     success: bool
     status: int
     fun: float
@@ -133,19 +142,29 @@ class OptimizeResult(Protocol):
 
 # scipy.stats
 
-_RNG: TypeAlias = np.random.Generator | np.random.RandomState
-_Seed: TypeAlias = _RNG | int | None
-_Moments1: TypeAlias = Literal['m', 'v', 's', 'k']
-_Moments2: TypeAlias = Literal['mv', 'ms', 'mk', 'vs', 'vk', 'sk']
-_Moments3: TypeAlias = Literal['mvs', 'mvk', 'msk', 'vsk']
-_Moments4: TypeAlias = Literal['mvsk']
 
-_F8: TypeAlias = np.float64
-_Real0D: TypeAlias = AnyScalarFloat
-_Real1D: TypeAlias = AnyVectorFloat
-
-_ND0 = TypeVar('_ND0', bound=AtLeast0D)
-_ND1 = TypeVar('_ND1', bound=AtLeast1D)
+class RVFunction(Protocol[_Tss]):
+    """
+    Callable protocol for a vectorized distribution function. E.g. for
+    the `cdf` and `ppf` methods of `scipy,stats.rv_generic`. In practice,
+    the returned dtype is always `float64` (even `rv_discrete.ppf`).
+    """
+    @overload
+    def __call__(
+        self,
+        x: lnpt.AnyArrayFloat,
+        /,
+        *args: _Tss.args,
+        **kwds: _Tss.kwargs,
+    ) -> lnpt.Array[Any, np.float64]: ...
+    @overload
+    def __call__(
+        self,
+        x: lnpt.AnyScalarFloat,
+        /,
+        *args: _Tss.args,
+        **kwds: _Tss.kwargs,
+    ) -> float: ...
 
 
 @runtime_checkable
@@ -184,7 +203,7 @@ class RV(Protocol):
         size: int,
         random_state: _Seed = ...,
         **kwds: _Real0D,
-    ) -> Array[tuple[int], _F8]: ...
+    ) -> lnpt.Array[tuple[int], _F8]: ...
     @overload
     def rvs(
         self,
@@ -192,7 +211,7 @@ class RV(Protocol):
         size: _ND0,
         random_state: _Seed = ...,
         **kwds: _Real0D,
-    ) -> Array[_ND0, _F8]: ...
+    ) -> lnpt.Array[_ND0, _F8]: ...
 
     @overload
     def stats(
@@ -225,7 +244,7 @@ class RV(Protocol):
 
     def moment(
         self,
-        order: Integer,
+        order: int | np.integer[Any],
         *args: _Real0D,
         **kwds: _Real0D,
     ) -> _F8: ...
@@ -246,17 +265,17 @@ class RV(Protocol):
     @overload
     def interval(
         self,
-        confidence: CanArray[_ND1, Real],
+        confidence: lnpt.CanArray[_ND1, lnpt.Real],
         *args: _Real0D,
         **kwds: _Real0D,
-    ) -> tuple[CanArray[_ND1, _F8], CanArray[_ND1, _F8]]: ...
+    ) -> tuple[lnpt.CanArray[_ND1, _F8], lnpt.CanArray[_ND1, _F8]]: ...
     @overload
     def interval(
         self,
         confidence: Sequence[npt.ArrayLike],
         *args: _Real0D,
         **kwds: _Real0D,
-    ) -> tuple[CanArray[AtLeast1D, _F8], CanArray[AtLeast1D, _F8]]: ...
+    ) -> _Tuple2[lnpt.Array[Any, _F8]]: ...
 
     def support(self, *args: _Real0D, **kwds: _Real0D) -> tuple[_F8, _F8]: ...
 
@@ -266,8 +285,8 @@ class RV(Protocol):
     def nnlf(
         self,
         __theta: _Real1D,
-        __x: CanArray[AtLeast2D, Real],
-    ) -> Array[AtLeast1D, _F8]: ...
+        __x: _Real2D | _Real3ND,
+    ) -> lnpt.Array[Any, _F8]: ...
 
 
 @runtime_checkable
@@ -294,80 +313,80 @@ class RVDiscrete(RV, Protocol):
     @overload
     def pmf(
         self,
-        k: CanArray[_ND1, Real],
+        k: lnpt.CanArray[_ND1, lnpt.Real],
         *args: _Real0D,
         **kwds: _Real0D,
-    ) -> Array[_ND1, _F8]: ...
+    ) -> lnpt.Array[_ND1, _F8]: ...
 
     @overload
     def logpmf(self, k: _Real0D, *args: _Real0D, **kwds: _Real0D) -> _F8: ...
     @overload
     def logpmf(
         self,
-        k: CanArray[_ND1, Real],
+        k: lnpt.CanArray[_ND1, lnpt.Real],
         *args: _Real0D,
         **kwds: _Real0D,
-    ) -> Array[_ND1, _F8]: ...
+    ) -> lnpt.Array[_ND1, _F8]: ...
 
     @overload
     def cdf(self, k: _Real0D, *args: _Real0D, **kwds: _Real0D) -> _F8: ...
     @overload
     def cdf(
         self,
-        k: CanArray[_ND1, Real],
+        k: lnpt.CanArray[_ND1, lnpt.Real],
         *args: _Real0D,
         **kwds: _Real0D,
-    ) -> Array[_ND1, _F8]: ...
+    ) -> lnpt.Array[_ND1, _F8]: ...
 
     @overload
     def logcdf(self, k: _Real0D, *args: _Real0D, **kwds: _Real0D) -> _F8: ...
     @overload
     def logcdf(
         self,
-        k: CanArray[_ND1, Real],
+        k: lnpt.CanArray[_ND1, lnpt.Real],
         *args: _Real0D,
         **kwds: _Real0D,
-    ) -> Array[_ND1, _F8]: ...
+    ) -> lnpt.Array[_ND1, _F8]: ...
 
     @overload
     def sf(self, k: _Real0D, *args: _Real0D, **kwds: _Real0D) -> _F8: ...
     @overload
     def sf(
         self,
-        k: CanArray[_ND1, Real],
+        k: lnpt.CanArray[_ND1, lnpt.Real],
         *args: _Real0D,
         **kwds: _Real0D,
-    ) -> Array[_ND1, _F8]: ...
+    ) -> lnpt.Array[_ND1, _F8]: ...
 
     @overload
     def logsf(self, k: _Real0D, *args: _Real0D, **kwds: _Real0D) -> _F8: ...
     @overload
     def logsf(
         self,
-        k: CanArray[_ND1, Real],
+        k: lnpt.CanArray[_ND1, lnpt.Real],
         *args: _Real0D,
         **kwds: _Real0D,
-    ) -> Array[_ND1, _F8]: ...
+    ) -> lnpt.Array[_ND1, _F8]: ...
 
     @overload
     def ppf(self, q: _Real0D, *args: _Real0D, **kwds: _Real0D) -> _F8: ...
     @overload
     def ppf(
         self,
-        q: CanArray[_ND1, Real],
+        q: lnpt.CanArray[_ND1, lnpt.Real],
         *args: _Real0D,
         **kwds: _Real0D,
-    ) -> Array[_ND1, _F8]: ...
+    ) -> lnpt.Array[_ND1, _F8]: ...
 
     @overload
     def isf(self, q: _Real0D, *args: _Real0D, **kwds: _Real0D) -> _F8: ...
     @overload
     def isf(
         self,
-        q: CanArray[_ND1, Real],
+        q: lnpt.CanArray[_ND1, lnpt.Real],
         *args: _Real0D,
         **kwds: _Real0D,
-    ) -> Array[_ND1, _F8]: ...
+    ) -> lnpt.Array[_ND1, _F8]: ...
 
     def expect(
         self,
@@ -403,80 +422,80 @@ class RVContinuous(RV, Protocol):
     @overload
     def pdf(
         self,
-        x: CanArray[_ND1, Real],
+        x: lnpt.CanArray[_ND1, lnpt.Real],
         *args: _Real0D,
         **kwds: _Real0D,
-    ) -> Array[_ND1, _F8]: ...
+    ) -> lnpt.Array[_ND1, _F8]: ...
 
     @overload
     def logpdf(self, x: _Real0D, *args: _Real0D, **kwds: _Real0D) -> _F8: ...
     @overload
     def logpdf(
         self,
-        x: CanArray[_ND1, Real],
+        x: lnpt.CanArray[_ND1, lnpt.Real],
         *args: _Real0D,
         **kwds: _Real0D,
-    ) -> Array[_ND1, _F8]: ...
+    ) -> lnpt.Array[_ND1, _F8]: ...
 
     @overload
     def cdf(self, x: _Real0D, *args: _Real0D, **kwds: _Real0D) -> _F8: ...
     @overload
     def cdf(
         self,
-        x: CanArray[_ND1, Real],
+        x: lnpt.CanArray[_ND1, lnpt.Real],
         *args: _Real0D,
         **kwds: _Real0D,
-    ) -> Array[_ND1, _F8]: ...
+    ) -> lnpt.Array[_ND1, _F8]: ...
 
     @overload
     def logcdf(self, x: _Real0D, *args: _Real0D, **kwds: _Real0D) -> _F8: ...
     @overload
     def logcdf(
         self,
-        x: CanArray[_ND1, Real],
+        x: lnpt.CanArray[_ND1, lnpt.Real],
         *args: _Real0D,
         **kwds: _Real0D,
-    ) -> Array[_ND1, _F8]: ...
+    ) -> lnpt.Array[_ND1, _F8]: ...
 
     @overload
     def sf(self, x: _Real0D, *args: _Real0D, **kwds: _Real0D) -> _F8: ...
     @overload
     def sf(
         self,
-        x: CanArray[_ND1, Real],
+        x: lnpt.CanArray[_ND1, lnpt.Real],
         *args: _Real0D,
         **kwds: _Real0D,
-    ) -> Array[_ND1, _F8]: ...
+    ) -> lnpt.Array[_ND1, _F8]: ...
 
     @overload
     def logsf(self, x: _Real0D, *args: _Real0D, **kwds: _Real0D) -> _F8: ...
     @overload
     def logsf(
         self,
-        x: CanArray[_ND1, Real],
+        x: lnpt.CanArray[_ND1, lnpt.Real],
         *args: _Real0D,
         **kwds: _Real0D,
-    ) -> Array[_ND1, _F8]: ...
+    ) -> lnpt.Array[_ND1, _F8]: ...
 
     @overload
     def ppf(self, q: _Real0D, *args: _Real0D, **kwds: _Real0D) -> _F8: ...
     @overload
     def ppf(
         self,
-        q: CanArray[_ND1, Real],
+        q: lnpt.CanArray[_ND1, lnpt.Real],
         *args: _Real0D,
         **kwds: _Real0D,
-    ) -> Array[_ND1, _F8]: ...
+    ) -> lnpt.Array[_ND1, _F8]: ...
 
     @overload
     def isf(self, q: _Real0D, *args: _Real0D, **kwds: _Real0D) -> _F8: ...
     @overload
     def isf(
         self,
-        q: CanArray[_ND1, Real],
+        q: lnpt.CanArray[_ND1, lnpt.Real],
         *args: _Real0D,
         **kwds: _Real0D,
-    ) -> Array[_ND1, _F8]: ...
+    ) -> lnpt.Array[_ND1, _F8]: ...
 
     def fit(
         self,
@@ -487,7 +506,7 @@ class RVContinuous(RV, Protocol):
         floc: _Real0D = ...,
         fscale: _Real0D = ...,
         **kwds: _Real0D,
-    ) -> tuple[float | Real, ...]: ...
+    ) -> tuple[float | lnpt.Real, ...]: ...
 
     def fit_loc_scale(
         self,
@@ -545,38 +564,53 @@ class RVFrozen(Protocol[_RV_co]):
         self,
         size: int,
         random_state: _Seed = ...,
-    ) -> Array[tuple[int], _F8]: ...
+    ) -> lnpt.Array[tuple[int], _F8]: ...
     @overload
     def rvs(
         self,
         size: _ND0,
         random_state: _Seed = ...,
-    ) -> Array[_ND0, _F8]: ...
+    ) -> lnpt.Array[_ND0, _F8]: ...
 
     @overload
-    def cdf(self, __x: _Real0D) -> _F8: ...
+    def cdf(self, x: _Real0D) -> _F8: ...
     @overload
-    def cdf(self, __x: CanArray[_ND1, Real]) -> Array[_ND1, _F8]: ...
+    def cdf(
+        self,
+        x: lnpt.CanArray[_ND1, lnpt.Real],
+    ) -> lnpt.Array[_ND1, _F8]: ...
 
     @overload
     def logcdf(self, __x: _Real0D) -> _F8: ...
     @overload
-    def logcdf(self, __x: CanArray[_ND1, Real]) -> Array[_ND1, _F8]: ...
+    def logcdf(
+        self,
+        x: lnpt.CanArray[_ND1, lnpt.Real],
+    ) -> lnpt.Array[_ND1, _F8]: ...
 
     @overload
-    def sf(self, __x: _Real0D) -> _F8: ...
+    def sf(self, x: _Real0D) -> _F8: ...
     @overload
-    def sf(self, __x: CanArray[_ND1, Real]) -> Array[_ND1, _F8]: ...
+    def sf(
+        self,
+        x: lnpt.CanArray[_ND1, lnpt.Real],
+    ) -> lnpt.Array[_ND1, _F8]: ...
 
     @overload
-    def ppf(self, __q: _Real0D) -> _F8: ...
+    def ppf(self, q: _Real0D) -> _F8: ...
     @overload
-    def ppf(self, __q: CanArray[_ND1, Real]) -> CanArray[_ND1, _F8]: ...
+    def ppf(
+        self,
+        q: lnpt.CanArray[_ND1, lnpt.Real],
+    ) -> lnpt.CanArray[_ND1, _F8]: ...
 
     @overload
-    def isf(self, __q: _Real0D) -> _F8: ...
+    def isf(self, q: _Real0D) -> _F8: ...
     @overload
-    def isf(self, __q: CanArray[_ND1, Real]) -> CanArray[_ND1, _F8]: ...
+    def isf(
+        self,
+        q: lnpt.CanArray[_ND1, lnpt.Real],
+    ) -> lnpt.CanArray[_ND1, _F8]: ...
 
     @overload
     def stats(self, moments: _Moments1) -> _F8: ...
@@ -587,7 +621,7 @@ class RVFrozen(Protocol[_RV_co]):
     @overload
     def stats(self, moments: _Moments4) -> tuple[_F8, _F8, _F8, _F8]: ...
 
-    def moment(self, order: Integer) -> _F8: ...
+    def moment(self, order: int | np.integer[Any]) -> _F8: ...
 
     def median(self) -> _F8: ...
     def mean(self) -> _F8: ...
@@ -600,13 +634,13 @@ class RVFrozen(Protocol[_RV_co]):
     @overload
     def interval(
         self,
-        confidence: CanArray[_ND1, Real],
-    ) -> tuple[CanArray[_ND1, _F8], CanArray[_ND1, _F8]]: ...
+        confidence: lnpt.CanArray[_ND1, lnpt.Real],
+    ) -> _Tuple2[lnpt.CanArray[_ND1, _F8]]: ...
     @overload
     def interval(
         self,
         confidence: Sequence[npt.ArrayLike],
-    ) -> tuple[CanArray[AtLeast1D, _F8], CanArray[AtLeast1D, _F8]]: ...
+    ) -> _Tuple2[lnpt.CanArray[lnpt.AtLeast1D, _F8]]: ...
 
     def support(self) -> tuple[_F8, _F8]: ...
 
@@ -628,12 +662,15 @@ class RVDiscreteFrozen(RVFrozen[_RV_D_co], Protocol[_RV_D_co]):
     @overload
     def pmf(self, k: _Real0D) -> _F8: ...
     @overload
-    def pmf(self, k: CanArray[_ND1, Real]) -> Array[_ND1, _F8]: ...
+    def pmf(
+        self,
+        k: lnpt.CanArray[_ND1, lnpt.Real],
+    ) -> lnpt.Array[_ND1, _F8]: ...
 
     @overload
     def logpmf(self, k: _Real0D) -> _F8: ...
     @overload
-    def logpmf(self, k: CanArray[_ND1, Real]) -> Array[_ND1, _F8]: ...
+    def logpmf(self, k: lnpt.AnyArrayFloat) -> lnpt.Array[_ND1, _F8]: ...
 
 
 _RV_C_co = TypeVar('_RV_C_co', bound=RVContinuous, covariant=True)
@@ -644,9 +681,15 @@ class RVContinuousFrozen(RVFrozen[_RV_C_co], Protocol[_RV_C_co]):
     @overload
     def pdf(self, x: _Real0D) -> _F8: ...
     @overload
-    def pdf(self, x: CanArray[_ND1, Real]) -> Array[_ND1, _F8]: ...
+    def pdf(
+        self,
+        x: lnpt.CanArray[_ND1, lnpt.Real],
+    ) -> lnpt.Array[_ND1, _F8]: ...
 
     @overload
     def logpdf(self, x: _Real0D) -> _F8: ...
     @overload
-    def logpdf(self, x: CanArray[_ND1, Real]) -> Array[_ND1, _F8]: ...
+    def logpdf(
+        self,
+        x: lnpt.CanArray[_ND1, lnpt.Real],
+    ) -> lnpt.Array[_ND1, _F8]: ...
