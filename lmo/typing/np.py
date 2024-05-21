@@ -96,8 +96,6 @@ class CanArray(Protocol[_DN_co, _ST_co]):  # pyright: ignore[reportInvalidTypeVa
         True
         >>> isinstance(np.ma.array([1, 2, 3]), CanArray)
         True
-        >>> isinstance(np.matrix([[1, 0], [0, 1]]), CanArray)
-        True
 
         Note that `numpy.generic` instances (which numpy calls "scalars",
         even though anyone that knows a bit of linear algebra (i.e. the

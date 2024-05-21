@@ -261,8 +261,8 @@ def sh_jacobi(
     a: float,
     b: float,
     /,
-    dtype: _DType[_TI] = np.int64,
-) -> _Square[_K, _TI]:
+    dtype: _DType[_TF] = np.float64,
+) -> _Square[_K, _TF]:
     r"""
     Shifted Jacobi polynomial coefficient matrix $\widetilde{P}^{(a,b)}$ of
     shape `(k, k)`.

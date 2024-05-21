@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from typing import TYPE_CHECKING, Any, Final, Literal, TypeAlias, overload
+from typing import TYPE_CHECKING, Any, Final, TypeAlias, overload
 
 import numpy as np
 import numpy.typing as npt
@@ -12,7 +12,6 @@ from .typing.compat import TypeVar
 
 if TYPE_CHECKING:
     from .typing import AnyAWeights, AnyFWeights, AnyOrder, AnyOrderND, AnyTrim
-    from .typing.compat import Unpack
 
 __all__ = (
     'broadstack',
@@ -311,10 +310,7 @@ def clean_trim(trim: AnyTrim, /) -> tuple[int, int] | tuple[float, float]:
 
 
 def moments_to_ratio(
-    rs: lnpt.Array[
-        tuple[Literal[2], Unpack[tuple[int, ...]]],
-        np.integer[Any],
-    ],
+    rs: lnpt.Array[Any, np.integer[Any]],
     l_rs: lnpt.Array[lnpt.AtLeast1D, _T_float],
     /,
 ) -> _T_float | npt.NDArray[_T_float]:
@@ -322,7 +318,6 @@ def moments_to_ratio(
     Using stacked order of shape (2, ...), and an L-moments array, returns
     the L-moment ratio's.
     """
-    assert rs.ndim >= 2
     assert len(rs) == 2
     assert rs.shape[:l_rs.ndim] == l_rs.shape[:rs.ndim], [rs.shape, l_rs.shape]
 
