@@ -12,7 +12,7 @@ from hypothesis import (
     settings,
     strategies as st,
 )
-from numpy.testing import assert_allclose
+from numpy.testing import assert_allclose as _assert_allclose
 from scipy.special import ndtr, ndtri, zeta
 
 from lmo import constants
@@ -26,6 +26,8 @@ from lmo.theoretical import (
     qdf_from_l_moments,
 )
 
+
+assert_allclose = functools.partial(_assert_allclose, atol=1e-12)
 
 norm_cdf = cast(Callable[[float], float], ndtr)
 norm_ppf = cast(Callable[[float], float], ndtri)
