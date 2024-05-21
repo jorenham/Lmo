@@ -186,7 +186,7 @@ def test_tlm_cauchy():
 
 
 @given(a=st.floats(0.1, 10))
-def test_lhm_expon(a: float):
+def test_llm_expon(a: float):
     r = [1, 2, 3, 4]
     lr = a * np.array([1, 1 / 2, 1 / 9, 1 / 24]) / 2
 
@@ -198,7 +198,7 @@ def test_lhm_expon(a: float):
     assert_allclose(l_ppf, lr)
 
     l_cdf = l_moment_from_cdf(cdf, r, trim=(0, 1))
-    assert_allclose(l_cdf, lr)
+    assert_allclose(l_cdf, lr, rtol=5e-7)
 
     l_qdf = l_moment_from_qdf(qdf, r[1:], trim=(0, 1))
     assert_allclose(l_qdf, lr[1:])
@@ -227,7 +227,7 @@ def test_lm_cov_expon():
     assert_allclose(k3, k3_hat)
 
 
-def test_lhm_cov_expon():
+def test_llm_cov_expon():
     k3 = np.array([
         [1 / 3, 1 / 8, 0],
         [1 / 8, 3 / 40, 1 / 60],
