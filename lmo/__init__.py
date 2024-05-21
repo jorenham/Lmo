@@ -1,38 +1,4 @@
 """Lmo: Robust statistics with trimmed L-moments and L-comoments."""
-
-__all__ = (
-    '__version__',
-
-    'l_loc',
-    'l_scale',
-    'l_variation',
-    'l_skew',
-    'l_kurtosis',
-
-    'l_moment',
-    'l_ratio',
-    'l_stats',
-
-    'l_moment_cov',
-    'l_ratio_se',
-    'l_stats_se',
-
-    'l_moment_influence',
-    'l_ratio_influence',
-
-    'l_weights',
-
-    'l_coloc',
-    'l_coscale',
-    'l_corr',
-    'l_coskew',
-    'l_cokurtosis',
-
-    'l_comoment',
-    'l_coratio',
-    'l_costats',
-)
-
 import sys
 from typing import TYPE_CHECKING, Final
 
@@ -80,10 +46,41 @@ if 'pytest' in sys.modules:  # noqa: PLR2004
 
     del np
 
-
 __version__: Final[str] = _get_version()
 __author__: Final[str] = 'Joren Hammdugolu'
 __email__: Final[str] = 'jhammudoglu@gmail.com'
 __description__: Final[str] = (
     'Robust statistics with trimmed L-moments and L-comoments.'
+)
+__all__ = (
+    '__version__',
+
+    'l_loc',
+    'l_scale',
+    'l_variation',
+    'l_skew',
+    'l_kurtosis',
+
+    'l_moment',
+    'l_ratio',
+    'l_stats',
+
+    'l_moment_cov',
+    'l_ratio_se',
+    'l_stats_se',
+
+    'l_moment_influence',
+    'l_ratio_influence',
+
+    'l_weights',
+
+    'l_coloc',
+    'l_coscale',
+    'l_corr',
+    'l_coskew',
+    'l_cokurtosis',
+
+    'l_comoment',
+    'l_coratio',
+    'l_costats',
 )
