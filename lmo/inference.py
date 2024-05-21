@@ -167,7 +167,7 @@ def _loss_step(
         raise ValueError(msg)
 
     g_r = lmbda_r - l_r
-    return np.sqrt(g_r.T @ w_rr @ g_r)  # type: ignore
+    return cast(float, np.sqrt(g_r.T @ w_rr @ g_r))
 
 
 def _get_l_moment_fn(ppf: lsct.RVFunction[...]) -> Callable[..., _ArrF8]:
@@ -415,7 +415,7 @@ def fit(  # noqa: C901
         # run the optimizer
         res = cast(
             lsct.OptimizeResult,
-            optimize.minimize(  # type: ignore
+            optimize.minimize(  # pyright: ignore[reportUnknownMemberType]
                 _loss_step,
                 theta,
                 args=(_l_moment_fn, _r, l_r, _trim, w_rr),

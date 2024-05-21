@@ -20,7 +20,6 @@ import numpy as np
 import numpy.typing as npt
 from scipy.integrate import quad  # pyright: ignore[reportUnknownVariableType]
 from scipy.optimize import (
-    OptimizeResult,
     OptimizeWarning,
     minimize,  # pyright: ignore[reportUnknownVariableType]
 )
@@ -32,7 +31,11 @@ from ._lm import l_ratio
 from ._poly import extrema_jacobi
 from ._utils import clean_orders, clean_trim
 from .special import fpow
-from .typing import AnyOrder, AnyOrderND
+from .typing import (
+    AnyOrder,
+    AnyOrderND,
+    scipy as lsct,
+)
 
 
 if TYPE_CHECKING:
@@ -731,10 +734,10 @@ def rejection_point(
         return max(abs(influence_fn(-x)), abs(influence_fn(x)))
 
     def obj(r: _ArrF8) -> float:
-        return quad(integrand, r[0], np.inf)[0]  # type: ignore
+        return quad(integrand, r[0], np.inf)[0]  # pyright: ignore[reportUnknownVariableType]
 
     res = cast(
-        OptimizeResult,
+        lsct.OptimizeResult,
         minimize(
             obj,
             bounds=[(rho_min, rho_max)],
@@ -743,7 +746,7 @@ def rejection_point(
         ),
     )
 
-    rho = cast(float, res.x[0])  # type: ignore
+    rho = cast(float, res.x[0])
     if rho <= _MIN_RHO or influence_fn(-rho) or influence_fn(rho):
         return np.nan
 
@@ -802,7 +805,7 @@ def error_sensitivity(
     bounds = None if np.isneginf(a) and np.isposinf(b) else [(a, b)]
 
     res = cast(
-        OptimizeResult,
+        lsct.OptimizeResult,
         minimize(
             obj,
             bounds=bounds,
@@ -810,14 +813,14 @@ def error_sensitivity(
             method='COBYLA',
         ),
     )
-    if not res.success:  # type: ignore
+    if not res.success:
         warnings.warn(
-            cast(str, res.message),  # type: ignore
+            res.message,
             OptimizeWarning,
             stacklevel=1,
         )
 
-    return -cast(float, res.fun)  # type: ignore
+    return -res.fun
 
 
 def shift_sensitivity(
@@ -889,7 +892,7 @@ def shift_sensitivity(
     bounds = None if np.isneginf(a) and np.isposinf(b) else [(a, b)]
 
     res = cast(
-        OptimizeResult,
+        lsct.OptimizeResult,
         minimize(
             obj,
             bounds=bounds,
@@ -897,11 +900,11 @@ def shift_sensitivity(
             method='COBYLA',
         ),
     )
-    if not res.success:  # type: ignore
+    if not res.success:
         warnings.warn(
-            cast(str, res.message),  # type: ignore
+            cast(str, res.message),
             OptimizeWarning,
             stacklevel=1,
         )
 
-    return -cast(float, res.fun)  # type: ignore
+    return -res.fun

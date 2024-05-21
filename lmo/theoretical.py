@@ -1801,14 +1801,14 @@ def ppf_from_l_moments(
 
         return np.clip(x, *support)[()]
 
-    if validate and not _monotonic(ppf, 0, 1):  # type: ignore
+    if validate and not _monotonic(cast(_VectorizedPPF, ppf), 0, 1):
         msg = (
             'PPF is not monotonically increasing (not invertable); '
             'consider increasing the trim'
         )
         raise ValueError(msg)
 
-    return ppf  # type: ignore
+    return cast(_VectorizedPPF, ppf)
 
 
 def qdf_from_l_moments(

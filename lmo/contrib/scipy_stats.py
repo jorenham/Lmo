@@ -45,21 +45,24 @@ from lmo.theoretical import (
     l_ratio_influence_from_cdf,
     l_stats_cov_from_cdf,
 )
-from lmo.typing import AnyOrder, AnyOrderND
+from lmo.typing import (
+    AnyOrder,
+    AnyOrderND,
+    scipy as lsct,
+)
 
 
 if TYPE_CHECKING:
     from lmo.typing import (
         AnyTrim,
         np as lnpt,
-        scipy as lsct,
     )
 
 
 __all__ = (
-    'l_rv_generic',
-    'l_rv_frozen',
     'install',
+    'l_rv_frozen',
+    'l_rv_generic',
 )
 
 
@@ -1236,14 +1239,9 @@ class l_rv_generic(PatchClass):
             # almost never works without custom (finite and tight) bounds...
             # ... and otherwise it'll runs for +-17 exa-eons
             args0 = cast(
-                tuple[float | int, ...],
-                scipy_fit(
-                    self,
-                    data,
-                    bounds=bounds,
-                    guess=args or None,
-                ).params,  # type: ignore
-            )
+                lsct.FitResult,
+                scipy_fit(self, data, bounds=bounds, guess=args or None),
+            ).params
 
         _lmo_cache = {}
         _lmo_fn = self._l_moment

@@ -10,6 +10,7 @@ from __future__ import annotations
 import functools
 import math
 import warnings
+from collections.abc import Callable
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -25,6 +26,7 @@ from typing import (
 import numpy as np
 import numpy.typing as npt
 import scipy.special as sc
+from scipy.integrate import quad  # pyright: ignore[reportUnknownVariableType]
 from scipy.stats._distn_infrastructure import (
     _ShapeInfo,  # noqa: PLC2701  # pyright: ignore[reportPrivateUsage]
 )
@@ -49,7 +51,7 @@ from .typing import (
 
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Sequence
+    from collections.abc import Sequence
 
     from .typing.compat import Self
 
@@ -604,8 +606,6 @@ class l_poly:
         def _integrand(u: float) -> float:
             return self._ppf(u)**n
 
-        from scipy.integrate import quad  # type: ignore
-
         return cast(float, quad(_integrand, 0, 1)[0])
 
     @overload
@@ -679,8 +679,6 @@ class l_poly:
 
         def i(u: float) -> float:
             return g(ppf(u))
-
-        from scipy.integrate import quad  # type: ignore
 
         a = 0
         b = 0.05
@@ -846,8 +844,8 @@ def _kumaraswamy_lmo0(
     k = np.arange(t + 1, r + s + t + 1)
     return (
         (-1)**(k - 1)
-        * cast(_ArrF8, sc.comb(r + k - 2, r + t - 1))  # type: ignore
-        * cast(_ArrF8, sc.comb(r + s + t, k))  # type: ignore
+        * cast(_ArrF8, sc.comb(r + k - 2, r + t - 1))  # pyright: ignore[reportUnknownMemberType]
+        * cast(_ArrF8, sc.comb(r + s + t, k))  # pyright: ignore[reportUnknownMemberType]
         * cast(_ArrF8, sc.beta(1 / a, 1 + k * b)) / a
     ).sum() / r
 
@@ -952,7 +950,7 @@ class kumaraswamy_gen(_rv_continuous):
         if quad_opts is not None or isinstance(s, float):
             return cast(
                 _ArrF8,
-                super()._l_moment(  # type: ignore
+                super()._l_moment(  # pyright: ignore[reportUnknownMemberType,reportAttributeAccessIssue]
                     r,
                     a,
                     b,
@@ -1083,7 +1081,9 @@ def _wakeby_sf0(  # noqa: C901
         # it's easy to show that this is valid for all x, f, and d
         w = (1 - f) / f
         return (
-            w / sc.lambertw(w * math.exp((1 + d * x) / f - 1))  # type: ignore
+            w / sc.lambertw(  # pyright: ignore[reportUnknownMemberType]
+                w * math.exp((1 + d * x) / f - 1),
+            )
         )**(1 / d)
 
     if x < _wakeby_isf0(.9, b, d, f):
@@ -1212,7 +1212,10 @@ class wakeby_gen(_rv_continuous):
         args: tuple[float, float, float] | None = None,
     ) -> tuple[float, float, float, float, float]:
         #  Arbitrary, but the default f=1 is a bad start
-        return super()._fitstart(data, args or (1., 1., .5))  # type: ignore
+        return cast(
+            tuple[float, float, float, float, float],
+            super()._fitstart(data, args or (1., 1., .5)),  # pyright: ignore[reportUnknownMemberType]
+        )
 
     def _pdf(
         self,
@@ -1311,12 +1314,10 @@ class wakeby_gen(_rv_continuous):
             lmbda_r = cast(
                 float | npt.NDArray[np.float64],
                 l_moment_from_ppf(
-                    functools.partial(
-                        self._ppf,
-                        b=b,
-                        d=d,
-                        f=f,
-                    ),  # type: ignore
+                    cast(
+                        Callable[[float], float],
+                        functools.partial(self._ppf, b=b, d=d, f=f),
+                    ),
                     r,
                     trim=trim,
                     quad_opts=quad_opts,
@@ -1515,7 +1516,10 @@ class genlambda_gen(_rv_continuous):
         args: tuple[float, float, float] | None = None,
     ) -> tuple[float, float, float, float, float]:
         #  Arbitrary, but the default f=1 is a bad start
-        return super()._fitstart(data, args or (1., 1., 0.))  # type: ignore
+        return cast(
+            tuple[float, float, float, float, float],
+            super()._fitstart(data, args or (1., 1., 0.)),  # pyright: ignore[reportUnknownMemberType]
+        )
 
     def _pdf(
         self,
@@ -1625,12 +1629,10 @@ class genlambda_gen(_rv_continuous):
             lmbda_r = cast(
                 float | npt.NDArray[np.float64],
                 l_moment_from_ppf(
-                    functools.partial(
-                        self._ppf,
-                        b=b,
-                        d=d,
-                        f=f,
-                    ),  # type: ignore
+                    cast(
+                        Callable[[float], float],
+                        functools.partial(self._ppf, b=b, d=d, f=f),
+                    ),
                     r,
                     trim=trim,
                     quad_opts=quad_opts,

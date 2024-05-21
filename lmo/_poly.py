@@ -162,7 +162,7 @@ def peaks_jacobi(
     # otherwise, peaks are at the ends, and at the roots of the derivative
     x = np.empty(n + 1)
     x[0] = -1
-    x[1:-1] = scs.roots_jacobi(n - 1, a + 1, b + 1)[0]  # type: ignore
+    x[1:-1] = scs.roots_jacobi(n - 1, a + 1, b + 1)[0]  # pyright: ignore[reportUnknownMemberType]
     x[-1] = 1
 
     return np.round(x, 15) + 0.0  # cleanup of numerical noise

@@ -156,7 +156,7 @@ def cov(
     # ensure that at most ffact[..., -k_max] will give 0
     ffact = np.c_[ffact, np.zeros((r, r))]
 
-    spec = 'i..., i...'
+    spec: str = 'i..., i...'
 
     # for k == l (variances on the diagonal):
     # sum(
@@ -175,7 +175,7 @@ def cov(
 
         # (n-k-1)^(k+1)
         denom = n * (n - 2 * k - 1) * ffact[k, n - k - 1]
-        m_bb = np.einsum(spec, v_ki, x) / denom  # pyright: ignore
+        m_bb = np.einsum(spec, v_ki, x) / denom  # pyright: ignore[reportUnknownMemberType]
         s_b[k, k] = b[k] ** 2 - m_bb
 
     # for k != l (actually k > l since symmetric)
@@ -197,7 +197,7 @@ def cov(
 
         # `(n-k-1)^(l+1)`
         denom = n * (n - k - m - 1) * ffact[m, n - k - 1]
-        m_bb = np.einsum(spec, v_ki, x) / denom  # pyright: ignore
+        m_bb = np.einsum(spec, v_ki, x) / denom  # pyright: ignore[reportUnknownMemberType]
 
         # because s_bb.T == s_bb
         s_b[k, m] = s_b[m, k] = b[k] * b[m] - m_bb

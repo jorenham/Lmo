@@ -56,7 +56,7 @@ def sandwich(
     """
     # if X is 1 - d, this is equivalent to: C @ S_b @ C.T
     spec = 'ui, ij..., vj -> uv...'
-    return np.einsum(spec, A, X, A, dtype=dtype)  # pyright: ignore
+    return np.einsum(spec, A, X, A, dtype=dtype)  # pyright: ignore[reportUnknownMemberType]
 
 
 def pascal(
@@ -145,12 +145,8 @@ def ir_pascal(k: _K, /, dtype: _DType[_TF]) -> _Square[_K, _TF]:
 
     Used to linearly combine order statistics order statistics into L-moments.
     """
-    # use native ints to reduce the effect of over-/underflows
-    dtype_native = k > 62
-    _dtype = np.object_ if dtype_native else np.int64
-
-    p = pascal(k, dtype=_dtype, inv=True)
-    out = p / np.arange(1, k + 1, dtype=_dtype)[:, None]  # type: ignore
+    p = pascal(k, dtype=dtype, inv=True)
+    out = p / np.arange(1, k + 1, dtype=dtype)[:, None]
 
     return np.asarray(out, dtype)
 

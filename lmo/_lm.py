@@ -1162,7 +1162,7 @@ def l_moment_influence(
         f'Empirical L-moment influence function for {r=}, {trim=}, and {n=}.'
     )
     # piggyback the L-moment, to avoid recomputing it in l_ratio_influence
-    influence_function.l = l_r  # type: ignore
+    influence_function.l = l_r  # pyright: ignore[reportFunctionMemberAccess]
     return influence_function
 
 
@@ -1209,7 +1209,10 @@ def l_ratio_influence(
     eif_r = l_moment_influence(_x, _r, trim, sort=None, tol=0)
     eif_k = l_moment_influence(_x, _s, trim, sort=None, tol=0)
 
-    l_r, l_k = cast(tuple[float, float], (eif_r.l, eif_k.l))  # type: ignore
+    l_r, l_k = cast(
+        tuple[float, float],
+        (eif_r.l, eif_k.l),  # pyright: ignore[reportFunctionMemberAccess]
+    )
     if abs(l_k) <= tol * abs(l_r):
         msg = f'L-ratio ({r=}, {s=}) denominator is approximately zero.'
         raise ZeroDivisionError(msg)

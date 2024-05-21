@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from typing import TYPE_CHECKING, Any, Final, TypeAlias, overload
+from typing import TYPE_CHECKING, Any, Final, TypeAlias
 
 import numpy as np
 import numpy.typing as npt
@@ -14,19 +14,16 @@ if TYPE_CHECKING:
     from .typing import AnyAWeights, AnyFWeights, AnyOrder, AnyOrderND, AnyTrim
 
 __all__ = (
-    'broadstack',
-    'ensure_axis_at',
-    'plotting_positions',
-    'round0',
-    'ordered',
-
     'clean_order',
     'clean_orders',
     'clean_trim',
-
+    'ensure_axis_at',
+    'l_stats_orders',
     'moments_to_ratio',
     'moments_to_stats_cov',
-    'l_stats_orders',
+    'ordered',
+    'plotting_positions',
+    'round0',
 )
 
 
@@ -42,32 +39,6 @@ _T_shape1 = TypeVar('_T_shape1', bound=lnpt.AtLeast1D)
 _T_shape2 = TypeVar('_T_shape2', bound=lnpt.AtLeast2D)
 
 _DType: TypeAlias = np.dtype[_T_scalar] | type[_T_scalar]
-
-
-@overload
-def broadstack(
-    *args: _T_scalar | lnpt.CanArray[Any, _T_scalar],
-    axis: int = ...,
-) -> lnpt.Array[Any, _T_scalar]: ...
-@overload
-def broadstack(
-    *args: lnpt.AnyScalarInt | lnpt.AnyArrayInt,
-    axis: int = ...,
-) -> lnpt.Array[Any, np.integer[Any]]: ...
-@overload
-def broadstack(
-    *args: lnpt.AnyScalar | lnpt.AnyArray,
-    axis: int = ...,
-) -> lnpt.Array[_T_shape1, _T_scalar]: ...
-def broadstack(
-    *args: lnpt.AnyScalar | lnpt.AnyArray,
-    axis: int = 0,
-) -> lnpt.Array[Any, Any]:
-    """Broadcasts two array-likes and stacks them."""
-    return np.stack(
-        np.broadcast_arrays(*(np.asarray(arg) for arg in args)),
-        axis=axis,
-    )
 
 
 def ensure_axis_at(

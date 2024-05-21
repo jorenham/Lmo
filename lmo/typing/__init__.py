@@ -2,7 +2,6 @@
 from . import (
     _scipy as scipy,
     compat,
-    np,
 )
 from ._core import (
     AnyAWeights,
@@ -18,12 +17,11 @@ from ._core import (
 __all__ = (
     'AnyAWeights',
     'AnyFWeights',
+    'AnyOrder',
+    'AnyOrderND',
     'AnyTrim',
     'LComomentOptions',
     'LMomentOptions',
-    'AnyTrim',
-    'AnyOrder', 'AnyOrderND',
     'compat',
-    'np',
     'scipy',
 )
