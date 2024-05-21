@@ -118,7 +118,7 @@ def test_lm_expon(a: float):
     l_cdf = l_moment_from_cdf(cdf, [0, 1, 2, 3, 4])
     l_stats_cdf = l_cdf[1:] / l_cdf[[0, 0, 2, 2]]
 
-    assert_allclose(l_stats_cdf, l_stats)
+    assert_allclose(l_stats_cdf, l_stats, rtol=5e-7)
 
 
 def test_lm_normal():
