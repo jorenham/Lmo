@@ -18,6 +18,7 @@ import numpy as np
 import numpy.typing as npt
 
 from . import np as lnpt
+from .compat import TypeVarTuple, Unpack
 
 
 if TYPE_CHECKING:
@@ -30,19 +31,20 @@ if TYPE_CHECKING:
         ValuesView,
     )
 
-    from .compat import LiteralString, Self, Unpack
+    from .compat import LiteralString, Self
 
 
 __all__ = (
-    'QuadOptions',
-    'OptimizeResult',
-    'RVFunction',
     'RV',
-    'RVFrozen',
-    'RVDiscrete',
+    'FitResult',
+    'OptimizeResult',
+    'QuadOptions',
     'RVContinuous',
-    'RVDiscreteFrozen',
     'RVContinuousFrozen',
+    'RVDiscrete',
+    'RVDiscreteFrozen',
+    'RVFrozen',
+    'RVFunction',
 )
 
 _T = TypeVar('_T')
@@ -141,6 +143,31 @@ class OptimizeResult(Protocol):
 
 
 # scipy.stats
+
+_Ts_params = TypeVarTuple('_Ts_params', default=Unpack[tuple[()]])
+
+_Axes: TypeAlias = Any
+"""Placeholder for `matplotlib.axes.Axes`."""
+
+
+class FitResult(Protocol[Unpack[_Ts_params]]):
+    params: tuple[Unpack[_Ts_params]]
+    discrete: bool
+    success: bool
+    message: str | None
+
+    def nnlf(
+        self,
+        param: tuple[Unpack[_Ts_params]] | None = None,
+        data: lnpt.AnyArrayInt | lnpt.AnyArrayFloat | None = None,
+    ) -> float: ...
+
+    def plot(
+        self,
+        ax: _Axes | None = None,
+        *,
+        plot_type: Literal['hist', 'qq', 'pp', 'cdf'] = 'hist',
+    ) -> _Axes: ...
 
 
 class RVFunction(Protocol[_Tss]):
