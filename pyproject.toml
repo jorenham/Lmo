@@ -128,7 +128,6 @@ exclude = [
     "tests",
 ]
 ignore = [
-    # TODO: figure out how to do this conditionally
     "lmo/contrib/pandas.py",
 ]
 defineConstant = { NP_V2 = true }
@@ -138,30 +137,19 @@ venv = ".venv"
 pythonVersion = "3.10"
 pythonPlatform = "All"
 typeCheckingMode = "strict"
-useLibraryCodeForTypes = true
 
-deprecateTypingAliases = true
-disableBytesTypePromotions = true
-reportPropertyTypeMismatch = "warning"
-reportMissingTypeStubs = "none"
-reportUnusedImport = "warning"
-reportUnusedClass = "warning"
-reportUnusedFunction = "warning"
-reportUnusedVariable = "warning"
-reportConstantRedefinition = "warning"
-reportInconsistentConstructor = "warning"
-reportMissingTypeArgument = "warning"
-reportUninitializedInstanceVariable = "warning"
-reportCallInDefaultInitializer = "warning"
-reportUnnecessaryIsInstance = "warning"
-reportUnnecessaryCast = "warning"
-reportUnnecessaryComparison = "warning"
-reportUnnecessaryContains = "warning"
-reportUnusedCallResult = "warning"
-reportUnusedExpression = "warning"
-reportUnnecessaryTypeIgnoreComment = "warning"
-reportMatchNotExhaustive = "error"
-reportShadowedImports = "warning"
+useLibraryCodeForTypes = true
+reportMissingTypeStubs = false
+
+reportCallInDefaultInitializer = true
+reportImplicitOverride = false
+reportImplicitStringConcatenation = true
+reportImportCycles = false
+reportPropertyTypeMismatch = true
+reportShadowedImports = true
+reportUninitializedInstanceVariable = true
+reportUnnecessaryTypeIgnoreComment = true
+reportUnusedCallResult = true
 
 
 [tool.ruff]
@@ -202,12 +190,15 @@ select = [
     "A",        # flake8-builtins
     "COM",      # flake8-commas
     "C4",       # flake8-comprehensions
+    "DTZ",      # flake8-datetimez
     "T10",      # flake8-debugger
     "EXE",      # flake8-executable
     "FA",       # flake8-future-annotations
     "ISC",      # flake8-implicit-str-concat
     "ICN",      # flake8-import-conventions
     "INP",      # flake8-no-pep420
+    "LOG",      # flake8-logging
+    "G",        # flake8-logging-format
     "PIE",      # flake8-pie
     "T20",      # flake8-print
     "PYI",      # flake8-pyi
@@ -242,12 +233,7 @@ ignore = [
     # flake8-annotations
     "ANN101",   # missing-type-self (deprecated)
     "ANN102",   # missing-type-cls (deprecated)
-
-    # flake8-bugbear
-    "B023",     # function-uses-loop-variable
-
-    # pygrep-hooks
-    "PGH003",   # blanket-type-ignore
+    "ANN401",   # any-type
 
     # pylint
     "PLC0415",  # import-outside-top-level
