@@ -14,6 +14,7 @@ from collections.abc import Callable
 from typing import (
     TYPE_CHECKING,
     Any,
+    ClassVar,
     Final,
     Literal,
     Protocol,
@@ -53,7 +54,7 @@ from .typing import (
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from .typing.compat import Self
+    from .typing.compat import LiteralString, Self
 
 
 __all__ = (
@@ -68,7 +69,11 @@ _T_x = TypeVar('_T_x', bound=float | npt.NDArray[np.float64])
 
 _ArrF8: TypeAlias = npt.NDArray[np.float64]
 _AnyReal: TypeAlias = lnpt.AnyScalarInt | lnpt.AnyScalarFloat
+_AnyReal1D: TypeAlias = lnpt.AnyVectorInt | lnpt.AnyVectorFloat
+_AnyReal2D: TypeAlias = lnpt.AnyMatrixInt | lnpt.AnyMatrixFloat
 _AnyRealND: TypeAlias = lnpt.AnyArrayInt | lnpt.AnyArrayFloat
+_AnyReal3DPlus: TypeAlias = lnpt.AnyTensorInt | lnpt.AnyTensorFloat
+_AnyReal2DPlus: TypeAlias = _AnyReal2D | _AnyReal3DPlus
 
 _Stats0: TypeAlias = Literal['']
 _Stats1: TypeAlias = Literal['m', 'v', 's', 'k']
@@ -93,10 +98,21 @@ def _get_rng(seed: lnpt.Seed | None = None) -> np.random.Generator:
     return np.random.default_rng(seed)
 
 
+_LPolyParams: TypeAlias = (
+    tuple[lnpt.AnyVectorFloat]
+    | tuple[lnpt.AnyVectorFloat, AnyTrim]
+)
+
+
 class l_poly:
     """
     Polynomial quantile distribution with (only) the given L-moments.
     """
+    name: ClassVar[LiteralString] = 'l_poly'
+    badvalue: ClassVar[float] = np.nan
+    moment_type: ClassVar[Literal[0, 1]] = 1
+    numargs: ClassVar[int] = 2
+    shapes: ClassVar[LiteralString | None] = 'lmbda, trim'
 
     _l_moments: Final[_ArrF8]
     _trim: Final[tuple[float, float] | tuple[int, int]]
@@ -108,7 +124,7 @@ class l_poly:
 
     def __init__(
         self,
-        lmbda: npt.ArrayLike,
+        lmbda: lnpt.AnyVectorFloat,
         /,
         trim: AnyTrim = 0,
         *,
@@ -145,6 +161,16 @@ class l_poly:
         self._cdf = np.vectorize(self._cdf_single, [float])
 
         self._random_state = _get_rng(seed)
+
+    @property
+    def a(self) -> float:
+        """Lower bound of the support."""
+        return self._support[0]
+
+    @property
+    def b(self) -> float:
+        """Upper bound of the support."""
+        return self._support[1]
 
     @property
     def random_state(self) -> np.random.Generator:
@@ -391,6 +417,14 @@ class l_poly:
             x: Scalar or array-like of quantiles.
         """
         return 1 / self._qdf(self._cdf(x))
+
+    @overload
+    def logpdf(self, x: _AnyRealND) -> _ArrF8: ...
+    @overload
+    def logpdf(self, x: _AnyReal) -> float: ...
+    def logpdf(self, x: _AnyReal | _AnyRealND) -> float | _ArrF8:
+        """Logarithm of the PDF."""
+        return -np.log(self._qdf(self._cdf(x)))
 
     @overload
     def hf(self, x: _AnyRealND) -> _ArrF8: ...
@@ -826,6 +860,55 @@ class l_poly:
             - [`l_poly.l_ratio`][lmo.distributions.l_poly.l_ratio]
         """
         return float(self.l_ratio(4, 2, trim=trim))
+
+    @classmethod
+    def freeze(
+        cls,
+        lmbda: lnpt.AnyVectorFloat,
+        /,
+        trim: AnyTrim = 0,
+        **kwds: Any,
+    ) -> Self:
+        """For compatibility with `rv_generic`."""
+        return cls(lmbda, trim, **kwds)
+
+    @overload
+    @classmethod
+    def nnlf(cls, theta: _LPolyParams, x: _AnyReal1D) -> float: ...
+    @overload
+    @classmethod
+    def nnlf(cls, theta: _LPolyParams, x: _AnyReal2DPlus) -> _ArrF8: ...
+    @classmethod
+    def nnlf(cls, theta: _LPolyParams, x: _AnyRealND) -> float | _ArrF8:
+        """
+        Negative loglikelihood function.
+
+        This is calculated as `-sum(log pdf(x, *theta), axis=0)`,
+        where `theta` are the vector of L-moments, and optionally the trim.
+
+        Notes:
+            This is mostly for compatibility `rv_generic`, and is
+            impractically slow (due to the numerical inversion of the ppf).
+
+        Args:
+            theta:
+                Tuple of size 1 or 2, with the L-moments vector, and optionally
+                the trim (defaults to 0).
+            x:
+                Array-like with observations of shape `(n)` or `(n, *ks)`.
+
+        Returns:
+            Scalar or array of shape `(*ks)` with negative loglikelihoods.
+        """
+        match theta:
+            case (lmbda,):
+                rv = cls(lmbda)
+            case (lmbda, trim):
+                rv = cls(lmbda, trim)
+            case _ as huh:  # pyright: ignore[reportUnnecessaryComparison]
+                raise TypeError(huh)
+
+        return -np.log(rv.pdf(x)).sum(axis=0)
 
 
 # Parametric

@@ -8,7 +8,6 @@ from typing import (
     ParamSpec,
     Protocol,
     TypeAlias,
-    TypeVar,
     TypedDict,
     overload,
     runtime_checkable,
@@ -18,7 +17,7 @@ import numpy as np
 import numpy.typing as npt
 
 from . import np as lnpt
-from .compat import TypeVarTuple, Unpack
+from .compat import TypeVar, Unpack
 
 
 if TYPE_CHECKING:
@@ -38,6 +37,7 @@ __all__ = (
     'RV',
     'FitResult',
     'OptimizeResult',
+    'QuadWeights',
     'QuadOptions',
     'RVContinuous',
     'RVContinuousFrozen',
@@ -48,6 +48,11 @@ __all__ = (
 )
 
 _T = TypeVar('_T')
+_Tss = ParamSpec('_Tss')
+
+_ND0 = TypeVar('_ND0', bound=lnpt.AtLeast0D)
+_ND1 = TypeVar('_ND1', bound=lnpt.AtLeast1D)
+
 _Tuple2: TypeAlias = tuple[_T, _T]
 
 _RNG: TypeAlias = np.random.Generator | np.random.RandomState
@@ -63,11 +68,6 @@ _Real0D: TypeAlias = lnpt.AnyScalarInt | lnpt.AnyScalarFloat
 _Real1D: TypeAlias = lnpt.AnyVectorInt | lnpt.AnyVectorFloat
 _Real2D: TypeAlias = lnpt.AnyMatrixInt | lnpt.AnyMatrixFloat
 _Real3ND: TypeAlias = lnpt.AnyTensorInt | lnpt.AnyTensorFloat
-
-_ND0 = TypeVar('_ND0', bound=lnpt.AtLeast0D)
-_ND1 = TypeVar('_ND1', bound=lnpt.AtLeast1D)
-
-_Tss = ParamSpec('_Tss')
 
 
 # scipy.integrate
@@ -86,10 +86,13 @@ class QuadOptions(TypedDict, total=False):
     epsrel: float
     limit: int
     limlst: int
-    points: lnpt.Array[tuple[int], np.floating[Any]] | Sequence[float]
+    points: lnpt.AnyVectorFloat
     weight: QuadWeights
     wvar: float | tuple[float, float]
-    wopts: tuple[int, lnpt.Array[tuple[Literal[25], int], np.floating[Any]]]
+    wopts: tuple[
+        int,
+        lnpt.Array[tuple[Literal[25], int], np.floating[Any]],
+    ]
     maxp1: int
 
 
@@ -144,30 +147,47 @@ class OptimizeResult(Protocol):
 
 # scipy.stats
 
-_Ts_params = TypeVarTuple('_Ts_params', default=Unpack[tuple[()]])
+_T_params_co = TypeVar(
+    '_T_params_co',
+    bound=tuple[np.float64, ...],  # usually a namedtuple
+    covariant=True,
+    default=tuple[np.float64, np.float64],  # loc, scale
+)
 
-_Axes: TypeAlias = Any
-"""Placeholder for `matplotlib.axes.Axes`."""
+# placeholder for `matplotlib.axes.Axes`.
+_PlotAxes: TypeAlias = Any
+_PlotType: TypeAlias = Literal['hist', 'qq', 'pp', 'cdf']
 
 
-class FitResult(Protocol[Unpack[_Ts_params]]):
-    params: tuple[Unpack[_Ts_params]]
+@runtime_checkable
+class FitResult(Protocol[_T_params_co]):
+    """
+    Type stub for the `scipy.stats.fit` result.
+
+    Examples:
+        Create a dummy fit result instance
+
+        >>> import numpy as np
+        >>> from scipy.stats import fit, norm, bernoulli
+        >>> data = [0]
+        >>> isinstance(fit(norm, data), FitResult)
+        True
+        >>> isinstance(fit(bernoulli, data, [(0, 1)]), FitResult)
+        True
+    """
     discrete: bool
     success: bool
     message: str | None
 
-    def nnlf(
-        self,
-        param: tuple[Unpack[_Ts_params]] | None = None,
-        data: lnpt.AnyArrayInt | lnpt.AnyArrayFloat | None = None,
-    ) -> float: ...
+    @property
+    def params(self) -> _T_params_co: ...
 
     def plot(
         self,
-        ax: _Axes | None = None,
+        ax: _PlotAxes | None = ...,
         *,
-        plot_type: Literal['hist', 'qq', 'pp', 'cdf'] = 'hist',
-    ) -> _Axes: ...
+        plot_type: _PlotType = ...,
+    ) -> _PlotAxes: ...
 
 
 class RVFunction(Protocol[_Tss]):
@@ -196,14 +216,15 @@ class RVFunction(Protocol[_Tss]):
 
 @runtime_checkable
 class RV(Protocol):
+    """Runtime-checkable interface for `scipy.stats.rv_generic`."""
     a: float
     b: float
-    badvalue: float
-    moment_type: Literal[0, 1]
     name: LiteralString
+    badvalue: float
     numargs: int
     shapes: LiteralString | None
-    xtol: float
+    # moment_type: Literal[0, 1]
+    # xtol: float
 
     @property
     def random_state(self) -> _RNG: ...
@@ -212,7 +233,7 @@ class RV(Protocol):
 
     def __init__(self, seed: _Seed = ...) -> None: ...
 
-    def freeze(self, *args: _Real0D, **kwds: _Real0D) -> RVFrozen[Self]: ...
+    def freeze(self, /, *args: _Real0D, **kwds: _Real0D) -> RVFrozen[Self]: ...
     def __call__(self, *args: _Real0D, **kwds: _Real0D) -> RVFrozen[Self]: ...
 
     @overload
@@ -307,10 +328,11 @@ class RV(Protocol):
     def support(self, *args: _Real0D, **kwds: _Real0D) -> tuple[_F8, _F8]: ...
 
     @overload
-    def nnlf(self, __theta: _Real1D, __x: _Real1D) -> _F8: ...
+    def nnlf(self, /, __theta: _Real1D, __x: _Real1D) -> _F8: ...
     @overload
     def nnlf(
         self,
+        /,
         __theta: _Real1D,
         __x: _Real2D | _Real3ND,
     ) -> lnpt.Array[Any, _F8]: ...
@@ -431,6 +453,39 @@ class RVDiscrete(RV, Protocol):
 
 @runtime_checkable
 class RVContinuous(RV, Protocol):
+    """
+    Runtime-checkable interface for continuous probability distributions,
+    like [`scipy.stats.rv_continuous`][scipy.stats.rv_continuous] subtype
+    instances.
+
+    Examples:
+        >>> import numpy as np
+        >>> from scipy.stats import distributions as distrs
+        >>> from lmo import distributions as l_distrs
+        >>> isinstance(distrs.norm, RVContinuous)
+        True
+        >>> isinstance(l_distrs.wakeby, RVContinuous)
+        True
+
+        This also works if `rv_continuous` isn't a base class, but it
+        looks and quacks like one, e.g. [`l_poly`][lmo.distributions.l_poly].
+
+        >>> isinstance(l_distrs.l_poly, RVContinuous)
+        True
+
+        Discrete distributions aren't included:
+
+        >>> isinstance(distrs.binom, RVContinuous)
+        False
+
+        Note that for "frozen" distributions (a.k.a. random variables),
+        this is not the case:
+
+        >>> isinstance(distrs.norm(), RVContinuous)
+        False
+        >>> isinstance(l_distrs.wakeby(5, 1, .5), RVContinuous)
+        False
+    """
     def __init__(
         self,
         momtype: Literal[0, 1] = ...,
@@ -526,7 +581,7 @@ class RVContinuous(RV, Protocol):
 
     def fit(
         self,
-        data: npt.ArrayLike,
+        data: lnpt.AnyArray,
         *args: _Real0D,
         optimizer: Callable[..., _Real1D] = ...,
         method: Literal['MLE', 'MM'] = ...,
@@ -535,11 +590,11 @@ class RVContinuous(RV, Protocol):
         **kwds: _Real0D,
     ) -> tuple[float | lnpt.Real, ...]: ...
 
-    def fit_loc_scale(
-        self,
-        data: npt.ArrayLike,
-        *args: _Real0D,
-    ) -> tuple[_F8, _F8]: ...
+    # def fit_loc_scale(
+    #     self,
+    #     data: npt.ArrayLike,
+    #     *args: _Real0D,
+    # ) -> tuple[_F8, _F8]: ...
 
     def expect(
         self,
