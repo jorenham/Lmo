@@ -15,6 +15,7 @@ from ._utils import (
     moments_to_ratio,
     ordered,
     round0,
+    sort_maybe,
 )
 from .linalg import ir_pascal, sandwich, sh_legendre, trim_matrix
 from .typing import np as lnpt
@@ -298,7 +299,7 @@ def l_moment(
     dtype: _DType[_T_float] = np.float64,
     fweights: AnyFWeights | None = None,
     aweights: AnyAWeights | None = None,
-    sort: lnpt.SortKind | None = None,
+    sort: lnpt.SortKind | bool = True,
     cache: bool = False,
 ) -> _Vectorized[_T_float]:
     r"""
@@ -354,8 +355,9 @@ def l_moment(
             All `aweights` must be `>=0`, and the sum must be nonzero.
 
             The algorithm is similar to that for weighted quantiles.
-        sort ('quicksort' | 'heapsort' | 'stable'):
+        sort (True | False | 'quicksort' | 'heapsort' | 'stable'):
             Sorting algorithm, see [`numpy.sort`][numpy.sort].
+            Set to `False` if the array is already sorted.
         cache:
             Set to `True` to speed up future L-moment calculations that have
             the same number of observations in `a`, equal `trim`, and equal or
@@ -1109,7 +1111,7 @@ def l_moment_influence(
     /,
     trim: AnyTrim = 0,
     *,
-    sort: lnpt.SortKind | None = 'quicksort',
+    sort: lnpt.SortKind | bool = True,
     tol: float = 1e-8,
 ) -> Callable[[_T_x], _T_x]:
     r"""
@@ -1138,11 +1140,9 @@ def l_moment_influence(
     _r = clean_order(r)
     s, t = clean_trim(trim)
 
-    x_k = np.array(a, copy=True)
-    if sort:
-        x_k.sort(kind=sort)
+    x_k = np.array(a, copy=bool(sort))
+    x_k = sort_maybe(x_k, sort=sort, inplace=True)
 
-    x_k = np.sort(np.asarray(a), kind=sort)
     n = len(x_k)
 
     w_k = l_weights(_r, n, (s, t))[-1]
@@ -1179,7 +1179,7 @@ def l_ratio_influence(
     /,
     trim: AnyTrim = 0,
     *,
-    sort: lnpt.SortKind = 'quicksort',
+    sort: lnpt.SortKind | bool = True,
     tol: float = 1e-8,
 ) -> Callable[[_T_x], _T_x]:
     r"""
@@ -1208,12 +1208,12 @@ def l_ratio_influence(
     """
     _r, _s = clean_order(r), clean_order(s, name='s')
 
-    _x = np.array(a, copy=True)
-    _x.sort(kind=sort)
+    _x = np.array(a, copy=bool(sort))
+    _x = sort_maybe(_x, sort=sort, inplace=True)
     n = len(_x)
 
-    eif_r = l_moment_influence(_x, _r, trim, sort=None, tol=0)
-    eif_k = l_moment_influence(_x, _s, trim, sort=None, tol=0)
+    eif_r = l_moment_influence(_x, _r, trim, sort=False, tol=0)
+    eif_k = l_moment_influence(_x, _s, trim, sort=False, tol=0)
 
     l_r, l_k = cast(
         tuple[float, float],

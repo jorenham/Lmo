@@ -22,7 +22,7 @@ class LMomentOptions(TypedDict, total=False):
     Use as e.g. `**kwds: Unpack[LMomentOptions]` (on `python<3.11`) or
     `**kwds: *LMomentOptions` (on `python>=3.11`).
     """
-    sort: lnpt.SortKind
+    sort: lnpt.SortKind | bool
     cache: bool
     fweights: AnyFWeights
     aweights: AnyAWeights
