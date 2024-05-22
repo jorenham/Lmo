@@ -118,7 +118,7 @@ def l_comoment(
             Floating type to use in computing the L-moments. Default is
             [`numpy.float64`][numpy.float64].
 
-        sort ('quick' | 'stable' | 'heap'):
+        sort ('quicksort' | 'heapsort' | 'stable'):
             Sorting algorithm, see [`numpy.sort`][numpy.sort].
         cache:
             Set to `True` to speed up future L-moment calculations that have
@@ -195,7 +195,7 @@ def l_comoment(
 
     for j in range(m):
         # *concomitants* of x[i] w.r.t. x[j] for all i
-        x_kij = ordered(x, x[j], axis=-1, sort=sort)
+        x_kij = ordered(x, x[j], axis=-1, sort=sort or True)
         l_kij[:, :, j] = np.inner(p_k, x_kij)
 
     if r_min == 0:
