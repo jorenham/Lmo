@@ -88,7 +88,6 @@ def cov(
     r: _R,
     /,
     axis: None = ...,
-    *,
     dtype: _DType[_F] = np.float64,
     **kwds: Any,
 ) -> lnpt.Array[tuple[_R, _R], _F]: ...
@@ -119,7 +118,7 @@ def cov(
         r: The amount of orders to evaluate, i.e. $k = 0, \dots, r - 1$.
         axis: The axis along which to calculate the covariance matrices.
         dtype: Desired output floating data type.
-        **kwargs: Additional keywords to pass to `lmo.stats.ordered`.
+        **kwds: Additional keywords to pass to `lmo.stats.ordered`.
 
     Returns:
         S_b: Variance-covariance matrix/tensor of shape `(r, r)` or (r, r, n)
