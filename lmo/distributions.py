@@ -861,15 +861,28 @@ class l_poly:
         """
         return float(self.l_ratio(4, 2, trim=trim))
 
+    # `rv_continuous` and `rv_frozen` compatibility
+
+    @property
+    def dist(self) -> type[Self]:  # noqa: D102
+        return type(self)
+
+    @property
+    def args(self) -> _LPolyParams:  # noqa: D102
+        return (self._l_moments, self._trim)
+
+    @property
+    def kwds(self) -> dict[str, Any]:  # noqa: D102
+        return {}
+
     @classmethod
-    def freeze(
+    def freeze(  # noqa: D102
         cls,
         lmbda: lnpt.AnyVectorFloat,
         /,
         trim: AnyTrim = 0,
         **kwds: Any,
     ) -> Self:
-        """For compatibility with `rv_generic`."""
         return cls(lmbda, trim, **kwds)
 
     @overload

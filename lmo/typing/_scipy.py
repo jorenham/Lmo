@@ -340,6 +340,29 @@ class RV(Protocol):
 
 @runtime_checkable
 class RVDiscrete(RV, Protocol):
+    """
+    Runtime-checkable interface for discrete probability distributions,
+    like [`scipy.stats.rv_discrete`][scipy.stats.rv_discrete] subtype
+    instances.
+
+    Examples:
+        >>> import numpy as np
+        >>> from scipy.stats import distributions as distrs
+        >>> isinstance(distrs.binom, RVDiscrete)
+        True
+
+        Continuous distributions aren't included:
+
+        >>> isinstance(distrs.norm, RVDiscrete)
+        False
+
+        Note that for "frozen" distributions (a.k.a. random variables),
+        this is not the case:
+
+        >>> isinstance(distrs.binom(5, .42), RVDiscrete)
+        False
+    """
+
     @property
     def inc(self) -> int: ...
 
@@ -741,6 +764,21 @@ _RV_D_co = TypeVar('_RV_D_co', bound=RVDiscrete, covariant=True)
 
 @runtime_checkable
 class RVDiscreteFrozen(RVFrozen[_RV_D_co], Protocol[_RV_D_co]):
+    """
+    Runtime-checkable interface for discrete probability distributions,
+    like [`scipy.stats.rv_discrete`][scipy.stats.rv_discrete] subtype
+    instances.
+
+    Examples:
+        >>> import numpy as np
+        >>> from scipy.stats import distributions as distrs
+        >>> isinstance(distrs.bernoulli, RVDiscreteFrozen)
+        False
+        >>> isinstance(distrs.bernoulli(.42), RVDiscreteFrozen)
+        True
+        >>> isinstance(distrs.uniform(), RVDiscreteFrozen)
+        False
+    """
     @overload
     def pmf(self, k: _Real0D) -> _F8: ...
     @overload
@@ -760,6 +798,28 @@ _RV_C_co = TypeVar('_RV_C_co', bound=RVContinuous, covariant=True)
 
 @runtime_checkable
 class RVContinuousFrozen(RVFrozen[_RV_C_co], Protocol[_RV_C_co]):
+    """
+    Runtime-checkable interface for discrete probability distributions,
+    like [`scipy.stats.rv_discrete`][scipy.stats.rv_discrete] subtype
+    instances.
+
+    Examples:
+        >>> import numpy as np
+        >>> from scipy.stats import distributions as distrs
+        >>> isinstance(distrs.uniform, RVContinuousFrozen)
+        False
+        >>> isinstance(distrs.uniform(), RVContinuousFrozen)
+        True
+        >>> isinstance(distrs.bernoulli(.5), RVContinuousFrozen)
+        False
+
+        >>> from lmo.distributions import l_poly
+        >>> isinstance(l_poly([0, 1/6]), RVContinuousFrozen)
+        True
+        >>> isinstance(l_poly, RVContinuousFrozen)
+        True
+    """
+
     @overload
     def pdf(self, x: _Real0D) -> _F8: ...
     @overload
