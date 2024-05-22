@@ -21,6 +21,7 @@ __all__ = (
     'l_stats_orders',
     'moments_to_ratio',
     'moments_to_stats_cov',
+    'sort_maybe',
     'ordered',
     'plotting_positions',
     'round0',
@@ -138,6 +139,25 @@ def _sort_like(
     )
 
 
+def sort_maybe(
+    x: lnpt.Array[_T_shape1, _T_number],
+    /,
+    axis: int = -1,
+    *,
+    sort: bool | lnpt.SortKind = True,
+    inplace: bool = False,
+) -> lnpt.Array[_T_shape1, _T_number]:
+    if not sort:
+        return x
+
+    kind = sort if isinstance(sort, str) else None
+
+    if inplace:
+        x.sort(axis=axis, kind=kind)
+        return x
+    return np.sort(x, axis=axis, kind=kind)
+
+
 def ordered(  # noqa: C901
     x: lnpt.AnyArrayFloat,
     y: lnpt.AnyArrayFloat | None = None,
@@ -147,7 +167,7 @@ def ordered(  # noqa: C901
     *,
     fweights: AnyFWeights | None = None,
     aweights: AnyAWeights | None = None,
-    sort: lnpt.SortKind | None = None,
+    sort: lnpt.SortKind | bool = True,
 ) -> lnpt.Array[lnpt.AtLeast1D, lnpt.Float]:
     """
     Calculate `n = len(x)` order stats of `x`, optionally weighted.
@@ -173,8 +193,16 @@ def ordered(  # noqa: C901
             _z = np.apply_along_axis(np.add, axis, 1j * _x, _y)
 
     # apply the ordering
-    i_kk = np.argsort(_z, axis=axis, kind=sort)
-    x_kk = _sort_like(_x, i_kk, axis=axis)
+    if sort or sort is None:  # pyright: ignore[reportUnnecessaryComparison]
+        kind = sort if isinstance(sort, str) else None
+        i_kk = np.argsort(_z, axis=axis, kind=kind)
+        x_kk = _sort_like(_x, i_kk, axis=axis)
+    else:
+        if axis is None:
+            i_kk = np.arange(len(_z))
+        else:
+            i_kk = np.mgrid[tuple(slice(0, j) for j in _z.shape)][axis]
+        x_kk = _x
 
     # prepare observation weights
     w_kk = None
