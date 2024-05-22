@@ -70,7 +70,8 @@ _L_WEIGHTS_CACHE: Final[
     dict[
         # (n, s, t)
         tuple[int, int, int] | tuple[int, float, float],
-        lnpt.Array[tuple[int, int], _Floating],
+        # shape (r>=4, n)
+        lnpt.Array[Any, np.longdouble],
     ]
 ] = {}
 
@@ -91,7 +92,15 @@ def _l_weights_pwm(
         sh_legendre(r0, dtype=np.int64 if r0 < 29 else dtype),
         pwm_beta.weights(r0, n, dtype=dtype),
     )
-    return np.matmul(trim_matrix(r, trim, dtype=dtype), w0) if s or t else w0
+    wr = np.matmul(trim_matrix(r, trim, dtype=dtype), w0) if s or t else w0
+
+    # ensure that the trimmed ends are 0
+    if s:
+        wr[:, :s] = 0
+    if t:
+        wr[:, -t:] = 0
+
+    return wr
 
 
 def _l_weights_ostat(
@@ -125,7 +134,7 @@ def _l_weights_ostat(
 
 
 def l_weights(
-    r: _T_order,
+    r_max: _T_order,
     n: _T_size,
     /,
     trim: AnyTrim = 0,
@@ -170,8 +179,15 @@ def l_weights(
         observation vector(s) of size $n$), into (an unbiased estimate of) the
         *generalized trimmed L-moments*, with orders $\le r$.
 
+    Args:
+        r_max: The amount L-moment orders.
+        n: The number of samples.
+        trim: A scalar or 2-tuple with the trim orders. Defaults to 0.
+        dtype: The datatype of the returned weight matrix.
+        cache: Whether to cache the weights, defaults to `False`.
+
     Returns:
-        P_r: 2-D array of shape `(r, n)`.
+        P_r: 2-D array of shape `(r_max, n)`, readonly if `cache=True`
 
     Examples:
         >>> import lmo
@@ -186,21 +202,18 @@ def l_weights(
         - [J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
             L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
     """
-    if r == 0:
-        return np.empty((r, n), dtype=dtype)
+    if r_max < 0:
+        msg = f'r must be non-negative, got {r_max}'
+        raise ValueError(msg)
 
-    match clean_trim(trim):
-        case s, t if s < 0 or t < 0:
-            msg = f'trim orders must be >=0, got {trim}'
-            raise ValueError(msg)
-        case s, t:
-            pass
-        case _:  # type: ignore [reportUneccessaryComparison]
-            msg = (
-                f'trim must be a tuple with two non-negative ints or floats, '
-                f'got {trim!r}'
-            )
-            raise TypeError(msg)
+    if r_max == 0:
+        return np.empty((0, n), dtype=dtype)
+
+    s, t = clean_trim(trim)
+
+    if (n_min := r_max + s + t) > n:
+        msg = f'expected n >= r + s + t, got {n} < {n_min}'
+        raise ValueError(msg)
 
     # manual cache lookup, only if cache=False (for testability)
     # e.g. `functools.cache` would be inefficient for e.g. r=3 with cached r=4
@@ -208,34 +221,30 @@ def l_weights(
     if (
         cache
         and cache_key in _L_WEIGHTS_CACHE
-        and (w := _L_WEIGHTS_CACHE[cache_key]).shape[0] <= r
+        and (w := _L_WEIGHTS_CACHE[cache_key]).shape[0] >= r_max
     ):
-        if w.shape[0] < r:
-            w = w[:r]
-
-        # ignore if r is larger that what's cached
-        if w.shape[0] == r:
-            assert w.shape == (r, n)
-            return w.astype(dtype)
-
-    if r + s + t <= 24 and isinstance(s, int) and isinstance(t, int):
-        w = _l_weights_pwm(r, n, (s, t), dtype=dtype or np.float64)
-
-        # ensure that the trimmed ends are 0
-        if s:
-            w[:, :s] = 0
-        if t:
-            w[:, -t:] = 0
+        pass
     else:
-        w = _l_weights_ostat(r, n, (s, t), dtype=dtype or np.float64)
+        # when caching, use at least 4 orders, to avoid cache misses
+        _r_max = 4 if cache and r_max < 4 else r_max
 
-    if cache:
-        # the pyright error here is due to the fact that the first type param
-        # of `np.ndarray` is invariant (which is incorrect), instead of
-        # being covariant
-        _L_WEIGHTS_CACHE[cache_key] = w  # pyright: ignore[reportArgumentType]
+        # use the highest available precision when caching (96 or 128 bits,
+        # depending on the platform)
+        _dtype = np.longdouble if cache else dtype
 
-    return w
+        if r_max + s + t <= 24 and isinstance(s, int) and isinstance(t, int):
+            w = _l_weights_pwm(_r_max, n, (s, t), dtype=_dtype)
+        else:
+            w = _l_weights_ostat(_r_max, n, (s, t), dtype=_dtype)
+
+        if cache:
+            w.setflags(write=False)
+            _L_WEIGHTS_CACHE[cache_key] = w
+
+    if w.shape[0] > r_max:
+        w = w[:r_max]
+
+    return w.astype(dtype, casting='same_kind', copy=False)
 
 
 @overload
