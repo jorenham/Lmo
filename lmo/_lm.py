@@ -17,6 +17,7 @@ from ._utils import (
     round0,
 )
 from .linalg import ir_pascal, sandwich, sh_legendre, trim_matrix
+from .typing import np as lnpt
 from .typing.compat import TypeVar
 
 
@@ -30,7 +31,6 @@ if TYPE_CHECKING:
         AnyOrderND,
         AnyTrim,
         LMomentOptions,
-        np as lnpt,
     )
     from .typing.compat import Unpack
 
@@ -66,14 +66,13 @@ _DType: TypeAlias = np.dtype[_T_float] | type[_T_float]
 _Vectorized: TypeAlias = _T_float | npt.NDArray[_T_float]
 _Floating: TypeAlias = np.floating[Any]
 
-_L_WEIGHTS_CACHE: Final[
-    dict[
-        # (n, s, t)
-        tuple[int, int, int] | tuple[int, float, float],
-        # shape (r>=4, n)
-        lnpt.Array[Any, np.longdouble],
-    ]
-] = {}
+# (n, s, t)
+_CacheKey: TypeAlias = tuple[int, int, int] | tuple[int, float, float]
+# `r: _T_order >= 4`
+_CacheArray: TypeAlias = lnpt.Array[tuple[_T_order, _T_size], np.longdouble]
+_Cache: TypeAlias = dict[_CacheKey, _CacheArray[Any, Any]]
+
+_CACHE: Final[_Cache] = {}
 
 
 def _l_weights_pwm(
@@ -217,12 +216,8 @@ def l_weights(
 
     # manual cache lookup, only if cache=False (for testability)
     # e.g. `functools.cache` would be inefficient for e.g. r=3 with cached r=4
-    cache_key = n, s, t
-    if (
-        cache
-        and cache_key in _L_WEIGHTS_CACHE
-        and (w := _L_WEIGHTS_CACHE[cache_key]).shape[0] >= r_max
-    ):
+    key = n, s, t
+    if (w := _CACHE.get(key)) is not None and w.shape[0] >= r_max:
         pass
     else:
         # when caching, use at least 4 orders, to avoid cache misses
@@ -240,11 +235,8 @@ def l_weights(
         if cache:
             w.setflags(write=False)
             # be wary of a potential race condition
-            if (
-                cache_key not in _L_WEIGHTS_CACHE
-                or w.shape[0] >= _L_WEIGHTS_CACHE[cache_key].shape[0]
-            ):
-                _L_WEIGHTS_CACHE[cache_key] = w
+            if key not in _CACHE or w.shape[0] >= _CACHE[key].shape[0]:
+                _CACHE[key] = w
 
     if w.shape[0] > r_max:
         w = w[:r_max]
