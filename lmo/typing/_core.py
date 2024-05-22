@@ -35,4 +35,4 @@ class LComomentOptions(TypedDict, total=False):
     """
     sort: lnpt.SortKind
     cache: bool
-    rowvar: bool
+    rowvar: bool | None
