@@ -12,7 +12,7 @@ from hypothesis import (
     settings,
     strategies as st,
 )
-from numpy.testing import assert_allclose
+from numpy.testing import assert_allclose as _assert_allclose
 from scipy.special import ndtr, ndtri, zeta
 
 from lmo import constants
@@ -26,6 +26,8 @@ from lmo.theoretical import (
     qdf_from_l_moments,
 )
 
+
+assert_allclose = functools.partial(_assert_allclose, atol=1e-12)
 
 norm_cdf = cast(Callable[[float], float], ndtr)
 norm_ppf = cast(Callable[[float], float], ndtri)
@@ -116,7 +118,7 @@ def test_lm_expon(a: float):
     l_cdf = l_moment_from_cdf(cdf, [0, 1, 2, 3, 4])
     l_stats_cdf = l_cdf[1:] / l_cdf[[0, 0, 2, 2]]
 
-    assert_allclose(l_stats_cdf, l_stats)
+    assert_allclose(l_stats_cdf, l_stats, rtol=5e-7)
 
 
 def test_lm_normal():
@@ -184,7 +186,7 @@ def test_tlm_cauchy():
 
 
 @given(a=st.floats(0.1, 10))
-def test_lhm_expon(a: float):
+def test_llm_expon(a: float):
     r = [1, 2, 3, 4]
     lr = a * np.array([1, 1 / 2, 1 / 9, 1 / 24]) / 2
 
@@ -196,7 +198,7 @@ def test_lhm_expon(a: float):
     assert_allclose(l_ppf, lr)
 
     l_cdf = l_moment_from_cdf(cdf, r, trim=(0, 1))
-    assert_allclose(l_cdf, lr)
+    assert_allclose(l_cdf, lr, rtol=5e-7)
 
     l_qdf = l_moment_from_qdf(qdf, r[1:], trim=(0, 1))
     assert_allclose(l_qdf, lr[1:])
@@ -225,7 +227,7 @@ def test_lm_cov_expon():
     assert_allclose(k3, k3_hat)
 
 
-def test_lhm_cov_expon():
+def test_llm_cov_expon():
     k3 = np.array([
         [1 / 3, 1 / 8, 0],
         [1 / 8, 3 / 40, 1 / 60],

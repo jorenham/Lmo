@@ -37,12 +37,13 @@ Documentation = "https://jorenham.github.io/Lmo/"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.14"
-typing_extensions = {version = "^4.1", python = "<3.11"}
+typing_extensions = {version = "^4.5", python = "<3.13"}
 
 # https://scientific-python.org/specs/spec-0000/
 numpy = ">=1.23"
 scipy = ">=1.9"
 pandas = {version = ">=1.5", optional = true}
+optype = "^0.4.0"
 
 [tool.poetry.group.dev.dependencies]
 codespell = "^2.2.6"
@@ -127,7 +128,6 @@ exclude = [
     "tests",
 ]
 ignore = [
-    # TODO: figure out how to do this conditionally
     "lmo/contrib/pandas.py",
 ]
 defineConstant = { NP_V2 = true }
@@ -137,30 +137,19 @@ venv = ".venv"
 pythonVersion = "3.10"
 pythonPlatform = "All"
 typeCheckingMode = "strict"
-useLibraryCodeForTypes = true
 
-deprecateTypingAliases = true
-disableBytesTypePromotions = true
-reportPropertyTypeMismatch = "warning"
-reportMissingTypeStubs = "none"
-reportUnusedImport = "warning"
-reportUnusedClass = "warning"
-reportUnusedFunction = "warning"
-reportUnusedVariable = "warning"
-reportConstantRedefinition = "warning"
-reportInconsistentConstructor = "warning"
-reportMissingTypeArgument = "warning"
-reportUninitializedInstanceVariable = "warning"
-reportCallInDefaultInitializer = "warning"
-reportUnnecessaryIsInstance = "warning"
-reportUnnecessaryCast = "warning"
-reportUnnecessaryComparison = "warning"
-reportUnnecessaryContains = "warning"
-reportUnusedCallResult = "warning"
-reportUnusedExpression = "warning"
-reportUnnecessaryTypeIgnoreComment = "warning"
-reportMatchNotExhaustive = "error"
-reportShadowedImports = "warning"
+useLibraryCodeForTypes = true
+reportMissingTypeStubs = false
+
+reportCallInDefaultInitializer = true
+reportImplicitOverride = false
+reportImplicitStringConcatenation = true
+reportImportCycles = false
+reportPropertyTypeMismatch = true
+reportShadowedImports = true
+reportUninitializedInstanceVariable = true
+reportUnnecessaryTypeIgnoreComment = true
+reportUnusedCallResult = true
 
 
 [tool.ruff]
@@ -201,12 +190,15 @@ select = [
     "A",        # flake8-builtins
     "COM",      # flake8-commas
     "C4",       # flake8-comprehensions
+    "DTZ",      # flake8-datetimez
     "T10",      # flake8-debugger
     "EXE",      # flake8-executable
     "FA",       # flake8-future-annotations
     "ISC",      # flake8-implicit-str-concat
     "ICN",      # flake8-import-conventions
     "INP",      # flake8-no-pep420
+    "LOG",      # flake8-logging
+    "G",        # flake8-logging-format
     "PIE",      # flake8-pie
     "T20",      # flake8-print
     "PYI",      # flake8-pyi
@@ -241,12 +233,7 @@ ignore = [
     # flake8-annotations
     "ANN101",   # missing-type-self (deprecated)
     "ANN102",   # missing-type-cls (deprecated)
-
-    # flake8-bugbear
-    "B023",     # function-uses-loop-variable
-
-    # pygrep-hooks
-    "PGH003",   # blanket-type-ignore
+    "ANN401",   # any-type
 
     # pylint
     "PLC0415",  # import-outside-top-level
@@ -271,6 +258,7 @@ typing-modules = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["D", "N806", "ANN", "PLC2701"]
+"typetests/*" = ["D", "INP001"]
 
 [tool.ruff.lint.pep8-naming]
 extend-ignore-names = ["*_gen", "l_rv_*"]
@@ -343,3 +331,25 @@ skip = """\
     *.ipynb\
 """
 context = 2
+
+
+[tool.yapf]
+based_on_style = 'pep8'
+
+align_closing_bracket_with_visual_indent = false
+blank_lines_around_top_level_definition = 1
+blank_line_before_nested_class_or_def = false
+blank_lines_between_top_level_imports_and_variables = 2
+coalesce_brackets = true
+continuation_align_style = 'space'
+dedent_closing_brackets = true
+force_multiline_dict = true
+indent_dictionary_value = true
+spaces_around_power_operator = true
+split_all_top_level_comma_separated_values = true
+split_arguments_when_comma_terminated = true
+split_before_arithmetic_operator = true
+split_before_dot = true
+split_before_expression_after_opening_paren = true
+split_before_first_argument = true
+split_complex_comprehension = true

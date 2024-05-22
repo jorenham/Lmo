@@ -1,14 +1,14 @@
 """Integrations and extensions for 3rd party packages."""
 
-__all__ = ('install',)
-
 try:
     import pandas as pd
 except ImportError:
     pd = None
 
+__all__ = ('install',)
 
-def install():
+
+def install() -> None:
     """
     Install the extensions for all available 3rd party packages.
 

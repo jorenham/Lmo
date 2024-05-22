@@ -4,25 +4,41 @@ probability-weighted moments (PWM's), $\beta_k = M_{1,k,0}$.
 
 Primarily used as an intermediate step for L-moment estimation.
 """
-__all__ = 'weights', 'cov'
+from __future__ import annotations
 
-from typing import Any, TypeVar, cast
+from typing import TYPE_CHECKING, Any, TypeAlias, cast, overload
 
 import numpy as np
 import numpy.typing as npt
 
 from ._utils import ordered
+from .typing.compat import TypeVar
 
 
-T = TypeVar('T', bound=np.floating[Any])
+if TYPE_CHECKING:
+    from .typing import np as lnpt
+    from .typing.compat import Unpack
+
+
+__all__ = (
+    'weights',
+    'cov',
+)
+
+
+_F = TypeVar('_F', bound=np.floating[Any], default=np.float64)
+_R = TypeVar('_R', bound=int)
+_N = TypeVar('_N', bound=int)
+
+_DType: TypeAlias = np.dtype[_F] | type[_F]
 
 
 def weights(
-    r: int,
-    n: int,
+    r: _R,
+    n: _N,
     /,
-    dtype: np.dtype[T] | type[T] = np.float64,
-) -> npt.NDArray[T]:
+    dtype: _DType[_F] = np.float64,
+) -> lnpt.Array[tuple[_R, _N], _F]:
     r"""
     Probability Weighted moment (PWM) projection matrix $B$ of the
     unbiased estimator for $\beta_k = M_{1,k,0}$ for $k = 0, \dots, r - 1$.
@@ -63,31 +79,50 @@ def weights(
         w_r[k, k:] = w_r[k - 1, k:] * i1[:-k] / (n - k)
 
     # the + 0. eliminates negative zeros
-    return cast(npt.NDArray[T], w_r + 0.0)
+    return cast(npt.NDArray[_F], w_r + 0.0)
 
 
+@overload
 def cov(
-    a: npt.ArrayLike,
+    a: lnpt.AnyArrayFloat,
+    r: _R,
+    /,
+    axis: None = ...,
+    *,
+    dtype: _DType[_F] = np.float64,
+    **kwds: Any,
+) -> lnpt.Array[tuple[_R, _R], _F]: ...
+@overload
+def cov(
+    a: lnpt.AnyArrayFloat,
+    r: _R,
+    /,
+    axis: int,
+    dtype: _DType[_F] = np.float64,
+    **kwds: Any,
+) -> lnpt.Array[tuple[_R, _R, Unpack[tuple[int, ...]]], _F]: ...
+def cov(
+    a: lnpt.AnyArrayFloat,
     r: int,
     /,
     axis: int | None = None,
-    dtype: np.dtype[T] | type[T] = np.float64,
-    **kwargs: Any,
-) -> npt.NDArray[T]:
+    dtype: _DType[_F] = np.float64,
+    **kwds: Any,
+) -> lnpt.Array[Any, _F]:
     r"""
     Distribution-free variance-covariance matrix of the probability weighted
     moment (PWM) point estimates $\beta_k = M_{1,k,0}$, with orders
     $k = 0, \dots, r - 1$.
 
     Parameters:
-        a: Array-like with observations.
+        a: 1-D or 2-D array-like with observations.
         r: The amount of orders to evaluate, i.e. $k = 0, \dots, r - 1$.
         axis: The axis along which to calculate the covariance matrices.
         dtype: Desired output floating data type.
         **kwargs: Additional keywords to pass to `lmo.stats.ordered`.
 
     Returns:
-        S_b: Variance-covariance matrix/tensor of shape `(r, ...)`
+        S_b: Variance-covariance matrix/tensor of shape `(r, r)` or (r, r, n)
 
     See Also:
         - https://wikipedia.org/wiki/Covariance_matrix
@@ -96,7 +131,7 @@ def cov(
         - [E. Elmamir & A. Seheult (2004) - Exact variance structure of sample
             L-moments](https://doi.org/10.1016/S0378-3758(03)00213-1)
     """
-    x = ordered(a, axis=axis, dtype=dtype, **kwargs)
+    x = ordered(a, axis=axis, dtype=dtype, **kwds)
 
     # ensure the samples are "in front" (along axis=0)
     if axis and x.ndim > 1:
@@ -121,7 +156,7 @@ def cov(
     # ensure that at most ffact[..., -k_max] will give 0
     ffact = np.c_[ffact, np.zeros((r, r))]
 
-    spec = 'i..., i...'
+    spec: str = 'i..., i...'
 
     # for k == l (variances on the diagonal):
     # sum(
@@ -140,7 +175,7 @@ def cov(
 
         # (n-k-1)^(k+1)
         denom = n * (n - 2 * k - 1) * ffact[k, n - k - 1]
-        m_bb = np.einsum(spec, v_ki, x) / denom  # pyright: ignore
+        m_bb = np.einsum(spec, v_ki, x) / denom  # pyright: ignore[reportUnknownMemberType]
         s_b[k, k] = b[k] ** 2 - m_bb
 
     # for k != l (actually k > l since symmetric)
@@ -162,7 +197,7 @@ def cov(
 
         # `(n-k-1)^(l+1)`
         denom = n * (n - k - m - 1) * ffact[m, n - k - 1]
-        m_bb = np.einsum(spec, v_ki, x) / denom  # pyright: ignore
+        m_bb = np.einsum(spec, v_ki, x) / denom  # pyright: ignore[reportUnknownMemberType]
 
         # because s_bb.T == s_bb
         s_b[k, m] = s_b[m, k] = b[k] * b[m] - m_bb

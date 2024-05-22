@@ -1,9 +1,9 @@
-"""Parametric inference."""
+"""
+Parametric inference using the (Generalized) Method of L-Moments, L-(G)MM.
+"""
+from __future__ import annotations
 
-__all__ = 'GMMResult', 'fit'
-
-from collections.abc import Callable
-from typing import Any, NamedTuple, cast
+from typing import TYPE_CHECKING, Any, NamedTuple, TypeAlias, cast
 
 import numpy as np
 import numpy.typing as npt
@@ -14,7 +14,26 @@ from ._lm_co import l_coscale as l_coscale_est
 from ._utils import clean_orders, clean_trim
 from .diagnostic import HypothesisTestResult, l_moment_bounds
 from .theoretical import l_moment_from_ppf
-from .typing import AnyTrim, DistributionFunction, IntVector, OptimizeResult
+from .typing import scipy as lsct
+
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from .typing import (
+        AnyOrderND,
+        AnyTrim,
+        np as lnpt,
+    )
+
+
+__all__ = (
+    'GMMResult',
+    'fit',
+)
+
+
+_ArrF8: TypeAlias = npt.NDArray[np.float64]
 
 
 class GMMResult(NamedTuple):
@@ -51,9 +70,9 @@ class GMMResult(NamedTuple):
     args: tuple[float | int, ...]
     success: bool
     statistic: float
-    eps: npt.NDArray[np.float64]
+    eps: _ArrF8
 
-    weights: npt.NDArray[np.float64]
+    weights: _ArrF8
 
     @property
     def n_arg(self) -> int:
@@ -134,12 +153,12 @@ class GMMResult(NamedTuple):
 
 
 def _loss_step(
-    args: npt.NDArray[np.float64],
-    l_fn: Callable[..., npt.NDArray[np.float64]],
+    args: _ArrF8,
+    l_fn: Callable[..., _ArrF8],
     r: npt.NDArray[np.int64],
-    l_r: npt.NDArray[np.float64],
+    l_r: _ArrF8,
     trim: AnyTrim,
-    w_rr: npt.NDArray[np.float64],
+    w_rr: _ArrF8,
 ) -> float:
     lmbda_r = l_fn(r, *args, trim=trim)
 
@@ -148,27 +167,25 @@ def _loss_step(
         raise ValueError(msg)
 
     g_r = lmbda_r - l_r
-    return np.sqrt(g_r.T @ w_rr @ g_r)  # type: ignore
+    return cast(float, np.sqrt(g_r.T @ w_rr @ g_r))
 
 
-def _get_l_moment_fn(
-    ppf: DistributionFunction[...],
-) -> Callable[..., npt.NDArray[np.float64]]:
+def _get_l_moment_fn(ppf: lsct.RVFunction[...]) -> Callable[..., _ArrF8]:
     def l_moment_fn(
-        r: IntVector,
+        r: AnyOrderND,
         *args: Any,
-        trim: AnyTrim = (0, 0),
-    ) -> npt.NDArray[np.float64]:
+        trim: AnyTrim = 0,
+    ) -> _ArrF8:
         return l_moment_from_ppf(lambda q: ppf(q, *args), r, trim=trim)
 
     return l_moment_fn
 
 
 def _get_weights_mc(
-    y: npt.NDArray[np.float64],
+    y: _ArrF8,
     r: npt.NDArray[np.int64],
     trim: tuple[int, int] | tuple[float, float] = (0, 0),
-) -> npt.NDArray[np.float64]:
+) -> _ArrF8:
     l_r = l_moment_est(
         y,
         r,
@@ -197,18 +214,18 @@ def _get_weights_mc(
 
 
 def fit(  # noqa: C901
-    ppf: DistributionFunction[...],
-    args0: npt.ArrayLike,
+    ppf: lsct.RVFunction[...],
+    args0: lnpt.AnyVectorFloat,
     n_obs: int,
-    l_moments: npt.ArrayLike,
-    r: IntVector | None = None,
-    trim: AnyTrim = (0, 0),
+    l_moments: lnpt.AnyVectorFloat,
+    r: AnyOrderND | None = None,
+    trim: AnyTrim = 0,
     *,
     k: int | None = None,
     k_max: int = 50,
     l_tol: float = 1e-4,
 
-    l_moment_fn: Callable[..., npt.NDArray[np.float64]] | None = None,
+    l_moment_fn: Callable[..., _ArrF8] | None = None,
     n_mc_samples: int = 9999,
     random_state: (
         int
@@ -346,7 +363,7 @@ def fit(  # noqa: C901
     # order- and trim- agnostic (used in convergence criterion)
     l_r_ub = np.r_[1, l_moment_bounds(_r[1:], trim=_trim)]
     l_2c = l_r[1] / l_r_ub[1]
-    scale_r = cast(npt.NDArray[np.float64], 1 / (l_2c * l_r_ub))
+    scale_r = cast(_ArrF8, 1 / (l_2c * l_r_ub))
 
     # Initial parametric population L-moments
     _l_moment_fn = l_moment_fn or _get_l_moment_fn(ppf)
@@ -390,15 +407,15 @@ def fit(  # noqa: C901
         # calculate the weight matrix
         if n_con > n_par:
             w_rr = _get_weights_mc(
-                ppf(cast(npt.NDArray[np.float64], qs), *theta),
+                ppf(cast(_ArrF8, qs), *theta),
                 _r,
                 trim=_trim,
             )
 
         # run the optimizer
         res = cast(
-            OptimizeResult,
-            optimize.minimize(  # type: ignore
+            lsct.OptimizeResult,
+            optimize.minimize(  # pyright: ignore[reportUnknownMemberType]
                 _loss_step,
                 theta,
                 args=(_l_moment_fn, _r, l_r, _trim, w_rr),

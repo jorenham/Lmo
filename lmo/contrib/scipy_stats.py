@@ -1,11 +1,13 @@
-"""Extensions for `scipy.stats` distributions."""
-
-__all__ = ('l_rv_generic', 'l_rv_frozen', 'install')
-
 # pyright: reportUninitializedInstanceVariable=false
+"""
+Extension methods for the (univariate) distributions in
+[`scipy.stats`][scipy.stats].
+"""
+from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
 from typing import (
+    TYPE_CHECKING,
     Any,
     ClassVar,
     Literal,
@@ -19,7 +21,9 @@ from typing import (
 
 import numpy as np
 import numpy.typing as npt
-from scipy.stats import fit as scipy_fit  # type: ignore
+from scipy.stats import (
+    fit as scipy_fit,  # pyright: ignore[reportUnknownVariableType]
+)
 from scipy.stats.distributions import rv_continuous, rv_frozen
 
 from lmo import (
@@ -27,7 +31,7 @@ from lmo import (
     l_moment as l_moment_est,
 )
 from lmo._utils import (
-    broadstack,
+    clean_order,
     clean_orders,
     clean_trim,
     l_stats_orders,
@@ -42,31 +46,45 @@ from lmo.theoretical import (
     l_stats_cov_from_cdf,
 )
 from lmo.typing import (
-    AnyInt,
-    AnyTrim,
-    DistributionFunction,
-    IntVector,
-    QuadOptions,
+    AnyOrder,
+    AnyOrderND,
+    scipy as lsct,
 )
 
 
-T = TypeVar('T')
-V = TypeVar('V', bound=float | npt.NDArray[np.float64])
+if TYPE_CHECKING:
+    from lmo.typing import (
+        AnyTrim,
+        np as lnpt,
+    )
 
-_Tuple4: TypeAlias = tuple[T, T, T, T]
+
+__all__ = (
+    'install',
+    'l_rv_frozen',
+    'l_rv_generic',
+)
+
+
+_T = TypeVar('_T')
+_T_x = TypeVar('_T_x', bound=float | npt.NDArray[np.float64])
+
+_Tuple2: TypeAlias = tuple[_T, _T]
+_Tuple4: TypeAlias = tuple[_T, _T, _T, _T]
+_ArrF8: TypeAlias = npt.NDArray[np.float64]
 
 
 class _ShapeInfo(Protocol):
     """Stub for `scipy.stats._distn_infrastructure._ShapeInfo`."""
     name: str
     integrality: bool
-    domain: Sequence[float]  # in practice a list of size 2
+    domain: Sequence[float]  # in practice a list of size 2 (y no tuple?)
 
     def __init__(
         self, name: str,
         integrality: bool = ...,
-        domain: tuple[float, float] = ...,
-        inclusive: tuple[bool, bool] = ...,
+        domain: _Tuple2[float] = ...,
+        inclusive: _Tuple2[bool] = ...,
     ) -> None:
         ...
 
@@ -114,29 +132,31 @@ class l_rv_generic(PatchClass):
     shapes: str
 
     _argcheck: Callable[..., int]
-    _logpxf: DistributionFunction[...]
-    _cdf: DistributionFunction[...]
+    _logpxf: lsct.RVFunction[...]
+    _cdf: lsct.RVFunction[...]
     _fitstart: Callable[..., tuple[float, ...]]
-    _get_support: Callable[..., tuple[float, float]]
+    _get_support: Callable[..., _Tuple2[float]]
     _param_info: Callable[[], list[_ShapeInfo]]
     _parse_args: Callable[..., tuple[tuple[Any, ...], float, float]]
-    _ppf: DistributionFunction[...]
+    _ppf: lsct.RVFunction[...]
     _shape_info: Callable[[], list[_ShapeInfo]]
     _stats: Callable[..., _Tuple4[float | None]]
     _unpack_loc_scale: Callable[
-        [npt.ArrayLike],
+        [lnpt.AnyVector],
         tuple[float, float, tuple[float, ...]],
     ]
-    cdf: DistributionFunction[...]
+    cdf: lsct.RVFunction[...]
     fit: Callable[..., tuple[float, ...]]
     mean: Callable[..., float]
-    ppf: DistributionFunction[...]
+    ppf: lsct.RVFunction[...]
     std: Callable[..., float]
 
-    def _get_xxf(self, *args: Any, loc: float = 0, scale: float = 1) -> tuple[
-        Callable[[float], float],
-        Callable[[float], float],
-    ]:
+    def _get_xxf(
+        self,
+        *args: Any,
+        loc: float = 0,
+        scale: float = 1,
+    ) -> _Tuple2[Callable[[float], float]]:
         assert scale > 0
 
         _cdf, _ppf = self._cdf, self._ppf
@@ -153,9 +173,9 @@ class l_rv_generic(PatchClass):
         self,
         r: npt.NDArray[np.int64],
         *args: Any,
-        trim: tuple[int, int] | tuple[float, float] = (0, 0),
-        quad_opts: QuadOptions | None = None,
-    ) -> npt.NDArray[np.float64]:
+        trim: _Tuple2[int] | _Tuple2[float] = (0, 0),
+        quad_opts: lsct.QuadOptions | None = None,
+    ) -> _ArrF8:
         """
         Population L-moments of the standard distribution (i.e. assuming
         `loc=0` and `scale=1`).
@@ -183,18 +203,18 @@ class l_rv_generic(PatchClass):
 
     def _logqdf(
         self,
-        u: npt.NDArray[np.float64],
+        u: _ArrF8,
         *args: Any,
-    ) -> npt.NDArray[np.float64]:
+    ) -> _ArrF8:
         """Overridable log quantile distribution function (QDF)."""
         with np.errstate(divide='ignore'):
             return -self._logpxf(self._ppf(u, *args), *args)
 
     def _qdf(
         self,
-        u: npt.NDArray[np.float64],
+        u: _ArrF8,
         *args: Any,
-    ) -> npt.NDArray[np.float64]:
+    ) -> _ArrF8:
         r"""
         Overridable quantile distribution function (QDF).
 
@@ -206,34 +226,32 @@ class l_rv_generic(PatchClass):
     @overload
     def l_moment(
         self,
-        r: IntVector,
+        r: AnyOrderND,
         /,
         *args: Any,
         trim: AnyTrim = ...,
-        quad_opts: QuadOptions | None = ...,
+        quad_opts: lsct.QuadOptions | None = ...,
         **kwds: Any,
-    ) -> npt.NDArray[np.float64]: ...
-
+    ) -> _ArrF8: ...
     @overload
     def l_moment(
         self,
-        r: AnyInt,
+        r: AnyOrder,
         /,
         *args: Any,
         trim: AnyTrim = ...,
-        quad_opts: QuadOptions | None = ...,
+        quad_opts: lsct.QuadOptions | None = ...,
         **kwds: Any,
     ) -> np.float64: ...
-
     def l_moment(
         self,
-        r: AnyInt | IntVector,
+        r: AnyOrder | AnyOrderND,
         /,
         *args: Any,
-        trim: AnyTrim = (0, 0),
-        quad_opts: QuadOptions | None = None,
+        trim: AnyTrim = 0,
+        quad_opts: lsct.QuadOptions | None = None,
         **kwds: Any,
-    ) -> np.float64 | npt.NDArray[np.float64]:
+    ) -> np.float64 | _ArrF8:
         r"""
         Population L-moment(s) $\lambda^{(s,t)}_r$.
 
@@ -303,28 +321,27 @@ class l_rv_generic(PatchClass):
         See Also:
             - [`lmo.l_moment`][lmo.l_moment]: sample L-moment
         """
-        _r = clean_orders(r)
-        _trim = clean_trim(trim)
+        if np.isscalar(r):
+            _r = np.asarray(clean_order(cast(AnyOrder, r)))
+        else:
+            _r = clean_orders(cast(AnyOrderND, r))
+        (s, t) = _trim = clean_trim(trim)
 
-        if (
-            _trim[0] == _trim[1] == 0
-            and not np.isfinite(self.mean(*args, **kwds))
-        ):
-            # first moment condition not met
-            return np.full(_r.shape, np.nan)[()]
+        shapes, loc, scale = self._parse_args(*args, **kwds)
 
-        args, loc, scale = self._parse_args(*args, **kwds)
-        if not self._argcheck(*args):
-            return np.full(_r.shape, np.nan)[()]
-
-        if _trim[0] <= 0 and _trim[1] <= 0:
-            mu1 = self._stats(*args)[0]
-            if mu1 is not None and np.isnan(mu1):
-                # undefined mean -> distr is "pathological" (e.g. cauchy)
+        if s <= 0 and t <= 0:
+            _mean = self._stats(*shapes)[0]
+            if _mean is None:
+                _mean = self.mean(*shapes)
+            if not np.isfinite(_mean):
+                # first moment condition not met
                 return np.full(_r.shape, np.nan)[()]
 
+        if not self._argcheck(*shapes):
+            return np.full(_r.shape, np.nan)[()]
+
         # L-moments of the standard distribution (loc=0, scale=scale0)
-        l0_r = self._l_moment(_r, *args, trim=_trim, quad_opts=quad_opts)
+        l0_r = self._l_moment(_r, *shapes, trim=_trim, quad_opts=quad_opts)
 
         # shift (by loc) and scale
         shift_r = loc * (_r == 1)
@@ -340,37 +357,35 @@ class l_rv_generic(PatchClass):
     @overload
     def l_ratio(
         self,
-        order: IntVector,
-        order_denom: AnyInt | IntVector,
+        order: AnyOrderND,
+        order_denom: AnyOrder | AnyOrderND,
         /,
         *args: Any,
         trim: AnyTrim = ...,
-        quad_opts: QuadOptions | None = ...,
+        quad_opts: lsct.QuadOptions | None = ...,
         **kwds: Any,
-    ) -> npt.NDArray[np.float64]: ...
-
+    ) -> _ArrF8: ...
     @overload
     def l_ratio(
         self,
-        order: AnyInt,
-        order_denom: AnyInt | IntVector,
+        order: AnyOrder,
+        order_denom: AnyOrder | AnyOrderND,
         /,
         *args: Any,
         trim: AnyTrim = ...,
-        quad_opts: QuadOptions | None = ...,
+        quad_opts: lsct.QuadOptions | None = ...,
         **kwds: Any,
     ) -> np.float64: ...
-
     def l_ratio(
         self,
-        r: AnyInt | IntVector,
-        k: AnyInt | IntVector,
+        r: AnyOrder | AnyOrderND,
+        k: AnyOrder | AnyOrderND,
         /,
         *args: Any,
-        trim: AnyTrim = (0, 0),
-        quad_opts: QuadOptions | None = None,
+        trim: AnyTrim = 0,
+        quad_opts: lsct.QuadOptions | None = None,
         **kwds: Any,
-    ) -> np.float64 | npt.NDArray[np.float64]:
+    ) -> np.float64 | _ArrF8:
         r"""
         L-moment ratio('s) $\tau^{(s,t)}_{r,k}$.
 
@@ -438,24 +453,24 @@ class l_rv_generic(PatchClass):
             ][lmo.contrib.scipy_stats.l_rv_generic.l_moment]
             - [`lmo.l_ratio`][lmo.l_ratio] - Sample L-moment ratio estimator
         """
-        rs = broadstack(r, k)
+        rk = np.stack(np.broadcast_arrays(np.asarray(r), np.asarray(k)))
         lms = self.l_moment(
-            rs,
+            rk,
             *args,
             trim=trim,
             quad_opts=quad_opts,
             **kwds,
         )
-        return moments_to_ratio(rs, lms)
+        return moments_to_ratio(rk, lms)
 
     def l_stats(
         self,
         *args: Any,
-        trim: AnyTrim = (0, 0),
+        trim: AnyTrim = 0,
         moments: int = 4,
-        quad_opts: QuadOptions | None = None,
+        quad_opts: lsct.QuadOptions | None = None,
         **kwds: Any,
-    ) -> npt.NDArray[np.float64]:
+    ) -> _ArrF8:
         r"""
         The L-moments (for $r \le 2$) and L-ratio's (for $r > 2$).
 
@@ -524,7 +539,7 @@ class l_rv_generic(PatchClass):
     def l_loc(
         self,
         *args: Any,
-        trim: AnyTrim = (0, 0),
+        trim: AnyTrim = 0,
         **kwds: Any,
     ) -> float:
         """
@@ -540,7 +555,7 @@ class l_rv_generic(PatchClass):
     def l_scale(
         self,
         *args: Any,
-        trim: AnyTrim = (0, 0),
+        trim: AnyTrim = 0,
         **kwds: Any,
     ) -> float:
         """
@@ -553,7 +568,7 @@ class l_rv_generic(PatchClass):
     def l_skew(
         self,
         *args: Any,
-        trim: AnyTrim = (0, 0),
+        trim: AnyTrim = 0,
         **kwds: Any,
     ) -> float:
         """L-skewness coefficient of the distribution; the 3rd L-moment ratio.
@@ -565,7 +580,7 @@ class l_rv_generic(PatchClass):
     def l_kurtosis(
         self,
         *args: Any,
-        trim: AnyTrim = (0, 0),
+        trim: AnyTrim = 0,
         **kwds: Any,
     ) -> float:
         """L-kurtosis coefficient of the distribution; the 4th L-moment ratio.
@@ -579,10 +594,10 @@ class l_rv_generic(PatchClass):
         r_max: int,
         /,
         *args: Any,
-        trim: AnyTrim = (0, 0),
-        quad_opts: QuadOptions | None = None,
+        trim: AnyTrim = 0,
+        quad_opts: lsct.QuadOptions | None = None,
         **kwds: Any,
-    ) -> npt.NDArray[np.float64]:
+    ) -> _ArrF8:
         r"""
         Variance/covariance matrix of the L-moment estimators.
 
@@ -710,10 +725,10 @@ class l_rv_generic(PatchClass):
         self,
         *args: Any,
         moments: int = 4,
-        trim: AnyTrim = (0, 0),
-        quad_opts: QuadOptions | None = None,
+        trim: AnyTrim = 0,
+        quad_opts: lsct.QuadOptions | None = None,
         **kwds: Any,
-    ) -> npt.NDArray[np.float64]:
+    ) -> _ArrF8:
         r"""
         Similar to [`l_moments_cov`
         ][lmo.contrib.scipy_stats.l_rv_generic.l_moments_cov], but for the
@@ -820,14 +835,14 @@ class l_rv_generic(PatchClass):
 
     def l_moment_influence(
         self,
-        r: AnyInt,
+        r: AnyOrder,
         /,
         *args: Any,
-        trim: AnyTrim = (0, 0),
-        quad_opts: QuadOptions | None = None,
+        trim: AnyTrim = 0,
+        quad_opts: lsct.QuadOptions | None = None,
         tol: float = 1e-8,
         **kwds: Any,
-    ) -> Callable[[V], V]:
+    ) -> Callable[[_T_x], _T_x]:
         r"""
         Returns the influence function (IF) of an L-moment.
 
@@ -897,7 +912,7 @@ class l_rv_generic(PatchClass):
 
         args, loc, scale = self._parse_args(*args, **kwds)
         cdf = cast(
-            Callable[[npt.NDArray[np.float64]], npt.NDArray[np.float64]],
+            Callable[[_ArrF8], _ArrF8],
             self._get_xxf(*args, loc=loc, scale=scale)[0],
         )
 
@@ -912,15 +927,15 @@ class l_rv_generic(PatchClass):
 
     def l_ratio_influence(
         self,
-        r: AnyInt,
-        k: AnyInt,
+        r: AnyOrder,
+        k: AnyOrder,
         /,
         *args: Any,
-        trim: AnyTrim = (0, 0),
-        quad_opts: QuadOptions | None = None,
+        trim: AnyTrim = 0,
+        quad_opts: lsct.QuadOptions | None = None,
         tol: float = 1e-8,
         **kwds: Any,
-    ) -> Callable[[V], V]:
+    ) -> Callable[[_T_x], _T_x]:
         r"""
         Returns the influence function (IF) of an L-moment ratio.
 
@@ -983,8 +998,9 @@ class l_rv_generic(PatchClass):
                 Robust Estimation](https://doi.org/10.2307/2285666)
 
         """
+        rk = np.stack(np.broadcast_arrays(np.asarray(r), np.asarray(k)))
         lmr, lmk = self.l_moment(
-            [r, k],
+            rk,
             *args,
             trim=trim,
             quad_opts=quad_opts,
@@ -993,7 +1009,7 @@ class l_rv_generic(PatchClass):
 
         args, loc, scale = self._parse_args(*args, **kwds)
         cdf = cast(
-            Callable[[npt.NDArray[np.float64]], npt.NDArray[np.float64]],
+            Callable[[_ArrF8], _ArrF8],
             self._get_xxf(*args, loc=loc, scale=scale)[0],
         )
 
@@ -1010,8 +1026,8 @@ class l_rv_generic(PatchClass):
 
     def _reduce_param_bounds(
         self,
-        **kwds: dict[str, Any],
-    ) -> tuple[dict[str, Any], list[tuple[float | None, float | None]]]:
+        **kwds: Any,
+    ) -> tuple[dict[str, Any], list[_Tuple2[float | None]]]:
         """
         Based on `scipy.stats.rv_continuous._reduce_func`.
 
@@ -1053,10 +1069,10 @@ class l_rv_generic(PatchClass):
 
     def _l_gmm_error(
         self,
-        theta: npt.NDArray[np.float64],
-        trim: tuple[float, float],
-        l_data: npt.NDArray[np.float64],
-        weights: npt.NDArray[np.float64],
+        theta: _ArrF8,
+        trim: _Tuple2[float],
+        l_data: _ArrF8,
+        weights: _ArrF8,
     ) -> float:
         """L-GMM objective function."""
         loc, scale, args = self._unpack_loc_scale(theta)
@@ -1083,10 +1099,10 @@ class l_rv_generic(PatchClass):
     @overload
     def l_fit(
         self,
-        data: npt.ArrayLike,
+        data: lnpt.AnyVectorInt | lnpt.AnyVectorFloat,
         *args: float,
         n_extra: int = 0,
-        trim: AnyTrim = (0, 0),
+        trim: AnyTrim = 0,
         full_output: Literal[True],
         fit_kwargs: Mapping[str, Any] | None = None,
         **kwds: Any,
@@ -1096,10 +1112,10 @@ class l_rv_generic(PatchClass):
     @overload
     def l_fit(
         self,
-        data: npt.ArrayLike,
+        data: lnpt.AnyVectorInt | lnpt.AnyVectorFloat,
         *args: float,
         n_extra: int = 0,
-        trim: AnyTrim = (0, 0),
+        trim: AnyTrim = 0,
         full_output: bool = ...,
         fit_kwargs: Mapping[str, Any] | None = None,
         **kwds: Any,
@@ -1108,10 +1124,10 @@ class l_rv_generic(PatchClass):
 
     def l_fit(
         self,
-        data: npt.ArrayLike,
+        data: lnpt.AnyVectorInt | lnpt.AnyVectorFloat,
         *args: float,
         n_extra: int = 0,
-        trim: AnyTrim = (0, 0),
+        trim: AnyTrim = 0,
         full_output: bool = False,
         fit_kwargs: Mapping[str, Any] | None = None,
         random_state: int | np.random.Generator | None = None,
@@ -1223,14 +1239,9 @@ class l_rv_generic(PatchClass):
             # almost never works without custom (finite and tight) bounds...
             # ... and otherwise it'll runs for +-17 exa-eons
             args0 = cast(
-                tuple[float | int, ...],
-                scipy_fit(
-                    self,
-                    data,
-                    bounds=bounds,
-                    guess=args or None,
-                ).params,  # type: ignore
-            )
+                lsct.FitResult,
+                scipy_fit(self, data, bounds=bounds, guess=args or None),
+            ).params
 
         _lmo_cache = {}
         _lmo_fn = self._l_moment
@@ -1241,7 +1252,7 @@ class l_rv_generic(PatchClass):
             r: npt.NDArray[np.int64],
             *args: float,
             trim: tuple[int, int] | tuple[float, float] = (0, 0),
-        ) -> npt.NDArray[np.float64]:
+        ) -> _ArrF8:
             shapes, loc, scale = args[:-2], args[-2], args[-1]
 
             # r and trim will be the same within inference.fit; safe to ignore
@@ -1291,9 +1302,9 @@ class l_rv_generic(PatchClass):
 
     def l_fit_loc_scale(
         self,
-        data: npt.ArrayLike,
+        data: lnpt.AnyArrayFloat,
         *args: Any,
-        trim: AnyTrim = (0, 0),
+        trim: AnyTrim = 0,
         **kwds: Any,
     ) -> tuple[float, float]:
         """
@@ -1344,28 +1355,28 @@ class l_rv_frozen(PatchClass):  # noqa: D101
     @overload
     def l_moment(
         self,
-        order: IntVector,
+        order: AnyOrderND,
         /,
         trim: AnyTrim = ...,
-        quad_opts: QuadOptions | None = ...,
-    ) -> npt.NDArray[np.float64]: ...
+        quad_opts: lsct.QuadOptions | None = ...,
+    ) -> _ArrF8: ...
 
     @overload
     def l_moment(
         self,
-        order: AnyInt,
+        order: AnyOrder,
         /,
         trim: AnyTrim = ...,
-        quad_opts: QuadOptions | None = ...,
+        quad_opts: lsct.QuadOptions | None = ...,
     ) -> np.float64: ...
 
     def l_moment(  # noqa: D102
         self,
-        order: AnyInt | IntVector,
+        order: AnyOrder | AnyOrderND,
         /,
-        trim: AnyTrim = (0, 0),
-        quad_opts: QuadOptions | None = None,
-    ) -> np.float64 | npt.NDArray[np.float64]:
+        trim: AnyTrim = 0,
+        quad_opts: lsct.QuadOptions | None = None,
+    ) -> np.float64 | _ArrF8:
         return self.dist.l_moment(
             order,
             *self.args,
@@ -1377,31 +1388,31 @@ class l_rv_frozen(PatchClass):  # noqa: D101
     @overload
     def l_ratio(
         self,
-        order: IntVector,
-        order_denom: AnyInt | IntVector,
+        order: AnyOrderND,
+        order_denom: AnyOrder | AnyOrderND,
         /,
         trim: AnyTrim = ...,
-        quad_opts: QuadOptions | None = ...,
-    ) -> npt.NDArray[np.float64]: ...
+        quad_opts: lsct.QuadOptions | None = ...,
+    ) -> _ArrF8: ...
 
     @overload
     def l_ratio(
         self,
-        order: AnyInt,
-        order_denom: AnyInt | IntVector,
+        order: AnyOrder,
+        order_denom: AnyOrder | AnyOrderND,
         /,
         trim: AnyTrim = ...,
-        quad_opts: QuadOptions | None = ...,
+        quad_opts: lsct.QuadOptions | None = ...,
     ) -> np.float64: ...
 
     def l_ratio(  # noqa: D102
         self,
-        order: AnyInt | IntVector,
-        order_denom: AnyInt | IntVector,
+        order: AnyOrder | AnyOrderND,
+        order_denom: AnyOrder | AnyOrderND,
         /,
-        trim: AnyTrim = (0, 0),
-        quad_opts: QuadOptions | None = None,
-    ) -> np.float64 | npt.NDArray[np.float64]:
+        trim: AnyTrim = 0,
+        quad_opts: lsct.QuadOptions | None = None,
+    ) -> np.float64 | _ArrF8:
         return self.dist.l_ratio(
             order,
             order_denom,
@@ -1413,10 +1424,10 @@ class l_rv_frozen(PatchClass):  # noqa: D101
 
     def l_stats(  # noqa: D102
         self,
-        trim: AnyTrim = (0, 0),
+        trim: AnyTrim = 0,
         moments: int = 4,
-        quad_opts: QuadOptions | None = None,
-    ) -> np.float64 | npt.NDArray[np.float64]:
+        quad_opts: lsct.QuadOptions | None = None,
+    ) -> np.float64 | _ArrF8:
         return self.dist.l_stats(
             *self.args,
             trim=trim,
@@ -1425,25 +1436,25 @@ class l_rv_frozen(PatchClass):  # noqa: D101
             **self.kwds,
         )
 
-    def l_loc(self, trim: AnyTrim = (0, 0)) -> float:  # noqa: D102
+    def l_loc(self, trim: AnyTrim = 0) -> float:  # noqa: D102
         return self.dist.l_loc(*self.args, trim=trim, **self.kwds)
 
-    def l_scale(self, trim: AnyTrim = (0, 0)) -> float:  # noqa: D102
+    def l_scale(self, trim: AnyTrim = 0) -> float:  # noqa: D102
         return self.dist.l_scale(*self.args, trim=trim, **self.kwds)
 
-    def l_skew(self, trim: AnyTrim = (0, 0)) -> float:  # noqa: D102
+    def l_skew(self, trim: AnyTrim = 0) -> float:  # noqa: D102
         return self.dist.l_skew(*self.args, trim=trim, **self.kwds)
 
-    def l_kurtosis(self, trim: AnyTrim = (0, 0)) -> float:  # noqa: D102
+    def l_kurtosis(self, trim: AnyTrim = 0) -> float:  # noqa: D102
         return self.dist.l_kurtosis(*self.args, trim=trim, **self.kwds)
 
     def l_moments_cov(  # noqa: D102
         self,
         r_max: int,
         /,
-        trim: AnyTrim = (0, 0),
-        quad_opts: QuadOptions | None = None,
-    ) -> npt.NDArray[np.float64]:
+        trim: AnyTrim = 0,
+        quad_opts: lsct.QuadOptions | None = None,
+    ) -> _ArrF8:
         return self.dist.l_moments_cov(
             r_max,
             *self.args,
@@ -1455,9 +1466,9 @@ class l_rv_frozen(PatchClass):  # noqa: D101
     def l_stats_cov(  # noqa: D102
         self,
         moments: int = 4,
-        trim: AnyTrim = (0, 0),
-        quad_opts: QuadOptions | None = None,
-    ) -> npt.NDArray[np.float64]:
+        trim: AnyTrim = 0,
+        quad_opts: lsct.QuadOptions | None = None,
+    ) -> _ArrF8:
         return self.dist.l_stats_cov(
             *self.args,
             moments=moments,
@@ -1468,12 +1479,12 @@ class l_rv_frozen(PatchClass):  # noqa: D101
 
     def l_moment_influence(  # noqa: D102
         self,
-        r: AnyInt,
+        r: AnyOrder,
         /,
-        trim: AnyTrim = (0, 0),
-        quad_opts: QuadOptions | None = None,
+        trim: AnyTrim = 0,
+        quad_opts: lsct.QuadOptions | None = None,
         tol: float = 1e-8,
-    ) -> Callable[[V], V]:
+    ) -> Callable[[_T_x], _T_x]:
         return self.dist.l_moment_influence(
             r,
             *self.args,
@@ -1485,13 +1496,13 @@ class l_rv_frozen(PatchClass):  # noqa: D101
 
     def l_ratio_influence(  # noqa: D102
         self,
-        r: AnyInt,
-        k: AnyInt,
+        r: AnyOrder,
+        k: AnyOrder,
         /,
-        trim: AnyTrim = (0, 0),
-        quad_opts: QuadOptions | None = None,
+        trim: AnyTrim = 0,
+        quad_opts: lsct.QuadOptions | None = None,
         tol: float = 1e-8,
-    ) -> Callable[[V], V]:
+    ) -> Callable[[_T_x], _T_x]:
         return self.dist.l_ratio_influence(
             r,
             k,

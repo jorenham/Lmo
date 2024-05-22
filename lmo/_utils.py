@@ -1,72 +1,62 @@
-__all__ = (
-    'as_float_array',
-    'broadstack',
-    'ensure_axis_at',
-    'plotting_positions',
-    'round0',
-    'ordered',
+from __future__ import annotations
 
-    'clean_order',
-    'clean_orders',
-    'clean_trim',
-
-    'moments_to_ratio',
-    'moments_to_stats_cov',
-    'l_stats_orders',
-)
-
-from typing import Any, SupportsIndex, TypeVar, cast
+import math
+from typing import TYPE_CHECKING, Any, Final, TypeAlias
 
 import numpy as np
 import numpy.typing as npt
 
-from .typing import AnyInt, AnyTrim, IndexOrder, IntVector, SortKind
+from .typing import np as lnpt
+from .typing.compat import TypeVar
 
 
-T = TypeVar('T', bound=np.generic)
-FT = TypeVar('FT', bound=np.floating[Any])
+if TYPE_CHECKING:
+    from .typing import AnyAWeights, AnyFWeights, AnyOrder, AnyOrderND, AnyTrim
+
+__all__ = (
+    'clean_order',
+    'clean_orders',
+    'clean_trim',
+    'ensure_axis_at',
+    'l_stats_orders',
+    'moments_to_ratio',
+    'moments_to_stats_cov',
+    'ordered',
+    'plotting_positions',
+    'round0',
+)
 
 
-def as_float_array(
-    a: npt.ArrayLike,
-    /,
-    dtype: npt.DTypeLike = None,
-    order: IndexOrder | None = None,
-    *,
-    check_finite: bool = False,
-    flat: bool = False,
-) -> npt.NDArray[np.floating[Any]]:
-    """
-    Convert to array if needed, and only cast to float64 dtype if not a
-    floating type already. Similar as in e.g. `numpy.mean`.
-    """
-    asarray = np.asarray_chkfinite if check_finite else np.asarray
+_T_scalar = TypeVar('_T_scalar', bound=np.generic)
+_T_number = TypeVar('_T_number', bound=np.number[Any])
+_T_int = TypeVar('_T_int', bound=np.integer[Any], default=np.intp)
+_T_float = TypeVar('_T_float', bound=np.floating[Any], default=np.float64)
 
-    x = asarray(a, dtype=dtype, order=order)
-    out = x if isinstance(x.dtype.type, np.floating) else x.astype(np.float64)
+_T_size = TypeVar('_T_size', bound=int)
 
-    # the `_[()]` ensures that 0-d arrays become scalars
-    return (out.reshape(-1) if flat and out.ndim != 1 else out)[()]
+_T_shape0 = TypeVar('_T_shape0', bound=lnpt.AtLeast0D)
+_T_shape1 = TypeVar('_T_shape1', bound=lnpt.AtLeast1D)
+_T_shape2 = TypeVar('_T_shape2', bound=lnpt.AtLeast2D)
 
-
-def broadstack(
-    r: AnyInt | IntVector,
-    s: AnyInt | IntVector,
-) -> npt.NDArray[np.int64]:
-    return np.stack(np.broadcast_arrays(np.asarray(r), np.asarray(s)))
+_DType: TypeAlias = np.dtype[_T_scalar] | type[_T_scalar]
 
 
 def ensure_axis_at(
-    a: npt.NDArray[T],
+    a: npt.NDArray[_T_scalar],
     /,
     source: int | None,
     destination: int,
-    order: IndexOrder = 'C',
-) -> npt.NDArray[T]:
+    *,
+    order: lnpt.OrderReshape = 'C',
+) -> npt.NDArray[_T_scalar]:
+    """
+    Moves the from `source` to `destination` if needed, or returns a flattened
+    array is `source` is set to `None`.
+    """
     if a.ndim <= 1 or source == destination:
         return a
     if source is None:
-        return a.ravel(order)
+        return a.reshape(-1, order=order)
 
     source = source + a.ndim if source < 0 else source
     destination = destination + a.ndim if destination < 0 else destination
@@ -92,16 +82,22 @@ def plotting_positions(
     return np.linspace(x0 / xn, (x0 + n - 1) / xn, n, dtype=dtype)
 
 
-def round0(a: npt.NDArray[T], /, tol: float = 1e-8) -> npt.NDArray[T]:
-    """Round values close to zero."""
-    return np.where(np.abs(a) <= abs(tol), 0, a) if tol else a
+def round0(
+    a: lnpt.CanArray[_T_shape0, _T_float],
+    /,
+    tol: float | None = None,
+) -> lnpt.Array[_T_shape0, _T_float]:
+    """Replace all values `<= tol` with `0`."""
+    _a = np.asarray(a)
+    _tol = np.finfo(_a.dtype).resolution * 2 if tol is None else abs(tol)
+    return np.where(np.abs(a) <= _tol, 0, a)
 
 
 def _apply_aweights(
-    x: npt.NDArray[np.floating[Any]],
-    v: npt.NDArray[np.floating[Any]],
+    x: lnpt.Array[_T_shape1, _T_float],
+    v: lnpt.Array[_T_shape1 | lnpt.AtLeast1D, _T_float | lnpt.Float],
     axis: int,
-) -> npt.NDArray[np.float64]:
+) -> lnpt.Array[_T_shape1, _T_float]:
     # interpret the weights as horizontal coordinates using cumsum
     vv = np.cumsum(v, axis=axis)
     assert vv.shape == x.shape, (vv.shape, x.shape)
@@ -112,11 +108,8 @@ def _apply_aweights(
 
     # cannot use np.apply_along_axis here, since both x_k and w_k need to be
     # applied simultaneously
-    out = np.empty(x.shape, dtype=np.float64)
+    out = np.empty_like(x)
 
-    x_jk: npt.NDArray[np.floating[Any]]
-    w_jk: npt.NDArray[np.floating[Any]]
-    v_jk: npt.NDArray[np.float64]
     for j in np.ndindex(out.shape[:-1]):
         x_jk, w_jk = x[j], vv[j]
         if w_jk[-1] <= 0:
@@ -133,11 +126,11 @@ def _apply_aweights(
 
 
 def _sort_like(
-    a: npt.NDArray[T],
-    i: npt.NDArray[np.int_],
+    a: lnpt.Array[_T_shape1, _T_number],
+    i: lnpt.Array[tuple[int], np.integer[Any]],
     /,
     axis: int | None,
-) -> npt.NDArray[T]:
+) -> lnpt.Array[_T_shape1, _T_number]:
     return (
         np.take(a, i, axis=None if a.ndim == i.ndim else axis)
         if min(a.ndim, i.ndim) <= 1
@@ -146,16 +139,16 @@ def _sort_like(
 
 
 def ordered(  # noqa: C901
-    x: npt.ArrayLike,
-    y: npt.ArrayLike | None = None,
+    x: lnpt.AnyArrayFloat,
+    y: lnpt.AnyArrayFloat | None = None,
     /,
     axis: int | None = None,
-    dtype: npt.DTypeLike = None,
+    dtype: _DType[np.floating[Any]] | None = None,
     *,
-    fweights: IntVector | None = None,
-    aweights: npt.ArrayLike | None = None,
-    sort: SortKind | None = None,
-) -> npt.NDArray[np.floating[Any]]:
+    fweights: AnyFWeights | None = None,
+    aweights: AnyAWeights | None = None,
+    sort: lnpt.SortKind | None = None,
+) -> lnpt.Array[lnpt.AtLeast1D, lnpt.Float]:
     """
     Calculate `n = len(x)` order stats of `x`, optionally weighted.
     If `y` is provided, the order of `y` is used instead.
@@ -177,10 +170,7 @@ def ordered(  # noqa: C901
             _z = _y + 1j * _x
         else:
             assert axis is not None
-            _z = cast(
-                npt.NDArray[Any],
-                np.apply_along_axis(np.add, axis, 1j * _x, _y),  # type: ignore
-            )
+            _z = np.apply_along_axis(np.add, axis, 1j * _x, _y)
 
     # apply the ordering
     i_kk = np.argsort(_z, axis=axis, kind=sort)
@@ -189,12 +179,11 @@ def ordered(  # noqa: C901
     # prepare observation weights
     w_kk = None
     if aweights is not None:
-        w = np.asanyarray(aweights)
-        w_kk = _sort_like(w, i_kk, axis=axis)
+        w_kk = _sort_like(np.asanyarray(aweights), i_kk, axis=axis)
 
     # apply the frequency weights to x, and (optionally) to aweights
     if fweights is not None:
-        r = np.asanyarray(fweights, np.int64)
+        r = np.asanyarray(fweights, int)
         r_kk = _sort_like(r, i_kk, axis=axis)
 
         # avoid unnecessary repeats by normalizing by the GCD
@@ -217,12 +206,13 @@ def ordered(  # noqa: C901
 
 
 def clean_order(
-    r: SupportsIndex,
+    r: AnyOrder,
     /,
     name: str = 'r',
     rmin: int = 0,
 ) -> int:
-    if (_r := r.__index__()) < rmin:
+    """Validates and cleans an single (L-)moment order."""
+    if (_r := int(r)) < rmin:
         msg = f'expected {name} >= {rmin}, got {_r}'
         raise TypeError(msg)
 
@@ -230,12 +220,14 @@ def clean_order(
 
 
 def clean_orders(
-    r: IntVector | AnyInt,
+    r: AnyOrderND,
     /,
     name: str = 'r',
     rmin: int = 0,
-) -> npt.NDArray[np.int64]:
-    _r = np.asarray_chkfinite(r, np.int64)
+    dtype: _DType[_T_int] = np.intp,
+) -> lnpt.Array[Any, _T_int]:
+    """Validates and cleans an array-like of (L-)moment orders."""
+    _r = np.asarray_chkfinite(r, dtype=dtype)
 
     if np.any(invalid := _r < rmin):
         i = np.argmax(invalid)
@@ -245,45 +237,60 @@ def clean_orders(
     return _r
 
 
-def clean_trim(trim: AnyTrim) -> tuple[int, int] | tuple[float, float]:
-    _trim = np.asarray_chkfinite(trim)
+_COMMON_TRIM1: Final[frozenset[int]] = frozenset({0, 1, 2})
+_COMMON_TRIM2: Final[frozenset[tuple[int, int]]] = frozenset(
+    {(0, 0), (1, 1), (2, 2), (0, 1), (0, 2), (1, 0), (2, 0)},
+)
 
-    if not np.isrealobj(_trim):
-        msg = 'trim must be real'
-        raise TypeError(msg)
 
-    if _trim.ndim > 1:
-        msg = 'trim cannot be vectorized'
-        raise TypeError(trim)
+def clean_trim(trim: AnyTrim, /) -> tuple[int, int] | tuple[float, float]:
+    """
+    Validates and cleans the passed trim; and return a 2-tuple of either ints
+    or floats.
 
-    n = _trim.size
-    if n == 0:
-        _trim = np.array([0, 0])
-    if n == 1:
-        _trim = np.repeat(_trim, 2)
-    elif n > 2:
-        msg = f'expected two trim values, got {n} instead'
-        raise TypeError(msg)
+    Notes:
+        - This uses `.is_integer()`, instead of `isinstance(int)`.
+          So e.g. `clean_trim(1.0)` will return `tuple[int, int]`.
+        - Although not allowed by typecheckers, numpy integer or floating
+          scalars are also accepted, and will be converted to `int` or `float`.
+    """
+    # fast pass-through for the common cases
+    if trim in _COMMON_TRIM1:
+        return trim, trim
+    if trim in _COMMON_TRIM2:
+        return trim
 
-    s, t = _trim
+    match trim:
+        case s, t:
+            pass
+        case st:
+            s = t = st
 
-    if s <= -1 / 2 or t <= -1 / 2:
-        msg = f'trim must both be >-1/2, got {(s, t)}'
-        raise ValueError(msg)
+    fractional = False
+    for f in map(float, (s, t)):
+        if not math.isfinite(f):
+            msg = 'trim orders must be finite'
+            raise ValueError(msg)
+        if f <= -1 / 2:
+            msg = 'trim orders must be greater than -1/2'
+            raise ValueError(msg)
+        if not f.is_integer():
+            fractional = True
 
-    if s.is_integer() and t.is_integer():
-        return int(s), int(t)
-
-    return float(s), float(t)
+    return (float(s), float(t)) if fractional else (int(s), int(t))
 
 
 def moments_to_ratio(
-    rs: npt.NDArray[np.integer[Any]],
-    l_rs: npt.NDArray[FT],
+    rs: lnpt.Array[Any, np.integer[Any]],
+    l_rs: lnpt.Array[lnpt.AtLeast1D, _T_float],
     /,
-) -> FT | npt.NDArray[FT]:
-    assert rs.shape[:l_rs.ndim] == l_rs.shape[:rs.ndim], [rs.shape, l_rs.shape]
+) -> _T_float | npt.NDArray[_T_float]:
+    """
+    Using stacked order of shape (2, ...), and an L-moments array, returns
+    the L-moment ratio's.
+    """
     assert len(rs) == 2
+    assert rs.shape[:l_rs.ndim] == l_rs.shape[:rs.ndim], [rs.shape, l_rs.shape]
 
     r_eq_s = rs[0] == rs[1]
     if r_eq_s.ndim < l_rs.ndim - 1:
@@ -300,9 +307,9 @@ def moments_to_ratio(
 
 
 def moments_to_stats_cov(
-    t_0r: npt.NDArray[np.float64],
-    ll_kr: npt.NDArray[np.float64],
-) -> npt.NDArray[np.float64]:
+    t_0r: lnpt.Array[tuple[int], np.floating[Any]],
+    ll_kr: lnpt.Array[_T_shape2, _T_float],
+) -> lnpt.Array[_T_shape2, _T_float]:
     # t_0r are L-ratio's for r = 0, 1, ..., R (t_0r[0] == 1 / L-scale)
     # t_0r[1] isn't used, and can be set to anything
     # ll_kr is the L-moment cov of size R**2 (orders start at 1 here)
@@ -330,10 +337,17 @@ def moments_to_stats_cov(
 
 
 def l_stats_orders(
-    num: int,
+    num: _T_size,
     /,
-) -> tuple[npt.NDArray[np.int64], npt.NDArray[np.int64]]:
-    return (
-        np.arange(1, num + 1),
-        np.array([0] * min(2, num) + [2] * (num - 2)),
-    )
+    dtype: _DType[_T_int] = np.intp,
+) -> tuple[
+    lnpt.Array[tuple[_T_size], _T_int],
+    lnpt.Array[tuple[_T_size], _T_int],
+]:
+    """
+    Create the L-moment order array `[1, 2, ..., r]` and corresponding
+    ratio array `[0, 0, 2, ...]` of same size.
+    """
+    r = np.arange(1, num + 1, dtype=dtype)
+    s = np.array([0] * min(2, num) + [2] * (num - 2), dtype=dtype)
+    return r, s

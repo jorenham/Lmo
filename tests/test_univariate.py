@@ -131,10 +131,10 @@ def test_l_loc_linearity(
     assert np.isscalar(l1)
 
     l1_add = lmo.l_loc(x + dloc, trim)
-    assert l1_add == pytest.approx(l1 + dloc, rel=1e-5, abs=1e-8)  # type: ignore
+    assert l1_add == pytest.approx(l1 + dloc, rel=1e-5, abs=1e-8)
 
     l1_mul = lmo.l_loc(x * dscale, trim)
-    assert l1_mul == pytest.approx(l1 * dscale, rel=1e-5, abs=1e-8)  # type: ignore
+    assert l1_mul == pytest.approx(l1 * dscale, rel=1e-5, abs=1e-8)
 
 
 @given(a=st_a1)
@@ -170,7 +170,7 @@ def test_l_scale_invariant_loc(
     l2 = lmo.l_scale(x, trim)
     assert np.isfinite(l2)
     assert np.isscalar(l2)
-    assert round(l2, 8) >= 0  # type: ignore
+    assert round(l2, 8) >= 0
 
     l2_add = lmo.l_scale(x + dloc, trim)
     assert l2_add == pytest.approx(l2, rel=1e-5, abs=1e-8)
@@ -189,13 +189,13 @@ def test_l_scale_linear_scale(
     l2 = lmo.l_scale(x, trim)
     assert np.isfinite(l2)
     assert np.isscalar(l2)
-    assert round(l2, 8) >= 0  # type: ignore
+    assert round(l2, 8) >= 0
 
     # asymmetric trimming flips under sign change
     itrim = trim[::-1] if dscale < 0 else trim
 
     l2_mul = lmo.l_scale(x * dscale, itrim)
-    assert l2_mul == pytest.approx(abs(l2 * dscale), abs=1e-8)  # type: ignore
+    assert l2_mul == pytest.approx(abs(l2 * dscale), abs=1e-8)
 
 
 def test_ll_trim_ev():

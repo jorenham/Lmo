@@ -1,3 +1,4 @@
+# pyright: reportUnknownMemberType=false
 """
 Extension methods for `pandas.Series` and `pandas.DataFrame`.
 
@@ -40,15 +41,8 @@ Examples:
 
     ```
 """
-__all__ = (
-    'Series',
-    'DataFrame',
-    'install',
-)
-
-import sys
 from collections.abc import Callable
-from typing import Any, Literal, Protocol, TypeAlias, Union, cast, final
+from typing import Any, Literal, Protocol, TypeAlias, cast, final
 
 import numpy as np
 import numpy.typing as npt
@@ -63,32 +57,49 @@ from lmo._lm_co import (
     l_comoment as _l_comoment,
     l_coratio as _l_coratio,
 )
-from lmo._utils import broadstack, clean_trim, moments_to_ratio
+from lmo._utils import clean_trim, moments_to_ratio
 from lmo.typing import (
-    AnyInt,
+    AnyOrder,
+    AnyOrderND,
     AnyTrim,
-    IntVector,
     LComomentOptions,
     LMomentOptions,
 )
+from lmo.typing.compat import TypeVar, Unpack
 
 
-if sys.version_info < (3, 11):
-    from typing_extensions import Unpack
-else:
-    from typing import Unpack
+__all__ = (
+    'DataFrame',
+    'Series',
+    'install',
+)
 
-_FloatOrSeries: TypeAlias = Union[float, 'pd.Series[float]']
-_SeriesOrFrame: TypeAlias = Union['pd.Series[float]', pd.DataFrame]
-_FloatOrFrame: TypeAlias = _FloatOrSeries | pd.DataFrame
 
-AxisDF: TypeAlias = Literal[0, 'index', 1, 'columns']
+_T = TypeVar('_T', bound=object)
+
+_Axis: TypeAlias = Literal[0, 'index', 1, 'columns']
+
+
+# `from __future__ import annotations` won't solve this;
+# see https://github.com/pandas-dev/pandas-stubs/discussions/308
+def __ensure_generic(tp: type[_T]):
+    if hasattr(tp, '__class_getitem__'):
+        return
+
+    def __class_getitem__(cls: _T, _: Any, /) -> _T:  # noqa: N807
+        return cls
+
+    tp.__class_getitem__ = classmethod(__class_getitem__)  # pyright: ignore[reportArgumentType,reportAttributeAccessIssue]
+
+
+__ensure_generic(pd.Series)
+__ensure_generic(pd.Index)
 
 
 def _setindex(
     df: pd.DataFrame,
-    axis: AxisDF,
-    index: 'pd.Index[Any]',
+    axis: _Axis,
+    index: pd.Index[Any],
 ) -> None:
     if axis in {0, 'index'}:
         df.index = index
@@ -100,11 +111,11 @@ def _setindex(
 
 
 def _ratio_index(rk: npt.NDArray[np.int64]) -> pd.MultiIndex:
-    return pd.MultiIndex.from_arrays(rk, names=('r', 'k'))  # type: ignore
+    return pd.MultiIndex.from_arrays(rk, names=('r', 'k'))
 
 
 @final
-class Series(pd.Series):  # type: ignore [missingTypeArguments]
+class Series(pd.Series):  # pyright: ignore[reportMissingTypeArgument]
     """
     Extension methods for [`pandas.Series`][pandas.Series].
 
@@ -116,20 +127,20 @@ class Series(pd.Series):  # type: ignore [missingTypeArguments]
     def __lmo_register__(  # noqa: D105
         cls,
         name: str,
-        method: Callable[..., _FloatOrSeries | pd.DataFrame],
+        method: Callable[..., pd.Series[float]],
     ) -> None:
-        def fn(obj: 'pd.Series[Any]') -> Callable[..., _FloatOrSeries]:
+        def fn(obj: pd.Series[Any]) -> Callable[..., float | pd.Series[float]]:
             return method.__get__(obj, Series)
 
-        pd.api.extensions.register_series_accessor(name)(fn)  # type: ignore
+        pd.api.extensions.register_series_accessor(name)(fn)
 
     def l_moment(
         self,
-        r: AnyInt | IntVector,
+        r: AnyOrder | AnyOrderND,
         /,
-        trim: AnyTrim = (0, 0),
+        trim: AnyTrim = 0,
         **kwargs: Unpack[LMomentOptions],
-    ) -> _FloatOrSeries:
+    ) -> float | pd.Series[float]:
         """
         See [`lmo.l_moment`][lmo.l_moment].
 
@@ -150,12 +161,12 @@ class Series(pd.Series):  # type: ignore [missingTypeArguments]
 
     def l_ratio(
         self,
-        r: AnyInt | IntVector,
-        k: AnyInt | IntVector,
+        r: AnyOrder | AnyOrderND,
+        k: AnyOrder | AnyOrderND,
         /,
-        trim: AnyTrim = (0, 0),
+        trim: AnyTrim = 0,
         **kwargs: Unpack[LMomentOptions],
-    ) -> _FloatOrSeries:
+    ) -> float | pd.Series[float]:
         """
         See [`lmo.l_ratio`][lmo.l_ratio].
 
@@ -163,7 +174,7 @@ class Series(pd.Series):  # type: ignore [missingTypeArguments]
             out: A scalar, or [`pd.Series[float]`][pandas.Series], with a
                 [`MultiIndex`][pandas.MultiIndex] of `r` and `k`.
         """
-        rk = broadstack(r, k)
+        rk = np.stack(np.broadcast_arrays(np.asarray(r), np.asarray(k)))
         out = moments_to_ratio(rk, _l_moment(self, rk, trim=trim, **kwargs))
         if rk.ndim == 1:
             return cast(float, out)
@@ -177,10 +188,10 @@ class Series(pd.Series):  # type: ignore [missingTypeArguments]
 
     def l_stats(
         self,
-        trim: AnyTrim = (0, 0),
+        trim: AnyTrim = 0,
         num: int = 4,
         **kwargs: Unpack[LMomentOptions],
-    ) -> 'pd.Series[float]':
+    ) -> pd.Series[float]:
         """
         See [`lmo.l_stats`][lmo.l_stats].
 
@@ -196,7 +207,7 @@ class Series(pd.Series):  # type: ignore [missingTypeArguments]
 
     def l_loc(
         self,
-        trim: AnyTrim = (0, 0),
+        trim: AnyTrim = 0,
         **kwargs: Unpack[LMomentOptions],
     ) -> float:
         """
@@ -209,7 +220,7 @@ class Series(pd.Series):  # type: ignore [missingTypeArguments]
 
     def l_scale(
         self,
-        trim: AnyTrim = (0, 0),
+        trim: AnyTrim = 0,
         **kwargs: Unpack[LMomentOptions],
     ) -> float:
         """
@@ -222,7 +233,7 @@ class Series(pd.Series):  # type: ignore [missingTypeArguments]
 
     def l_variation(
         self,
-        trim: AnyTrim = (0, 0),
+        trim: AnyTrim = 0,
         **kwargs: Unpack[LMomentOptions],
     ) -> float:
         """
@@ -235,7 +246,7 @@ class Series(pd.Series):  # type: ignore [missingTypeArguments]
 
     def l_skew(
         self,
-        trim: AnyTrim = (0, 0),
+        trim: AnyTrim = 0,
         **kwargs: Unpack[LMomentOptions],
     ) -> float:
         """
@@ -248,7 +259,7 @@ class Series(pd.Series):  # type: ignore [missingTypeArguments]
 
     def l_kurtosis(
         self,
-        trim: AnyTrim = (0, 0),
+        trim: AnyTrim = 0,
         **kwargs: Unpack[LMomentOptions],
     ) -> float:
         """
@@ -275,9 +286,12 @@ class DataFrame(pd.DataFrame):
     def __lmo_register__(  # noqa: D105
         cls,
         name: str,
-        method: Callable[..., _FloatOrFrame],
+        method: Callable[..., float | pd.Series[float] | pd.DataFrame],
     ) -> None:
-        def fn(obj: pd.DataFrame) -> Callable[..., _FloatOrFrame]:
+        def fn(
+            obj: pd.DataFrame,
+            /,
+        ) -> Callable[..., float | pd.Series[float] | pd.DataFrame]:
             # return functools.partial(method, obj)
             return method.__get__(obj, cls)
 
@@ -285,29 +299,27 @@ class DataFrame(pd.DataFrame):
 
     def l_moment(
         self,
-        r: AnyInt | IntVector,
+        r: AnyOrder | AnyOrderND,
         /,
-        trim: AnyTrim = (0, 0),
-        axis: AxisDF = 0,
+        trim: AnyTrim = 0,
+        axis: _Axis = 0,
         **kwargs: Unpack[LMomentOptions],
-    ) -> _SeriesOrFrame:
+    ) -> pd.Series[float] | pd.DataFrame:
         """
         See [`lmo.l_moment`][lmo.l_moment].
 
         Returns:
-            out: A [`Series[float]`][pandas.Series], or
+            out:
+                A [`Series[float]`][pandas.Series], or
                 a [`DataFrame`][pandas.DataFrame] with `r` as index along the
                 specified axis.
         """
-        out = cast(
-            _SeriesOrFrame,
-            self.apply(  # type: ignore
-                _l_moment,
-                axis=axis,
-                result_type='expand',
-                args=(r, trim),
-                **kwargs,
-            ),
+        out = self.apply(
+            _l_moment,
+            axis=axis,
+            result_type='expand',
+            args=(r, trim),
+            **kwargs,
         )
         if isinstance(out, pd.DataFrame):
             _setindex(out, axis, pd.Index(np.asarray(r), name='r'))
@@ -317,13 +329,13 @@ class DataFrame(pd.DataFrame):
 
     def l_ratio(
         self,
-        r: AnyInt | IntVector,
-        k: AnyInt | IntVector,
+        r: AnyOrder | AnyOrderND,
+        k: AnyOrder | AnyOrderND,
         /,
-        trim: AnyTrim = (0, 0),
-        axis: AxisDF = 0,
+        trim: AnyTrim = 0,
+        axis: _Axis = 0,
         **kwargs: Unpack[LMomentOptions],
-    ) -> _SeriesOrFrame:
+    ) -> pd.Series[float] | pd.DataFrame:
         """
         See [`lmo.l_ratio`][lmo.l_ratio].
 
@@ -333,19 +345,16 @@ class DataFrame(pd.DataFrame):
                 [`MultiIndex`][pandas.MultiIndex] of `r` and `k` along the
                 specified axis.
         """
-        rk = broadstack(r, k)
+        rk = np.stack(np.broadcast_arrays(np.asarray(r), np.asarray(k)))
         if rk.ndim > 2:
             rk = np.r_[rk[0].reshape(-1), rk[1].reshape(-1)]
 
-        out = cast(
-            _SeriesOrFrame,
-            self.apply(  # type: ignore
-                _l_ratio,
-                axis=axis,
-                result_type='expand',
-                args=(rk[0], rk[1], trim),
-                **kwargs,
-            ),
+        out = self.apply(
+            _l_ratio,
+            axis=axis,
+            result_type='expand',
+            args=(rk[0], rk[1], trim),
+            **kwargs,
         )
         if isinstance(out, pd.DataFrame):
             assert rk.ndim > 1
@@ -356,9 +365,9 @@ class DataFrame(pd.DataFrame):
 
     def l_stats(
         self,
-        trim: AnyTrim = (0, 0),
+        trim: AnyTrim = 0,
         num: int = 4,
-        axis: AxisDF = 0,
+        axis: _Axis = 0,
         **kwargs: Unpack[LMomentOptions],
     ) -> pd.DataFrame:
         """
@@ -368,15 +377,12 @@ class DataFrame(pd.DataFrame):
             out: A [`DataFrame`][pandas.DataFrame] with `r = 1, ..., num` as
                 index along the specified axis.
         """
-        out = cast(
-            pd.DataFrame,
-            self.apply(  # type: ignore
-                _l_stats,
-                axis=axis,
-                result_type='expand',
-                args=(trim, num),
-                **kwargs,
-            ),
+        out = self.apply(
+            _l_stats,
+            axis=axis,
+            result_type='expand',
+            args=(trim, num),
+            **kwargs,
         )
         _setindex(out, axis, pd.RangeIndex(1, num + 1, name='r'))
         out.attrs['l_kind'] = 'stat'
@@ -385,8 +391,8 @@ class DataFrame(pd.DataFrame):
 
     def l_loc(
         self,
-        trim: AnyTrim = (0, 0),
-        axis: AxisDF = 0,
+        trim: AnyTrim = 0,
+        axis: _Axis = 0,
         **kwargs: Unpack[LMomentOptions],
     ) -> 'pd.Series[float]':
         """
@@ -394,7 +400,7 @@ class DataFrame(pd.DataFrame):
         [`l_moment(1, ...)`][lmo.contrib.pandas.DataFrame.l_moment].
         See [`lmo.l_loc`][lmo.l_loc] for details.
         """
-        return self.apply(  # type: ignore
+        return self.apply(  # pyright: ignore[reportReturnType]
             _l_moment,
             axis=axis,
             args=(1, trim),
@@ -403,16 +409,16 @@ class DataFrame(pd.DataFrame):
 
     def l_scale(
         self,
-        trim: AnyTrim = (0, 0),
-        axis: AxisDF = 0,
+        trim: AnyTrim = 0,
+        axis: _Axis = 0,
         **kwargs: Unpack[LMomentOptions],
-    ) -> 'pd.Series[float]':
+    ) -> pd.Series[float]:
         """
         Alias for
         [`l_moment(2, ...)`][lmo.contrib.pandas.DataFrame.l_moment].
         See [`lmo.l_scale`][lmo.l_scale] for details.
         """
-        return self.apply(  # type: ignore
+        return self.apply(  # pyright: ignore[reportReturnType]
             _l_moment,
             axis=axis,
             args=(2, trim),
@@ -421,16 +427,16 @@ class DataFrame(pd.DataFrame):
 
     def l_variation(
         self,
-        trim: AnyTrim = (0, 0),
-        axis: AxisDF = 0,
+        trim: AnyTrim = 0,
+        axis: _Axis = 0,
         **kwargs: Unpack[LMomentOptions],
-    ) -> 'pd.Series[float]':
+    ) -> pd.Series[float]:
         """
         Alias for
         [`l_ratio(2, 1, ...)`][lmo.contrib.pandas.DataFrame.l_ratio].
         See [`lmo.l_variation`][lmo.l_variation] for details.
         """
-        return self.apply(  # type: ignore
+        return self.apply(  # pyright: ignore[reportReturnType]
             _l_ratio,
             axis=axis,
             args=(2, 1, trim),
@@ -439,16 +445,16 @@ class DataFrame(pd.DataFrame):
 
     def l_skew(
         self,
-        trim: AnyTrim = (0, 0),
-        axis: AxisDF = 0,
+        trim: AnyTrim = 0,
+        axis: _Axis = 0,
         **kwargs: Unpack[LMomentOptions],
-    ) -> 'pd.Series[float]':
+    ) -> pd.Series[float]:
         """
         Alias for
         [`l_ratio(3, 2, ...)`][lmo.contrib.pandas.DataFrame.l_ratio].
         See [`lmo.l_skew`][lmo.l_skew] for details.
         """
-        return self.apply(  # type: ignore
+        return self.apply(  # pyright: ignore[reportReturnType]
             _l_ratio,
             axis=axis,
             args=(3, 2, trim),
@@ -457,16 +463,16 @@ class DataFrame(pd.DataFrame):
 
     def l_kurtosis(
         self,
-        trim: AnyTrim = (0, 0),
-        axis: AxisDF = 0,
+        trim: AnyTrim = 0,
+        axis: _Axis = 0,
         **kwargs: Unpack[LMomentOptions],
-    ) -> 'pd.Series[float]':
+    ) -> pd.Series[float]:
         """
         Alias for
         [`l_ratio(4, 2, ...)`][lmo.contrib.pandas.DataFrame.l_ratio].
         See [`lmo.l_kurtosis`][lmo.l_kurtosis] for details.
         """
-        return self.apply(  # type: ignore
+        return self.apply(  # pyright: ignore[reportReturnType]
             _l_ratio,
             axis=axis,
             args=(4, 2, trim),
@@ -475,10 +481,10 @@ class DataFrame(pd.DataFrame):
 
     def l_kurt(
         self,
-        trim: AnyTrim = (0, 0),
-        axis: AxisDF = 0,
+        trim: AnyTrim = 0,
+        axis: _Axis = 0,
         **kwargs: Unpack[LMomentOptions],
-    ) -> 'pd.Series[float]':
+    ) -> pd.Series[float]:
         """
         Alias for
         [`l_kurtosis`][lmo.contrib.pandas.DataFrame.l_kurtosis].
@@ -487,9 +493,9 @@ class DataFrame(pd.DataFrame):
 
     def l_comoment(
         self,
-        r: AnyInt,
+        r: AnyOrder,
         /,
-        trim: AnyTrim = (0, 0),
+        trim: AnyTrim = 0,
         **kwargs: Unpack[LComomentOptions],
     ) -> pd.DataFrame:
         """
@@ -526,10 +532,10 @@ class DataFrame(pd.DataFrame):
 
     def l_coratio(
         self,
-        r: AnyInt,
-        k: AnyInt = 2,
+        r: AnyOrder,
+        k: AnyOrder = 2,
         /,
-        trim: AnyTrim = (0, 0),
+        trim: AnyTrim = 0,
         **kwargs: Unpack[LComomentOptions],
     ) -> pd.DataFrame:
         """
@@ -569,7 +575,7 @@ class DataFrame(pd.DataFrame):
 
     def l_coloc(
         self,
-        trim: AnyTrim = (0, 0),
+        trim: AnyTrim = 0,
         **kwargs: Unpack[LComomentOptions],
     ) -> pd.DataFrame:
         """
@@ -581,7 +587,7 @@ class DataFrame(pd.DataFrame):
 
     def l_coscale(
         self,
-        trim: AnyTrim = (0, 0),
+        trim: AnyTrim = 0,
         **kwargs: Unpack[LComomentOptions],
     ) -> pd.DataFrame:
         """
@@ -593,7 +599,7 @@ class DataFrame(pd.DataFrame):
 
     def l_corr(
         self,
-        trim: AnyTrim = (0, 0),
+        trim: AnyTrim = 0,
         **kwargs: Unpack[LComomentOptions],
     ) -> pd.DataFrame:
         """
@@ -605,7 +611,7 @@ class DataFrame(pd.DataFrame):
 
     def l_coskew(
         self,
-        trim: AnyTrim = (0, 0),
+        trim: AnyTrim = 0,
         **kwargs: Unpack[LComomentOptions],
     ) -> pd.DataFrame:
         """
@@ -617,7 +623,7 @@ class DataFrame(pd.DataFrame):
 
     def l_cokurtosis(
         self,
-        trim: AnyTrim = (0, 0),
+        trim: AnyTrim = 0,
         **kwargs: Unpack[LComomentOptions],
     ) -> pd.DataFrame:
         """
@@ -629,7 +635,7 @@ class DataFrame(pd.DataFrame):
 
     def l_cokurt(
         self,
-        trim: AnyTrim = (0, 0),
+        trim: AnyTrim = 0,
         **kwargs: Unpack[LComomentOptions],
     ) -> pd.DataFrame:
         """

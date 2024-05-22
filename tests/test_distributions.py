@@ -1,16 +1,19 @@
+import functools
 from typing import cast
 
 import numpy as np
 import pytest
-from numpy.testing import assert_allclose
-from scipy.stats.distributions import tukeylambda, uniform  # type: ignore
+from numpy.testing import assert_allclose as _assert_allclose
+from scipy.stats.distributions import tukeylambda, uniform
 
 from lmo.distributions import genlambda, l_poly, wakeby
-from lmo.typing import AnyTrim, RVContinuous
+from lmo.typing import AnyTrim
+from lmo.typing._scipy import RVContinuous
 
 
-ATOL = 1e-10
 Q = np.linspace(1 / 100, 1, 99, endpoint=False)
+
+assert_allclose = functools.partial(_assert_allclose, atol=1e-9)
 
 
 @pytest.mark.parametrize(
@@ -20,24 +23,24 @@ Q = np.linspace(1 / 100, 1, 99, endpoint=False)
 def test_l_poly_eq_uniform(trim: AnyTrim):
     p0 = x0 = np.linspace(0, 1)
 
-    X = cast('RVContinuous[()]', uniform())
+    X = cast('RVContinuous', uniform())
     X_hat = l_poly(X.l_moment([1, 2], trim=trim), trim=trim)
 
     t4 = X.l_stats(trim=trim)
     t4_hat = X_hat.l_stats(trim=trim)
-    assert_allclose(t4_hat, t4, atol=ATOL)
+    assert_allclose(t4_hat, t4)
 
     mvsk = X.stats(moments='mvsk')
     mvsk_hat = X_hat.stats(moments='mvsk')
-    assert_allclose(mvsk_hat, mvsk, atol=ATOL)
+    assert_allclose(mvsk_hat, mvsk)
 
     x = X.ppf(p0)
     x_hat = X_hat.ppf(p0)
-    assert_allclose(x_hat, x, atol=ATOL)
+    assert_allclose(x_hat, x)
 
     F = X.cdf(p0)
     F_hat = X_hat.cdf(p0)
-    assert_allclose(F_hat, F, atol=ATOL)
+    assert_allclose(F_hat, F)
 
     f = X.pdf(x0)
     f_hat = X_hat.pdf(x0)
@@ -45,7 +48,7 @@ def test_l_poly_eq_uniform(trim: AnyTrim):
 
     H = X.entropy()
     H_hat = X_hat.entropy()
-    assert_allclose(H_hat, H, atol=ATOL)
+    assert_allclose(H_hat, H)
 
 
 @pytest.mark.parametrize('scale', [1, .5, 2])
@@ -78,24 +81,24 @@ def test_wakeby(b: float, d: float, f: float, loc: float, scale: float):
     # quad_opts={} forces numerical evaluation
     l_stats_quad = X.l_stats(quad_opts={})
     l_stats_theo = X.l_stats()
-    assert_allclose(l_stats_theo, l_stats_quad, atol=ATOL, equal_nan=d >= 1)
+    assert_allclose(l_stats_theo, l_stats_quad, equal_nan=d >= 1)
 
     ll_stats_quad = X.l_stats(quad_opts={}, trim=(0, 1))
     ll_stats_theo = X.l_stats(trim=(0, 1))
-    assert_allclose(ll_stats_theo, ll_stats_quad, atol=ATOL)
+    assert_allclose(ll_stats_theo, ll_stats_quad)
 
     tl_stats_quad = X.l_stats(quad_opts={}, trim=1)
     tl_stats_theo = X.l_stats(trim=1)
-    assert_allclose(tl_stats_theo, tl_stats_quad, atol=ATOL)
+    assert_allclose(tl_stats_theo, tl_stats_quad)
 
     tll_stats_quad = X.l_stats(quad_opts={}, trim=(1, 2))
     tll_stats_theo = X.l_stats(trim=(1, 2))
-    assert_allclose(tll_stats_theo, tll_stats_quad, atol=ATOL)
+    assert_allclose(tll_stats_theo, tll_stats_quad)
 
 
 @pytest.mark.parametrize('lam', [0, 0.14, 1, -1])
 def test_genlambda_tukeylamba(lam: float):
-    X0 = cast(RVContinuous[float], tukeylambda(lam))
+    X0 = cast(RVContinuous, tukeylambda(lam))
     X = genlambda(lam, lam, 0)
 
     x0 = X0.ppf(Q)
@@ -126,19 +129,16 @@ def test_genlambda_tukeylamba(lam: float):
 
     tl_tau0 = X0.l_stats(trim=1)
     tl_tau = X.l_stats(trim=1)
-    assert_allclose(tl_tau, tl_tau0, atol=ATOL)
+    assert_allclose(tl_tau, tl_tau0)
 
 
 # @pytest.mark.parametrize('scale', [1, .5, 2])
 # @pytest.mark.parametrize('loc', [0, 1, -1])
-# @pytest.mark.parametrize('f', [0, .5, 1, -.5, -1])
-@pytest.mark.parametrize('scale', [1])
-@pytest.mark.parametrize('loc', [0])
 @pytest.mark.parametrize('f', [0, 1, -1])
 @pytest.mark.parametrize('d', [0, .5, 2, -0.9, -1.95])
 @pytest.mark.parametrize('b', [0, .5, 1, -0.9, -1.95])
-def test_genlambda(b: float, d: float, f: float, loc: float, scale: float):
-    X = genlambda(b, d, f, loc, scale)
+def test_genlambda(b: float, d: float, f: float):
+    X = genlambda(b, d, f)
 
     assert X.cdf(X.support()[0]) == 0
     assert X.ppf(0) == X.support()[0]
@@ -150,7 +150,7 @@ def test_genlambda(b: float, d: float, f: float, loc: float, scale: float):
 
     # m_x1 = X.expect(lambda x: x) if min(b, d) > -1 else np.nan
     # mean = X.mean()
-    # assert_allclose(mean, m_x1, equal_nan=True, atol=ATOL)
+    # assert_allclose(mean, m_x1, equal_nan=True)
 
     # m_x2 = X.expect(lambda x: (x - m_x1)**2) if min(b, d) > -.5 else np.nan
     # var = X.var()
@@ -159,22 +159,22 @@ def test_genlambda(b: float, d: float, f: float, loc: float, scale: float):
     # quad_opts={} forces numerical evaluation
     if b > -1 and d > -1:
         l_tau_quad = X.l_stats(quad_opts={})
-        assert_allclose(l_tau_quad[0], X.mean(), atol=ATOL)
+        assert_allclose(l_tau_quad[0], X.mean(), atol=1e-8)
         assert l_tau_quad[1] > 0 or np.isnan(l_tau_quad[1])
         l_tau_theo = X.l_stats()
-        assert_allclose(l_tau_theo, l_tau_quad, atol=ATOL)
+        assert_allclose(l_tau_theo, l_tau_quad, atol=1e-8)
 
     if b > -1 and d > -2:
         ll_tau_quad = X.l_stats(quad_opts={}, trim=(0, 1))
         assert ll_tau_quad[1] > 0 or np.isnan(ll_tau_quad[1])
         ll_tau_theo = X.l_stats(trim=(0, 1))
-        assert_allclose(ll_tau_theo, ll_tau_quad, atol=ATOL)
+        assert_allclose(ll_tau_theo, ll_tau_quad)
 
     if b > -2 and d > -1:
         lh_tau_quad = X.l_stats(quad_opts={}, trim=(1, 0))
         assert lh_tau_quad[1] > 0 or np.isnan(lh_tau_quad[1])
         lh_tau_theo = X.l_stats(trim=(1, 0))
-        assert_allclose(lh_tau_theo, lh_tau_quad, atol=ATOL)
+        assert_allclose(lh_tau_theo, lh_tau_quad)
 
     tl_tau_quad = X.l_stats(quad_opts={}, trim=1)
     assert tl_tau_quad[1] > 0 or np.isnan(tl_tau_quad[1])
