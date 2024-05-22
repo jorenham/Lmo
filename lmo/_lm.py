@@ -239,7 +239,12 @@ def l_weights(
 
         if cache:
             w.setflags(write=False)
-            _L_WEIGHTS_CACHE[cache_key] = w
+            # be wary of a potential race condition
+            if (
+                cache_key not in _L_WEIGHTS_CACHE
+                or w.shape[0] >= _L_WEIGHTS_CACHE[cache_key].shape[0]
+            ):
+                _L_WEIGHTS_CACHE[cache_key] = w
 
     if w.shape[0] > r_max:
         w = w[:r_max]
