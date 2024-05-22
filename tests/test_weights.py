@@ -23,15 +23,15 @@ st_trim_i0 = st.tuples(st_t_i0, st_t_i0)
 
 
 @given(n=st_n, r=st_r, trim0=st.just((0, 0)))
-def test_l_weights_alias(n, r, trim0):
+def test_l_weights_alias(n: int, r: int, trim: tuple[int, int]):
     w_l = l_weights(r, n)
-    w_tl = l_weights(r, n, trim0)
+    w_tl = l_weights(r, n, trim)
 
     assert np.array_equal(w_l, w_tl)
 
 
 @given(n=st_n, r=st_r, trim=st_trim_i0)
-def test_l_weights_basic(n, r, trim):
+def test_l_weights_basic(n: int, r: int, trim: tuple[int, int]):
     w = l_weights(r, n, trim)
 
     assert w.shape == (r, n)
@@ -41,7 +41,7 @@ def test_l_weights_basic(n, r, trim):
 
 # symmetries only apply for symmetric trimming, for obvious reasons
 @given(n=st_n, t=st_t_i0)
-def test_l_weights_symmetry(n, t):
+def test_l_weights_symmetry(n: int, t: int):
     w = l_weights(MAX_R, n, (t, t))
 
     w_evn_lhs, w_evn_rhs = w[::2], w[::2, ::-1]
@@ -59,7 +59,7 @@ def test_l_weights_symmetry_large_even_r():
 
 
 @given(n=st_n, r=st_r, trim=st_trim_i)
-def test_l_weights_trim(n, r, trim):
+def test_l_weights_trim(n: int, r: int, trim: tuple[int, int]):
     w = l_weights(r, n, trim)
 
     tl, tr = trim
@@ -71,7 +71,7 @@ def test_l_weights_trim(n, r, trim):
 
 
 @given(n=st_n, r=st.integers(2, MAX_R), trim=st_trim_i0)
-def test_tl_weights_sum(n, r, trim):
+def test_tl_weights_sum(n: int, r: int, trim: tuple[int, int]):
     w = l_weights(r, n, trim)
     w_sum = w.sum(axis=-1)
 
