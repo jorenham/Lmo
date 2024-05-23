@@ -1,31 +1,42 @@
-"""Lmo: Robust statistics with trimmed L-moments and L-comoments."""
-import sys
+"""
+Robust statistics with trimmed L-moments and L-comoments.
+"""
+
+import sys  # noqa: I001
 from typing import TYPE_CHECKING, Final
 
 from ._lm import (
-    l_kurtosis,
     l_loc,
-    l_moment,
-    l_moment_cov,
-    l_moment_influence,
-    l_ratio,
-    l_ratio_influence,
-    l_ratio_se,
     l_scale,
-    l_skew,
-    l_stats,
-    l_stats_se,
     l_variation,
+    l_skew,
+    l_kurtosis,
+
+    l_kurt,
+    l_moment,
+    l_ratio,
+    l_stats,
+
+    l_moment_cov,
+    l_ratio_se,
+    l_stats_se,
+
+    l_moment_influence,
+    l_ratio_influence,
+
     l_weights,
 )
 from ._lm_co import (
-    l_cokurtosis,
     l_coloc,
+    l_coscale,
+
+    l_corr,
+    l_coskew,
+    l_cokurtosis,
+    l_cokurt,
+
     l_comoment,
     l_coratio,
-    l_corr,
-    l_coscale,
-    l_coskew,
     l_costats,
 )
 from ._meta import get_version as _get_version
@@ -60,6 +71,7 @@ __all__ = (
     'l_variation',
     'l_skew',
     'l_kurtosis',
+    'l_kurt',
 
     'l_moment',
     'l_ratio',
@@ -79,6 +91,7 @@ __all__ = (
     'l_corr',
     'l_coskew',
     'l_cokurtosis',
+    'l_cokurt',
 
     'l_comoment',
     'l_coratio',
