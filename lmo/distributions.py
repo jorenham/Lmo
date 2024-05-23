@@ -861,6 +861,8 @@ class l_poly:
         """
         return float(self.l_ratio(4, 2, trim=trim))
 
+    l_kurt = l_kurtosis
+
     # `rv_continuous` and `rv_frozen` compatibility
 
     @property
