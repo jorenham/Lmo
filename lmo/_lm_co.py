@@ -50,7 +50,7 @@ def l_comoment(
     dtype: _DType[_T_float] = np.float64,
     rowvar: bool | None = None,
     sort: lnpt.SortKind | None = None,
-    cache: bool = False,
+    cache: bool | None = None,
 ) -> lnpt.Array[Any, _T_float]:
     r"""
     Multivariate extension of [`lmo.l_moment`][lmo.l_moment].
@@ -123,7 +123,8 @@ def l_comoment(
         cache:
             Set to `True` to speed up future L-moment calculations that have
             the same number of observations in `a`, equal `trim`, and equal or
-            smaller `r`.
+            smaller `r`. By default, it will cache i.f.f. the trim is integral,
+            and $r + s + t \le 24$. Set to `False` to always disable caching.
 
     Returns:
         L: Array of shape `(*r.shape, m, m)` with r-th L-comoments.

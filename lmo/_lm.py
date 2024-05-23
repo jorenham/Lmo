@@ -9,6 +9,7 @@ import numpy.typing as npt
 from . import ostats, pwm_beta
 from ._utils import (
     clean_order,
+    clean_orders,
     clean_trim,
     ensure_axis_at,
     l_stats_orders,
@@ -18,21 +19,18 @@ from ._utils import (
     sort_maybe,
 )
 from .linalg import ir_pascal, sandwich, sh_legendre, trim_matrix
-from .typing import np as lnpt
+from .typing import (
+    AnyOrder,
+    AnyOrderND,
+    np as lnpt,
+)
 from .typing.compat import TypeVar
 
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from .typing import (
-        AnyAWeights,
-        AnyFWeights,
-        AnyOrder,
-        AnyOrderND,
-        AnyTrim,
-        LMomentOptions,
-    )
+    from .typing import AnyAWeights, AnyFWeights, AnyTrim, LMomentOptions
     from .typing.compat import Unpack
 
 
@@ -140,7 +138,7 @@ def l_weights(
     trim: AnyTrim = 0,
     *,
     dtype: _DType[_T_float] = np.float64,
-    cache: bool = False,
+    cache: bool | None = None,
 ) -> lnpt.Array[tuple[_T_order, _T_size], _T_float]:
     r"""
     Projection matrix of the first $r$ (T)L-moments for $n$ samples.
@@ -184,7 +182,8 @@ def l_weights(
         n: The number of samples.
         trim: A scalar or 2-tuple with the trim orders. Defaults to 0.
         dtype: The datatype of the returned weight matrix.
-        cache: Whether to cache the weights, defaults to `False`.
+        cache: Whether to cache the weights. By default, it's enabled i.f.f
+            the trim values are integers, and `r_max + sum(trim) < 24`.
 
     Returns:
         P_r: 2-D array of shape `(r_max, n)`, readonly if `cache=True`
@@ -228,12 +227,14 @@ def l_weights(
         # depending on the platform)
         _dtype = np.longdouble if cache else dtype
 
+        _cache_default = False
         if r_max + s + t <= 24 and isinstance(s, int) and isinstance(t, int):
-            w = _l_weights_pwm(_r_max, n, (s, t), dtype=_dtype)
+            w = _l_weights_pwm(_r_max, n, trim=(s, t), dtype=_dtype)
+            _cache_default = True
         else:
-            w = _l_weights_ostat(_r_max, n, (s, t), dtype=_dtype)
+            w = _l_weights_ostat(_r_max, n, trim=(s, t), dtype=_dtype)
 
-        if cache:
+        if cache or cache is None and _cache_default:
             w.setflags(write=False)
             # be wary of a potential race condition
             if key not in _CACHE or w.shape[0] >= _CACHE[key].shape[0]:
@@ -300,7 +301,7 @@ def l_moment(
     fweights: AnyFWeights | None = None,
     aweights: AnyAWeights | None = None,
     sort: lnpt.SortKind | bool = True,
-    cache: bool = False,
+    cache: bool | None = None,
 ) -> _Vectorized[_T_float]:
     r"""
     Estimates the generalized trimmed L-moment $\lambda^{(s, t)}_r$ from
@@ -361,7 +362,8 @@ def l_moment(
         cache:
             Set to `True` to speed up future L-moment calculations that have
             the same number of observations in `a`, equal `trim`, and equal or
-            smaller `r`.
+            smaller `r`. By default, it will cache i.f.f. the trim is integral,
+            and $r + s + t \le 24$. Set to `False` to always disable caching.
 
     Returns:
         l:
@@ -411,8 +413,11 @@ def l_moment(
     x_k = ensure_axis_at(x_k, axis, -1)
     n = x_k.shape[-1]
 
-    _r = np.asarray(r)
-    r_max = clean_order(np.max(_r))
+    if np.isscalar(r):
+        _r = np.array(clean_order(cast(AnyOrder, r)))
+    else:
+        _r = clean_orders(cast(AnyOrderND, r))
+    r_min, r_max = np.min(_r), int(np.max(_r))
 
     # TODO @jorenham: nan handling, see:
     # https://github.com/jorenham/Lmo/issues/70
@@ -428,12 +433,10 @@ def l_moment(
 
     l_r = np.inner(l_weights(r_max, n, st, dtype=dtype, cache=cache), x_k)
 
-    # we like 0-based indexing; so if P_r starts at r=1, prepend all 1's
-    # for r=0 (any zeroth moment is defined to be 1)
-    l_r = np.r_[np.ones((1, *l_r.shape[1:]), dtype=l_r.dtype), l_r]
+    if r_min > 0:
+        return l_r.take(_r - 1, 0)
 
-    # l[r] fails when r is e.g. a tuple (valid sequence).
-    return l_r.take(_r, 0)
+    return np.r_[np.ones((1, *l_r.shape[1:]), l_r.dtype), l_r].take(_r, 0)
 
 
 @overload

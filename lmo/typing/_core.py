@@ -23,7 +23,7 @@ class LMomentOptions(TypedDict, total=False):
     `**kwds: *LMomentOptions` (on `python>=3.11`).
     """
     sort: lnpt.SortKind | bool
-    cache: bool
+    cache: bool | None
     fweights: AnyFWeights
     aweights: AnyAWeights
 
@@ -34,5 +34,5 @@ class LComomentOptions(TypedDict, total=False):
     `**kwds: *LComomentOptions` (on `python>=3.11`).
     """
     sort: lnpt.SortKind
-    cache: bool
+    cache: bool | None
     rowvar: bool | None

@@ -137,7 +137,7 @@ def test_cached(n: int, r: int, trim: int | tuple[int, int]):
     with tmp_cache() as cache:
         assert cache_key not in cache
 
-        w0 = l_weights(r, n, trim, cache=True, dtype=np.longdouble)
+        w0 = l_weights(r, n, trim, dtype=np.longdouble)
         assert cache_key in cache
         w0_cached = cache[cache_key]
 
