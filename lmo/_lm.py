@@ -46,6 +46,7 @@ __all__ = (
     'l_variation',
     'l_skew',
     'l_kurtosis',
+    'l_kurt',
 
     'l_moment_cov',
     'l_ratio_se',
@@ -921,6 +922,9 @@ def l_kurtosis(
         - [`scipy.stats.kurtosis`][scipy.stats.kurtosis]
     """
     return l_ratio(a, 4, 2, trim=trim, axis=axis, dtype=dtype, **kwds)
+
+
+l_kurt = l_kurtosis
 
 
 def l_moment_cov(
