@@ -9,29 +9,28 @@ import numpy.typing as npt
 from . import ostats, pwm_beta
 from ._utils import (
     clean_order,
+    clean_orders,
     clean_trim,
     ensure_axis_at,
     l_stats_orders,
     moments_to_ratio,
     ordered,
     round0,
+    sort_maybe,
 )
 from .linalg import ir_pascal, sandwich, sh_legendre, trim_matrix
+from .typing import (
+    AnyOrder,
+    AnyOrderND,
+    np as lnpt,
+)
 from .typing.compat import TypeVar
 
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from .typing import (
-        AnyAWeights,
-        AnyFWeights,
-        AnyOrder,
-        AnyOrderND,
-        AnyTrim,
-        LMomentOptions,
-        np as lnpt,
-    )
+    from .typing import AnyAWeights, AnyFWeights, AnyTrim, LMomentOptions
     from .typing.compat import Unpack
 
 
@@ -47,6 +46,7 @@ __all__ = (
     'l_variation',
     'l_skew',
     'l_kurtosis',
+    'l_kurt',
 
     'l_moment_cov',
     'l_ratio_se',
@@ -66,13 +66,17 @@ _DType: TypeAlias = np.dtype[_T_float] | type[_T_float]
 _Vectorized: TypeAlias = _T_float | npt.NDArray[_T_float]
 _Floating: TypeAlias = np.floating[Any]
 
-_L_WEIGHTS_CACHE: Final[
-    dict[
-        # (n, s, t)
-        tuple[int, int, int] | tuple[int, float, float],
-        lnpt.Array[tuple[int, int], _Floating],
-    ]
-] = {}
+# (dtype.char, n, s, t)
+_CacheKey: TypeAlias = (
+    tuple[str, int, int, int]
+    | tuple[str, int, float, float]
+)
+# `r: _T_order >= 4`
+_CacheArray: TypeAlias = lnpt.Array[tuple[_T_order, _T_size], np.longdouble]
+_Cache: TypeAlias = dict[_CacheKey, _CacheArray[Any, Any]]
+
+# depends on `dtype`, `n`, and `trim`
+_CACHE: Final[_Cache] = {}
 
 
 def _l_weights_pwm(
@@ -87,11 +91,21 @@ def _l_weights_pwm(
     r0 = r + s + t
 
     # `__matmul__` annotations are lacking (`np.matmul` is equivalent to it)
-    w0 = np.matmul(
+    wr = np.matmul(
         sh_legendre(r0, dtype=np.int64 if r0 < 29 else dtype),
         pwm_beta.weights(r0, n, dtype=dtype),
+        dtype=dtype,
     )
-    return np.matmul(trim_matrix(r, trim, dtype=dtype), w0) if s or t else w0
+    if s or t:
+        wr = np.matmul(trim_matrix(r, trim, dtype=dtype), wr, dtype=dtype)
+
+        # ensure that the trimmed ends are 0
+        if s:
+            wr[:, :s] = 0
+        if t:
+            wr[:, -t:] = 0
+
+    return wr
 
 
 def _l_weights_ostat(
@@ -125,13 +139,13 @@ def _l_weights_ostat(
 
 
 def l_weights(
-    r: _T_order,
+    r_max: _T_order,
     n: _T_size,
     /,
     trim: AnyTrim = 0,
     *,
     dtype: _DType[_T_float] = np.float64,
-    cache: bool = False,
+    cache: bool | None = None,
 ) -> lnpt.Array[tuple[_T_order, _T_size], _T_float]:
     r"""
     Projection matrix of the first $r$ (T)L-moments for $n$ samples.
@@ -170,8 +184,16 @@ def l_weights(
         observation vector(s) of size $n$), into (an unbiased estimate of) the
         *generalized trimmed L-moments*, with orders $\le r$.
 
+    Args:
+        r_max: The amount L-moment orders.
+        n: The number of samples.
+        trim: A scalar or 2-tuple with the trim orders. Defaults to 0.
+        dtype: The datatype of the returned weight matrix.
+        cache: Whether to cache the weights. By default, it's enabled i.f.f
+            the trim values are integers, and `r_max + sum(trim) < 24`.
+
     Returns:
-        P_r: 2-D array of shape `(r, n)`.
+        P_r: 2-D array of shape `(r_max, n)`, readonly if `cache=True`
 
     Examples:
         >>> import lmo
@@ -186,55 +208,44 @@ def l_weights(
         - [J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
             L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
     """
-    if r == 0:
-        return np.empty((r, n), dtype=dtype)
+    if r_max < 0:
+        msg = f'r must be non-negative, got {r_max}'
+        raise ValueError(msg)
 
-    match clean_trim(trim):
-        case s, t if s < 0 or t < 0:
-            msg = f'trim orders must be >=0, got {trim}'
-            raise ValueError(msg)
-        case s, t:
-            pass
-        case _:  # type: ignore [reportUneccessaryComparison]
-            msg = (
-                f'trim must be a tuple with two non-negative ints or floats, '
-                f'got {trim!r}'
-            )
-            raise TypeError(msg)
+    dtype = np.dtype(dtype)
+    sctype = dtype.type
 
-    # manual cache lookup, only if cache=False (for testability)
-    # e.g. `functools.cache` would be inefficient for e.g. r=3 with cached r=4
-    cache_key = n, s, t
-    if (
-        cache
-        and cache_key in _L_WEIGHTS_CACHE
-        and (w := _L_WEIGHTS_CACHE[cache_key]).shape[0] <= r
-    ):
-        if w.shape[0] < r:
-            w = w[:r]
+    if r_max == 0:
+        return np.empty((0, n), dtype=sctype)
 
-        # ignore if r is larger that what's cached
-        if w.shape[0] == r:
-            assert w.shape == (r, n)
-            return w.astype(dtype)
+    s, t = clean_trim(trim)
 
-    if r + s + t <= 24 and isinstance(s, int) and isinstance(t, int):
-        w = _l_weights_pwm(r, n, (s, t), dtype=dtype or np.float64)
+    if (n_min := r_max + s + t) > n:
+        msg = f'expected n >= r + s + t, got {n} < {n_min}'
+        raise ValueError(msg)
 
-        # ensure that the trimmed ends are 0
-        if s:
-            w[:, :s] = 0
-        if t:
-            w[:, -t:] = 0
+    key = dtype.char, n, s, t
+    if (_w := _CACHE.get(key)) is not None and _w.shape[0] >= r_max:
+        w = cast(lnpt.Array[tuple[_T_order, _T_size], _T_float], _w)
     else:
-        w = _l_weights_ostat(r, n, (s, t), dtype=dtype or np.float64)
+        # when caching, use at least 4 orders, to avoid cache misses
+        _r_max = 4 if cache and r_max < 4 else r_max
 
-    if cache:
-        # the pyright error here is due to the fact that the first type param
-        # of `np.ndarray` is invariant (which is incorrect), instead of
-        # being covariant
-        _L_WEIGHTS_CACHE[cache_key] = w  # pyright: ignore[reportArgumentType]
+        _cache_default = False
+        if r_max + s + t <= 24 and isinstance(s, int) and isinstance(t, int):
+            w = _l_weights_pwm(_r_max, n, trim=(s, t), dtype=sctype)
+            _cache_default = True
+        else:
+            w = _l_weights_ostat(_r_max, n, trim=(s, t), dtype=sctype)
 
+        if cache or cache is None and _cache_default:
+            w.setflags(write=False)
+            # be wary of a potential race condition
+            if key not in _CACHE or w.shape[0] >= _CACHE[key].shape[0]:
+                _CACHE[key] = w
+
+    if w.shape[0] > r_max:
+        w = w[:r_max]
     return w
 
 
@@ -292,8 +303,8 @@ def l_moment(
     dtype: _DType[_T_float] = np.float64,
     fweights: AnyFWeights | None = None,
     aweights: AnyAWeights | None = None,
-    sort: lnpt.SortKind | None = None,
-    cache: bool = False,
+    sort: lnpt.SortKind | bool = True,
+    cache: bool | None = None,
 ) -> _Vectorized[_T_float]:
     r"""
     Estimates the generalized trimmed L-moment $\lambda^{(s, t)}_r$ from
@@ -348,12 +359,14 @@ def l_moment(
             All `aweights` must be `>=0`, and the sum must be nonzero.
 
             The algorithm is similar to that for weighted quantiles.
-        sort ('quicksort' | 'heapsort' | 'stable'):
+        sort (True | False | 'quicksort' | 'heapsort' | 'stable'):
             Sorting algorithm, see [`numpy.sort`][numpy.sort].
+            Set to `False` if the array is already sorted.
         cache:
             Set to `True` to speed up future L-moment calculations that have
             the same number of observations in `a`, equal `trim`, and equal or
-            smaller `r`.
+            smaller `r`. By default, it will cache i.f.f. the trim is integral,
+            and $r + s + t \le 24$. Set to `False` to always disable caching.
 
     Returns:
         l:
@@ -403,8 +416,11 @@ def l_moment(
     x_k = ensure_axis_at(x_k, axis, -1)
     n = x_k.shape[-1]
 
-    _r = np.asarray(r)
-    r_max = clean_order(np.max(_r))
+    if np.isscalar(r):
+        _r = np.array(clean_order(cast(AnyOrder, r)))
+    else:
+        _r = clean_orders(cast(AnyOrderND, r))
+    r_min, r_max = np.min(_r), int(np.max(_r))
 
     # TODO @jorenham: nan handling, see:
     # https://github.com/jorenham/Lmo/issues/70
@@ -420,12 +436,10 @@ def l_moment(
 
     l_r = np.inner(l_weights(r_max, n, st, dtype=dtype, cache=cache), x_k)
 
-    # we like 0-based indexing; so if P_r starts at r=1, prepend all 1's
-    # for r=0 (any zeroth moment is defined to be 1)
-    l_r = np.r_[np.ones((1, *l_r.shape[1:]), dtype=l_r.dtype), l_r]
+    if r_min > 0:
+        return l_r.take(_r - 1, 0)
 
-    # l[r] fails when r is e.g. a tuple (valid sequence).
-    return l_r.take(_r, 0)
+    return np.r_[np.ones((1, *l_r.shape[1:]), l_r.dtype), l_r].take(_r, 0)
 
 
 @overload
@@ -910,6 +924,9 @@ def l_kurtosis(
     return l_ratio(a, 4, 2, trim=trim, axis=axis, dtype=dtype, **kwds)
 
 
+l_kurt = l_kurtosis
+
+
 def l_moment_cov(
     a: lnpt.AnyArrayFloat,
     r_max: AnyOrder,
@@ -1103,7 +1120,7 @@ def l_moment_influence(
     /,
     trim: AnyTrim = 0,
     *,
-    sort: lnpt.SortKind | None = 'quicksort',
+    sort: lnpt.SortKind | bool = True,
     tol: float = 1e-8,
 ) -> Callable[[_T_x], _T_x]:
     r"""
@@ -1132,11 +1149,9 @@ def l_moment_influence(
     _r = clean_order(r)
     s, t = clean_trim(trim)
 
-    x_k = np.array(a, copy=True)
-    if sort:
-        x_k.sort(kind=sort)
+    x_k = np.array(a, copy=bool(sort))
+    x_k = sort_maybe(x_k, sort=sort, inplace=True)
 
-    x_k = np.sort(np.asarray(a), kind=sort)
     n = len(x_k)
 
     w_k = l_weights(_r, n, (s, t))[-1]
@@ -1173,7 +1188,7 @@ def l_ratio_influence(
     /,
     trim: AnyTrim = 0,
     *,
-    sort: lnpt.SortKind = 'quicksort',
+    sort: lnpt.SortKind | bool = True,
     tol: float = 1e-8,
 ) -> Callable[[_T_x], _T_x]:
     r"""
@@ -1202,12 +1217,12 @@ def l_ratio_influence(
     """
     _r, _s = clean_order(r), clean_order(s, name='s')
 
-    _x = np.array(a, copy=True)
-    _x.sort(kind=sort)
+    _x = np.array(a, copy=bool(sort))
+    _x = sort_maybe(_x, sort=sort, inplace=True)
     n = len(_x)
 
-    eif_r = l_moment_influence(_x, _r, trim, sort=None, tol=0)
-    eif_k = l_moment_influence(_x, _s, trim, sort=None, tol=0)
+    eif_r = l_moment_influence(_x, _r, trim, sort=False, tol=0)
+    eif_k = l_moment_influence(_x, _s, trim, sort=False, tol=0)
 
     l_r, l_k = cast(
         tuple[float, float],

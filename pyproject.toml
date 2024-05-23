@@ -5,7 +5,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "lmo"
-version = "0.13.2"
+version = "0.14.0"
 description = "L-Moments for robust statistics & inference."
 authors = ["Joren Hammudoglu <jhammudoglu@gmail.com>"]
 readme = "README.md"
@@ -49,15 +49,15 @@ optype = "^0.4.0"
 codespell = "^2.2.6"
 hypothesis = {version = "^6.102.4", extras = ["numpy"]}
 pre-commit = "^3.7.1"
-pyright = "^1.1.363"
-pytest = "^8.2.0"
+pyright = "^1.1.364"
+pytest = "^8.2.1"
 pytest-doctestplus = "^1.2.1"
-ruff = "^0.4.4"
+ruff = "^0.4.5"
 tomli = {version = "^2.0.1", python = "<3.11"}
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.6.0"
-mkdocs-material = "^9.5.23"
+mkdocs-material = "^9.5.24"
 mkdocs-include-markdown-plugin = "^6.0.6"
 mkdocstrings = {version = "^0.25.1", extras = ["python"]}
 mkdocs-git-revision-date-localized-plugin = "^1.2.5"
@@ -87,7 +87,7 @@ numpy = "<=2"
 optional = true
 [tool.poetry.group.numpy2.dependencies]
 numpy = {version = ">=2.0.0rc2", allow-prereleases = true}
-scipy = ">=1.13.0"
+scipy = ">=1.13.1"
 
 [tool.poetry.extras]
 pandas = ["pandas"]
@@ -172,7 +172,6 @@ extend-exclude = [
 ]
 
 [tool.ruff.lint]
-ignore-init-module-imports = true
 preview = true
 select = [
     "F",        # pyflakes

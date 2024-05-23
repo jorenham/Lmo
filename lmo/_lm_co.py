@@ -27,6 +27,7 @@ __all__ = (
     'l_corr',
     'l_coskew',
     'l_cokurtosis',
+    'l_cokurt',
 )
 
 
@@ -48,9 +49,9 @@ def l_comoment(
     trim: AnyTrim = 0,
     *,
     dtype: _DType[_T_float] = np.float64,
-    rowvar: bool = True,
+    rowvar: bool | None = None,
     sort: lnpt.SortKind | None = None,
-    cache: bool = False,
+    cache: bool | None = None,
 ) -> lnpt.Array[Any, _T_float]:
     r"""
     Multivariate extension of [`lmo.l_moment`][lmo.l_moment].
@@ -109,20 +110,22 @@ def l_comoment(
                 Useful for fitting heavy-tailed distributions, such as the
                 Cauchy distribution.
         rowvar:
-            If `rowvar` is True (default), then each row (axis 0) represents a
+            If `True`, then each row (axis 0) represents a
             variable, with observations in the columns (axis 1).
-            Otherwise, the relationship is transposed: each column represents
+            If `False`, the relationship is transposed: each column represents
             a variable, while the rows contain observations.
+            If `None` (default), it is determined from the shape of `a`.
         dtype:
             Floating type to use in computing the L-moments. Default is
             [`numpy.float64`][numpy.float64].
 
-        sort ('quick' | 'stable' | 'heap'):
+        sort ('quicksort' | 'heapsort' | 'stable'):
             Sorting algorithm, see [`numpy.sort`][numpy.sort].
         cache:
             Set to `True` to speed up future L-moment calculations that have
             the same number of observations in `a`, equal `trim`, and equal or
-            smaller `r`.
+            smaller `r`. By default, it will cache i.f.f. the trim is integral,
+            and $r + s + t \le 24$. Set to `False` to always disable caching.
 
     Returns:
         L: Array of shape `(*r.shape, m, m)` with r-th L-comoments.
@@ -133,29 +136,39 @@ def l_comoment(
 
         >>> import lmo, numpy as np
         >>> rng = np.random.default_rng(12345)
-        >>> x = rng.multivariate_normal([0, 0], [[6, -3], [-3, 3.5]], 99).T
+        >>> x = rng.multivariate_normal([0, 0], [[6, -3], [-3, 3.5]], 99)
         >>> lmo.l_comoment(x, 2)
         array([[ 1.2766793 , -0.83299947],
                [-0.71547941,  1.05990727]])
 
         The diagonal contains the univariate L-moments:
 
-        >>> lmo.l_moment(x, 2, axis=-1)
+        >>> lmo.l_moment(x, 2, axis=0)
         array([1.2766793 , 1.05990727])
+
+        The orientation (`rowvar`) is automatically determined, unless
+        explicitly specified.
+
+        >>> lmo.l_comoment(x, 2).shape
+        (2, 2)
+        >>> lmo.l_comoment(x.T, 2).shape
+        (2, 2)
+        >>> lmo.l_comoment(x, 2, rowvar=False).shape
+        (2, 2)
+        >>> lmo.l_comoment(x.T, 2, rowvar=True).shape
+        (2, 2)
 
     References:
         - [R. Serfling & P. Xiao (2007) - A Contribution to Multivariate
           L-Moments: L-Comoment Matrices](https://doi.org/10.1016/j.jmva.2007.01.008)
     """
-    x = np.array(
-        a,
-        order='C' if rowvar else 'F',
-        subok=True,
-        ndmin=2,
-    )
+    x = np.array(a, subok=True, ndmin=2)
     if x.ndim != 2:
         msg = f'sample array must be 2-D, got shape {x.shape}'
         raise ValueError(msg)
+
+    if rowvar is None:
+        rowvar = x.shape[0] < x.shape[1]
     if not rowvar:
         x = x.T
     m, n = x.shape
@@ -165,14 +178,14 @@ def l_comoment(
     else:
         _r = clean_orders(cast(AnyOrderND, r))
 
+    if not m:
+        return np.empty((*np.shape(_r), 0, 0), dtype=dtype)
+
     r_min = int(np.min(_r))
     r_max = int(np.max(_r))
 
     if r_min == r_max == 0 and _r.ndim == 0:
         return np.identity(m, dtype=dtype)
-
-    if not m:
-        return np.empty((*np.shape(_r), 0, 0), dtype=dtype)
 
     # projection/hat matrix of shape (r_max - r_min, n)
     p_k = l_weights(r_max, n, trim=trim, dtype=dtype, cache=cache)
@@ -184,7 +197,7 @@ def l_comoment(
 
     for j in range(m):
         # *concomitants* of x[i] w.r.t. x[j] for all i
-        x_kij = ordered(x, x[j], axis=-1, sort=sort)
+        x_kij = ordered(x, x[j], axis=-1, sort=sort or True)
         l_kij[:, :, j] = np.inner(p_k, x_kij)
 
     if r_min == 0:
@@ -417,3 +430,6 @@ def l_cokurtosis(
         - [`lmo.l_kurtosis`][lmo.l_kurtosis]
     """
     return l_coratio(a, 4, 2, trim=trim, dtype=dtype, **kwds)
+
+
+l_cokurt = l_cokurtosis

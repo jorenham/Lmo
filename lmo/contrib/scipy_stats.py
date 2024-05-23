@@ -589,6 +589,8 @@ class l_rv_generic(PatchClass):
         """
         return float(self.l_ratio(4, 2, *args, trim=trim, **kwds))
 
+    l_kurt = l_kurtosis
+
     def l_moments_cov(
         self,
         r_max: int,
@@ -1447,6 +1449,8 @@ class l_rv_frozen(PatchClass):  # noqa: D101
 
     def l_kurtosis(self, trim: AnyTrim = 0) -> float:  # noqa: D102
         return self.dist.l_kurtosis(*self.args, trim=trim, **self.kwds)
+
+    l_kurt = l_kurtosis
 
     def l_moments_cov(  # noqa: D102
         self,
