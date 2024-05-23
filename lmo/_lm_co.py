@@ -27,6 +27,7 @@ __all__ = (
     'l_corr',
     'l_coskew',
     'l_cokurtosis',
+    'l_cokurt',
 )
 
 
@@ -429,3 +430,6 @@ def l_cokurtosis(
         - [`lmo.l_kurtosis`][lmo.l_kurtosis]
     """
     return l_coratio(a, 4, 2, trim=trim, dtype=dtype, **kwds)
+
+
+l_cokurt = l_cokurtosis
