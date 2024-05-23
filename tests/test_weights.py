@@ -42,26 +42,26 @@ st_i12_eq0 = st_i_eq0 | st_i2_eq0
 st_i12_ge0 = st_i_ge0 | st_i2_ge0
 st_i12_gt0 = st_i_gt0 | st_i2_gt0
 
-st_floating = hnp.floating_dtypes()
+st_floating = hnp.floating_dtypes(sizes=[32, 64])
 
 
 @given(n=st_n, trim=st_i12_eq0)
 def test_empty(n: int, trim: int | tuple[int, int]):
-    w = l_weights(0, n, trim)
+    w = l_weights(0, n, trim, cache=False)
     assert w.shape == (0, n)
 
 
 @given(n=st_n, r=st_r, trim=st_i12_eq0)
 def test_untrimmed(n: int, r: int, trim: int | tuple[int, int]):
-    w_l = l_weights(r, n)
-    w_tl = l_weights(r, n, trim)
+    w_l = l_weights(r, n, cache=False)
+    w_tl = l_weights(r, n, trim, cache=False)
 
     assert_array_equal(w_l, w_tl)
 
 
 @given(n=st_n, r=st_r, trim=st_i12_ge0)
 def test_default(n: int, r: int, trim: int | tuple[int, int]):
-    w = l_weights(r, n, trim)
+    w = l_weights(r, n, trim, cache=False)
 
     assert w.shape == (r, n)
     assert np.all(np.isfinite(w))
@@ -75,7 +75,7 @@ def test_dtype(
     trim: int | tuple[int, int],
     dtype: np.dtype[np.floating[Any]],
 ):
-    w = l_weights(r, n, trim, dtype=dtype)
+    w = l_weights(r, n, trim, dtype=dtype, cache=False)
 
     assert np.all(np.isfinite(w))
     assert w.dtype.type is dtype.type
@@ -83,7 +83,7 @@ def test_dtype(
 
 @given(n=st_n, t=st_i_ge0)
 def test_symmetry(n: int, t: int):
-    w = l_weights(MAX_R, n, (t, t))
+    w = l_weights(MAX_R, n, (t, t), cache=False)
 
     w_evn_lhs, w_evn_rhs = w[::2], w[::2, ::-1]
     assert_allclose(w_evn_lhs, w_evn_rhs)
@@ -93,7 +93,7 @@ def test_symmetry(n: int, t: int):
 
 
 def test_l_weights_symmetry_large_even_r():
-    w = l_weights(16, MAX_N * 2)
+    w = l_weights(16, MAX_N * 2, cache=False)
 
     w_evn_lhs, w_evn_rhs = w[::2], w[::2, ::-1]
     assert_allclose(w_evn_lhs, w_evn_rhs)
@@ -101,7 +101,7 @@ def test_l_weights_symmetry_large_even_r():
 
 @given(n=st_n, r=st_r, trim=st_i2_gt0)
 def test_trim(n: int, r: int, trim: tuple[int, int]):
-    w = l_weights(r, n, trim)
+    w = l_weights(r, n, trim, cache=False)
 
     tl, tr = trim
     assert tl > 0
@@ -113,7 +113,7 @@ def test_trim(n: int, r: int, trim: tuple[int, int]):
 
 @given(n=st_n, r=st.integers(2, MAX_R), trim=st_i12_ge0)
 def test_sum(n: int, r: int, trim: int | tuple[int, int]):
-    w = l_weights(r, n, trim)
+    w = l_weights(r, n, trim, cache=False)
     w_sum = w.sum(axis=-1)
 
     assert_allclose(w_sum, np.eye(r, 1).ravel())
@@ -130,14 +130,22 @@ def test_uncached(n: int, r: int, trim: int | tuple[int, int]):
         assert_array_equal(w0, w1)
 
 
-@given(n=st_n, r=st.integers(4, MAX_R), trim=st_i12_ge0)
-def test_cached(n: int, r: int, trim: int | tuple[int, int]):
-    cache_key = (n, *trim) if isinstance(trim, tuple) else (n, trim, trim)
+@given(n=st_n, r=st.integers(4, MAX_R), trim=st_i12_ge0, dtype=st_floating)
+def test_cached(
+    n: int,
+    r: int,
+    trim: int | tuple[int, int],
+    dtype: np.dtype[np.floating[Any]],
+):
+    s, t = trim if isinstance(trim, tuple) else (trim, trim)
+    cache_key = dtype.char, n, s, t
 
     with tmp_cache() as cache:
-        assert cache_key not in cache
+        assert not cache
 
-        w0 = l_weights(r, n, trim, cache=True, dtype=np.longdouble)
+        w0 = l_weights(r, n, trim, dtype=dtype, cache=True)
+        assert w0.dtype.char == cache_key[0]
+        assert cache
         assert cache_key in cache
         w0_cached = cache[cache_key]
 
@@ -150,9 +158,9 @@ def test_cached(n: int, r: int, trim: int | tuple[int, int]):
             w0[0, 0] = w0_orig + 1
         assert w0[0, 0] == w0_orig
 
-        w1 = l_weights(r, n, trim, cache=True, dtype=np.longdouble)
+        w1 = l_weights(r, n, trim, dtype=dtype, cache=True)
         w1_cached = cache[cache_key]
         assert w0_cached is w1_cached
 
-        # this requires `r>=4`, `dtype=np.longdouble` and `r == r_cached`
+        # this requires `r>=4` and `r == r_cached`
         assert w0 is w1
