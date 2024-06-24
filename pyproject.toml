@@ -54,6 +54,7 @@ pytest = "^8.2.2"
 pytest-doctestplus = "^1.2.1"
 ruff = "^0.4.10"
 tomli = {version = "^2.0.1", python = "<3.11"}
+tox = "^4.15.1"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.6.0"
@@ -352,3 +353,36 @@ split_before_dot = true
 split_before_expression_after_opening_paren = true
 split_before_first_argument = true
 split_complex_comprehension = true
+
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+isolated_build = true
+requires = tox>=4
+envlist =
+    repo-review
+    pre-commit
+    py{310,311,312,313b2}
+
+[testenv]
+description = pytest
+skip_install = true
+allowlist_externals = poetry
+commands_pre = poetry install --sync
+commands = poetry run pytest
+
+[testenv:pre-commit]
+description = pre-commit
+skip_install = true
+allowlist_externals = poetry
+commands_pre = poetry install --sync
+commands = poetry run pre-commit run --all-files
+
+[testenv:repo-review]
+description = repo-review
+skip_install = true
+allowlist_externals = poetry
+commands_pre = poetry install --sync
+commands = poetry run repo-review .
+"""
