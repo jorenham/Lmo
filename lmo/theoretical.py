@@ -1615,14 +1615,16 @@ class _VectorizedPPF(Protocol):
     @overload
     def __call__(
         self,
-        __u: lnpt.AnyArrayInt | lnpt.AnyArrayFloat,
+        u: lnpt.AnyArrayInt | lnpt.AnyArrayFloat,
+        /,
         *,
         r_max: int = ...,
     ) -> _ArrF8: ...
     @overload
     def __call__(
         self,
-        __u: lnpt.AnyScalarInt | lnpt.AnyScalarFloat,
+        u: lnpt.AnyScalarInt | lnpt.AnyScalarFloat,
+        /,
         *,
         r_max: int = ...,
     ) -> float: ...
