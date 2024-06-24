@@ -43,7 +43,7 @@ NP_V2: Final[bool] = _NP_MAJOR == 2
 # Some handy scalar type aliases
 
 if NP_V2:
-    Bool: TypeAlias = np.bool   # noqa: NPY001
+    Bool: TypeAlias = np.bool
 else:
     Bool: TypeAlias = np.bool_
 UInt: TypeAlias = np.unsignedinteger[Any]

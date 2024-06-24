@@ -641,7 +641,8 @@ class RVFrozen(Protocol[_RV_co]):
 
     def __init__(
         self,
-        __dist: _RV_co,
+        dist: _RV_co,
+        /,
         *args: _Real0D,
         **kwds: _Real0D,
     ) -> None: ...
@@ -660,7 +661,7 @@ class RVFrozen(Protocol[_RV_co]):
     @property
     def random_state(self) -> _RNG: ...
     @random_state.setter
-    def random_state(self, __seed: _Seed) -> None: ...
+    def random_state(self, seed: _Seed, /) -> None: ...
 
     @overload
     def rvs(self, size: None = ..., random_state: _Seed = ...) -> _F8: ...
@@ -686,7 +687,7 @@ class RVFrozen(Protocol[_RV_co]):
     ) -> lnpt.Array[_ND1, _F8]: ...
 
     @overload
-    def logcdf(self, __x: _Real0D) -> _F8: ...
+    def logcdf(self, x: _Real0D) -> _F8: ...
     @overload
     def logcdf(
         self,

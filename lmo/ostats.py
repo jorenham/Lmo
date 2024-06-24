@@ -121,7 +121,7 @@ def weights(
     _fn = _weights_cached if cached else _weights
     # this return type incosnsitency is due to the first `np.ndarray` type
     # parameter not being covariant, which is incorrect, but is being worked on
-    return _fn(i, n, N)  # pyright: ignore[reportReturnType]
+    return _fn(i, n, N)
 
 
 @overload

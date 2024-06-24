@@ -1,7 +1,13 @@
 ci:
   autoupdate_branch: "dev"
   autoupdate_commit_msg: "update pre-commit hooks"
-  skip: [markdownlint, poetry-check, codespell, ruff, pyright]
+  skip:
+    - markdownlint
+    - poetry-check
+    - poetry-lock
+    - codespell
+    - ruff
+    - pyright
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -29,7 +35,7 @@ repos:
         exclude_types: [svg]
 
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.40.0
+    rev: v0.41.0
     hooks:
       - id: markdownlint
 
@@ -37,21 +43,23 @@ repos:
     rev: 1.8.3
     hooks:
       - id: poetry-check
+      - id: poetry-lock
+        args: [--no-update]
 
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.2.6
+    rev: v2.3.0
     hooks:
       - id: codespell
         additional_dependencies:
           - tomli
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.4.5
+    rev: v0.4.10
     hooks:
       - id: ruff
-        args: [--fix, --exit-non-zero-on-fix]
+        args: [--fix, --show-fixes]
 
   - repo: https://github.com/RobertCraigie/pyright-python
-    rev: v1.1.364
+    rev: v1.1.368
     hooks:
       - id: pyright

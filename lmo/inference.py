@@ -1,6 +1,7 @@
 """
 Parametric inference using the (Generalized) Method of L-Moments, L-(G)MM.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, NamedTuple, TypeAlias, cast
@@ -34,6 +35,10 @@ __all__ = (
 
 
 _ArrF8: TypeAlias = npt.NDArray[np.float64]
+
+
+# workaround for: https://github.com/microsoft/pyright/issues/8184
+# pyright: reportUninitializedInstanceVariable=false
 
 
 class GMMResult(NamedTuple):
