@@ -40,8 +40,7 @@ jobs:
           poetry install
           --without docs
           --without debug
-          --with pandas
-          --with numpy2
+          --with pandass
           --sync
 
       - name: codespell
