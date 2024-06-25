@@ -37,10 +37,6 @@ __all__ = (
 _ArrF8: TypeAlias = npt.NDArray[np.float64]
 
 
-# workaround for: https://github.com/microsoft/pyright/issues/8184
-# pyright: reportUninitializedInstanceVariable=false
-
-
 class GMMResult(NamedTuple):
     """
     Represents the Generalized Method of L-Moments (L-GMM) results.
