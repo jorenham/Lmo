@@ -269,6 +269,12 @@ allow-star-arg-any = true
 suppress-dummy-args = true
 suppress-none-returning = true
 
+[tool.ruff.lint.flake8-import-conventions.extend-aliases]
+"numpy.polynomial" = "npp"
+"numpy.typing" = "npt"
+"optype" = "opt"
+"optype.numpy" = "onp"
+
 [tool.ruff.lint.flake8-quotes]
 inline-quotes = "single"
 
