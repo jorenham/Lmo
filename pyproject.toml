@@ -40,14 +40,14 @@ Documentation = "https://jorenham.github.io/Lmo/"
 "Bug Tracker" = "https://github.com/jorenham/Lmo/issues"
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.14"
-typing_extensions = {version = "^4.5", python = "<3.13"}
+python = "^3.10"
+typing_extensions = {version = ">=4.7", python = "<3.13"}
+optype = {version = "^0.5.0", extras = ["numpy"]}
 
 # https://scientific-python.org/specs/spec-0000/
-numpy = ">=1.23"
-scipy = ">=1.9"
+numpy = ">=1.24"
+scipy = ">=1.10"
 pandas = {version = ">=1.5", optional = true}
-optype = "^0.4.0"
 
 [tool.poetry.group.dev.dependencies]
 codespell = "^2.3.0"
@@ -69,10 +69,10 @@ mkdocs-minify-plugin = "^0.8.0"
 mkdocstrings = {version = "^0.25.1", extras = ["python"]}
 
 [tool.poetry.group.debug.dependencies]
-ipython = "^8.25.0"
+typing-extensions = "*"
+ipython = ">=8.25.0"
 ipykernel = "^6.29.4"
 matplotlib = "^3.9.0"
-typing-extensions = "^4.12.2"
 
 [tool.poetry.group.pandas.dependencies]
 pandas = "*"

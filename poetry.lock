@@ -1439,17 +1439,21 @@ files = [
 
 [[package]]
 name = "optype"
-version = "0.4.0"
+version = "0.5.0"
 description = "Building blocks for precise & flexible type hints"
 optional = false
 python-versions = "<4.0,>=3.10"
 files = [
-    {file = "optype-0.4.0-py3-none-any.whl", hash = "sha256:1548654f9b063e199a46a0429fa143d1b2c4b0f3dc66e9d051f5d85c1426a9b5"},
-    {file = "optype-0.4.0.tar.gz", hash = "sha256:f0cc8931e14017394e667c1691f3a1ee6fcec5ccc53b956c0dd1b7798c1bbe53"},
+    {file = "optype-0.5.0-py3-none-any.whl", hash = "sha256:9f10fe1c38fa52d88052ac93808cfb244420493af3d7a8567595adfc2996977e"},
+    {file = "optype-0.5.0.tar.gz", hash = "sha256:017ddf22633af9692b2069c80b706ad252536a22912a1d242e15b101783dbfd4"},
 ]
 
 [package.dependencies]
-typing-extensions = {version = ">=4.5", markers = "python_version < \"3.12\""}
+numpy = {version = ">=1.24,<3", optional = true, markers = "extra == \"numpy\""}
+typing-extensions = {version = ">=4.7", markers = "python_version < \"3.13\""}
+
+[package.extras]
+numpy = ["numpy (>=1.24,<3)"]
 
 [[package]]
 name = "packaging"
@@ -2638,5 +2642,5 @@ pandas = ["pandas"]
 
 [metadata]
 lock-version = "2.0"
-python-versions = ">=3.10,<3.14"
-content-hash = "3983feafd612422e6cbacd3d371b028655d7d63c683fef564b127536cb9f2c8b"
+python-versions = "^3.10"
+content-hash = "df84eeb4f45d72dac0a323ae53a8a28a36e0ab756d43dc4a095e7c50e90a7478"
