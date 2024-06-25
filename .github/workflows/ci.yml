@@ -38,10 +38,8 @@ jobs:
       - name: poetry install
         run: >
           poetry install
-          --without docs
-          --without debug
-          --with pandass
-          --sync
+          --without debug,docs
+          --with pandas
 
       - name: codespell
         run: poetry run codespell .
@@ -70,6 +68,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: install scipy deps
+        run: >
+          sudo apt-get install -y
+          gcc
+          g++
+          gfortran
+          libopenblas-dev
+          liblapack-dev
+          pkg-config
+        if: ${{ matrix.python-version == '3.13.0-beta.2' }}
+
       - name: install poetry
         run: pipx install poetry
 
@@ -81,9 +90,8 @@ jobs:
       - name: poetry install
         run: >
           poetry install
-          --sync
+          --without debug,docs
           --with github
-          --without docs,debug
           --${{ matrix.pandas }} pandas
 
       - name: pytest
