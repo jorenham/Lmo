@@ -1,5 +1,9 @@
 # ruff: noqa: N803
-"""Linear algebra and linearized orthogonal polynomials."""
+"""
+Linear algebra and linearized orthogonal polynomials.
+"""
+
+import sys
 from math import comb, lgamma
 from typing import Any, TypeAlias, cast
 
@@ -7,7 +11,11 @@ import numpy as np
 import numpy.typing as npt
 import optype.numpy as onp
 
-from .typing.compat import TypeVar, assert_never
+
+if sys.version_info >= (3, 13):
+    from typing import TypeVar, assert_never
+else:
+    from typing_extensions import TypeVar, assert_never
 
 
 __all__ = (
