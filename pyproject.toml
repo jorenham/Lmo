@@ -51,9 +51,9 @@ optype = "^0.4.0"
 
 [tool.poetry.group.dev.dependencies]
 codespell = "^2.3.0"
-hypothesis = {version = "^6.104.0", extras = ["numpy"]}
+hypothesis = {version = "^6.104.1", extras = ["numpy"]}
 pre-commit = "^3.7.1"
-pyright = "^1.1.368"
+pyright = "^1.1.369"
 pytest = "^8.2.2"
 pytest-doctestplus = "^1.2.1"
 ruff = "^0.4.10"
@@ -108,7 +108,7 @@ xfail_strict = true
 
 [tool.pyright]
 include = ["lmo"]
-exclude = ["tests"]
+exclude = ["docs", "tests"]
 ignore = ["lmo/contrib/pandas.py"]
 stubPath = "typings"
 venvPath = "."

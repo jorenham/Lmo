@@ -60,6 +60,6 @@ repos:
         args: [--fix, --show-fixes]
 
   - repo: https://github.com/RobertCraigie/pyright-python
-    rev: v1.1.368
+    rev: v1.1.369
     hooks:
       - id: pyright
