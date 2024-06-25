@@ -60,7 +60,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        python-version: ["3.10", "3.12"]
+        python-version: ["3.10", "3.12", "3.13.0-beta.2"]
         numpy: ["1", "2"]
         pandas: ["without", "with"]
 
@@ -81,10 +81,8 @@ jobs:
         run: >
           poetry install
           --sync
-          --with github
-          --without docs
-          --without debug
-          --with numpy${{ matrix.numpy }}
+          --with github,numpy${{ matrix.numpy }}
+          --without docs,debug
           --${{ matrix.pandas }} pandas
 
       - name: pytest
