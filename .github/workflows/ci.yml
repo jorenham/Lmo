@@ -62,8 +62,6 @@ jobs:
         exclude:
           - python-version: "3.13.0-beta.2"
             os: windows-latest
-          - python-version: "3.13.0-beta.2"
-            panada: "with"
 
     runs-on: ${{ matrix.os }}
 
