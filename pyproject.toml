@@ -29,6 +29,10 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Physics",
     "Topic :: Utilities",
     "Typing :: Typed",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 
 [tool.poetry.urls]
@@ -47,7 +51,7 @@ optype = "^0.4.0"
 
 [tool.poetry.group.dev.dependencies]
 codespell = "^2.3.0"
-hypothesis = {version = "^6.103.5", extras = ["numpy"]}
+hypothesis = {version = "^6.104.0", extras = ["numpy"]}
 pre-commit = "^3.7.1"
 pyright = "^1.1.368"
 pytest = "^8.2.2"
@@ -78,17 +82,6 @@ pandas-stubs = ">=1.5"
 optional = true
 [tool.poetry.group.github.dependencies]
 pytest-github-actions-annotate-failures = ">=0.2.0,<1.0"
-
-[tool.poetry.group.numpy1]
-optional = true
-[tool.poetry.group.numpy1.dependencies]
-numpy = "<=2"
-
-[tool.poetry.group.numpy2]
-optional = true
-[tool.poetry.group.numpy2.dependencies]
-numpy = {version = ">=2.0.0rc2", allow-prereleases = true}
-scipy = ">=1.14.0"
 
 [tool.poetry.extras]
 pandas = ["pandas"]

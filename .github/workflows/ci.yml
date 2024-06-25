@@ -38,11 +38,8 @@ jobs:
       - name: poetry install
         run: >
           poetry install
-          --without docs
-          --without debug
+          --without debug,docs
           --with pandas
-          --with numpy2
-          --sync
 
       - name: codespell
         run: poetry run codespell .
@@ -54,20 +51,29 @@ jobs:
         run: poetry run pyright
 
   test:
-    timeout-minutes: 10
+    timeout-minutes: 20
 
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        python-version: ["3.10", "3.12"]
-        numpy: ["1", "2"]
+        python-version: ["3.10", "3.12", "3.13.0-beta.2"]
         pandas: ["without", "with"]
+        exclude:
+          - python-version: "3.13.0-beta.2"
+            os: windows-latest
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: install scipy deps
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        if: ${{ matrix.python-version == '3.13.0-beta.2' }}
+        with:
+          packages: gcc g++ gfortran libopenblas-dev liblapack-dev pkg-config
+          version: 1.0
 
       - name: install poetry
         run: pipx install poetry
@@ -80,11 +86,8 @@ jobs:
       - name: poetry install
         run: >
           poetry install
-          --sync
+          --without debug,docs
           --with github
-          --without docs
-          --without debug
-          --with numpy${{ matrix.numpy }}
           --${{ matrix.pandas }} pandas
 
       - name: pytest
