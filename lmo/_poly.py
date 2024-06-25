@@ -6,6 +6,20 @@ See Also:
     - [Classic orthogonal polynomials - Wikipedia
     ](https://wikipedia.org/wiki/Classical_orthogonal_polynomials)
 """
+import sys
+from typing import Any, TypeAlias, cast
+
+import numpy as np
+import numpy.polynomial as npp
+import optype.numpy as onp
+import scipy.special as scs
+
+
+if sys.version_info >= (3, 13):
+    from typing import TypeVar, overload
+else:
+    from typing_extensions import TypeVar, overload
+
 
 __all__ = (
     'PolySeries',
@@ -18,14 +32,6 @@ __all__ = (
     'roots',
 )
 
-from typing import TypeAlias, TypeVar, cast, overload
-
-import numpy as np
-import numpy.polynomial as npp
-import scipy.special as scs
-
-from .typing import np as lnpt
-
 
 PolySeries: TypeAlias = (
     npp.Polynomial
@@ -35,25 +41,26 @@ PolySeries: TypeAlias = (
     | npp.Legendre
 )
 
-_T_shape = TypeVar('_T_shape', bound=lnpt.AtLeast1D)
-_T_poly = TypeVar('_T_poly', bound=PolySeries)
+_ND_eval_sh_jacobi = TypeVar('_ND_eval_sh_jacobi', bound=tuple[int, ...])
 
 
 @overload
-def eval_sh_jacobi(n: int, a: float, b: float, x: float) -> float: ...
+def eval_sh_jacobi(n: int, /, a: float, b: float, x: float) -> float: ...
 @overload
 def eval_sh_jacobi(
     n: int,
+    /,
     a: float,
     b: float,
-    x: lnpt.Array[_T_shape, lnpt.Float],
-) -> lnpt.Array[_T_shape, np.float64]: ...
+    x: onp.Array[_ND_eval_sh_jacobi, np.floating[Any]],
+) -> onp.Array[_ND_eval_sh_jacobi, np.float64]: ...
 def eval_sh_jacobi(
     n: int,
+    /,
     a: float,
     b: float,
-    x: float | lnpt.Array[_T_shape, lnpt.Float],
-) -> float | lnpt.Array[_T_shape, np.float64]:
+    x: float | onp.Array[_ND_eval_sh_jacobi, np.floating[Any]],
+) -> float | onp.Array[_ND_eval_sh_jacobi, np.float64]:
     """
     Fast evaluation of the n-th shifted Jacobi polynomial.
     Faster than pre-computing using np.Polynomial, and than
@@ -107,9 +114,10 @@ def eval_sh_jacobi(
 
 def peaks_jacobi(
     n: int,
+    /,
     a: float,
     b: float,
-) -> lnpt.Array[tuple[int], np.float64]:
+) -> onp.Array[tuple[int], np.float64]:
     r"""
     Finds the \( x \in [-1, 1] \) s.t.
     \( /frac{\dd{\shjacobi{n}{a}{b}{x}}}{\dd{x}} = 0 \) of a Jacobi polynomial,
@@ -168,7 +176,7 @@ def peaks_jacobi(
     return np.round(x, 15) + 0.0  # cleanup of numerical noise
 
 
-def arg_extrema_jacobi(n: int, a: float, b: float) -> tuple[float, float]:
+def arg_extrema_jacobi(n: int, /, a: float, b: float) -> tuple[float, float]:
     r"""
     Find the \( x \) of the minimum and maximum values of a Jacobi polynomial
     on \( [-1, 1] \).
@@ -299,7 +307,7 @@ def _jacobi_coefs(
     n: int,
     a: float,
     b: float,
-) -> lnpt.Array[tuple[int], np.float64]:
+) -> onp.Array[tuple[int], np.float64]:
     p_n: np.poly1d
     p_n = scs.jacobi(n, a, b)  # pyright: ignore[reportUnknownMemberType]
     return p_n.coef[::-1]
@@ -317,18 +325,25 @@ def jacobi(
     return npp.Polynomial(_jacobi_coefs(n, a, b), domain, window, symbol)
 
 
+_T_jacobi_series = TypeVar(
+    '_T_jacobi_series',
+    bound=PolySeries,
+    default=npp.Polynomial,
+)
+
+
 def jacobi_series(
-    coef: lnpt.AnyArrayFloat,
+    coef: onp.AnyArray[tuple[int], np.floating[Any], float],
     /,
     a: float,
     b: float,
     *,
+    kind: type[_T_jacobi_series] | None = None,
     domain: tuple[float, float] = (-1, 1),
-    kind: type[_T_poly] | None = None,
     window: tuple[float, float] = (-1, 1),
     symbol: str = 'x',
-) -> _T_poly:
-    r"""
+) -> _T_jacobi_series:
+    """
     Construct a polynomial from the weighted sum of shifted Jacobi
     polynomials.
 
@@ -353,7 +368,7 @@ def jacobi_series(
     )
 
     return cast(
-        _T_poly,
+        _T_jacobi_series,
         p.convert(  # pyright: ignore[reportUnknownMemberType]
             domain=domain,
             kind=kind,
@@ -366,7 +381,7 @@ def roots(
     p: PolySeries,
     /,
     outside: bool = False,
-) -> lnpt.Array[tuple[int], np.float64]:
+) -> onp.Array[tuple[int], np.float64]:
     """
     Return the $x$ in the domain of $p$, where $p(x) = 0$.
 
@@ -374,7 +389,7 @@ def roots(
     interval will be not be included.
     """
     z = cast(
-        lnpt.Array[tuple[int], np.float64],
+        onp.Array[tuple[int], np.float64],
         p.roots(),  # pyright: ignore[reportUnknownMemberType]
     )
     if not np.isrealobj(z) and np.isrealobj(p.domain):
