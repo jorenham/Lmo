@@ -69,10 +69,6 @@ _ArrF8: TypeAlias = npt.NDArray[np.float64]
 _MIN_RHO: Final[float] = 1e-5
 
 
-# workaround for: https://github.com/microsoft/pyright/issues/8184
-# pyright: reportUninitializedInstanceVariable=false
-
-
 class HypothesisTestResult(NamedTuple):
     r"""
     Results of a hypothesis test.
