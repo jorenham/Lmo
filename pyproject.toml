@@ -56,7 +56,7 @@ pre-commit = "^3.7.1"
 pyright = "^1.1.369"
 pytest = "^8.2.2"
 pytest-doctestplus = "^1.2.1"
-ruff = "^0.4.10"
+ruff = "^0.6.1"
 tomli = {version = "^2.0.1", python = "<3.11"}
 tox = "^4.15.1"
 
@@ -229,11 +229,7 @@ ignore = [
     "RUF021",   # parenthesize-chained-operators
     "RUF022",   # unsorted-dunder-all
 ]
-typing-modules = [
-    "lmo.typing",
-    "numpy.typing",
-    "typing_extensions",
-]
+typing-modules = ["typing_extensions"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["D", "N806", "ANN", "PLC2701"]
