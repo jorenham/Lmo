@@ -54,7 +54,7 @@ optype = "^0.4.0"
 codespell = "^2.3.0"
 hypothesis = {version = "^6.111.1", extras = ["numpy"]}
 pre-commit = "^3.8.0"
-pyright = "^1.1.376"
+basedpyright = "^1.16.0"
 pytest = "^8.3.2"
 pytest-doctestplus = "^1.2.1"
 ruff = "^0.6.1"
@@ -111,26 +111,23 @@ xfail_strict = true
 include = ["lmo"]
 exclude = ["docs", "tests"]
 ignore = ["lmo/contrib/pandas.py"]
-stubPath = "typings"
+stubPath = "."
 venvPath = "."
 venv = ".venv"
 pythonVersion = "3.10"
 pythonPlatform = "All"
-typeCheckingMode = "strict"
+typeCheckingMode = "all"
 defineConstant = {NP_V2 = true}
 
-useLibraryCodeForTypes = true
-reportMissingTypeStubs = false
+reportAny = false  # TODO
+reportImportCycles = false  # TODO
+reportInvalidCast = false  # TODO
 
-reportCallInDefaultInitializer = true
-reportImplicitOverride = false
-reportImplicitStringConcatenation = true
-reportImportCycles = false
-reportPropertyTypeMismatch = true
-reportShadowedImports = true
-reportUninitializedInstanceVariable = true
-reportUnnecessaryTypeIgnoreComment = true
-reportUnusedCallResult = true
+reportMissingTypeStubs = false  # scipy has no stubs
+reportUnusedCallResult = false  # https://github.com/microsoft/pyright/issues/8650
+reportUnreachable = false  # nothing wrong with `if sys.version_info() >= ...`
+reportUnusedImport = false  # dupe of F401
+reportUnusedVariable = false  # dupe of F841
 
 
 [tool.ruff]
@@ -317,6 +314,7 @@ legacy_tox_ini = """
 isolated_build = true
 requires = tox>=4
 envlist =
+    ; repo-review
     pre-commit
     py{310,311,312,313rc1}
 
@@ -333,4 +331,11 @@ skip_install = true
 allowlist_externals = poetry
 commands_pre = poetry install --without debug,docs --sync
 commands = poetry run pre-commit run --all-files
+
+[testenv:repo-review]
+description = repo-review
+skip_install = true
+allowlist_externals = poetry
+commands_pre = poetry install --without debug,docs --sync
+commands = poetry run repo-review .
 """

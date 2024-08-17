@@ -1,4 +1,4 @@
-# pyright: reportIncompatibleMethodOverride=false
+# pyright: reportIncompatibleMethodOverride=false, reportImplicitOverride=false
 # ruff: noqa: N801, PLR2004
 
 """

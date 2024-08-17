@@ -458,7 +458,7 @@ def trim_matrix(
         case (int(), int()):
             msg = 'trim values must be non-negative'
             raise ValueError(msg)
-        case _ as wtf:  # type: ignore [reportUnnecessaryComparison]
+        case _ as wtf:  # pyright: ignore[reportUnnecessaryComparison]
             assert_never(wtf)
 
     return cast(npt.NDArray[_TF], out)

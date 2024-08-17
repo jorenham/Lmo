@@ -1,4 +1,4 @@
-# pyright: reportPropertyTypeMismatch=false
+# pyright: reportPropertyTypeMismatch=false, reportMissingSuperCall=false
 from __future__ import annotations
 
 from typing import (
