@@ -54,12 +54,12 @@ repos:
           - tomli
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.4.10
+    rev: v0.6.1
     hooks:
       - id: ruff
         args: [--fix, --show-fixes]
 
   - repo: https://github.com/RobertCraigie/pyright-python
-    rev: v1.1.369
+    rev: v1.1.376
     hooks:
       - id: pyright
