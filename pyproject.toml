@@ -53,7 +53,7 @@ optype = "^0.4.0"
 codespell = "^2.3.0"
 hypothesis = {version = "^6.111.1", extras = ["numpy"]}
 pre-commit = "^3.8.0"
-pyright = "^1.1.369"
+pyright = "^1.1.376"
 pytest = "^8.3.2"
 pytest-doctestplus = "^1.2.1"
 ruff = "^0.6.1"
