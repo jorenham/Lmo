@@ -2,19 +2,21 @@
 
 # Lmo - Trimmed L-moments and L-comoments
 
-![GitHub Workflow Status][IMG-GHA]
-![license][IMG-BSD]
+![Lmo - License][IMG-BSD]
 [![Lmo - PyPI][IMG-PYPI]](https://pypi.org/project/Lmo/)
 [![Lmo - Versions][IMG-VER]](https://github.com/jorenham/Lmo)
-[![Ruff][IMG-RUFF]](https://github.com/astral-sh/ruff)
-[![Pyright][IMG-PYRIGHT]](https://microsoft.github.io/pyright/)
+![Lmo - CI][IMG-CI]
+[![Lmo - Pre-commit][IMG-PC]](https://github.com/pre-commit/pre-commit)
+[![Lmo - Ruff][IMG-RUFF]](https://github.com/astral-sh/ruff)
+[![Lmo - BassedPyright][IMG-BPR]](https://detachhead.github.io/basedpyright)
 
-[IMG-GHA]: https://img.shields.io/github/actions/workflow/status/jorenham/Lmo/ci.yml?branch=master
+[IMG-CI]: https://img.shields.io/github/actions/workflow/status/jorenham/Lmo/ci.yml?branch=master
 [IMG-BSD]: https://img.shields.io/github/license/jorenham/Lmo
 [IMG-PYPI]: https://img.shields.io/pypi/v/Lmo
 [IMG-VER]: https://img.shields.io/pypi/pyversions/Lmo
+[IMG-pC]: https://img.shields.io/badge/pre--commit-enabled-orange?logo=pre-commit
 [IMG-RUFF]: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json
-[IMG-PYRIGHT]: https://microsoft.github.io/pyright/img/pyright_badge.svg
+[IMG-BPR]: https://img.shields.io/badge/basedpyright-checked-42b983
 
 Unlike the legacy
 [product-moments](https://wikipedia.org/wiki/Moment_(mathematics)), the
