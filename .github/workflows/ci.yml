@@ -63,9 +63,9 @@ jobs:
           - python-version: "3.13-dev"
             os: windows-latest
           - python-version: "3.12"
-            pandas: with
+            pandas: "with"
           - python-version: "3.13-dev"
-            pandas: with
+            pandas: "with"
 
     runs-on: ${{ matrix.os }}
 
