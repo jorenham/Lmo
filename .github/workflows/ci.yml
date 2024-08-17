@@ -62,6 +62,10 @@ jobs:
         exclude:
           - python-version: "3.13-dev"
             os: windows-latest
+          - python-version: "3.12"
+            pandas: with
+          - python-version: "3.13-dev"
+            pandas: with
 
     runs-on: ${{ matrix.os }}
 
