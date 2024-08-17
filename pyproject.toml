@@ -51,27 +51,27 @@ optype = "^0.4.0"
 
 [tool.poetry.group.dev.dependencies]
 codespell = "^2.3.0"
-hypothesis = {version = "^6.104.1", extras = ["numpy"]}
-pre-commit = "^3.7.1"
+hypothesis = {version = "^6.111.1", extras = ["numpy"]}
+pre-commit = "^3.8.0"
 pyright = "^1.1.369"
-pytest = "^8.2.2"
+pytest = "^8.3.2"
 pytest-doctestplus = "^1.2.1"
 ruff = "^0.6.1"
 tomli = {version = "^2.0.1", python = "<3.11"}
-tox = "^4.15.1"
+tox = "^4.18.0"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.6.0"
 mkdocs-git-revision-date-localized-plugin = "^1.2.6"
-mkdocs-include-markdown-plugin = "^6.2.1"
-mkdocs-material = "^9.5.27"
+mkdocs-include-markdown-plugin = "^6.2.2"
+mkdocs-material = "^9.5.31"
 mkdocs-minify-plugin = "^0.8.0"
-mkdocstrings = {version = "^0.25.1", extras = ["python"]}
+mkdocstrings = {version = "^0.25.2", extras = ["python"]}
 
 [tool.poetry.group.debug.dependencies]
-ipython = "^8.25.0"
-ipykernel = "^6.29.4"
-matplotlib = "^3.9.0"
+ipython = "^8.26.0"
+ipykernel = "^6.29.5"
+matplotlib = "^3.9.2"
 typing-extensions = "^4.12.2"
 
 [tool.poetry.group.pandas.dependencies]
