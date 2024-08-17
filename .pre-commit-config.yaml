@@ -4,7 +4,6 @@ ci:
   skip:
     - markdownlint
     - poetry-check
-    - poetry-lock
     - codespell
     - ruff
     - pyright
@@ -43,8 +42,6 @@ repos:
     rev: 1.8.3
     hooks:
       - id: poetry-check
-      - id: poetry-lock
-        args: [--no-update]
 
   - repo: https://github.com/codespell-project/codespell
     rev: v2.3.0

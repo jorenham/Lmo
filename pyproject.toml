@@ -40,12 +40,13 @@ Documentation = "https://jorenham.github.io/Lmo/"
 "Bug Tracker" = "https://github.com/jorenham/Lmo/issues"
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.14"
-typing_extensions = {version = "^4.5", python = "<3.13"}
+python = "^3.10.1"
+typing_extensions = {version = "^4.8", python = "<3.13"}
 
+# https://numpy.org/neps/nep-0029-deprecation_policy.html
 # https://scientific-python.org/specs/spec-0000/
-numpy = ">=1.23"
-scipy = ">=1.9"
+numpy =  ">1.24"
+scipy = "^1.10.1"
 pandas = {version = ">=1.5", optional = true}
 optype = "^0.4.0"
 
@@ -317,7 +318,7 @@ isolated_build = true
 requires = tox>=4
 envlist =
     pre-commit
-    py{310,311,312,313b2}
+    py{310,311,312,313rc1}
 
 [testenv]
 description = pytest
