@@ -25,7 +25,10 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: install poetry
-        run: pipx install poetry
+        run: |
+          pipx install poetry
+          poetry config virtualenvs.create true --local
+          poetry config virtualenvs.in-project true --local
 
       - uses: actions/setup-python@v5
         with:
@@ -34,9 +37,6 @@ jobs:
 
       - name: poetry check
         run: poetry check
-
-      - name: poetry env use
-        run: poetry env use 3.10
 
       - name: poetry install
         run: poetry install --without debug,docs --with pandas
@@ -93,14 +93,6 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: poetry
           cache-dependency-path: poetry.lock
-
-      - name: poetry env use
-        run: poetry env use 3.13
-        if: ${{ matrix.python-version == '3.13-dev' }}
-
-      - name: poetry env use
-        run: poetry env use ${{ matrix.python-version }}
-        if: ${{ matrix.python-version != '3.13-dev' }}
 
       - name: poetry install
         run: >
