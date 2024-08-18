@@ -24,26 +24,20 @@ from scipy.optimize import (
     minimize,  # pyright: ignore[reportUnknownVariableType]
 )
 from scipy.special import chdtrc
-from scipy.stats.distributions import rv_continuous, rv_discrete, rv_frozen
+from scipy.stats.distributions import rv_continuous, rv_frozen
 
+import lmo.typing.np as lnpt
+import lmo.typing.scipy as lspt
 from . import constants
 from ._lm import l_ratio
 from ._poly import extrema_jacobi
 from ._utils import clean_orders, clean_trim
 from .special import fpow
-from .typing import (
-    AnyOrder,
-    AnyOrderND,
-    scipy as lspt,
-)
+from .typing import AnyOrder, AnyOrderND, AnyTrim
 
 
 if TYPE_CHECKING:
     from .contrib.scipy_stats import l_rv_generic
-    from .typing import (
-        AnyTrim,
-        np as lnpt,
-    )
 
 
 __all__ = (
@@ -63,7 +57,6 @@ __all__ = (
 _T = TypeVar('_T')
 
 _Tuple2: TypeAlias = tuple[_T, _T]
-_AnyRV: TypeAlias = rv_continuous | rv_discrete
 _ArrF8: TypeAlias = npt.NDArray[np.float64]
 
 _MIN_RHO: Final[float] = 1e-5
@@ -199,7 +192,7 @@ _gof_stat = cast(
 
 
 def l_moment_gof(
-    rv_or_cdf: _AnyRV | Callable[[float], float],
+    rv_or_cdf: lspt.AnyRV | Callable[[float], float],
     l_moments: _ArrF8,
     n_obs: int,
     /,
@@ -295,7 +288,7 @@ def l_moment_gof(
 
 
 def l_stats_gof(
-    rv_or_cdf: _AnyRV | Callable[[float], float],
+    rv_or_cdf: lspt.AnyRV | Callable[[float], float],
     l_stats: _ArrF8,
     n_obs: int,
     /,

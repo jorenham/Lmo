@@ -50,9 +50,8 @@ jobs:
       - name: basedpyright
         run: poetry run basedpyright
 
-      # TODO:
-      # - name: basedpyright --verifytypes
-      #   run: poetry run basedpyright --ignoreexternal --verifytypes optype
+      - name: basedpyright --verifytypes
+        run: poetry run basedpyright --ignoreexternal --verifytypes optype
 
       # TODO:
       # - uses: scientific-python/repo-review@v0.11.0

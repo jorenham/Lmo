@@ -118,7 +118,7 @@ venv = ".venv"
 pythonVersion = "3.10"
 pythonPlatform = "All"
 typeCheckingMode = "all"
-defineConstant = {NP_V2 = true}
+defineConstant = {NP2 = true}
 
 reportAny = false  # TODO
 reportImportCycles = false  # TODO

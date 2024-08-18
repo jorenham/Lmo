@@ -123,8 +123,14 @@ def _ratio_index(rk: npt.NDArray[np.int64]) -> pd.MultiIndex:
     return pd.MultiIndex.from_arrays(rk, names=('r', 'k'))
 
 
+if TYPE_CHECKING:
+    _BaseSeries = pd.Series[float]
+else:
+    _BaseSeries = pd.Series
+
+
 @final
-class Series(pd.Series):  # pyright: ignore[reportMissingTypeArgument]
+class Series(_BaseSeries):  # pyright: ignore[reportMissingTypeArgument]
     """
     Extension methods for [`pandas.Series`][pandas.Series].
 
@@ -668,7 +674,7 @@ def _register_methods(cls: type[_Registerable]):
             cls.__lmo_register__(k, method)
 
 
-def install():
+def install() -> None:
     """Register the accessor methods."""
     _register_methods(Series)
     _register_methods(DataFrame)
