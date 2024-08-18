@@ -3,9 +3,9 @@ from typing import TypeAlias
 
 import numpy as np
 import numpy.typing as npt
+from typing_extensions import assert_type
 
 import lmo
-from lmo.typing.compat import assert_type
 
 
 X = [0.14543334, 2.17509751, 0.60844233, 1.47809552, -1.32510269, 1.0979731]

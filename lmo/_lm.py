@@ -1,10 +1,12 @@
 """Unbiased sample estimators of the generalized trimmed L-moments."""
 from __future__ import annotations
 
+import sys
 from typing import TYPE_CHECKING, Any, Final, TypeAlias, cast, overload
 
 import numpy as np
 import numpy.typing as npt
+import optype.numpy as onpt
 
 from . import ostats, pwm_beta
 from ._utils import (
@@ -19,19 +21,19 @@ from ._utils import (
     sort_maybe,
 )
 from .linalg import ir_pascal, sandwich, sh_legendre, trim_matrix
-from .typing import (
-    AnyOrder,
-    AnyOrderND,
-    np as lnpt,
-)
-from .typing.compat import TypeVar
+from .typing import AnyOrder, AnyOrderND
 
+
+if sys.version_info >= (3, 13):
+    from typing import TypeVar, Unpack
+else:
+    from typing_extensions import TypeVar, Unpack
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from .typing import AnyAWeights, AnyFWeights, AnyTrim, LMomentOptions
-    from .typing.compat import Unpack
+    import lmo.typing as lmt
+    import lmo.typing.np as lnpt
 
 
 __all__ = (
@@ -57,13 +59,12 @@ __all__ = (
 )
 
 
-_T_order = TypeVar('_T_order', bound=int)
-_T_size = TypeVar('_T_size', bound=int)
+_OrderT = TypeVar('_OrderT', bound=int)
+_SizeT = TypeVar('_SizeT', bound=int)
+_SCT_f = TypeVar('_SCT_f', bound=np.floating[Any], default=np.float64)
 
-_T_float = TypeVar('_T_float', bound=np.floating[Any], default=np.float64)
-
-_DType: TypeAlias = np.dtype[_T_float] | type[_T_float]
-_Vectorized: TypeAlias = _T_float | npt.NDArray[_T_float]
+_DType: TypeAlias = np.dtype[_SCT_f] | type[_SCT_f]
+_Vectorized: TypeAlias = _SCT_f | npt.NDArray[_SCT_f]
 _Floating: TypeAlias = np.floating[Any]
 
 # (dtype.char, n, s, t)
@@ -72,7 +73,7 @@ _CacheKey: TypeAlias = (
     | tuple[str, int, float, float]
 )
 # `r: _T_order >= 4`
-_CacheArray: TypeAlias = lnpt.Array[tuple[_T_order, _T_size], np.longdouble]
+_CacheArray: TypeAlias = onpt.Array[tuple[_OrderT, _SizeT], np.longdouble]
 _Cache: TypeAlias = dict[_CacheKey, _CacheArray[Any, Any]]
 
 # depends on `dtype`, `n`, and `trim`
@@ -80,13 +81,13 @@ _CACHE: Final[_Cache] = {}
 
 
 def _l_weights_pwm(
-    r: _T_order,
-    n: _T_size,
+    r: _OrderT,
+    n: _SizeT,
     /,
     trim: tuple[int, int],
     *,
-    dtype: _DType[_T_float],
-) -> lnpt.Array[tuple[_T_order, _T_size], _T_float]:
+    dtype: _DType[_SCT_f],
+) -> onpt.Array[tuple[_OrderT, _SizeT], _SCT_f]:
     s, t = trim
     r0 = r + s + t
 
@@ -109,13 +110,13 @@ def _l_weights_pwm(
 
 
 def _l_weights_ostat(
-    r: _T_order,
-    n: _T_size,
+    r: _OrderT,
+    n: _SizeT,
     /,
     trim: tuple[int, int] | tuple[float, float],
     *,
-    dtype: _DType[_T_float],
-) -> lnpt.Array[tuple[_T_order, _T_size], _T_float]:
+    dtype: _DType[_SCT_f],
+) -> onpt.Array[tuple[_OrderT, _SizeT], _SCT_f]:
     assert r >= 1, r
 
     s, t = trim
@@ -139,14 +140,14 @@ def _l_weights_ostat(
 
 
 def l_weights(
-    r_max: _T_order,
-    n: _T_size,
+    r_max: _OrderT,
+    n: _SizeT,
     /,
-    trim: AnyTrim = 0,
+    trim: lmt.AnyTrim = 0,
     *,
-    dtype: _DType[_T_float] = np.float64,
+    dtype: _DType[_SCT_f] = np.float64,
     cache: bool | None = None,
-) -> lnpt.Array[tuple[_T_order, _T_size], _T_float]:
+) -> onpt.Array[tuple[_OrderT, _SizeT], _SCT_f]:
     r"""
     Projection matrix of the first $r$ (T)L-moments for $n$ samples.
 
@@ -226,7 +227,7 @@ def l_weights(
 
     key = dtype.char, n, s, t
     if (_w := _CACHE.get(key)) is not None and _w.shape[0] >= r_max:
-        w = cast(lnpt.Array[tuple[_T_order, _T_size], _T_float], _w)
+        w = cast(onpt.Array[tuple[_OrderT, _SizeT], _SCT_f], _w)
     else:
         # when caching, use at least 4 orders, to avoid cache misses
         _r_max = 4 if cache and r_max < 4 else r_max
@@ -254,58 +255,58 @@ def l_moment(
     a: lnpt.AnyArrayFloat,
     r: AnyOrder,
     /,
-    trim: AnyTrim = ...,
+    trim: lmt.AnyTrim = ...,
     *,
     axis: None = ...,
-    dtype: _DType[_T_float] = np.float64,
-    **kwds: Unpack[LMomentOptions],
-) -> _T_float: ...
+    dtype: _DType[_SCT_f] = np.float64,
+    **kwds: Unpack[lmt.LMomentOptions],
+) -> _SCT_f: ...
 @overload
 def l_moment(
     a: lnpt.AnyMatrixFloat | lnpt.AnyTensorFloat,
     r: AnyOrder | AnyOrderND,
     /,
-    trim: AnyTrim = ...,
+    trim: lmt.AnyTrim = ...,
     *,
     axis: int,
-    dtype: _DType[_T_float] = np.float64,
-    **kwds: Unpack[LMomentOptions],
-) -> lnpt.Array[Any, _T_float]: ...
+    dtype: _DType[_SCT_f] = np.float64,
+    **kwds: Unpack[lmt.LMomentOptions],
+) -> onpt.Array[Any, _SCT_f]: ...
 @overload
 def l_moment(
     a: lnpt.AnyVectorFloat,
     r: AnyOrder,
     /,
-    trim: AnyTrim = ...,
+    trim: lmt.AnyTrim = ...,
     *,
     axis: int,
-    dtype: _DType[_T_float] = np.float64,
-    **kwds: Unpack[LMomentOptions],
-) -> _T_float: ...
+    dtype: _DType[_SCT_f] = np.float64,
+    **kwds: Unpack[lmt.LMomentOptions],
+) -> _SCT_f: ...
 @overload
 def l_moment(
     a: lnpt.AnyArrayFloat,
     r: AnyOrderND,
     /,
-    trim: AnyTrim = ...,
+    trim: lmt.AnyTrim = ...,
     *,
     axis: int | None = ...,
-    dtype: _DType[_T_float] = np.float64,
-    **kwds: Unpack[LMomentOptions],
-) -> lnpt.Array[Any, _T_float]: ...
+    dtype: _DType[_SCT_f] = np.float64,
+    **kwds: Unpack[lmt.LMomentOptions],
+) -> onpt.Array[Any, _SCT_f]: ...
 def l_moment(
     a: lnpt.AnyArrayFloat,
     r: AnyOrder | AnyOrderND,
     /,
-    trim: AnyTrim = 0,
+    trim: lmt.AnyTrim = 0,
     *,
     axis: int | None = None,
-    dtype: _DType[_T_float] = np.float64,
-    fweights: AnyFWeights | None = None,
-    aweights: AnyAWeights | None = None,
+    dtype: _DType[_SCT_f] = np.float64,
+    fweights: lmt.AnyFWeights | None = None,
+    aweights: lmt.AnyAWeights | None = None,
     sort: lnpt.SortKind | bool = True,
     cache: bool | None = None,
-) -> _Vectorized[_T_float]:
+) -> _Vectorized[_SCT_f]:
     r"""
     Estimates the generalized trimmed L-moment $\lambda^{(s, t)}_r$ from
     the samples along the specified axis. By default, this will be the regular
@@ -448,71 +449,71 @@ def l_ratio(
     r: AnyOrder,
     s: AnyOrder,
     /,
-    trim: AnyTrim = ...,
+    trim: lmt.AnyTrim = ...,
     *,
     axis: int | None,
-    dtype: _DType[_T_float] = np.float64,
-    **kwds: Unpack[LMomentOptions],
-) -> _T_float: ...
+    dtype: _DType[_SCT_f] = np.float64,
+    **kwds: Unpack[lmt.LMomentOptions],
+) -> _SCT_f: ...
 @overload
 def l_ratio(
     a: lnpt.AnyMatrixFloat | lnpt.AnyTensorFloat,
     r: AnyOrder,
     s: AnyOrder,
     /,
-    trim: AnyTrim = ...,
+    trim: lmt.AnyTrim = ...,
     *,
     axis: int,
-    dtype: _DType[_T_float] = np.float64,
-    **kwds: Unpack[LMomentOptions],
-) -> lnpt.Array[Any, _T_float]: ...
+    dtype: _DType[_SCT_f] = np.float64,
+    **kwds: Unpack[lmt.LMomentOptions],
+) -> onpt.Array[Any, _SCT_f]: ...
 @overload
 def l_ratio(
     a: lnpt.AnyArrayFloat,
     r: AnyOrder,
     s: AnyOrder,
     /,
-    trim: AnyTrim = ...,
+    trim: lmt.AnyTrim = ...,
     *,
     axis: None = ...,
-    dtype: _DType[_T_float] = np.float64,
-    **kwds: Unpack[LMomentOptions],
-) -> _T_float: ...
+    dtype: _DType[_SCT_f] = np.float64,
+    **kwds: Unpack[lmt.LMomentOptions],
+) -> _SCT_f: ...
 @overload
 def l_ratio(
     a: lnpt.AnyArrayFloat,
     r: AnyOrder,
     s: AnyOrderND,
     /,
-    trim: AnyTrim = ...,
+    trim: lmt.AnyTrim = ...,
     *,
     axis: int | None = ...,
-    dtype: _DType[_T_float] = np.float64,
-    **kwds: Unpack[LMomentOptions],
-) -> lnpt.Array[Any, _T_float]: ...
+    dtype: _DType[_SCT_f] = np.float64,
+    **kwds: Unpack[lmt.LMomentOptions],
+) -> onpt.Array[Any, _SCT_f]: ...
 @overload
 def l_ratio(
     a: lnpt.AnyArrayFloat,
     r: AnyOrderND,
     s: AnyOrder | AnyOrderND,
     /,
-    trim: AnyTrim = ...,
+    trim: lmt.AnyTrim = ...,
     *,
     axis: int | None = ...,
-    dtype: _DType[_T_float] = np.float64,
-    **kwds: Unpack[LMomentOptions],
-) -> lnpt.Array[Any, _T_float]: ...
+    dtype: _DType[_SCT_f] = np.float64,
+    **kwds: Unpack[lmt.LMomentOptions],
+) -> onpt.Array[Any, _SCT_f]: ...
 def l_ratio(
     a: lnpt.AnyArrayFloat,
     r: AnyOrder | AnyOrderND,
     s: AnyOrder | AnyOrderND,
     /,
-    trim: AnyTrim = 0,
+    trim: lmt.AnyTrim = 0,
     *,
     axis: int | None = None,
-    dtype: _DType[_T_float] = np.float64,
-    **kwds: Unpack[LMomentOptions],
-) -> _Vectorized[_T_float]:
+    dtype: _DType[_SCT_f] = np.float64,
+    **kwds: Unpack[lmt.LMomentOptions],
+) -> _Vectorized[_SCT_f]:
     r"""
     Estimates the generalized L-moment ratio.
 
@@ -563,13 +564,13 @@ def l_ratio(
 def l_stats(
     a: lnpt.AnyArrayFloat,
     /,
-    trim: AnyTrim = 0,
+    trim: lmt.AnyTrim = 0,
     num: int = 4,
     *,
     axis: int | None = None,
-    dtype: _DType[_T_float] = np.float64,
-    **kwds: Unpack[LMomentOptions],
-) -> lnpt.Array[Any, _T_float]:
+    dtype: _DType[_SCT_f] = np.float64,
+    **kwds: Unpack[lmt.LMomentOptions],
+) -> onpt.Array[Any, _SCT_f]:
     """
     Calculates the L-loc(ation), L-scale, L-skew(ness) and L-kurtosis.
 
@@ -598,41 +599,41 @@ def l_stats(
 def l_loc(
     a: lnpt.AnyMatrixFloat | lnpt.AnyTensorFloat,
     /,
-    trim: AnyTrim = ...,
+    trim: lmt.AnyTrim = ...,
     *,
     axis: int,
-    dtype: _DType[_T_float] = np.float64,
-    **kwds: Unpack[LMomentOptions],
-) -> lnpt.Array[Any, _T_float]: ...
+    dtype: _DType[_SCT_f] = np.float64,
+    **kwds: Unpack[lmt.LMomentOptions],
+) -> onpt.Array[Any, _SCT_f]: ...
 @overload
 def l_loc(
     a: lnpt.AnyVectorFloat,
     /,
-    trim: AnyTrim = ...,
+    trim: lmt.AnyTrim = ...,
     *,
     axis: int,
-    dtype: _DType[_T_float] = np.float64,
-    **kwds: Unpack[LMomentOptions],
-) -> _T_float: ...
+    dtype: _DType[_SCT_f] = np.float64,
+    **kwds: Unpack[lmt.LMomentOptions],
+) -> _SCT_f: ...
 @overload
 def l_loc(
     a: lnpt.AnyArrayFloat,
     /,
-    trim: AnyTrim = ...,
+    trim: lmt.AnyTrim = ...,
     *,
     axis: None = ...,
-    dtype: _DType[_T_float] = np.float64,
-    **kwds: Unpack[LMomentOptions],
-) -> _T_float: ...
+    dtype: _DType[_SCT_f] = np.float64,
+    **kwds: Unpack[lmt.LMomentOptions],
+) -> _SCT_f: ...
 def l_loc(
     a: lnpt.AnyArrayFloat,
     /,
-    trim: AnyTrim = 0,
+    trim: lmt.AnyTrim = 0,
     *,
     axis: int | None = None,
-    dtype: _DType[_T_float] = np.float64,
-    **kwds: Unpack[LMomentOptions],
-) -> _Vectorized[_T_float]:
+    dtype: _DType[_SCT_f] = np.float64,
+    **kwds: Unpack[lmt.LMomentOptions],
+) -> _Vectorized[_SCT_f]:
     r"""
     *L-location* (or *L-loc*): unbiased estimator of the first L-moment,
     $\lambda^{(s, t)}_1$.
@@ -712,41 +713,41 @@ def l_loc(
 def l_scale(
     a: lnpt.AnyMatrixFloat | lnpt.AnyTensorFloat,
     /,
-    trim: AnyTrim = ...,
+    trim: lmt.AnyTrim = ...,
     *,
     axis: int,
-    dtype: _DType[_T_float] = np.float64,
-    **kwds: Unpack[LMomentOptions],
-) -> lnpt.Array[Any, _T_float]: ...
+    dtype: _DType[_SCT_f] = np.float64,
+    **kwds: Unpack[lmt.LMomentOptions],
+) -> onpt.Array[Any, _SCT_f]: ...
 @overload
 def l_scale(
     a: lnpt.AnyVectorFloat,
     /,
-    trim: AnyTrim = ...,
+    trim: lmt.AnyTrim = ...,
     *,
     axis: int,
-    dtype: _DType[_T_float] = np.float64,
-    **kwds: Unpack[LMomentOptions],
-) -> _T_float: ...
+    dtype: _DType[_SCT_f] = np.float64,
+    **kwds: Unpack[lmt.LMomentOptions],
+) -> _SCT_f: ...
 @overload
 def l_scale(
     a: lnpt.AnyArrayFloat,
     /,
-    trim: AnyTrim = ...,
+    trim: lmt.AnyTrim = ...,
     *,
     axis: None = ...,
-    dtype: _DType[_T_float] = np.float64,
-    **kwds: Unpack[LMomentOptions],
-) -> _T_float: ...
+    dtype: _DType[_SCT_f] = np.float64,
+    **kwds: Unpack[lmt.LMomentOptions],
+) -> _SCT_f: ...
 def l_scale(
     a: lnpt.AnyArrayFloat,
     /,
-    trim: AnyTrim = 0,
+    trim: lmt.AnyTrim = 0,
     *,
     axis: int | None = None,
-    dtype: _DType[_T_float] = np.float64,
-    **kwds: Unpack[LMomentOptions],
-) -> _Vectorized[_T_float]:
+    dtype: _DType[_SCT_f] = np.float64,
+    **kwds: Unpack[lmt.LMomentOptions],
+) -> _Vectorized[_SCT_f]:
     r"""
     *L-scale* unbiased estimator for the second L-moment,
     $\lambda^{(s, t)}_2$.
@@ -779,41 +780,41 @@ def l_scale(
 def l_variation(
     a: lnpt.AnyMatrixFloat | lnpt.AnyTensorFloat,
     /,
-    trim: AnyTrim = ...,
+    trim: lmt.AnyTrim = ...,
     *,
     axis: int,
-    dtype: _DType[_T_float] = np.float64,
-    **kwds: Unpack[LMomentOptions],
-) -> lnpt.Array[Any, _T_float]: ...
+    dtype: _DType[_SCT_f] = np.float64,
+    **kwds: Unpack[lmt.LMomentOptions],
+) -> onpt.Array[Any, _SCT_f]: ...
 @overload
 def l_variation(
     a: lnpt.AnyVectorFloat,
     /,
-    trim: AnyTrim = ...,
+    trim: lmt.AnyTrim = ...,
     *,
     axis: int,
-    dtype: _DType[_T_float] = np.float64,
-    **kwds: Unpack[LMomentOptions],
-) -> _T_float: ...
+    dtype: _DType[_SCT_f] = np.float64,
+    **kwds: Unpack[lmt.LMomentOptions],
+) -> _SCT_f: ...
 @overload
 def l_variation(
     a: lnpt.AnyArrayFloat,
     /,
-    trim: AnyTrim = ...,
+    trim: lmt.AnyTrim = ...,
     *,
     axis: None = ...,
-    dtype: _DType[_T_float] = np.float64,
-    **kwds: Unpack[LMomentOptions],
-) -> _T_float: ...
+    dtype: _DType[_SCT_f] = np.float64,
+    **kwds: Unpack[lmt.LMomentOptions],
+) -> _SCT_f: ...
 def l_variation(
     a: lnpt.AnyArrayFloat,
     /,
-    trim: AnyTrim = 0,
+    trim: lmt.AnyTrim = 0,
     *,
     axis: int | None = None,
-    dtype: _DType[_T_float] = np.float64,
-    **kwds: Unpack[LMomentOptions],
-) -> _Vectorized[_T_float]:
+    dtype: _DType[_SCT_f] = np.float64,
+    **kwds: Unpack[lmt.LMomentOptions],
+) -> _Vectorized[_SCT_f]:
     r"""
     The *coefficient of L-variation* (or *L-CV*) unbiased sample estimator:
 
@@ -852,12 +853,12 @@ def l_variation(
 def l_skew(
     a: lnpt.AnyArrayFloat,
     /,
-    trim: AnyTrim = 0,
+    trim: lmt.AnyTrim = 0,
     *,
     axis: int | None = None,
-    dtype: _DType[_T_float] = np.float64,
-    **kwds: Unpack[LMomentOptions],
-) -> _Vectorized[_T_float]:
+    dtype: _DType[_SCT_f] = np.float64,
+    **kwds: Unpack[lmt.LMomentOptions],
+) -> _Vectorized[_SCT_f]:
     r"""
     Unbiased sample estimator for the *L-skewness* coefficient.
 
@@ -887,12 +888,12 @@ def l_skew(
 def l_kurtosis(
     a: lnpt.AnyArrayFloat,
     /,
-    trim: AnyTrim = 0,
+    trim: lmt.AnyTrim = 0,
     *,
     axis: int | None = None,
-    dtype: _DType[_T_float] = np.float64,
-    **kwds: Unpack[LMomentOptions],
-) -> _Vectorized[_T_float]:
+    dtype: _DType[_SCT_f] = np.float64,
+    **kwds: Unpack[lmt.LMomentOptions],
+) -> _Vectorized[_SCT_f]:
     r"""
     L-kurtosis coefficient; the 4th sample L-moment ratio.
 
@@ -931,12 +932,12 @@ def l_moment_cov(
     a: lnpt.AnyArrayFloat,
     r_max: AnyOrder,
     /,
-    trim: AnyTrim = 0,
+    trim: lmt.AnyTrim = 0,
     *,
     axis: int | None = None,
-    dtype: _DType[_T_float] = np.float64,
+    dtype: _DType[_SCT_f] = np.float64,
     **kwds: Any,
-) -> npt.NDArray[_T_float]:
+) -> npt.NDArray[_SCT_f]:
     """
     Non-parmateric auto-covariance matrix of the generalized trimmed
     L-moment point estimates with orders `r = 1, ..., r_max`.
@@ -1009,12 +1010,12 @@ def l_ratio_se(
     r: AnyOrder | AnyOrderND,
     s: AnyOrder | AnyOrderND,
     /,
-    trim: AnyTrim = 0,
+    trim: lmt.AnyTrim = 0,
     *,
     axis: int | None = None,
-    dtype: _DType[_T_float] = np.float64,
-    **kwds: Unpack[LMomentOptions],
-) -> _Vectorized[_T_float]:
+    dtype: _DType[_SCT_f] = np.float64,
+    **kwds: Unpack[lmt.LMomentOptions],
+) -> _Vectorized[_SCT_f]:
     """
     Non-parametric estimates of the Standard Error (SE) in the L-ratio
     estimates from [`lmo.l_ratio`][lmo.l_ratio].
@@ -1078,13 +1079,13 @@ def l_ratio_se(
 def l_stats_se(
     a: lnpt.AnyArrayFloat,
     /,
-    trim: AnyTrim = 0,
+    trim: lmt.AnyTrim = 0,
     num: int = 4,
     *,
     axis: int | None = None,
-    dtype: _DType[_T_float] = np.float64,
-    **kwds: Unpack[LMomentOptions],
-) -> _Vectorized[_T_float]:
+    dtype: _DType[_SCT_f] = np.float64,
+    **kwds: Unpack[lmt.LMomentOptions],
+) -> _Vectorized[_SCT_f]:
     """
     Calculates the standard errors (SE's) of the [`L-stats`][lmo.l_stats].
 
@@ -1118,7 +1119,7 @@ def l_moment_influence(
     a: lnpt.AnyVectorFloat,
     r: AnyOrder,
     /,
-    trim: AnyTrim = 0,
+    trim: lmt.AnyTrim = 0,
     *,
     sort: lnpt.SortKind | bool = True,
     tol: float = 1e-8,
@@ -1186,7 +1187,7 @@ def l_ratio_influence(
     r: AnyOrder,
     s: AnyOrder = 2,
     /,
-    trim: AnyTrim = 0,
+    trim: lmt.AnyTrim = 0,
     *,
     sort: lnpt.SortKind | bool = True,
     tol: float = 1e-8,

@@ -20,13 +20,12 @@ from scipy.special import betainc, betaln
 
 
 if TYPE_CHECKING:
+    import optype.numpy as onpt
+
     from .typing import np as lnpt
 
 
-__all__ = (
-    'weights',
-    'from_cdf',
-)
+__all__ = 'weights', 'from_cdf'
 
 
 _T_size = TypeVar('_T_size', bound=int)
@@ -37,7 +36,7 @@ def _weights(
     n: float | lnpt.Float,
     N: _T_size,
     /,
-) -> lnpt.Array[tuple[_T_size], np.float64]:
+) -> onpt.Array[tuple[_T_size], np.float64]:
     assert 0 <= i < n <= N
 
     j = np.arange(floor(i), N)
@@ -62,7 +61,7 @@ def weights(
     /,
     *,
     cached: bool = False,
-) -> lnpt.Array[tuple[_T_size], np.float64]:
+) -> onpt.Array[tuple[_T_size], np.float64]:
     r"""
     Compute the linear weights $w_{i:n|j:N}$ for $j = 0, \dots, N-1$.
 
@@ -131,14 +130,14 @@ def from_cdf(
     F: lnpt.AnyArrayFloat,
     i: float,
     n: float,
-) -> lnpt.Array[lnpt.AtLeast1D, np.float64]: ...
+) -> onpt.Array[onpt.AtLeast1D, np.float64]: ...
 
 
 def from_cdf(
     F: lnpt.AnyScalarFloat | lnpt.AnyArrayFloat,
     i: float,
     n: float,
-) -> np.float64 | lnpt.Array[lnpt.AtLeast1D, np.float64]:
+) -> np.float64 | onpt.Array[onpt.AtLeast1D, np.float64]:
     r"""
     Transform $F(X)$ to $F_{i:n}(X)$, of the $i$th variate within subsamples
     of size, i.e. $0 \le i \le n - 1$.

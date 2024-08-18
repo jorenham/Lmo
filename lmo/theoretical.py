@@ -39,13 +39,9 @@ from .special import fourier_jacobi, fpow
 
 
 if TYPE_CHECKING:
-    from .typing import (
-        AnyOrder,
-        AnyOrderND,
-        AnyTrim,
-        np as lnpt,
-    )
-    from .typing._scipy import QuadOptions
+    import lmo.typing.np as lnpt
+    import lmo.typing.scipy as lspt
+    from .typing import AnyOrder, AnyOrderND, AnyTrim
 
 
 __all__ = (
@@ -90,7 +86,7 @@ QUAD_LIMIT: Final[int] = 100
 def _nquad(
     integrand: Callable[Concatenate[float, float, _Tss], float],
     domains: Sequence[_Pair[float] | Callable[..., _Pair[float]]],
-    opts: QuadOptions | None = None,
+    opts: lspt.QuadOptions | None = None,
     *args: _Tss.args,
     **kwds: _Tss.kwargs,
 ) -> float:
@@ -167,7 +163,7 @@ def l_moment_from_cdf(
     trim: AnyTrim = ...,
     *,
     support: _Pair[float] | None = ...,
-    quad_opts: QuadOptions | None = ...,
+    quad_opts: lspt.QuadOptions | None = ...,
     alpha: float = ...,
     ppf: _Fn1 | None = ...,
 ) -> _ArrF8: ...
@@ -180,7 +176,7 @@ def l_moment_from_cdf(
     trim: AnyTrim = ...,
     *,
     support: _Pair[float] | None = ...,
-    quad_opts: QuadOptions | None = ...,
+    quad_opts: lspt.QuadOptions | None = ...,
     alpha: float = ...,
     ppf: _Fn1 | None = ...,
 ) -> np.float64: ...
@@ -193,7 +189,7 @@ def l_moment_from_cdf(
     trim: AnyTrim = 0,
     *,
     support: _Pair[float] | None = None,
-    quad_opts: QuadOptions | None = None,
+    quad_opts: lspt.QuadOptions | None = None,
     alpha: float = ALPHA,
     ppf: _Fn1 | None = None,
 ) -> np.float64 | _ArrF8:
@@ -369,7 +365,7 @@ def l_moment_from_ppf(
     trim: AnyTrim = ...,
     *,
     support: _Pair[float] = ...,
-    quad_opts: QuadOptions | None = ...,
+    quad_opts: lspt.QuadOptions | None = ...,
     alpha: float = ...,
 ) -> _ArrF8: ...
 
@@ -381,7 +377,7 @@ def l_moment_from_ppf(
     trim: AnyTrim = ...,
     *,
     support: _Pair[float] = ...,
-    quad_opts: QuadOptions | None = ...,
+    quad_opts: lspt.QuadOptions | None = ...,
     alpha: float = ...,
 ) -> np.float64: ...
 
@@ -393,7 +389,7 @@ def l_moment_from_ppf(
     trim: AnyTrim = 0,
     *,
     support: _Pair[float] = (0, 1),
-    quad_opts: QuadOptions | None = None,
+    quad_opts: lspt.QuadOptions | None = None,
     alpha: float = ALPHA,
 ) -> np.float64 | _ArrF8:
     r"""
@@ -529,7 +525,7 @@ def l_moment_from_qdf(
     trim: AnyTrim = ...,
     *,
     support: _Pair[float] = ...,
-    quad_opts: QuadOptions | None = ...,
+    quad_opts: lspt.QuadOptions | None = ...,
     alpha: float = ...,
 ) -> _ArrF8: ...
 
@@ -541,7 +537,7 @@ def l_moment_from_qdf(
     trim: AnyTrim = ...,
     *,
     support: _Pair[float] = ...,
-    quad_opts: QuadOptions | None = ...,
+    quad_opts: lspt.QuadOptions | None = ...,
     alpha: float = ...,
 ) -> np.float64: ...
 
@@ -553,7 +549,7 @@ def l_moment_from_qdf(
     trim: AnyTrim = 0,
     *,
     support: _Pair[float] = (0, 1),
-    quad_opts: QuadOptions | None = None,
+    quad_opts: lspt.QuadOptions | None = None,
     alpha: float = ALPHA,
 ) -> np.float64 | _ArrF8:
     r"""
@@ -592,7 +588,7 @@ def l_ratio_from_cdf(
     trim: AnyTrim = ...,
     *,
     support: _Pair[float] | None = ...,
-    quad_opts: QuadOptions | None = ...,
+    quad_opts: lspt.QuadOptions | None = ...,
     alpha: float = ...,
     ppf: _Fn1 | None = ...,
 ) -> _ArrF8: ...
@@ -606,7 +602,7 @@ def l_ratio_from_cdf(
     trim: AnyTrim = ...,
     *,
     support: _Pair[float] | None = ...,
-    quad_opts: QuadOptions | None = ...,
+    quad_opts: lspt.QuadOptions | None = ...,
     alpha: float = ...,
     ppf: _Fn1 | None = ...,
 ) -> _ArrF8: ...
@@ -620,7 +616,7 @@ def l_ratio_from_cdf(
     trim: AnyTrim = ...,
     *,
     support: _Pair[float] | None = ...,
-    quad_opts: QuadOptions | None = ...,
+    quad_opts: lspt.QuadOptions | None = ...,
     alpha: float = ...,
 ) -> np.float64: ...
 
@@ -633,7 +629,7 @@ def l_ratio_from_cdf(
     trim: AnyTrim = 0,
     *,
     support: _Pair[float] | None = None,
-    quad_opts: QuadOptions | None = None,
+    quad_opts: lspt.QuadOptions | None = None,
     alpha: float = ALPHA,
     ppf: _Fn1 | None = None,
 ) -> np.float64 | _ArrF8:
@@ -666,7 +662,7 @@ def l_ratio_from_ppf(
     trim: AnyTrim = ...,
     *,
     support: _Pair[float] = ...,
-    quad_opts: QuadOptions | None = ...,
+    quad_opts: lspt.QuadOptions | None = ...,
     alpha: float = ...,
 ) -> _ArrF8: ...
 
@@ -679,7 +675,7 @@ def l_ratio_from_ppf(
     trim: AnyTrim = ...,
     *,
     support: _Pair[float] = ...,
-    quad_opts: QuadOptions | None = ...,
+    quad_opts: lspt.QuadOptions | None = ...,
     alpha: float = ...,
 ) -> _ArrF8: ...
 
@@ -692,7 +688,7 @@ def l_ratio_from_ppf(
     trim: AnyTrim = ...,
     *,
     support: _Pair[float] = ...,
-    quad_opts: QuadOptions | None = ...,
+    quad_opts: lspt.QuadOptions | None = ...,
     alpha: float = ...,
 ) -> np.float64:
     ...
@@ -706,7 +702,7 @@ def l_ratio_from_ppf(
     trim: AnyTrim = 0,
     *,
     support: _Pair[float] = (0, 1),
-    quad_opts: QuadOptions | None = None,
+    quad_opts: lspt.QuadOptions | None = None,
     alpha: float = ALPHA,
 ) -> np.float64 | _ArrF8:
     """
@@ -735,7 +731,7 @@ def l_stats_from_cdf(
     trim: AnyTrim = 0,
     *,
     support: _Pair[float] | None = None,
-    quad_opts: QuadOptions | None = None,
+    quad_opts: lspt.QuadOptions | None = None,
     alpha: float = ALPHA,
     ppf: _Fn1 | None = None,
 ) -> _ArrF8:
@@ -783,7 +779,7 @@ def l_stats_from_ppf(
     trim: AnyTrim = 0,
     *,
     support: _Pair[float] = (0, 1),
-    quad_opts: QuadOptions | None = None,
+    quad_opts: lspt.QuadOptions | None = None,
     alpha: float = ALPHA,
 ) -> _ArrF8:
     r"""
@@ -828,7 +824,7 @@ def l_moment_cov_from_cdf(
     trim: AnyTrim = 0,
     *,
     support: _Pair[float] | None = None,
-    quad_opts: QuadOptions | None = None,
+    quad_opts: lspt.QuadOptions | None = None,
 ) -> _ArrF8:
     r"""
     L-moments that are estimated from $n$ samples of a distribution with CDF
@@ -1007,7 +1003,7 @@ def l_stats_cov_from_cdf(
     trim: AnyTrim = 0,
     *,
     support: _Pair[float] | None = None,
-    quad_opts: QuadOptions | None = None,
+    quad_opts: lspt.QuadOptions | None = None,
     alpha: float = ALPHA,
     ppf: _Fn1 | None = None,
 ) -> _ArrF8:
@@ -1112,7 +1108,7 @@ def l_moment_influence_from_cdf(
     *,
     support: _Pair[float] | None = None,
     l_moment: float | np.float64 | None = None,
-    quad_opts: QuadOptions | None = None,
+    quad_opts: lspt.QuadOptions | None = None,
     alpha: float = ALPHA,
     tol: float = 1e-8,
 ) -> Callable[[_T_x], _T_x]:
@@ -1237,7 +1233,7 @@ def l_ratio_influence_from_cdf(
     *,
     support: _Pair[float] | None = None,
     l_moments: _Pair[float] | None = None,
-    quad_opts: QuadOptions | None = None,
+    quad_opts: lspt.QuadOptions | None = None,
     alpha: float = ALPHA,
     tol: float = 1e-8,
 ) -> Callable[[_T_x], _T_x]:
@@ -1357,7 +1353,7 @@ def l_comoment_from_pdf(
     trim: AnyTrim = 0,
     *,
     supports: Sequence[_Pair[float]] | None = None,
-    quad_opts: QuadOptions | None = None,
+    quad_opts: lspt.QuadOptions | None = None,
 ) -> _ArrF8:
     r"""
     Evaluate the theoretical L-*co*moment matrix of a multivariate probability
@@ -1572,7 +1568,7 @@ def l_coratio_from_pdf(
     trim: AnyTrim = 0,
     *,
     supports: Sequence[_Pair[float]] | None = None,
-    quad_opts: QuadOptions | None = None,
+    quad_opts: lspt.QuadOptions | None = None,
 ) -> _ArrF8:
     r"""
     Evaluate the theoretical L-*co*moment ratio matrix of a multivariate

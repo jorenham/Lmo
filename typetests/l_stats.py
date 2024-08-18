@@ -1,17 +1,17 @@
 # pyright: reportUnusedCallResult=false
-from typing import Any, TypeAlias
+from typing import TypeAlias
 
 import numpy as np
+import numpy.typing as npt
+from typing_extensions import assert_type
 
 import lmo
-from lmo.typing import np as lnpt
-from lmo.typing.compat import assert_type
 
 
 X = [0.14543334, 2.17509751, 0.60844233, 1.47809552, -1.32510269, 1.0979731]
 XX = [X, X]
 
-_ArrF8: TypeAlias = lnpt.Array[Any, np.float64]
+_ArrF8: TypeAlias = npt.NDArray[np.float64]
 
 # default
 assert_type(lmo.l_stats(X), _ArrF8)
