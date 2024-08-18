@@ -39,10 +39,7 @@ jobs:
         run: poetry check
 
       - name: poetry install
-        run: >
-          poetry install
-          --without debug,docs
-          --with pandas
+        run: poetry install --without debug,docs --with pandas
 
       - name: codespell
         run: poetry run codespell .
@@ -72,39 +69,30 @@ jobs:
         python-version: ["3.10", "3.12", "3.13-dev"]
         pandas: ["without", "with"]
         exclude:
-          - python-version: "3.13-dev"
-            os: windows-latest
           - python-version: "3.12"
             pandas: "with"
           - python-version: "3.13-dev"
             pandas: "with"
+          - python-version: "3.13-dev"
+            os: windows-latest
 
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
-
       - name: install scipy deps
         if: ${{ matrix.python-version == '3.13-dev' }}
-        run: >
-          sudo apt-get install
-          gcc
-          g++
-          gfortran
-          libopenblas-dev
-          liblapack-dev
-          pkg-config
+        run: sudo apt-get install libopenblas-dev
+
+      - uses: actions/checkout@v4.1.7
 
       - name: install poetry
-        run: |
-          pipx install poetry
-          poetry config virtualenvs.create true --local
-          poetry config virtualenvs.in-project true --local
+        run: pipx install poetry
 
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: poetry
+          cache-dependency-path: poetry.lock
 
       - name: poetry install
         run: >
