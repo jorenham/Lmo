@@ -7,7 +7,7 @@ ci:
     - codespell
     - ruff
     - basedpyright
-    # - basedpyright-verifytypes
+    - basedpyright-verifytypes
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
