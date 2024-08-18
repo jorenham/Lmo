@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import sys
-from typing import TYPE_CHECKING, Any, Literal, TypeAlias, TypedDict
+from typing import TYPE_CHECKING, Any, Final, Literal, TypeAlias, TypedDict
 
 import numpy as np
 import numpy.typing as npt
@@ -229,6 +229,81 @@ class RVFunction(Protocol[_Tss]):
         *args: _Tss.args,
         **kwds: _Tss.kwargs,
     ) -> float: ...
+
+
+# TODO:
+AnyFrozenRV: TypeAlias = Any
+AnyArrayOrScalar: TypeAlias = np.generic | npt.NDArray[np.generic]
+
+
+@runtime_checkable
+class AnyRV(Protocol):
+    """
+    Compatible with pyright's inferred types of
+    `scipy.stats.distributions.rv_generic`.
+    """
+    a: Final[float | None]
+    b: Final[float | None]
+    name: Final[str]
+    badvalue: float
+    numargs: int
+    shapes: LiteralString | None
+    # moment_type: Literal[0, 1]
+    # xtol: float
+
+    @property
+    def random_state(self, /) -> _RNG: ...
+    @random_state.setter
+    def random_state(self, seed: _Seed, /) -> None: ...
+
+    def __init__(self, /, *args: Any, **kwds: Any) -> None: ...
+    def __call__(self, /, *args: Any, **kwds: Any) -> AnyFrozenRV: ...
+    def freeze(self, /, *args: Any, **kwds: Any) -> AnyFrozenRV: ...
+
+    def rvs(self, /, *args: Any, **kwds: Any) -> Any: ...
+    def stats(
+        self, /, *args: Any, **kwds: Any,
+    ) -> AnyArrayOrScalar | tuple[AnyArrayOrScalar, ...]: ...
+    def entropy(self, /, *args: Any, **kwds: Any) -> AnyArrayOrScalar: ...
+    def median(self, /, *args: Any, **kwds: Any) -> AnyArrayOrScalar: ...
+    def mean(
+        self, /, *args: Any, **kwds: Any,
+    ) -> AnyArrayOrScalar | tuple[AnyArrayOrScalar, ...]: ...
+    def var(
+        self, /, *args: Any, **kwds: Any,
+    ) -> AnyArrayOrScalar | tuple[AnyArrayOrScalar, ...]: ...
+    def std(self, /, *args: Any, **kwds: Any) -> AnyArrayOrScalar: ...
+
+    @overload
+    def interval(
+        self,
+        confidence: _Real0D,
+        /,
+        *args: _Real0D,
+        **kwds: _Real0D,
+    ) -> tuple[_F8, _F8]: ...
+    @overload
+    def interval(
+        self,
+        confidence: onpt.CanArray[_ShapeT1, np.dtype[lnpt.Real]],
+        /,
+        *args: _Real0D,
+        **kwds: _Real0D,
+    ) -> tuple[onpt.Array[_ShapeT1, _F8], onpt.Array[_ShapeT1, _F8]]: ...
+    @overload
+    def interval(
+        self,
+        confidence: Sequence[npt.ArrayLike],
+        /,
+        *args: _Real0D,
+        **kwds: _Real0D,
+    ) -> _Tuple2[npt.NDArray[_F8]]: ...
+
+    def support(
+        self, /, *args: Any, **kwds: Any,
+    ) ->  _Tuple2[np.generic] | _Tuple2[npt.NDArray[np.generic]]: ...
+
+    def nnlf(self, theta: _Real1D, x: _Real1D, /) -> float: ...
 
 
 @runtime_checkable

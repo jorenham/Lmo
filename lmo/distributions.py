@@ -21,6 +21,7 @@ from typing import (
     TypeAlias,
     TypeVar,
     cast,
+    final,
     overload,
 )
 
@@ -960,7 +961,8 @@ def _kumaraswamy_lmo0(
 _kumaraswamy_lmo = np.vectorize(_kumaraswamy_lmo0, [float], excluded={1, 2})
 
 
-class kumaraswamy_gen(_rv_continuous):
+@final
+class kumaraswamy_gen(cast(type[lspt.AnyRV], _rv_continuous)):  # pyright: ignore[reportGeneralTypeIssues]
     def _argcheck(self, a: float, b: float) -> bool:
         return (a > 0) & (b > 0)
 
@@ -1071,7 +1073,7 @@ class kumaraswamy_gen(_rv_continuous):
 
 kumaraswamy: Final = cast(
     lspt.RVContinuous,
-    kumaraswamy_gen(a=0.0, b=1.0, name='kumaraswamy'),
+    kumaraswamy_gen(a=0.0, b=1.0, name='kumaraswamy'),  # pyright: ignore[reportAbstractUsage]
 )
 r"""
 A Kumaraswamy random variable, similar to
@@ -1280,9 +1282,7 @@ def _wakeby_lmo0(
 _wakeby_lmo = np.vectorize(_wakeby_lmo0, [float], excluded={1, 2})
 
 
-class wakeby_gen(_rv_continuous):
-    a: float
-
+class wakeby_gen(cast(type[lspt.AnyRV], _rv_continuous)):
     def _argcheck(self, b: float, d: float, f: float) -> int:
         return (
             np.isfinite(b)
@@ -1310,7 +1310,7 @@ class wakeby_gen(_rv_continuous):
         if not self._argcheck(b, d, f):
             return math.nan, math.nan
 
-        return self.a, _wakeby_ub(b, d, f)
+        return cast(float, self.a), _wakeby_ub(b, d, f)
 
     def _fitstart(
         self,
@@ -1320,7 +1320,7 @@ class wakeby_gen(_rv_continuous):
         #  Arbitrary, but the default f=1 is a bad start
         return cast(
             tuple[float, float, float, float, float],
-            super()._fitstart(data, args or (1., 1., .5)),  # pyright: ignore[reportUnknownMemberType]
+            super()._fitstart(data, args or (1., 1., .5)),  # pyright: ignore[reportUnknownMemberType,reportAttributeAccessIssue]
         )
 
     def _pdf(
@@ -1459,7 +1459,10 @@ class wakeby_gen(_rv_continuous):
         )
 
 
-wakeby: Final = cast(lspt.RVContinuous, wakeby_gen(a=0.0, name='wakeby'))
+wakeby: Final = cast(
+    lspt.RVContinuous,
+    wakeby_gen(a=0.0, name='wakeby'),  # pyright: ignore[reportAbstractUsage]
+)
 r"""A Wakeby random variable, a generalization of
 [`scipy.stats.genpareto`][scipy.stats.genpareto].
 
@@ -1598,7 +1601,7 @@ def _genlambda_lmo0(
 _genlambda_lmo = np.vectorize(_genlambda_lmo0, [float], excluded={1, 2})
 
 
-class genlambda_gen(_rv_continuous):
+class genlambda_gen(cast(type[lspt.AnyRV], _rv_continuous)):
     def _argcheck(self, b: float, d: float, f: float) -> int:
         return np.isfinite(b) & np.isfinite(d) & (f >= -1) & (f <= 1)
 
@@ -1624,7 +1627,7 @@ class genlambda_gen(_rv_continuous):
         #  Arbitrary, but the default f=1 is a bad start
         return cast(
             tuple[float, float, float, float, float],
-            super()._fitstart(data, args or (1., 1., 0.)),  # pyright: ignore[reportUnknownMemberType]
+            super()._fitstart(data, args or (1., 1., 0.)),  # pyright: ignore[reportUnknownMemberType,reportAttributeAccessIssue]
         )
 
     def _pdf(
@@ -1751,7 +1754,10 @@ class genlambda_gen(_rv_continuous):
         )
 
 
-genlambda: lspt.RVContinuous = genlambda_gen(name='genlambda')  # pyright: ignore[reportAssignmentType]
+genlambda: Final = cast(
+    lspt.RVContinuous,
+    genlambda_gen(name='genlambda'),  # pyright: ignore[reportAbstractUsage]
+)
 r"""A generalized Tukey-Lambda random variable.
 
 `genlambda` takes `b`, `d` and `f` as shape parameters.
