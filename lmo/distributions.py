@@ -10,7 +10,7 @@ from __future__ import annotations
 import functools
 import math
 import warnings
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -33,6 +33,9 @@ from scipy.stats._distn_infrastructure import (
 )
 from scipy.stats.distributions import rv_continuous as _rv_continuous
 
+import lmo.typing as lmt
+import lmo.typing.np as lnpt
+import lmo.typing.scipy as lspt
 from ._utils import clean_trim, l_stats_orders, moments_to_ratio, round0
 from .special import harmonic
 from .theoretical import (
@@ -42,52 +45,47 @@ from .theoretical import (
     ppf_from_l_moments,
     qdf_from_l_moments,
 )
-from .typing import (
-    AnyOrder,
-    AnyOrderND,
-    AnyTrim,
-    np as lnpt,
-    scipy as lsct,
-)
 
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
-
-    from .typing.compat import LiteralString, Self
+    from typing_extensions import LiteralString, Self
 
 
-__all__ = (
-    'l_poly',
-    'kumaraswamy',
-    'wakeby',
-    'genlambda',
-)
+__all__ = 'l_poly', 'kumaraswamy', 'wakeby', 'genlambda'
 
-
-_T_x = TypeVar('_T_x', bound=float | npt.NDArray[np.float64])
 
 _ArrF8: TypeAlias = npt.NDArray[np.float64]
-_AnyReal: TypeAlias = lnpt.AnyScalarInt | lnpt.AnyScalarFloat
+_T_f8 = TypeVar('_T_f8', bound=float | np.float64 | _ArrF8)
+
+_AnyReal0D: TypeAlias = lnpt.AnyScalarInt | lnpt.AnyScalarFloat
 _AnyReal1D: TypeAlias = lnpt.AnyVectorInt | lnpt.AnyVectorFloat
 _AnyReal2D: TypeAlias = lnpt.AnyMatrixInt | lnpt.AnyMatrixFloat
 _AnyRealND: TypeAlias = lnpt.AnyArrayInt | lnpt.AnyArrayFloat
-_AnyReal3DPlus: TypeAlias = lnpt.AnyTensorInt | lnpt.AnyTensorFloat
-_AnyReal2DPlus: TypeAlias = _AnyReal2D | _AnyReal3DPlus
+_AnyReal3D_: TypeAlias = lnpt.AnyTensorInt | lnpt.AnyTensorFloat
+_AnyReal2D_: TypeAlias = _AnyReal2D | _AnyReal3D_
 
 _Stats0: TypeAlias = Literal['']
 _Stats1: TypeAlias = Literal['m', 'v', 's', 'k']
 _Stats2: TypeAlias = Literal['mv', 'ms', 'mk', 'vs', 'vk', 'sk']
 _Stats3: TypeAlias = Literal['mvs', 'mvk', 'msk', 'vsk']
 _Stats4: TypeAlias = Literal['mvsk']
-_Stats: TypeAlias = _Stats0 | _Stats1 | _Stats2 | _Stats3 | _Stats4
+_Stats: TypeAlias = Literal[_Stats0, _Stats1, _Stats2, _Stats3, _Stats4]
+
+_T = TypeVar('_T')
+_Tuple1: TypeAlias = tuple[_T]
+_Tuple2: TypeAlias = tuple[_T, _T]
+_Tuple3: TypeAlias = tuple[_T, _T, _T]
+_Tuple4: TypeAlias = tuple[_T, _T, _T, _T]
+_Tuple4m: TypeAlias = (
+    tuple[()] | _Tuple1[_T] | _Tuple2[_T] | _Tuple3[_T] | _Tuple4[_T]
+)
 
 
 class _VectorizedCDF(Protocol):
     @overload
     def __call__(self, x: _AnyRealND, /) -> _ArrF8: ...
     @overload
-    def __call__(self, x: _AnyReal, /) -> float: ...
+    def __call__(self, x: _AnyReal0D, /) -> float: ...
 
 
 # Non-parametric
@@ -99,8 +97,7 @@ def _get_rng(seed: lnpt.Seed | None = None) -> np.random.Generator:
 
 
 _LPolyParams: TypeAlias = (
-    tuple[lnpt.AnyVectorFloat]
-    | tuple[lnpt.AnyVectorFloat, AnyTrim]
+    tuple[lnpt.AnyVectorFloat] | tuple[lnpt.AnyVectorFloat, lmt.AnyTrim]
 )
 
 
@@ -126,7 +123,7 @@ class l_poly:
         self,
         lmbda: lnpt.AnyVectorFloat,
         /,
-        trim: AnyTrim = 0,
+        trim: lmt.AnyTrim = 0,
         *,
         seed: lnpt.Seed | None = None,
     ) -> None:
@@ -163,17 +160,17 @@ class l_poly:
         self._random_state = _get_rng(seed)
 
     @property
-    def a(self) -> float:
+    def a(self, /) -> float:
         """Lower bound of the support."""
         return self._support[0]
 
     @property
-    def b(self) -> float:
+    def b(self, /) -> float:
         """Upper bound of the support."""
         return self._support[1]
 
     @property
-    def random_state(self) -> np.random.Generator:
+    def random_state(self, /) -> np.random.Generator:
         """The random number generator of the distribution."""
         return self._random_state
 
@@ -181,15 +178,17 @@ class l_poly:
     def random_state(
         self,
         seed: lnpt.Seed,  # pyright: ignore[reportPropertyTypeMismatch]
-    ):
+        /,
+    ) -> None:
         self._random_state = _get_rng(seed)
 
     @classmethod
     def fit(
         cls,
         data: _AnyRealND,
+        /,
         moments: int | None = None,
-        trim: AnyTrim = 0,
+        trim: lmt.AnyTrim = 0,
     ) -> Self:
         r"""
         Fit distribution using the (trimmed) L-moment estimates of the given
@@ -244,17 +243,20 @@ class l_poly:
     @overload
     def rvs(
         self,
+        /,
         size: Literal[1] | None = ...,
         random_state: lnpt.Seed | None = ...,
     ) -> float: ...
     @overload
     def rvs(
         self,
+        /,
         size: int | tuple[int, ...],
         random_state: lnpt.Seed | None = ...,
     ) -> _ArrF8: ...
     def rvs(
         self,
+        /,
         size: int | tuple[int, ...] | None = None,
         random_state: lnpt.Seed | None = None,
     ) -> float | _ArrF8:
@@ -280,10 +282,10 @@ class l_poly:
         return self._ppf(rng.uniform(size=size))
 
     @overload
-    def ppf(self, p: _AnyRealND) -> _ArrF8: ...
+    def ppf(self, p: _AnyReal0D, /) -> float: ...
     @overload
-    def ppf(self, p: _AnyReal) -> float: ...
-    def ppf(self, p: _AnyReal | _AnyRealND) -> float | _ArrF8:
+    def ppf(self, p: _AnyRealND, /) -> _ArrF8: ...
+    def ppf(self, p: _AnyReal0D | _AnyRealND, /) -> float | _ArrF8:
         r"""
         [Percent point function](https://w.wiki/8cQU) \( Q(p) \) (inverse of
         [CDF][lmo.distributions.l_poly.cdf], a.k.a. the quantile function) at
@@ -300,10 +302,10 @@ class l_poly:
         return self._ppf(p)
 
     @overload
-    def isf(self, q: _AnyRealND) -> _ArrF8: ...
+    def isf(self, q: _AnyReal0D, /) -> float: ...
     @overload
-    def isf(self, q: _AnyReal) -> float: ...
-    def isf(self, q: _AnyReal | _AnyRealND) -> float | _ArrF8:
+    def isf(self, q: _AnyRealND, /) -> _ArrF8: ...
+    def isf(self, q: _AnyReal0D | _AnyRealND, /) -> float | _ArrF8:
         r"""
         Inverse survival function \( \bar{Q}(q) = Q(1 - q) \) (inverse of
         [`sf`][lmo.distributions.l_poly.sf]) at \( q \).
@@ -317,10 +319,10 @@ class l_poly:
         return self._ppf(p[()] if np.isscalar(q) else p)
 
     @overload
-    def qdf(self, p: _AnyRealND) -> _ArrF8: ...
+    def qdf(self, p: _AnyReal0D, /) -> float: ...
     @overload
-    def qdf(self, p: _AnyReal) -> float: ...
-    def qdf(self, p: _AnyReal | _AnyRealND) -> float | _ArrF8:
+    def qdf(self, p: _AnyRealND, /) -> _ArrF8: ...
+    def qdf(self, p: _AnyReal0D | _AnyRealND, /) -> float | _ArrF8:
         r"""
         Quantile density function \( q \equiv \frac{\dd{Q}}{\dd{p}} \) (
         derivative of the [PPF][lmo.distributions.l_poly.ppf]) at \( p \) of
@@ -337,10 +339,10 @@ class l_poly:
         return self._qdf(p)
 
     @overload
-    def cdf(self, x: _AnyRealND) -> _ArrF8: ...
+    def cdf(self, x: _AnyReal0D, /) -> float: ...
     @overload
-    def cdf(self, x: _AnyReal) -> float: ...
-    def cdf(self, x: _AnyReal | _AnyRealND) -> float | _ArrF8:
+    def cdf(self, x: _AnyRealND, /) -> _ArrF8: ...
+    def cdf(self, x: _AnyReal0D | _AnyRealND, /) -> float | _ArrF8:
         r"""
         [Cumulative distribution function](https://w.wiki/3ota)
         \( F(x) = \mathrm{P}(X \le x) \) at \( x \) of the given distribution.
@@ -355,11 +357,11 @@ class l_poly:
         return self._cdf(x)
 
     @overload
-    def logcdf(self, x: _AnyRealND) -> _ArrF8: ...
+    def logcdf(self, x: _AnyReal0D, /) -> float: ...
     @overload
-    def logcdf(self, x: _AnyReal) -> float: ...
+    def logcdf(self, x: _AnyRealND, /) -> _ArrF8: ...
     @np.errstate(divide='ignore')
-    def logcdf(self, x: _AnyReal | _AnyRealND) -> float | _ArrF8:
+    def logcdf(self, x: _AnyReal0D | _AnyRealND) -> float | _ArrF8:
         r"""
         Logarithm of the cumulative distribution function (CDF) at \( x \),
         i.e. \( \ln F(x) \).
@@ -370,11 +372,11 @@ class l_poly:
         return np.log(self._cdf(x))
 
     @overload
-    def sf(self, x: _AnyRealND) -> _ArrF8: ...
+    def sf(self, x: _AnyReal0D, /) -> float: ...
     @overload
-    def sf(self, x: _AnyReal) -> float: ...
+    def sf(self, x: _AnyRealND, /) -> _ArrF8: ...
 
-    def sf(self, x: _AnyReal | _AnyRealND) -> float | _ArrF8:
+    def sf(self, x: _AnyReal0D | _AnyRealND, /) -> float | _ArrF8:
         r"""
         Survival function \(S(x) = \mathrm{P}(X > x) =
         1 - \mathrm{P}(X \le x) = 1 - F(x) \) (the complement of the
@@ -386,11 +388,11 @@ class l_poly:
         return 1 - self._cdf(x)
 
     @overload
-    def logsf(self, x: _AnyRealND) -> _ArrF8: ...
+    def logsf(self, x: _AnyReal0D, /) -> float: ...
     @overload
-    def logsf(self, x: _AnyReal) -> float: ...
+    def logsf(self, x: _AnyRealND, /) -> _ArrF8: ...
     @np.errstate(divide='ignore')
-    def logsf(self, x: _AnyReal | _AnyRealND) -> float | _ArrF8:
+    def logsf(self, x: _AnyReal0D | _AnyRealND, /) -> float | _ArrF8:
         r"""
         Logarithm of the survical function (SF) at \( x \), i.e.
         \( \ln \left( S(x) \right) \).
@@ -401,10 +403,10 @@ class l_poly:
         return np.log(self._cdf(x))
 
     @overload
-    def pdf(self, x: _AnyRealND) -> _ArrF8: ...
+    def pdf(self, x: _AnyReal0D, /) -> float: ...
     @overload
-    def pdf(self, x: _AnyReal) -> float: ...
-    def pdf(self, x: _AnyReal | _AnyRealND) -> float | _ArrF8:
+    def pdf(self, x: _AnyRealND, /) -> _ArrF8: ...
+    def pdf(self, x: _AnyReal0D | _AnyRealND, /) -> float | _ArrF8:
         r"""
         Probability density function \( f \equiv \frac{\dd{F}}{\dd{x}} \)
         (derivative of the [CDF][lmo.distributions.l_poly.cdf]) at \( x \).
@@ -419,18 +421,18 @@ class l_poly:
         return 1 / self._qdf(self._cdf(x))
 
     @overload
-    def logpdf(self, x: _AnyRealND) -> _ArrF8: ...
+    def logpdf(self, x: _AnyReal0D, /) -> float: ...
     @overload
-    def logpdf(self, x: _AnyReal) -> float: ...
-    def logpdf(self, x: _AnyReal | _AnyRealND) -> float | _ArrF8:
+    def logpdf(self, x: _AnyRealND, /) -> _ArrF8: ...
+    def logpdf(self, x: _AnyReal0D | _AnyRealND, /) -> float | _ArrF8:
         """Logarithm of the PDF."""
         return -np.log(self._qdf(self._cdf(x)))
 
     @overload
-    def hf(self, x: _AnyRealND) -> _ArrF8: ...
+    def hf(self, x: _AnyReal0D, /) -> float: ...
     @overload
-    def hf(self, x: _AnyReal) -> float: ...
-    def hf(self, x: _AnyReal | _AnyRealND) -> float | _ArrF8:
+    def hf(self, x: _AnyRealND, /) -> _ArrF8: ...
+    def hf(self, x: _AnyReal0D | _AnyRealND, /) -> float | _ArrF8:
         r"""
         [Hazard function
         ](https://w.wiki/8cWL#Failure_rate_in_the_continuous_sense)
@@ -444,7 +446,7 @@ class l_poly:
         p = self._cdf(x)
         return 1 / (self._qdf(p) * (1 - p))
 
-    def median(self) -> float:
+    def median(self, /) -> float:
         r"""
         [Median](https://w.wiki/3oaw) (50th percentile) of the distribution.
         Alias for `ppf(1 / 2)`.
@@ -455,12 +457,12 @@ class l_poly:
         return float(self._ppf(.5))
 
     @functools.cached_property
-    def _mean(self) -> float:
+    def _mean(self, /) -> float:
         """Mean; 1st raw product-moment."""
         return self.moment(1)
 
     @functools.cached_property
-    def _var(self) -> float:
+    def _var(self, /) -> float:
         """Variance; 2nd central product-moment."""
         if not np.isfinite(m1 := self._mean):
             return np.nan
@@ -474,7 +476,7 @@ class l_poly:
         return m2 - m1_2
 
     @functools.cached_property
-    def _skew(self) -> float:
+    def _skew(self, /) -> float:
         """Skewness; 3rd standardized central product-moment."""
         if np.isnan(ss := self._var) or ss <= 0:
             return np.nan
@@ -488,7 +490,7 @@ class l_poly:
         return m3 / s**3 - u**3 - 3 * u
 
     @functools.cached_property
-    def _kurtosis(self) -> float:
+    def _kurtosis(self, /) -> float:
         """Ex. kurtosis; 4th standardized central product-moment minus 3."""
         if np.isnan(ss := self._var) or ss <= 0:
             return np.nan
@@ -502,7 +504,7 @@ class l_poly:
 
         return (m4 - 4 * m1 * m3) / ss**2 + 6 * uu + 3 * uu**2 - 3
 
-    def mean(self) -> float:
+    def mean(self, /) -> float:
         r"""
         The [mean](https://w.wiki/8cQe) \( \mu = \E[X] \) of random varianble
         \( X \) of the relevant distribution.
@@ -515,7 +517,7 @@ class l_poly:
 
         return self._mean
 
-    def var(self) -> float:
+    def var(self, /) -> float:
         r"""
         The [variance](https://w.wiki/3jNh)
         \( \Var[X] = \E\bigl[(X - \E[X])^2\bigr] =
@@ -527,7 +529,7 @@ class l_poly:
         """
         return self._var
 
-    def std(self) -> float:
+    def std(self, /) -> float:
         r"""
         The [standard deviation](https://w.wiki/3hwM)
         \( \Std[X] = \sqrt{\Var[X]} = \sigma \) of random varianble \( X \) of
@@ -539,10 +541,10 @@ class l_poly:
         return np.sqrt(self._var)
 
     @functools.cached_property
-    def _entropy(self) -> float:
+    def _entropy(self, /) -> float:
         return entropy_from_qdf(self._qdf)
 
-    def entropy(self) -> float:
+    def entropy(self, /) -> float:
         r"""
         [Differential entropy](https://w.wiki/8cR3) \( \mathrm{H}[X] \) of
         random varianble \( X \) of the relevant distribution.
@@ -565,7 +567,7 @@ class l_poly:
         """
         return self._entropy
 
-    def support(self) -> tuple[float, float]:
+    def support(self, /) -> tuple[float, float]:
         r"""
         The support \( (Q(0), Q(1)) \) of the distribution, where \( Q(p) \)
         is the [PPF][lmo.distributions.l_poly.ppf].
@@ -575,10 +577,10 @@ class l_poly:
     @overload
     def interval(self, confidence: _AnyRealND, /) -> tuple[_ArrF8, _ArrF8]: ...
     @overload
-    def interval(self, confidence: _AnyReal, /) -> tuple[float, float]: ...
+    def interval(self, confidence: _AnyReal0D, /) -> tuple[float, float]: ...
     def interval(
         self,
-        confidence: _AnyReal | _AnyRealND,
+        confidence: _AnyReal0D | _AnyRealND,
         /,
     ) -> tuple[float, float] | tuple[_ArrF8, _ArrF8]:
         r"""
@@ -643,16 +645,18 @@ class l_poly:
         return cast(float, quad(_integrand, 0, 1)[0])
 
     @overload
-    def stats(self, moments: _Stats0) -> tuple[()]: ...
+    def stats(self, /) -> _Tuple2[float]: ...
     @overload
-    def stats(self, moments: _Stats1) -> tuple[float]: ...
+    def stats(self, /, moments: _Stats0) -> tuple[()]: ...
     @overload
-    def stats(self, moments: _Stats2 = ...) -> tuple[float, float]: ...
+    def stats(self, /, moments: _Stats1) -> _Tuple1[float]: ...
     @overload
-    def stats(self, moments: _Stats3) -> tuple[float, float, float]: ...
+    def stats(self, /, moments: _Stats2) -> _Tuple2[float]: ...
     @overload
-    def stats(self, moments: _Stats4) -> tuple[float, float, float, float]: ...
-    def stats(self, moments: _Stats = 'mv') -> tuple[float, ...]:
+    def stats(self, /, moments: _Stats3) -> _Tuple3[float]: ...
+    @overload
+    def stats(self, /, moments: _Stats4) -> _Tuple4[float]: ...
+    def stats(self, /, moments: _Stats = 'mv') -> _Tuple4m[float]:
         r"""
         Some product-moment statistics of the given distribution.
 
@@ -726,22 +730,22 @@ class l_poly:
     @overload
     def l_moment(
         self,
-        r: AnyOrderND,
+        r: lmt.AnyOrder,
         /,
-        trim: AnyTrim | None = ...,
-    ) -> _ArrF8: ...
+        trim: lmt.AnyTrim | None = ...,
+    ) -> np.float64: ...
     @overload
     def l_moment(
         self,
-        r: AnyOrder,
+        r: lmt.AnyOrderND,
         /,
-        trim: AnyTrim | None = ...,
-    ) -> np.float64: ...
+        trim: lmt.AnyTrim | None = ...,
+    ) -> _ArrF8: ...
     def l_moment(
         self,
-        r: AnyOrder | AnyOrderND,
+        r: lmt.AnyOrder | lmt.AnyOrderND,
         /,
-        trim: AnyTrim | None = None,
+        trim: lmt.AnyTrim | None = None,
     ) -> np.float64 | _ArrF8:
         r"""
         Evaluate the population L-moment(s) $\lambda^{(s,t)}_r$.
@@ -760,33 +764,33 @@ class l_poly:
     @overload
     def l_ratio(
         self,
-        r: AnyOrderND,
-        k: AnyOrder | AnyOrderND,
+        r: lmt.AnyOrder,
+        k: lmt.AnyOrder,
         /,
-        trim: AnyTrim | None = ...,
-    ) -> _ArrF8: ...
-    @overload
-    def l_ratio(
-        self,
-        r: AnyOrder | AnyOrderND,
-        k: AnyOrderND,
-        /,
-        trim: AnyTrim | None = ...,
-    ) -> _ArrF8: ...
-    @overload
-    def l_ratio(
-        self,
-        r: AnyOrder,
-        k: AnyOrder,
-        /,
-        trim: AnyTrim | None = ...,
+        trim: lmt.AnyTrim | None = ...,
     ) -> np.float64: ...
+    @overload
     def l_ratio(
         self,
-        r: AnyOrder | AnyOrderND,
-        k: AnyOrder | AnyOrderND,
+        r: lmt.AnyOrderND,
+        k: lmt.AnyOrder | lmt.AnyOrderND,
         /,
-        trim: AnyTrim | None = None,
+        trim: lmt.AnyTrim | None = ...,
+    ) -> _ArrF8: ...
+    @overload
+    def l_ratio(
+        self,
+        r: lmt.AnyOrder | lmt.AnyOrderND,
+        k: lmt.AnyOrderND,
+        /,
+        trim: lmt.AnyTrim | None = ...,
+    ) -> _ArrF8: ...
+    def l_ratio(
+        self,
+        r: lmt.AnyOrder | lmt.AnyOrderND,
+        k: lmt.AnyOrder | lmt.AnyOrderND,
+        /,
+        trim: lmt.AnyTrim | None = None,
     ) -> np.float64 | _ArrF8:
         r"""
         Evaluate the population L-moment ratio('s) $\tau^{(s,t)}_{r,k}$.
@@ -805,7 +809,12 @@ class l_poly:
         lms = self.l_moment(rs, trim=trim)
         return moments_to_ratio(rs, lms)
 
-    def l_stats(self, trim: AnyTrim | None = None, moments: int = 4) -> _ArrF8:
+    def l_stats(
+        self,
+        /,
+        trim: lmt.AnyTrim | None = None,
+        moments: int = 4,
+    ) -> _ArrF8:
         r"""
         Evaluate the L-moments (for $r \le 2$) and L-ratio's (for $r > 2$).
 
@@ -819,7 +828,7 @@ class l_poly:
         r, s = l_stats_orders(moments)
         return self.l_ratio(r, s, trim=trim)
 
-    def l_loc(self, trim: AnyTrim | None = None) -> float:
+    def l_loc(self, /, trim: lmt.AnyTrim | None = None) -> float:
         """
         L-location of the distribution, i.e. the 1st L-moment.
 
@@ -830,7 +839,7 @@ class l_poly:
         """
         return float(self.l_moment(1, trim=trim))
 
-    def l_scale(self, trim: AnyTrim | None = None) -> float:
+    def l_scale(self, /, trim: lmt.AnyTrim | None = None) -> float:
         """
         L-scale of the distribution, i.e. the 2nd L-moment.
 
@@ -841,7 +850,7 @@ class l_poly:
         """
         return float(self.l_moment(2, trim=trim))
 
-    def l_skew(self, trim: AnyTrim | None = None) -> float:
+    def l_skew(self, /, trim: lmt.AnyTrim | None = None) -> float:
         """L-skewness coefficient of the distribution; the 3rd L-moment ratio.
 
         Alias for `l_poly.l_ratio(3, 2, ...)`.
@@ -851,7 +860,7 @@ class l_poly:
         """
         return float(self.l_ratio(3, 2, trim=trim))
 
-    def l_kurtosis(self, trim: AnyTrim | None = None) -> float:
+    def l_kurtosis(self, /, trim: lmt.AnyTrim | None = None) -> float:
         """L-kurtosis coefficient of the distribution; the 4th L-moment ratio.
 
         Alias for `l_poly.l_ratio(4, 2, ...)`.
@@ -866,15 +875,15 @@ class l_poly:
     # `rv_continuous` and `rv_frozen` compatibility
 
     @property
-    def dist(self) -> type[Self]:  # noqa: D102
+    def dist(self, /) -> type[Self]:  # noqa: D102
         return type(self)
 
     @property
-    def args(self) -> _LPolyParams:  # noqa: D102
+    def args(self, /) -> _LPolyParams:  # noqa: D102
         return (self._l_moments, self._trim)
 
     @property
-    def kwds(self) -> dict[str, Any]:  # noqa: D102
+    def kwds(self, /) -> dict[str, Any]:  # noqa: D102
         return {}
 
     @classmethod
@@ -882,19 +891,19 @@ class l_poly:
         cls,
         lmbda: lnpt.AnyVectorFloat,
         /,
-        trim: AnyTrim = 0,
+        trim: lmt.AnyTrim = 0,
         **kwds: Any,
     ) -> Self:
         return cls(lmbda, trim, **kwds)
 
     @overload
     @classmethod
-    def nnlf(cls, theta: _LPolyParams, x: _AnyReal1D) -> float: ...
+    def nnlf(cls, /, theta: _LPolyParams, x: _AnyReal1D) -> float: ...
     @overload
     @classmethod
-    def nnlf(cls, theta: _LPolyParams, x: _AnyReal2DPlus) -> _ArrF8: ...
+    def nnlf(cls, /, theta: _LPolyParams, x: _AnyReal2D_) -> _ArrF8: ...
     @classmethod
-    def nnlf(cls, theta: _LPolyParams, x: _AnyRealND) -> float | _ArrF8:
+    def nnlf(cls, /, theta: _LPolyParams, x: _AnyRealND) -> float | _ArrF8:
         """
         Negative loglikelihood function.
 
@@ -1025,7 +1034,7 @@ class kumaraswamy_gen(_rv_continuous):
         return (1 - (1 - u)**(1 / b))**(1 / a)
 
     def _entropy(self, a: float, b: float) -> float:
-        # https://en.wikipedia.org/wiki/Kumaraswamy_distribution
+        # https://wikipedia.org/wiki/Kumaraswamy_distribution
         return (1 - 1 / b) + (1 - 1 / a) * harmonic(b) - np.log(a * b)
 
     def _munp(
@@ -1042,7 +1051,7 @@ class kumaraswamy_gen(_rv_continuous):
         a: float,
         b: float,
         trim: tuple[int, int] | tuple[float, float],
-        quad_opts: lsct.QuadOptions | None = None,
+        quad_opts: lspt.QuadOptions | None = None,
     ) -> _ArrF8:
         s, t = trim
         if quad_opts is not None or isinstance(s, float):
@@ -1060,11 +1069,10 @@ class kumaraswamy_gen(_rv_continuous):
         return np.atleast_1d(cast(_ArrF8, _kumaraswamy_lmo(r, s, t, a, b)))
 
 
-kumaraswamy: Final[lsct.RVContinuous] = kumaraswamy_gen(
-    a=0.0,
-    b=1.0,
-    name='kumaraswamy',
-)  # pyright: ignore[reportAssignmentType]
+kumaraswamy: Final = cast(
+    lspt.RVContinuous,
+    kumaraswamy_gen(a=0.0, b=1.0, name='kumaraswamy'),
+)
 r"""
 A Kumaraswamy random variable, similar to
 [`scipy.stats.beta`][scipy.stats.beta].
@@ -1403,7 +1411,7 @@ class wakeby_gen(_rv_continuous):
         d: float,
         f: float,
         trim: tuple[int, int] | tuple[float, float],
-        quad_opts: lsct.QuadOptions | None = None,
+        quad_opts: lspt.QuadOptions | None = None,
     ) -> _ArrF8:
         s, t = trim
 
@@ -1451,7 +1459,7 @@ class wakeby_gen(_rv_continuous):
         )
 
 
-wakeby: Final[lsct.RVContinuous] = wakeby_gen(a=0.0, name='wakeby')  # pyright: ignore[reportAssignmentType]
+wakeby: Final = cast(lspt.RVContinuous, wakeby_gen(a=0.0, name='wakeby'))
 r"""A Wakeby random variable, a generalization of
 [`scipy.stats.genpareto`][scipy.stats.genpareto].
 
@@ -1486,8 +1494,8 @@ _genlambda_ppf = np.vectorize(_genlambda_ppf0, [float])
 
 
 @np.errstate(divide='ignore')
-def _genlambda_qdf(q: _T_x, b: float, d: float, f: float) -> _T_x:
-    return cast(_T_x, (1 + f) * q**(b - 1) + (1 - f) * (1 - q)**(d - 1))
+def _genlambda_qdf(q: _T_f8, b: float, d: float, f: float) -> _T_f8:
+    return cast(_T_f8, (1 + f) * q**(b - 1) + (1 - f) * (1 - q)**(d - 1))
 
 
 def _genlambda_cdf0(  # noqa: C901
@@ -1718,7 +1726,7 @@ class genlambda_gen(_rv_continuous):
         d: float,
         f: float,
         trim: tuple[int, int] | tuple[float, float],
-        quad_opts: lsct.QuadOptions | None = None,
+        quad_opts: lspt.QuadOptions | None = None,
     ) -> _ArrF8:
         s, t = trim
 
@@ -1743,7 +1751,7 @@ class genlambda_gen(_rv_continuous):
         )
 
 
-genlambda: lsct.RVContinuous = genlambda_gen(name='genlambda')  # pyright: ignore[reportAssignmentType]
+genlambda: lspt.RVContinuous = genlambda_gen(name='genlambda')  # pyright: ignore[reportAssignmentType]
 r"""A generalized Tukey-Lambda random variable.
 
 `genlambda` takes `b`, `d` and `f` as shape parameters.

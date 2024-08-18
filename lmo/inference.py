@@ -15,7 +15,7 @@ from ._lm_co import l_coscale as l_coscale_est
 from ._utils import clean_orders, clean_trim
 from .diagnostic import HypothesisTestResult, l_moment_bounds
 from .theoretical import l_moment_from_ppf
-from .typing import scipy as lsct
+from .typing import scipy as lspt
 
 
 if TYPE_CHECKING:
@@ -171,7 +171,7 @@ def _loss_step(
     return cast(float, np.sqrt(g_r.T @ w_rr @ g_r))
 
 
-def _get_l_moment_fn(ppf: lsct.RVFunction[...]) -> Callable[..., _ArrF8]:
+def _get_l_moment_fn(ppf: lspt.RVFunction[...]) -> Callable[..., _ArrF8]:
     def l_moment_fn(
         r: AnyOrderND,
         *args: Any,
@@ -215,7 +215,7 @@ def _get_weights_mc(
 
 
 def fit(  # noqa: C901
-    ppf: lsct.RVFunction[...],
+    ppf: lspt.RVFunction[...],
     args0: lnpt.AnyVectorFloat,
     n_obs: int,
     l_moments: lnpt.AnyVectorFloat,
@@ -415,7 +415,7 @@ def fit(  # noqa: C901
 
         # run the optimizer
         res = cast(
-            lsct.OptimizeResult,
+            lspt.OptimizeResult,
             optimize.minimize(  # pyright: ignore[reportUnknownMemberType]
                 _loss_step,
                 theta,

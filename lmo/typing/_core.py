@@ -1,9 +1,14 @@
-from typing import Any, TypeAlias, TypedDict
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, TypeAlias, TypedDict
 
 import numpy as np
 import optype as opt
+import optype.numpy as onpt
 
-from . import np as lnpt
+
+if TYPE_CHECKING:
+    import lmo.typing.np as lnpt
 
 
 _AnyTrimI: TypeAlias = int | tuple[int, int]
@@ -11,10 +16,10 @@ _AnyTrimF: TypeAlias = float | tuple[float, float]
 AnyTrim: TypeAlias = _AnyTrimI | _AnyTrimF
 
 AnyOrder: TypeAlias = int | np.integer[Any]
-AnyOrderND: TypeAlias = opt.CanSequence[int, int] | lnpt.AnyArrayInt
+AnyOrderND: TypeAlias = opt.CanSequence[int, int, int] | onpt.AnyIntegerArray
 
-AnyFWeights: TypeAlias = lnpt.Array[tuple[int], np.integer[Any]]
-AnyAWeights: TypeAlias = lnpt.Array[lnpt.AtLeast1D, np.floating[Any]]
+AnyFWeights: TypeAlias = onpt.Array[tuple[int], np.integer[Any]]
+AnyAWeights: TypeAlias = onpt.Array[onpt.AtLeast1D, np.floating[Any]]
 
 
 class LMomentOptions(TypedDict, total=False):

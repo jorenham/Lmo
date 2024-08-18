@@ -6,6 +6,19 @@ See Also:
     - [Classic orthogonal polynomials - Wikipedia
     ](https://wikipedia.org/wiki/Classical_orthogonal_polynomials)
 """
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, TypeAlias, TypeVar, cast, overload
+
+import numpy as np
+import numpy.polynomial as npp
+import optype.numpy as onpt
+import scipy.special as scs
+
+
+if TYPE_CHECKING:
+    from .typing import np as lnpt
+
 
 __all__ = (
     'PolySeries',
@@ -18,14 +31,6 @@ __all__ = (
     'roots',
 )
 
-from typing import TypeAlias, TypeVar, cast, overload
-
-import numpy as np
-import numpy.polynomial as npp
-import scipy.special as scs
-
-from .typing import np as lnpt
-
 
 PolySeries: TypeAlias = (
     npp.Polynomial
@@ -35,7 +40,7 @@ PolySeries: TypeAlias = (
     | npp.Legendre
 )
 
-_T_shape = TypeVar('_T_shape', bound=lnpt.AtLeast1D)
+_T_shape = TypeVar('_T_shape', bound=onpt.AtLeast1D)
 _T_poly = TypeVar('_T_poly', bound=PolySeries)
 
 
@@ -46,14 +51,14 @@ def eval_sh_jacobi(
     n: int,
     a: float,
     b: float,
-    x: lnpt.Array[_T_shape, lnpt.Float],
-) -> lnpt.Array[_T_shape, np.float64]: ...
+    x: onpt.Array[_T_shape, lnpt.Float],
+) -> onpt.Array[_T_shape, np.float64]: ...
 def eval_sh_jacobi(
     n: int,
     a: float,
     b: float,
-    x: float | lnpt.Array[_T_shape, lnpt.Float],
-) -> float | lnpt.Array[_T_shape, np.float64]:
+    x: float | onpt.Array[_T_shape, lnpt.Float],
+) -> float | onpt.Array[_T_shape, np.float64]:
     """
     Fast evaluation of the n-th shifted Jacobi polynomial.
     Faster than pre-computing using np.Polynomial, and than
@@ -109,7 +114,7 @@ def peaks_jacobi(
     n: int,
     a: float,
     b: float,
-) -> lnpt.Array[tuple[int], np.float64]:
+) -> onpt.Array[tuple[int], np.float64]:
     r"""
     Finds the \( x \in [-1, 1] \) s.t.
     \( /frac{\dd{\shjacobi{n}{a}{b}{x}}}{\dd{x}} = 0 \) of a Jacobi polynomial,
@@ -299,7 +304,7 @@ def _jacobi_coefs(
     n: int,
     a: float,
     b: float,
-) -> lnpt.Array[tuple[int], np.float64]:
+) -> onpt.Array[tuple[int], np.float64]:
     p_n: np.poly1d
     p_n = scs.jacobi(n, a, b)  # pyright: ignore[reportUnknownMemberType]
     return p_n.coef[::-1]
@@ -366,7 +371,7 @@ def roots(
     p: PolySeries,
     /,
     outside: bool = False,
-) -> lnpt.Array[tuple[int], np.float64]:
+) -> onpt.Array[tuple[int], np.float64]:
     """
     Return the $x$ in the domain of $p$, where $p(x) = 0$.
 
@@ -374,7 +379,7 @@ def roots(
     interval will be not be included.
     """
     z = cast(
-        lnpt.Array[tuple[int], np.float64],
+        onpt.Array[tuple[int], np.float64],
         p.roots(),  # pyright: ignore[reportUnknownMemberType]
     )
     if not np.isrealobj(z) and np.isrealobj(p.domain):

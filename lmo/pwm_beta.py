@@ -6,18 +6,25 @@ Primarily used as an intermediate step for L-moment estimation.
 """
 from __future__ import annotations
 
+import sys
 from typing import TYPE_CHECKING, Any, TypeAlias, cast, overload
 
 import numpy as np
 import numpy.typing as npt
 
 from ._utils import ordered
-from .typing.compat import TypeVar
+
+
+if sys.version_info >= (3, 13):
+    from typing import TypeVar, Unpack
+else:
+    from typing_extensions import TypeVar, Unpack
 
 
 if TYPE_CHECKING:
+    import optype.numpy as onpt
+
     from .typing import np as lnpt
-    from .typing.compat import Unpack
 
 
 __all__ = (
@@ -38,7 +45,7 @@ def weights(
     n: _N,
     /,
     dtype: _DType[_F] = np.float64,
-) -> lnpt.Array[tuple[_R, _N], _F]:
+) -> onpt.Array[tuple[_R, _N], _F]:
     r"""
     Probability Weighted moment (PWM) projection matrix $B$ of the
     unbiased estimator for $\beta_k = M_{1,k,0}$ for $k = 0, \dots, r - 1$.
@@ -90,7 +97,7 @@ def cov(
     axis: None = ...,
     dtype: _DType[_F] = np.float64,
     **kwds: Any,
-) -> lnpt.Array[tuple[_R, _R], _F]: ...
+) -> onpt.Array[tuple[_R, _R], _F]: ...
 @overload
 def cov(
     a: lnpt.AnyArrayFloat,
@@ -99,7 +106,7 @@ def cov(
     axis: int,
     dtype: _DType[_F] = np.float64,
     **kwds: Any,
-) -> lnpt.Array[tuple[_R, _R, Unpack[tuple[int, ...]]], _F]: ...
+) -> onpt.Array[tuple[_R, _R, Unpack[tuple[int, ...]]], _F]: ...
 def cov(
     a: lnpt.AnyArrayFloat,
     r: int,
@@ -107,7 +114,7 @@ def cov(
     axis: int | None = None,
     dtype: _DType[_F] = np.float64,
     **kwds: Any,
-) -> lnpt.Array[Any, _F]:
+) -> onpt.Array[Any, _F]:
     r"""
     Distribution-free variance-covariance matrix of the probability weighted
     moment (PWM) point estimates $\beta_k = M_{1,k,0}$, with orders

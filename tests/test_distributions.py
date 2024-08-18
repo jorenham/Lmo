@@ -6,9 +6,9 @@ import pytest
 from numpy.testing import assert_allclose as _assert_allclose
 from scipy.stats.distributions import tukeylambda, uniform
 
+import lmo.typing as lmt
+import lmo.typing.scipy as lspt
 from lmo.distributions import genlambda, l_poly, wakeby
-from lmo.typing import AnyTrim
-from lmo.typing._scipy import RVContinuous
 
 
 Q = np.linspace(1 / 100, 1, 99, endpoint=False)
@@ -20,10 +20,10 @@ assert_allclose = functools.partial(_assert_allclose, atol=1e-9)
     'trim',
     [0, 1, (0, 1), (1, 0), (13, 17), (2 / 3, 3 / 4)],
 )
-def test_l_poly_eq_uniform(trim: AnyTrim):
+def test_l_poly_eq_uniform(trim: lmt.AnyTrim):
     p0 = x0 = np.linspace(0, 1)
 
-    X = cast('RVContinuous', uniform())
+    X = cast('lspt.RVContinuous', uniform())
     X_hat = l_poly(X.l_moment([1, 2], trim=trim), trim=trim)
 
     t4 = X.l_stats(trim=trim)
@@ -98,7 +98,7 @@ def test_wakeby(b: float, d: float, f: float, loc: float, scale: float):
 
 @pytest.mark.parametrize('lam', [0, 0.14, 1, -1])
 def test_genlambda_tukeylamba(lam: float):
-    X0 = cast(RVContinuous, tukeylambda(lam))
+    X0 = cast(lspt.RVContinuous, tukeylambda(lam))
     X = genlambda(lam, lam, 0)
 
     x0 = X0.ppf(Q)

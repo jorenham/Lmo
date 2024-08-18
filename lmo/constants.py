@@ -1,11 +1,8 @@
 """Mathematical constants."""
-
-__all__ = (
-    'theta_m',
-    'theta_m_bar',
-)
-
 from typing import Final
+
+
+__all__ = 'theta_m', 'theta_m_bar'
 
 
 theta_m: Final[float] = 0.955316618124509278163857102515757754

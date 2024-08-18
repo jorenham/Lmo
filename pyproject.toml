@@ -48,7 +48,7 @@ typing_extensions = {version = "^4.8", python = "<3.13"}
 numpy =  ">1.24"
 scipy = "^1.10.1"
 pandas = {version = ">=1.5", optional = true}
-optype = "^0.4.0"
+optype = {version = "^0.6.0", extras = ["numpy"]}
 
 [tool.poetry.group.dev.dependencies]
 codespell = "^2.3.0"
@@ -87,6 +87,7 @@ pytest-github-actions-annotate-failures = ">=0.2.0,<1.0"
 [tool.poetry.extras]
 pandas = ["pandas"]
 
+
 [tool.pytest.ini_options]
 minversion = "8.0"
 addopts = [
@@ -108,7 +109,7 @@ xfail_strict = true
 
 
 [tool.pyright]
-include = ["lmo"]
+include = ["lmo", "typetests"]
 exclude = ["docs", "tests"]
 ignore = ["lmo/contrib/pandas.py"]
 stubPath = "."
@@ -190,7 +191,6 @@ select = [
     "TCH",      # flake8-type-checking
     "ARG",      # flake8-unused-arguments
     "PTH",      # flake8-use-pathlib
-    "TD",       # flake8-todos
     "PD",       # pandas-vet
     "PGH",      # pygrep-hooks
     "PL",       # pylint
@@ -230,7 +230,7 @@ ignore = [
 typing-modules = ["typing_extensions"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["D", "N806", "ANN", "PLC2701"]
+"tests/*" = ["D", "N806", "ANN", "TCH001", "TCH002", "PLC2701"]
 "typetests/*" = ["D", "INP001"]
 
 [tool.ruff.lint.pep8-naming]
@@ -244,6 +244,7 @@ convention = "google"
 ignore-decorators = [
     "typing.overload",
     "typing.override",
+    "typing_extensions.overload",
     "typing_extensions.override",
 ]
 
@@ -263,8 +264,32 @@ allow-star-arg-any = true
 suppress-dummy-args = true
 suppress-none-returning = true
 
+[tool.ruff.lint.flake8-import-conventions]
+banned-from = [
+    "lmo.typing",
+    "lmo.typing.np",
+    "lmo.typing.scipy",
+    "numpy",
+    "numpy.polynomial",
+    "numpy.typing",
+    "optype",
+    "optype.numpy",
+]
+
+[tool.ruff.lint.flake8-import-conventions.extend-aliases]
+"lmo.typing" = "lmt"
+"lmo.typing.np" = "lnpt"
+"lmo.typing.scipy" = "lspt"
+"numpy.polynomial" = "npp"
+"numpy.typing" = "npt"
+"optype" = "opt"
+"optype.numpy" = "onpt"
+
 [tool.ruff.lint.flake8-quotes]
 inline-quotes = "single"
+
+[tool.ruff.lint.flake8-type-checking]
+quote-annotations = true
 
 [tool.ruff.lint.pylint]
 allow-dunder-method-names = [
@@ -279,7 +304,6 @@ indent-style = "space"
 line-ending = "lf"
 quote-style = "single"
 skip-magic-trailing-comma = true
-exclude = ["typing.py"]
 
 
 [tool.codespell]

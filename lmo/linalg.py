@@ -2,14 +2,21 @@
 """Linear algebra and linearized orthogonal polynomials."""
 from __future__ import annotations
 
+import sys
 from math import comb, lgamma
 from typing import Any, TypeAlias, cast
 
 import numpy as np
 import numpy.typing as npt
+import optype.numpy as onpt
 
-from .typing import np as lnpt
-from .typing.compat import TypeVar, Unpack, assert_never
+import lmo.typing.np as lnpt
+
+
+if sys.version_info >= (3, 13):
+    from typing import TypeVar, Unpack, assert_never
+else:
+    from typing_extensions import TypeVar, Unpack, assert_never
 
 
 __all__ = (
@@ -30,15 +37,15 @@ _K = TypeVar('_K', bound=int)
 _R = TypeVar('_R', bound=int)
 
 _DType: TypeAlias = np.dtype[_T] | type[_T]
-_Square: TypeAlias = lnpt.Array[tuple[_K, _K], _T]
+_Square: TypeAlias = onpt.Array[tuple[_K, _K], _T]
 
 
 def sandwich(
-    A: lnpt.Array[tuple[_K, _R], lnpt.Real],
-    X: lnpt.Array[tuple[_R, Unpack[tuple[_R, ...]]], lnpt.Real],
+    A: onpt.Array[tuple[_K, _R], lnpt.Real],
+    X: onpt.Array[tuple[_R, Unpack[tuple[_R, ...]]], lnpt.Real],
     /,
     dtype: _DType[_TF] = np.float64,
-) -> lnpt.Array[tuple[_K, Unpack[tuple[_K, ...]]], _TF]:
+) -> onpt.Array[tuple[_K, Unpack[tuple[_K, ...]]], _TF]:
     """
     Calculates the "sandwich" matrix product (`A @ X @ A.T`) along the
     specified `X` axis.
@@ -325,9 +332,9 @@ def sh_jacobi(
 
 
 def succession_matrix(
-    c: lnpt.Array[tuple[_K, int], _T],
+    c: onpt.Array[tuple[_K, int], _T],
     /,
-) -> lnpt.Array[tuple[_K, int], _T]:
+) -> onpt.Array[tuple[_K, int], _T]:
     r"""
     A toeplitz-like transformation matrix construction, that prepends $i$
     zeroes to $i$-th row, so that the input shape is mapped from `(n, k)`
@@ -371,7 +378,7 @@ def trim_matrix(
     /,
     trim: tuple[int, int],
     dtype: _DType[_TF] = np.float64,
-) -> lnpt.Array[tuple[_R, int], _TF]:
+) -> onpt.Array[tuple[_R, int], _TF]:
     r"""
     Linearization of the trimmed L-moment recurrence relations, following
     the (corrected) derivation by Hosking (2007) from the (shifted) Jacobi

@@ -34,7 +34,7 @@ from .special import fpow
 from .typing import (
     AnyOrder,
     AnyOrderND,
-    scipy as lsct,
+    scipy as lspt,
 )
 
 
@@ -737,7 +737,7 @@ def rejection_point(
         return quad(integrand, r[0], np.inf)[0]  # pyright: ignore[reportUnknownVariableType]
 
     res = cast(
-        lsct.OptimizeResult,
+        lspt.OptimizeResult,
         minimize(
             obj,
             bounds=[(rho_min, rho_max)],
@@ -805,7 +805,7 @@ def error_sensitivity(
     bounds = None if np.isneginf(a) and np.isposinf(b) else [(a, b)]
 
     res = cast(
-        lsct.OptimizeResult,
+        lspt.OptimizeResult,
         minimize(
             obj,
             bounds=bounds,
@@ -892,7 +892,7 @@ def shift_sensitivity(
     bounds = None if np.isneginf(a) and np.isposinf(b) else [(a, b)]
 
     res = cast(
-        lsct.OptimizeResult,
+        lspt.OptimizeResult,
         minimize(
             obj,
             bounds=bounds,
