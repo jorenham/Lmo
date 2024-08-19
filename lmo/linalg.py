@@ -41,8 +41,8 @@ _Square: TypeAlias = onpt.Array[tuple[_K, _K], _T]
 
 
 def sandwich(
-    A: onpt.Array[tuple[_K, _R], lnpt.Real],
-    X: onpt.Array[tuple[_R, Unpack[tuple[_R, ...]]], lnpt.Real],
+    A: onpt.Array[tuple[_K, _R], np.floating[Any]],
+    X: onpt.Array[tuple[_R, Unpack[tuple[_R, ...]]], np.floating[Any]],
     /,
     dtype: _DType[_TF] = np.float64,
 ) -> onpt.Array[tuple[_K, Unpack[tuple[_K, ...]]], _TF]:
@@ -332,7 +332,7 @@ def sh_jacobi(
 
 
 def succession_matrix(
-    c: onpt.Array[tuple[_K, int], _T],
+    c: onpt.Array[tuple[_K, int], _T] | onpt.Array[tuple[_K], _T],
     /,
 ) -> onpt.Array[tuple[_K, int], _T]:
     r"""
@@ -362,7 +362,7 @@ def succession_matrix(
                [0, 0, 5, 6, 0],
                [0, 0, 0, 7, 8]])
     """
-    _c = np.atleast_2d(c)
+    _c: onpt.Array[tuple[_K, int], _T] = np.atleast_2d(c)
 
     n, k = _c.shape
     i = np.arange(n)

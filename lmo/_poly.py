@@ -14,6 +14,7 @@ import numpy as np
 import numpy.polynomial as npp
 import optype.numpy as onpt
 import scipy.special as scs
+from numpy.polynomial._polybase import ABCPolyBase  # noqa: PLC2701
 
 
 if TYPE_CHECKING:
@@ -32,13 +33,13 @@ __all__ = (
 )
 
 
-PolySeries: TypeAlias = (
-    npp.Polynomial
-    | npp.Chebyshev
-    | npp.Hermite
-    | npp.HermiteE
-    | npp.Legendre
-)
+if TYPE_CHECKING:
+    from typing_extensions import LiteralString
+
+    PolySeries: TypeAlias = ABCPolyBase[LiteralString | None]
+else:
+    PolySeries: TypeAlias = ABCPolyBase
+
 
 _T_shape = TypeVar('_T_shape', bound=onpt.AtLeast1D)
 _T_poly = TypeVar('_T_poly', bound=PolySeries)
@@ -322,17 +323,41 @@ def jacobi(
     return npp.Polynomial(_jacobi_coefs(n, a, b), domain, window, symbol)
 
 
+@overload
 def jacobi_series(
     coef: lnpt.AnyArrayFloat,
     /,
     a: float,
     b: float,
     *,
-    domain: tuple[float, float] = (-1, 1),
+    kind: None = ...,
+    domain: tuple[float, float] = ...,
+    window: tuple[float, float] = ...,
+    symbol: str = ...,
+) -> npp.Polynomial: ...
+@overload
+def jacobi_series(
+    coef: lnpt.AnyArrayFloat,
+    /,
+    a: float,
+    b: float,
+    *,
+    kind: type[_T_poly],
+    domain: tuple[float, float] = ...,
+    window: tuple[float, float] = ...,
+    symbol: str = ...,
+) -> _T_poly: ...
+def jacobi_series(
+    coef: lnpt.AnyArrayFloat,
+    /,
+    a: float,
+    b: float,
+    *,
     kind: type[_T_poly] | None = None,
+    domain: tuple[float, float] = (-1, 1),
     window: tuple[float, float] = (-1, 1),
     symbol: str = 'x',
-) -> _T_poly:
+) -> _T_poly | npp.Polynomial:
     r"""
     Construct a polynomial from the weighted sum of shifted Jacobi
     polynomials.
@@ -343,27 +368,22 @@ def jacobi_series(
     Todo:
         - Create a `Jacobi` class, as extension to `numpy.polynomial.`
     """
-    w = np.asarray(coef)
+    w = cast(onpt.Array[tuple[int], np.float64], np.asarray(coef))
     if w.ndim != 1:
         msg = 'coefs must be 1-D'
         raise ValueError(msg)
 
-    n = len(w)
-    p = cast(
-        npp.Polynomial,
-        sum(
-            w[r] * jacobi(r, a, b, domain=domain, symbol=symbol, window=window)
-            for r in range(n)
-        ),
+    p = sum(
+        jacobi(r, a, b, domain, window=window, symbol=symbol) * w_r
+        for r, w_r in enumerate(w.flat)
     )
+    assert p
 
-    return cast(
-        _T_poly,
-        p.convert(  # pyright: ignore[reportUnknownMemberType]
-            domain=domain,
-            kind=kind,
-            window=window,
-        ),
+    # see https://github.com/numpy/numpy/pull/27237
+    return p.convert(  # pyright: ignore[reportUnknownMemberType]
+        domain=domain,
+        kind=kind or npp.Polynomial,
+        window=window,
     )
 
 
@@ -380,7 +400,7 @@ def roots(
     """
     z = cast(
         onpt.Array[tuple[int], np.float64],
-        p.roots(),  # pyright: ignore[reportUnknownMemberType]
+        p.roots(),
     )
     if not np.isrealobj(z) and np.isrealobj(p.domain):
         x = z[np.isreal(z)].real

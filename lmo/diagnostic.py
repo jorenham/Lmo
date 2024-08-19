@@ -265,7 +265,7 @@ def l_moment_gof(
     """
     l_r = np.asarray_chkfinite(l_moments)
 
-    if (n := l_r.shape[0]) < 2:
+    if (n := len(l_r)) < 2:
         msg = f'at least the first 2 L-moments are required, got {n}'
         raise TypeError(msg)
 
