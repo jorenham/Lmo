@@ -1,15 +1,15 @@
 # ruff: noqa: SLF001
 # pyright: reportPrivateUsage=false
 import contextlib
-from collections.abc import Iterator
 
+import optype as opt
 import pytest
 
 from lmo import _lm
 
 
 @contextlib.contextmanager
-def tmp_cache() -> Iterator[_lm._Cache]:
+def tmp_cache() -> opt.CanIterSelf[_lm._Cache]:
     cache_tmp: _lm._Cache = {}
     cache_old, _lm._CACHE = _lm._CACHE, cache_tmp
     try:

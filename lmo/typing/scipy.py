@@ -1,24 +1,41 @@
-# pyright: reportPropertyTypeMismatch=false
+"""SciPy-related type aliases for internal use."""
+
+# ruff: noqa: D102, D105, D107
+# pyright: reportPropertyTypeMismatch=false, reportMissingSuperCall=false
+
 from __future__ import annotations
 
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Literal,
-    ParamSpec,
-    Protocol,
-    TypeAlias,
-    TypedDict,
-    overload,
-    runtime_checkable,
-)
+import sys
+from typing import TYPE_CHECKING, Any, Final, Literal, TypeAlias, TypedDict
 
 import numpy as np
 import numpy.typing as npt
 
-from . import np as lnpt
-from .compat import TypeVar, Unpack
+import lmo.typing.np as lnpt
 
+
+if sys.version_info >= (3, 13):
+    from typing import (
+        LiteralString,
+        ParamSpec,
+        Protocol,
+        Self,
+        TypeVar,
+        Unpack,
+        overload,
+        runtime_checkable,
+    )
+else:
+    from typing_extensions import (
+        LiteralString,
+        ParamSpec,
+        Protocol,
+        Self,
+        TypeVar,
+        Unpack,
+        overload,
+        runtime_checkable,
+    )
 
 if TYPE_CHECKING:
     from collections.abc import (
@@ -30,8 +47,7 @@ if TYPE_CHECKING:
         ValuesView,
     )
 
-    from .compat import LiteralString, Self
-
+    import optype.numpy as onpt
 
 __all__ = (
     'RV',
@@ -47,11 +63,12 @@ __all__ = (
     'RVFunction',
 )
 
+
 _T = TypeVar('_T')
 _Tss = ParamSpec('_Tss')
 
-_ND0 = TypeVar('_ND0', bound=lnpt.AtLeast0D)
-_ND1 = TypeVar('_ND1', bound=lnpt.AtLeast1D)
+_ShapeT0 = TypeVar('_ShapeT0', bound=tuple[int, ...])
+_ShapeT1 = TypeVar('_ShapeT1', bound='onpt.AtLeast1D')
 
 _Tuple2: TypeAlias = tuple[_T, _T]
 
@@ -91,7 +108,7 @@ class QuadOptions(TypedDict, total=False):
     wvar: float | tuple[float, float]
     wopts: tuple[
         int,
-        lnpt.Array[tuple[Literal[25], int], np.floating[Any]],
+        onpt.Array[tuple[Literal[25], int], np.floating[Any]],
     ]
     maxp1: int
 
@@ -116,7 +133,7 @@ class OptimizeResult(Protocol):
     means that nothing in `collections.abc` can be used when writing type
     stubs...
     """
-    x: lnpt.Array[tuple[int], np.float64]
+    x: onpt.Array[tuple[int], np.float64]
     success: bool
     status: int
     fun: float
@@ -203,7 +220,7 @@ class RVFunction(Protocol[_Tss]):
         /,
         *args: _Tss.args,
         **kwds: _Tss.kwargs,
-    ) -> lnpt.Array[Any, np.float64]: ...
+    ) -> onpt.Array[Any, np.float64]: ...
     @overload
     def __call__(
         self,
@@ -212,6 +229,81 @@ class RVFunction(Protocol[_Tss]):
         *args: _Tss.args,
         **kwds: _Tss.kwargs,
     ) -> float: ...
+
+
+# TODO:
+AnyFrozenRV: TypeAlias = Any
+AnyArrayOrScalar: TypeAlias = np.generic | npt.NDArray[np.generic]
+
+
+@runtime_checkable
+class AnyRV(Protocol):
+    """
+    Compatible with pyright's inferred types of
+    `scipy.stats.distributions.rv_generic`.
+    """
+    a: Final[float | None]
+    b: Final[float | None]
+    name: Final[str]
+    badvalue: float
+    numargs: int
+    shapes: LiteralString | None
+    # moment_type: Literal[0, 1]
+    # xtol: float
+
+    @property
+    def random_state(self, /) -> _RNG: ...
+    @random_state.setter
+    def random_state(self, seed: _Seed, /) -> None: ...
+
+    def __init__(self, /, *args: Any, **kwds: Any) -> None: ...
+    def __call__(self, /, *args: Any, **kwds: Any) -> AnyFrozenRV: ...
+    def freeze(self, /, *args: Any, **kwds: Any) -> AnyFrozenRV: ...
+
+    def rvs(self, /, *args: Any, **kwds: Any) -> Any: ...
+    def stats(
+        self, /, *args: Any, **kwds: Any,
+    ) -> AnyArrayOrScalar | tuple[AnyArrayOrScalar, ...]: ...
+    def entropy(self, /, *args: Any, **kwds: Any) -> AnyArrayOrScalar: ...
+    def median(self, /, *args: Any, **kwds: Any) -> AnyArrayOrScalar: ...
+    def mean(
+        self, /, *args: Any, **kwds: Any,
+    ) -> AnyArrayOrScalar | tuple[AnyArrayOrScalar, ...]: ...
+    def var(
+        self, /, *args: Any, **kwds: Any,
+    ) -> AnyArrayOrScalar | tuple[AnyArrayOrScalar, ...]: ...
+    def std(self, /, *args: Any, **kwds: Any) -> AnyArrayOrScalar: ...
+
+    @overload
+    def interval(
+        self,
+        confidence: _Real0D,
+        /,
+        *args: _Real0D,
+        **kwds: _Real0D,
+    ) -> tuple[_F8, _F8]: ...
+    @overload
+    def interval(
+        self,
+        confidence: onpt.CanArray[_ShapeT1, np.dtype[lnpt.Real]],
+        /,
+        *args: _Real0D,
+        **kwds: _Real0D,
+    ) -> tuple[onpt.Array[_ShapeT1, _F8], onpt.Array[_ShapeT1, _F8]]: ...
+    @overload
+    def interval(
+        self,
+        confidence: Sequence[npt.ArrayLike],
+        /,
+        *args: _Real0D,
+        **kwds: _Real0D,
+    ) -> _Tuple2[npt.NDArray[_F8]]: ...
+
+    def support(
+        self, /, *args: Any, **kwds: Any,
+    ) ->  _Tuple2[np.generic] | _Tuple2[npt.NDArray[np.generic]]: ...
+
+    def nnlf(self, theta: _Real1D, x: _Real1D, /) -> float: ...
 
 
 @runtime_checkable
@@ -251,15 +343,15 @@ class RV(Protocol):
         size: int,
         random_state: _Seed = ...,
         **kwds: _Real0D,
-    ) -> lnpt.Array[tuple[int], _F8]: ...
+    ) -> onpt.Array[tuple[int], _F8]: ...
     @overload
     def rvs(
         self,
         *args: _Real0D,
-        size: _ND0,
+        size: _ShapeT0,
         random_state: _Seed = ...,
         **kwds: _Real0D,
-    ) -> lnpt.Array[_ND0, _F8]: ...
+    ) -> onpt.Array[_ShapeT0, _F8]: ...
 
     @overload
     def stats(
@@ -313,29 +405,28 @@ class RV(Protocol):
     @overload
     def interval(
         self,
-        confidence: lnpt.CanArray[_ND1, lnpt.Real],
+        confidence: onpt.CanArray[_ShapeT1, np.dtype[lnpt.Real]],
         *args: _Real0D,
         **kwds: _Real0D,
-    ) -> tuple[lnpt.CanArray[_ND1, _F8], lnpt.CanArray[_ND1, _F8]]: ...
+    ) -> tuple[onpt.Array[_ShapeT1, _F8], onpt.Array[_ShapeT1, _F8]]: ...
     @overload
     def interval(
         self,
         confidence: Sequence[npt.ArrayLike],
         *args: _Real0D,
         **kwds: _Real0D,
-    ) -> _Tuple2[lnpt.Array[Any, _F8]]: ...
+    ) -> _Tuple2[npt.NDArray[_F8]]: ...
 
     def support(self, *args: _Real0D, **kwds: _Real0D) -> tuple[_F8, _F8]: ...
 
     @overload
-    def nnlf(self, /, __theta: _Real1D, __x: _Real1D) -> _F8: ...
+    def nnlf(self, theta: _Real1D, x: _Real1D, /) -> _F8: ...
     @overload
     def nnlf(
         self,
-        /,
-        __theta: _Real1D,
-        __x: _Real2D | _Real3ND,
-    ) -> lnpt.Array[Any, _F8]: ...
+        theta: _Real1D,
+        x: _Real2D | _Real3ND,
+    /) -> npt.NDArray[_F8]: ...
 
 
 @runtime_checkable
@@ -385,80 +476,80 @@ class RVDiscrete(RV, Protocol):
     @overload
     def pmf(
         self,
-        k: lnpt.CanArray[_ND1, lnpt.Real],
+        k: onpt.CanArray[_ShapeT1, np.dtype[lnpt.Real]],
         *args: _Real0D,
         **kwds: _Real0D,
-    ) -> lnpt.Array[_ND1, _F8]: ...
+    ) -> onpt.Array[_ShapeT1, _F8]: ...
 
     @overload
     def logpmf(self, k: _Real0D, *args: _Real0D, **kwds: _Real0D) -> _F8: ...
     @overload
     def logpmf(
         self,
-        k: lnpt.CanArray[_ND1, lnpt.Real],
+        k: onpt.CanArray[_ShapeT1, np.dtype[lnpt.Real]],
         *args: _Real0D,
         **kwds: _Real0D,
-    ) -> lnpt.Array[_ND1, _F8]: ...
+    ) -> onpt.Array[_ShapeT1, _F8]: ...
 
     @overload
     def cdf(self, k: _Real0D, *args: _Real0D, **kwds: _Real0D) -> _F8: ...
     @overload
     def cdf(
         self,
-        k: lnpt.CanArray[_ND1, lnpt.Real],
+        k: onpt.CanArray[_ShapeT1, np.dtype[lnpt.Real]],
         *args: _Real0D,
         **kwds: _Real0D,
-    ) -> lnpt.Array[_ND1, _F8]: ...
+    ) -> onpt.Array[_ShapeT1, _F8]: ...
 
     @overload
     def logcdf(self, k: _Real0D, *args: _Real0D, **kwds: _Real0D) -> _F8: ...
     @overload
     def logcdf(
         self,
-        k: lnpt.CanArray[_ND1, lnpt.Real],
+        k: onpt.CanArray[_ShapeT1, np.dtype[lnpt.Real]],
         *args: _Real0D,
         **kwds: _Real0D,
-    ) -> lnpt.Array[_ND1, _F8]: ...
+    ) -> onpt.Array[_ShapeT1, _F8]: ...
 
     @overload
     def sf(self, k: _Real0D, *args: _Real0D, **kwds: _Real0D) -> _F8: ...
     @overload
     def sf(
         self,
-        k: lnpt.CanArray[_ND1, lnpt.Real],
+        k: onpt.CanArray[_ShapeT1, np.dtype[lnpt.Real]],
         *args: _Real0D,
         **kwds: _Real0D,
-    ) -> lnpt.Array[_ND1, _F8]: ...
+    ) -> onpt.Array[_ShapeT1, _F8]: ...
 
     @overload
     def logsf(self, k: _Real0D, *args: _Real0D, **kwds: _Real0D) -> _F8: ...
     @overload
     def logsf(
         self,
-        k: lnpt.CanArray[_ND1, lnpt.Real],
+        k: onpt.CanArray[_ShapeT1, np.dtype[lnpt.Real]],
         *args: _Real0D,
         **kwds: _Real0D,
-    ) -> lnpt.Array[_ND1, _F8]: ...
+    ) -> onpt.Array[_ShapeT1, _F8]: ...
 
     @overload
     def ppf(self, q: _Real0D, *args: _Real0D, **kwds: _Real0D) -> _F8: ...
     @overload
     def ppf(
         self,
-        q: lnpt.CanArray[_ND1, lnpt.Real],
+        q: onpt.CanArray[_ShapeT1, np.dtype[lnpt.Real]],
         *args: _Real0D,
         **kwds: _Real0D,
-    ) -> lnpt.Array[_ND1, _F8]: ...
+    ) -> onpt.Array[_ShapeT1, _F8]: ...
 
     @overload
     def isf(self, q: _Real0D, *args: _Real0D, **kwds: _Real0D) -> _F8: ...
     @overload
     def isf(
         self,
-        q: lnpt.CanArray[_ND1, lnpt.Real],
+        q: onpt.CanArray[_ShapeT1, np.dtype[lnpt.Real]],
         *args: _Real0D,
         **kwds: _Real0D,
-    ) -> lnpt.Array[_ND1, _F8]: ...
+    ) -> onpt.Array[_ShapeT1, _F8]: ...
 
     def expect(
         self,
@@ -527,80 +618,80 @@ class RVContinuous(RV, Protocol):
     @overload
     def pdf(
         self,
-        x: lnpt.CanArray[_ND1, lnpt.Real],
+        x: onpt.CanArray[_ShapeT1, np.dtype[lnpt.Real]],
         *args: _Real0D,
         **kwds: _Real0D,
-    ) -> lnpt.Array[_ND1, _F8]: ...
+    ) -> onpt.Array[_ShapeT1, _F8]: ...
 
     @overload
     def logpdf(self, x: _Real0D, *args: _Real0D, **kwds: _Real0D) -> _F8: ...
     @overload
     def logpdf(
         self,
-        x: lnpt.CanArray[_ND1, lnpt.Real],
+        x: onpt.CanArray[_ShapeT1, np.dtype[lnpt.Real]],
         *args: _Real0D,
         **kwds: _Real0D,
-    ) -> lnpt.Array[_ND1, _F8]: ...
+    ) -> onpt.Array[_ShapeT1, _F8]: ...
 
     @overload
     def cdf(self, x: _Real0D, *args: _Real0D, **kwds: _Real0D) -> _F8: ...
     @overload
     def cdf(
         self,
-        x: lnpt.CanArray[_ND1, lnpt.Real],
+        x: onpt.CanArray[_ShapeT1, np.dtype[lnpt.Real]],
         *args: _Real0D,
         **kwds: _Real0D,
-    ) -> lnpt.Array[_ND1, _F8]: ...
+    ) -> onpt.Array[_ShapeT1, _F8]: ...
 
     @overload
     def logcdf(self, x: _Real0D, *args: _Real0D, **kwds: _Real0D) -> _F8: ...
     @overload
     def logcdf(
         self,
-        x: lnpt.CanArray[_ND1, lnpt.Real],
+        x: onpt.CanArray[_ShapeT1, np.dtype[lnpt.Real]],
         *args: _Real0D,
         **kwds: _Real0D,
-    ) -> lnpt.Array[_ND1, _F8]: ...
+    ) -> onpt.Array[_ShapeT1, _F8]: ...
 
     @overload
     def sf(self, x: _Real0D, *args: _Real0D, **kwds: _Real0D) -> _F8: ...
     @overload
     def sf(
         self,
-        x: lnpt.CanArray[_ND1, lnpt.Real],
+        x: onpt.CanArray[_ShapeT1, np.dtype[lnpt.Real]],
         *args: _Real0D,
         **kwds: _Real0D,
-    ) -> lnpt.Array[_ND1, _F8]: ...
+    ) -> onpt.Array[_ShapeT1, _F8]: ...
 
     @overload
     def logsf(self, x: _Real0D, *args: _Real0D, **kwds: _Real0D) -> _F8: ...
     @overload
     def logsf(
         self,
-        x: lnpt.CanArray[_ND1, lnpt.Real],
+        x: onpt.CanArray[_ShapeT1, np.dtype[lnpt.Real]],
         *args: _Real0D,
         **kwds: _Real0D,
-    ) -> lnpt.Array[_ND1, _F8]: ...
+    ) -> onpt.Array[_ShapeT1, _F8]: ...
 
     @overload
     def ppf(self, q: _Real0D, *args: _Real0D, **kwds: _Real0D) -> _F8: ...
     @overload
     def ppf(
         self,
-        q: lnpt.CanArray[_ND1, lnpt.Real],
+        q: onpt.CanArray[_ShapeT1, np.dtype[lnpt.Real]],
         *args: _Real0D,
         **kwds: _Real0D,
-    ) -> lnpt.Array[_ND1, _F8]: ...
+    ) -> onpt.Array[_ShapeT1, _F8]: ...
 
     @overload
     def isf(self, q: _Real0D, *args: _Real0D, **kwds: _Real0D) -> _F8: ...
     @overload
     def isf(
         self,
-        q: lnpt.CanArray[_ND1, lnpt.Real],
+        q: onpt.CanArray[_ShapeT1, np.dtype[lnpt.Real]],
         *args: _Real0D,
         **kwds: _Real0D,
-    ) -> lnpt.Array[_ND1, _F8]: ...
+    ) -> onpt.Array[_ShapeT1, _F8]: ...
 
     def fit(
         self,
@@ -641,7 +732,8 @@ class RVFrozen(Protocol[_RV_co]):
 
     def __init__(
         self,
-        __dist: _RV_co,
+        dist: _RV_co,
+        /,
         *args: _Real0D,
         **kwds: _Real0D,
     ) -> None: ...
@@ -660,7 +752,7 @@ class RVFrozen(Protocol[_RV_co]):
     @property
     def random_state(self) -> _RNG: ...
     @random_state.setter
-    def random_state(self, __seed: _Seed) -> None: ...
+    def random_state(self, seed: _Seed, /) -> None: ...
 
     @overload
     def rvs(self, size: None = ..., random_state: _Seed = ...) -> _F8: ...
@@ -669,53 +761,53 @@ class RVFrozen(Protocol[_RV_co]):
         self,
         size: int,
         random_state: _Seed = ...,
-    ) -> lnpt.Array[tuple[int], _F8]: ...
+    ) -> onpt.Array[tuple[int], _F8]: ...
     @overload
     def rvs(
         self,
-        size: _ND0,
+        size: _ShapeT0,
         random_state: _Seed = ...,
-    ) -> lnpt.Array[_ND0, _F8]: ...
+    ) -> onpt.Array[_ShapeT0, _F8]: ...
 
     @overload
     def cdf(self, x: _Real0D) -> _F8: ...
     @overload
     def cdf(
         self,
-        x: lnpt.CanArray[_ND1, lnpt.Real],
-    ) -> lnpt.Array[_ND1, _F8]: ...
+        x: onpt.CanArray[_ShapeT1, np.dtype[lnpt.Real]],
+    ) -> onpt.Array[_ShapeT1, _F8]: ...
 
     @overload
-    def logcdf(self, __x: _Real0D) -> _F8: ...
+    def logcdf(self, x: _Real0D) -> _F8: ...
     @overload
     def logcdf(
         self,
-        x: lnpt.CanArray[_ND1, lnpt.Real],
-    ) -> lnpt.Array[_ND1, _F8]: ...
+        x: onpt.CanArray[_ShapeT1, np.dtype[lnpt.Real]],
+    ) -> onpt.Array[_ShapeT1, _F8]: ...
 
     @overload
     def sf(self, x: _Real0D) -> _F8: ...
     @overload
     def sf(
         self,
-        x: lnpt.CanArray[_ND1, lnpt.Real],
-    ) -> lnpt.Array[_ND1, _F8]: ...
+        x: onpt.CanArray[_ShapeT1, np.dtype[lnpt.Real]],
+    ) -> onpt.Array[_ShapeT1, _F8]: ...
 
     @overload
     def ppf(self, q: _Real0D) -> _F8: ...
     @overload
     def ppf(
         self,
-        q: lnpt.CanArray[_ND1, lnpt.Real],
-    ) -> lnpt.CanArray[_ND1, _F8]: ...
+        q: onpt.CanArray[_ShapeT1, np.dtype[lnpt.Real]],
+    ) -> onpt.Array[_ShapeT1, _F8]: ...
 
     @overload
     def isf(self, q: _Real0D) -> _F8: ...
     @overload
     def isf(
         self,
-        q: lnpt.CanArray[_ND1, lnpt.Real],
-    ) -> lnpt.CanArray[_ND1, _F8]: ...
+        q: onpt.CanArray[_ShapeT1, np.dtype[lnpt.Real]],
+    ) -> onpt.Array[_ShapeT1, _F8] | _F8: ...
 
     @overload
     def stats(self, moments: _Moments1) -> _F8: ...
@@ -739,13 +831,13 @@ class RVFrozen(Protocol[_RV_co]):
     @overload
     def interval(
         self,
-        confidence: lnpt.CanArray[_ND1, lnpt.Real],
-    ) -> _Tuple2[lnpt.CanArray[_ND1, _F8]]: ...
+        confidence: onpt.CanArray[_ShapeT1, np.dtype[lnpt.Real]],
+    ) -> _Tuple2[onpt.Array[_ShapeT1, _F8] | _F8]: ...
     @overload
     def interval(
         self,
         confidence: Sequence[npt.ArrayLike],
-    ) -> _Tuple2[lnpt.CanArray[lnpt.AtLeast1D, _F8]]: ...
+    ) -> _Tuple2[onpt.Array[onpt.AtLeast1D, _F8] | _F8]: ...
 
     def support(self) -> tuple[_F8, _F8]: ...
 
@@ -784,13 +876,13 @@ class RVDiscreteFrozen(RVFrozen[_RV_D_co], Protocol[_RV_D_co]):
     @overload
     def pmf(
         self,
-        k: lnpt.CanArray[_ND1, lnpt.Real],
-    ) -> lnpt.Array[_ND1, _F8]: ...
+        k: onpt.CanArray[_ShapeT1, np.dtype[lnpt.Real]],
+    ) -> onpt.Array[_ShapeT1, _F8]: ...
 
     @overload
     def logpmf(self, k: _Real0D) -> _F8: ...
     @overload
-    def logpmf(self, k: lnpt.AnyArrayFloat) -> lnpt.Array[_ND1, _F8]: ...
+    def logpmf(self, k: lnpt.AnyArrayFloat) -> onpt.Array[_ShapeT1, _F8]: ...
 
 
 _RV_C_co = TypeVar('_RV_C_co', bound=RVContinuous, covariant=True)
@@ -825,13 +917,13 @@ class RVContinuousFrozen(RVFrozen[_RV_C_co], Protocol[_RV_C_co]):
     @overload
     def pdf(
         self,
-        x: lnpt.CanArray[_ND1, lnpt.Real],
-    ) -> lnpt.Array[_ND1, _F8]: ...
+        x: onpt.CanArray[_ShapeT1, np.dtype[lnpt.Real]],
+    ) -> onpt.Array[_ShapeT1, _F8]: ...
 
     @overload
     def logpdf(self, x: _Real0D) -> _F8: ...
     @overload
     def logpdf(
         self,
-        x: lnpt.CanArray[_ND1, lnpt.Real],
-    ) -> lnpt.Array[_ND1, _F8]: ...
+        x: onpt.CanArray[_ShapeT1, np.dtype[lnpt.Real]],
+    ) -> onpt.Array[_ShapeT1, _F8]: ...

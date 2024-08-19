@@ -5,7 +5,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "lmo"
-version = "0.14.0"
+version = "0.14.1"
 description = "L-Moments for robust statistics & inference."
 authors = ["Joren Hammudoglu <jhammudoglu@gmail.com>"]
 readme = "README.md"
@@ -29,6 +29,10 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Physics",
     "Topic :: Utilities",
     "Typing :: Typed",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 
 [tool.poetry.urls]
@@ -36,38 +40,40 @@ Documentation = "https://jorenham.github.io/Lmo/"
 "Bug Tracker" = "https://github.com/jorenham/Lmo/issues"
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.14"
-typing_extensions = {version = "^4.5", python = "<3.13"}
+python = "^3.10.1"
+typing_extensions = {version = "^4.8", python = "<3.13"}
 
+# https://numpy.org/neps/nep-0029-deprecation_policy.html
 # https://scientific-python.org/specs/spec-0000/
-numpy = ">=1.23"
-scipy = ">=1.9"
+numpy =  ">1.24"
+scipy = "^1.10.1"
 pandas = {version = ">=1.5", optional = true}
-optype = "^0.4.0"
+optype = {version = "^0.6.1", extras = ["numpy"]}
 
 [tool.poetry.group.dev.dependencies]
-codespell = "^2.2.6"
-hypothesis = {version = "^6.102.4", extras = ["numpy"]}
-pre-commit = "^3.7.1"
-pyright = "^1.1.364"
-pytest = "^8.2.1"
+codespell = "^2.3.0"
+hypothesis = {version = "^6.111.1", extras = ["numpy"]}
+pre-commit = "^3.8.0"
+basedpyright = "^1.16.0"
+pytest = "^8.3.2"
 pytest-doctestplus = "^1.2.1"
-ruff = "^0.4.5"
+ruff = "^0.6.1"
 tomli = {version = "^2.0.1", python = "<3.11"}
+tox = "^4.18.0"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.6.0"
-mkdocs-material = "^9.5.24"
-mkdocs-include-markdown-plugin = "^6.0.6"
-mkdocstrings = {version = "^0.25.1", extras = ["python"]}
-mkdocs-git-revision-date-localized-plugin = "^1.2.5"
+mkdocs-git-revision-date-localized-plugin = "^1.2.6"
+mkdocs-include-markdown-plugin = "^6.2.2"
+mkdocs-material = "^9.5.31"
 mkdocs-minify-plugin = "^0.8.0"
+mkdocstrings = {version = "^0.25.2", extras = ["python"]}
 
 [tool.poetry.group.debug.dependencies]
-ipython = "^8.24.0"
-ipykernel = "^6.29.4"
-matplotlib = "^3.9.0"
-typing-extensions = "^4.11.0"
+ipython = "^8.26.0"
+ipykernel = "^6.29.5"
+matplotlib = "^3.9.2"
+typing-extensions = "^4.12.2"
 
 [tool.poetry.group.pandas.dependencies]
 pandas = "*"
@@ -78,19 +84,9 @@ optional = true
 [tool.poetry.group.github.dependencies]
 pytest-github-actions-annotate-failures = ">=0.2.0,<1.0"
 
-[tool.poetry.group.numpy1]
-optional = true
-[tool.poetry.group.numpy1.dependencies]
-numpy = "<=2"
-
-[tool.poetry.group.numpy2]
-optional = true
-[tool.poetry.group.numpy2.dependencies]
-numpy = {version = ">=2.0.0rc2", allow-prereleases = true}
-scipy = ">=1.13.1"
-
 [tool.poetry.extras]
 pandas = ["pandas"]
+
 
 [tool.pytest.ini_options]
 minversion = "8.0"
@@ -108,48 +104,31 @@ doctest_plus = "enabled"
 doctest_subpackage_requires = {"lmo/contrib/pandas.py" = "pandas>=1.5"}
 filterwarnings = ["error"]
 log_cli_level = "INFO"
-testpaths = ["tests", "lmo"]
+testpaths = ["lmo", "tests"]
 xfail_strict = true
 
 
 [tool.pyright]
-include = ["lmo"]
-exclude = [
-    "**/__pycache__",
-    ".git",
-    ".github",
-    ".hypothesis",
-    ".pytest_cache",
-    ".ruff_cache",
-    ".vscode",
-    "dist",
-    "docs",
-    "site",
-    "tests",
-]
-ignore = [
-    "lmo/contrib/pandas.py",
-]
-defineConstant = { NP_V2 = true }
-stubPath = 'typings'
+include = ["lmo", "typetests"]
+exclude = ["docs", "tests"]
+ignore = ["lmo/contrib/pandas.py"]
+stubPath = "."
 venvPath = "."
 venv = ".venv"
 pythonVersion = "3.10"
 pythonPlatform = "All"
-typeCheckingMode = "strict"
+typeCheckingMode = "all"
+defineConstant = {NP2 = true}
 
-useLibraryCodeForTypes = true
-reportMissingTypeStubs = false
+reportAny = false  # TODO
+reportImportCycles = false  # TODO
+reportInvalidCast = false  # TODO
 
-reportCallInDefaultInitializer = true
-reportImplicitOverride = false
-reportImplicitStringConcatenation = true
-reportImportCycles = false
-reportPropertyTypeMismatch = true
-reportShadowedImports = true
-reportUninitializedInstanceVariable = true
-reportUnnecessaryTypeIgnoreComment = true
-reportUnusedCallResult = true
+reportMissingTypeStubs = false  # scipy has no stubs
+reportUnreachable = false  # nothing wrong with `if sys.version_info() >= ...`
+reportUnusedCallResult = false  # https://github.com/microsoft/pyright/issues/8650
+reportUnusedImport = false  # dupe of F401
+reportUnusedVariable = false  # dupe of F841
 
 
 [tool.ruff]
@@ -212,7 +191,6 @@ select = [
     "TCH",      # flake8-type-checking
     "ARG",      # flake8-unused-arguments
     "PTH",      # flake8-use-pathlib
-    "TD",       # flake8-todos
     "PD",       # pandas-vet
     "PGH",      # pygrep-hooks
     "PL",       # pylint
@@ -249,14 +227,10 @@ ignore = [
     "RUF021",   # parenthesize-chained-operators
     "RUF022",   # unsorted-dunder-all
 ]
-typing-modules = [
-    "lmo.typing",
-    "numpy.typing",
-    "typing_extensions",
-]
+typing-modules = ["typing_extensions"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["D", "N806", "ANN", "PLC2701"]
+"tests/*" = ["D", "N806", "ANN", "TCH001", "TCH002", "PLC2701"]
 "typetests/*" = ["D", "INP001"]
 
 [tool.ruff.lint.pep8-naming]
@@ -270,6 +244,7 @@ convention = "google"
 ignore-decorators = [
     "typing.overload",
     "typing.override",
+    "typing_extensions.overload",
     "typing_extensions.override",
 ]
 
@@ -289,13 +264,36 @@ allow-star-arg-any = true
 suppress-dummy-args = true
 suppress-none-returning = true
 
+[tool.ruff.lint.flake8-import-conventions]
+banned-from = [
+    "lmo.typing",
+    "lmo.typing.np",
+    "lmo.typing.scipy",
+    "numpy",
+    "numpy.polynomial",
+    "numpy.typing",
+    "optype",
+    "optype.numpy",
+]
+
+[tool.ruff.lint.flake8-import-conventions.extend-aliases]
+"lmo.typing" = "lmt"
+"lmo.typing.np" = "lnpt"
+"lmo.typing.scipy" = "lspt"
+"numpy.polynomial" = "npp"
+"numpy.typing" = "npt"
+"optype" = "opt"
+"optype.numpy" = "onpt"
+
 [tool.ruff.lint.flake8-quotes]
 inline-quotes = "single"
+
+[tool.ruff.lint.flake8-type-checking]
+quote-annotations = true
 
 [tool.ruff.lint.pylint]
 allow-dunder-method-names = [
     "__array__",
-    "__array_ufunc__",
     "__lmo_register__",
 ]
 allow-magic-value-types = ["int"]
@@ -306,41 +304,21 @@ indent-style = "space"
 line-ending = "lf"
 quote-style = "single"
 skip-magic-trailing-comma = true
-exclude = ["typing.py"]
 
 
 [tool.codespell]
-skip = """\
-    ./.git,\
-    ./.github,\
-    ./.hypothesis,\
-    ./.pytest_cache,\
-    ./.ruff_cache,\
-    ./.venv,\
-    ./.vscode,\
-    ./dist,\
-    ./site,\
-    *.lock,\
-    *.pyc,\
-    *.js,\
-    *.css,\
-    *.svg,\
-    *.png,\
-    *.ico,\
-    *.ipynb\
-"""
+skip = "./site,*.lock,*.pyc,*.css,*.js,*.svg"
 context = 2
 
 
 [tool.yapf]
-based_on_style = 'pep8'
-
+based_on_style = "pep8"
 align_closing_bracket_with_visual_indent = false
 blank_lines_around_top_level_definition = 1
 blank_line_before_nested_class_or_def = false
 blank_lines_between_top_level_imports_and_variables = 2
 coalesce_brackets = true
-continuation_align_style = 'space'
+continuation_align_style = "space"
 dedent_closing_brackets = true
 force_multiline_dict = true
 indent_dictionary_value = true
@@ -352,3 +330,36 @@ split_before_dot = true
 split_before_expression_after_opening_paren = true
 split_before_first_argument = true
 split_complex_comprehension = true
+
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+isolated_build = true
+requires = tox>=4
+envlist =
+    ; repo-review
+    pre-commit
+    py{310,311,312,313rc1}
+
+[testenv]
+description = pytest
+skip_install = true
+allowlist_externals = poetry
+commands_pre = poetry install --without debug,docs --sync
+commands = poetry run pytest
+
+[testenv:pre-commit]
+description = pre-commit
+skip_install = true
+allowlist_externals = poetry
+commands_pre = poetry install --without debug,docs --sync
+commands = poetry run pre-commit run --all-files
+
+[testenv:repo-review]
+description = repo-review
+skip_install = true
+allowlist_externals = poetry
+commands_pre = poetry install --without debug,docs --sync
+commands = poetry run repo-review .
+"""

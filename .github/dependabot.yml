@@ -7,12 +7,19 @@ updates:
       - "github actions"
     schedule:
       interval: weekly
+    groups:
+      actions:
+        patterns:
+          - "*"
 
   - package-ecosystem: pip
-    versioning-strategy: lockfile-only
     directory: /
     target-branch: "dev"
     labels:
       - "dependencies"
     schedule:
       interval: weekly
+    groups:
+      actions:
+        patterns:
+          - "*"

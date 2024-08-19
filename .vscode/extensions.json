@@ -3,10 +3,10 @@
     "charliermarsh.ruff",
     "codezombiech.gitignore",
     "davidanson.vscode-markdownlint",
+    "detachhead.basedpyright",
     "editorconfig.editorconfig",
-    "eeyore.yapf",
     "ms-python.python",
-    "ms-python.vscode-pylance",
-    "yzhang.markdown-all-in-one"
-  ]
+    "serhioromano.vscode-gitflow"
+  ],
+  "unwantedRecommendations": ["ms-pyright.pyright", "ms-python.vscode-pylance"]
 }

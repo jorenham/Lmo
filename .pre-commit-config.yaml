@@ -1,7 +1,13 @@
 ci:
   autoupdate_branch: "dev"
   autoupdate_commit_msg: "update pre-commit hooks"
-  skip: [markdownlint, poetry-check, codespell, ruff, pyright]
+  skip:
+    - markdownlint
+    - poetry-check
+    - codespell
+    - ruff
+    - basedpyright
+    - basedpyright-verifytypes
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -10,26 +16,33 @@ repos:
       - id: check-added-large-files
       - id: check-ast
       - id: check-case-conflict
+      - id: check-executables-have-shebangs
+      - id: check-json
       - id: check-merge-conflict
       - id: check-shebang-scripts-are-executable
       - id: check-symlinks
       - id: check-toml
       - id: check-vcs-permalinks
+      - id: check-xml
       - id: check-yaml
         args: [--unsafe]
+      - id: debug-statements
       - id: destroyed-symlinks
+      - id: detect-aws-credentials
+        args: [--allow-missing-credentials]
       - id: detect-private-key
       - id: fix-byte-order-marker
       - id: forbid-submodules
       - id: name-tests-test
         args: [--pytest-test-first]
       - id: no-commit-to-branch
+        args: [--branch, master, --branch, dev]
       - id: trailing-whitespace
         args: [--markdown-linebreak-ext=md]
         exclude_types: [svg]
 
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.40.0
+    rev: v0.41.0
     hooks:
       - id: markdownlint
 
@@ -39,19 +52,29 @@ repos:
       - id: poetry-check
 
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.2.6
+    rev: v2.3.0
     hooks:
       - id: codespell
         additional_dependencies:
           - tomli
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.4.5
+    rev: v0.6.1
     hooks:
       - id: ruff
-        args: [--fix, --exit-non-zero-on-fix]
+        args: [--fix, --show-fixes]
 
-  - repo: https://github.com/RobertCraigie/pyright-python
-    rev: v1.1.364
+  - repo: local
     hooks:
-      - id: pyright
+      - id: basedpyright
+        name: basedpyright
+        entry: poetry run basedpyright
+        language: system
+        types_or: [python, pyi]
+
+      - id: basedpyright-verifytypes
+        name: basedpyright --verifytypes
+        entry: poetry run basedpyright --ignoreexternal --verifytypes lmo
+        language: system
+        always_run: true
+        pass_filenames: false

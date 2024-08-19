@@ -25,7 +25,10 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: install poetry
-        run: pipx install poetry
+        run: |
+          pipx install poetry
+          poetry config virtualenvs.create true --local
+          poetry config virtualenvs.in-project true --local
 
       - uses: actions/setup-python@v5
         with:
@@ -36,38 +39,50 @@ jobs:
         run: poetry check
 
       - name: poetry install
-        run: >
-          poetry install
-          --without docs
-          --without debug
-          --with pandas
-          --with numpy2
-          --sync
+        run: poetry install --without debug,docs --with pandas
 
       - name: codespell
         run: poetry run codespell .
 
       - name: ruff check
-        run: poetry run ruff check --output-format=github .
+        run: poetry run ruff check --output-format=github
 
-      - name: pyright
-        run: poetry run pyright
+      - name: basedpyright
+        run: poetry run basedpyright
+
+      - name: basedpyright --verifytypes
+        run: poetry run basedpyright --ignoreexternal --verifytypes optype
+
+      # TODO:
+      # - uses: scientific-python/repo-review@v0.11.0
+      #   with:
+      #     plugins: sp-repo-review
 
   test:
-    timeout-minutes: 10
+    timeout-minutes: 20
 
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        python-version: ["3.10", "3.12"]
-        numpy: ["1", "2"]
+        python-version: ["3.10", "3.12", "3.13-dev"]
         pandas: ["without", "with"]
+        exclude:
+          - python-version: "3.12"
+            pandas: "with"
+          - python-version: "3.13-dev"
+            pandas: "with"
+          - python-version: "3.13-dev"
+            os: windows-latest
 
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: install scipy deps
+        if: ${{ matrix.python-version == '3.13-dev' }}
+        run: sudo apt-get install libopenblas-dev
+
+      - uses: actions/checkout@v4.1.7
 
       - name: install poetry
         run: pipx install poetry
@@ -76,15 +91,13 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: poetry
+          cache-dependency-path: poetry.lock
 
       - name: poetry install
         run: >
           poetry install
-          --sync
+          --without debug,docs
           --with github
-          --without docs
-          --without debug
-          --with numpy${{ matrix.numpy }}
           --${{ matrix.pandas }} pandas
 
       - name: pytest
