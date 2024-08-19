@@ -48,7 +48,7 @@ typing_extensions = {version = "^4.8", python = "<3.13"}
 numpy =  ">1.24"
 scipy = "^1.10.1"
 pandas = {version = ">=1.5", optional = true}
-optype = {version = "^0.6.0", extras = ["numpy"]}
+optype = {version = "^0.6.1", extras = ["numpy"]}
 
 [tool.poetry.group.dev.dependencies]
 codespell = "^2.3.0"
