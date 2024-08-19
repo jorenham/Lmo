@@ -5,8 +5,7 @@
     "davidanson.vscode-markdownlint",
     "detachhead.basedpyright",
     "editorconfig.editorconfig",
-    "ms-python.python",
-    "serhioromano.vscode-gitflow"
+    "ms-python.python"
   ],
   "unwantedRecommendations": ["ms-pyright.pyright", "ms-python.vscode-pylance"]
 }
