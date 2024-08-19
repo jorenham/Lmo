@@ -22,7 +22,7 @@ from typing import (
 
 import numpy as np
 import numpy.typing as npt
-import scipy.integrate as sci
+import scipy.integrate as spi
 
 from ._poly import eval_sh_jacobi
 from ._utils import (
@@ -39,6 +39,8 @@ from .special import fourier_jacobi, fpow
 
 
 if TYPE_CHECKING:
+    import optype.numpy as onpt
+
     import lmo.typing.np as lnpt
     import lmo.typing.scipy as lspt
     from .typing import AnyOrder, AnyOrderND, AnyTrim
@@ -95,7 +97,7 @@ def _nquad(
 
     return cast(
         tuple[float, float],
-        sci.nquad(fn, domains[::-1], args, opts=opts),
+        spi.nquad(fn, domains[::-1], args, opts=opts),
     )[0]
 
 
@@ -340,9 +342,9 @@ def l_moment_from_cdf(
 
         return _l_moment_const(_r, s, t, 1) * cast(
             float,
-            (sci.quad(integrand, a, b, (_r,), **kwds)[0] if a < b else 0) +
-            sci.quad(integrand, b, c, (_r,), **kwds)[0] +
-            (sci.quad(integrand, c, d, (_r,), **kwds)[0] if c < d else 0),
+            (spi.quad(integrand, a, b, (_r,), **kwds)[0] if a < b else 0) +
+            spi.quad(integrand, b, c, (_r,), **kwds)[0] +
+            (spi.quad(integrand, c, d, (_r,), **kwds)[0] if c < d else 0),
         ) / np.sqrt(2 * _r - 1) + loc0 * (_r == 1)
 
     l_r_cache: dict[int, float] = {}
@@ -500,9 +502,9 @@ def l_moment_from_ppf(
         a, b, c, d = support[0], alpha, 1 - alpha, support[1]
         return _l_moment_const(_r, s, t) * cast(
             float,
-            sci.quad(integrand, a, b, (_r,), **quad_kwds)[0] +
-            sci.quad(integrand, b, c, (_r,), **quad_kwds)[0] +
-            sci.quad(integrand, c, d, (_r,), **quad_kwds)[0],
+            spi.quad(integrand, a, b, (_r,), **quad_kwds)[0] +
+            spi.quad(integrand, b, c, (_r,), **quad_kwds)[0] +
+            spi.quad(integrand, c, d, (_r,), **quad_kwds)[0],
         )
 
     l_r_cache: dict[int, float] = {}
@@ -1549,7 +1551,7 @@ def l_comoment_from_pdf(
         else:
             l_r[i, j] = cast(
                 float,
-                sci.nquad(
+                spi.nquad(
                     functools.partial(integrand, i, j),
                     limits,
                     opts=quad_opts,
@@ -1778,7 +1780,7 @@ def ppf_from_l_moments(
 
     # r = np.arange(1, _n + 1)
     # c = (2 * r + s + t - 1) * (r / (r + s + t)) * l_r
-    w = np.arange(1, 2 * _n + 1, 2, dtype=float)
+    w = np.arange(1, 2 * _n + 1, 2, dtype=np.float64)
     if (st := s + t) != 0:
         w -= st * np.arange(_n) / np.arange(st + 1, _n + st + 1)
     c = w * l_r
@@ -1855,18 +1857,19 @@ def qdf_from_l_moments(
     # c = (2 * r + s + t - 1) * r * l_r[1:]
     st = s + t
     c = (
-        np.arange(1 + st, 2 * _n + st + 1, 2, dtype=float)
-        * np.arange(1, _n + 1)
+        np.arange(1 + st, 2 * _n + st + 1, 2, dtype=np.float64)
+        * np.arange(1, _n + 1, dtype=np.float64)
         * l_r
     )[1:]
     alpha, beta = t + 1, s + 1
 
     def qdf(
-        u: lnpt.AnyScalarFloat | lnpt.AnyArrayFloat,
+        u: onpt.AnyFloatingArray,
         *,
         r_max: int = -1,
     ) -> float | _ArrF8:
-        y = np.asarray(u, np.float64)
+        y = np.asanyarray(u, dtype=np.float64)
+        # TODO: make this lazy
         y = np.where((y < 0) | (y > 1), np.nan, 2 * y - 1)
 
         _c = c[:r_max] if 0 < r_max < len(c) else c
@@ -1953,4 +1956,4 @@ def entropy_from_qdf(
     def ic(p: float) -> float:
         return np.log(qdf(p, *args, **kwds))
 
-    return cast(float, sci.quad(ic, 0, 1, limit=QUAD_LIMIT)[0])
+    return cast(float, spi.quad(ic, 0, 1, limit=QUAD_LIMIT)[0])

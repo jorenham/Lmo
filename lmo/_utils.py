@@ -83,7 +83,7 @@ def plotting_positions(
     /,
     alpha: float = 0.4,
     beta: float | None = None,
-) -> np.ndarray[tuple[_SizeT], np.dtypes.Float64DType]:
+) -> onpt.Array[tuple[_SizeT], np.float64]:
     """
     A re-implementation of [`scipy.stats.mstats.plotting_positions`
     ](scipy.stats.mstats.plotting_positions), but without the ridiculous
