@@ -5,10 +5,10 @@ document$.subscribe(({ body }) => {
         throwOnError: true,
         trust: true,
         delimiters: [
-            {left: "$$", right: "$$", display: true},
-            {left: "$", right: "$", display: false},
-            {left: "\\(", right: "\\)", display: false},
-            {left: "\\[", right: "\\]", display: true},
+            { left: "$$", right: "$$", display: true },
+            { left: "$", right: "$", display: false },
+            { left: "\\(", right: "\\)", display: false },
+            { left: "\\[", right: "\\]", display: true },
         ],
         macros: {
             // Statistical operators
@@ -50,6 +50,6 @@ document$.subscribe(({ body }) => {
 
             // some missing "physics" tex package commands
             "\\dd": "\\,\\mathrm{d}{#1}",
-        }
-    })
-})
+        },
+    });
+});

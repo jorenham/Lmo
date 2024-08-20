@@ -5,27 +5,27 @@
 [data-md-color-primary="nose"] {
     --md-primary-fg-color: rgb(149, 149, 47);
     --md-primary-fg-color--light: rgb(199, 199, 59);
-    --md-primary-fg-color--dark: rgb(99, 99,31);
+    --md-primary-fg-color--dark: rgb(99, 99, 31);
 }
 [data-md-color-accent="skin"] {
     --md-accent-fg-color: rgba(223, 71, 71, 1);
     --md-accent-fg-color--light: rgba(255, 95, 95, 1);
     --md-accent-fg-color--dark: rgba(191, 47, 47, 1);
-    --md-accent-bg-color: rgba( 33, 37, 41, 1);
-    --md-accent-bg-color--light: rgba( 33, 37, 41, .8);
+    --md-accent-bg-color: rgba(33, 37, 41, 1);
+    --md-accent-bg-color--light: rgba(33, 37, 41, 0.8);
 }
 
 /* https://mkdocstrings.github.io/python/usage/customization/#material */
 div.doc-contents:not(.first) {
     padding-left: 25px;
-    border-left: .05rem solid var(--md-typeset-table-color);
+    border-left: 0.05rem solid var(--md-typeset-table-color);
 }
 a.external::after,
 a.autorefs-external::after {
     /* https://primer.style/octicons/arrow-up-right-24 */
     mask-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.25 15.5a.75.75 0 00.75-.75v-9a.75.75 0 00-.75-.75h-9a.75.75 0 000 1.5h7.19L6.22 16.72a.75.75 0 101.06 1.06L17.5 7.56v7.19c0 .414.336.75.75.75z"></path></svg>');
     -webkit-mask-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.25 15.5a.75.75 0 00.75-.75v-9a.75.75 0 00-.75-.75h-9a.75.75 0 000 1.5h7.19L6.22 16.72a.75.75 0 101.06 1.06L17.5 7.56v7.19c0 .414.336.75.75.75z"></path></svg>');
-    content: ' ';
+    content: " ";
 
     display: inline-block;
     vertical-align: middle;
