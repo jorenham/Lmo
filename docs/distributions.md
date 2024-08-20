@@ -1,7 +1,8 @@
 <!-- markdownlint-disable MD051 MD052 -->
 # L-moments of common probability distributions
 
-This page lists theoretical L-moments of popular probability distributions.
+This page lists theoretical L-moments [@hosking1990] of popular probability
+distributions.
 
 All distributions are in the "standardized" form, similar to the convention
 used in the `scipy.stats` distribution documentation.
@@ -588,7 +589,7 @@ wolfram alpha / mathematica.
 
 Surprisingly, the L-moments of the discrete
 [Bernoulli distribution](https://wikipedia.org/wiki/Bernoulli_distribution)
-[^BERN], can't be expressed as easily as the distribution itself:
+[@uspensky1937], can't be expressed as easily as the distribution itself:
 
 \[
 \tlmoment{s, t}{r} =
@@ -601,10 +602,6 @@ Surprisingly, the L-moments of the discrete
 Here, \( \jacobi{n}{\alpha}{\beta}{x} \) is a
 [Jacobi polynomial](#def-jacobi) (although it's not orthogonal for
 \( t >= 0 \), since \( \beta > -1 \) does not hold).
-
-[^BERN]:
-    [J.V. Uspensky (1937)](https://www.worldcat.org/oclc/996937) --
-    Introduction to mathematical probability
 
 ### PFD
 
@@ -630,7 +627,7 @@ The trimmed L-moments of order \( r \in \naturals \setminus \{ 0 \} \) and trim
 \]
 
 where \( \ffact{x}{n} \) and \( \rfact{x}{n} \) are pochhammer
-symbols for the [falling](#def-ffact) and [rising factorials](#def-rfact),
+symbols for the [falling](#def-falling) and [rising factorials](#def-rising),
 respectively.
 
 See [`scipy.stats.powerlaw`][scipy.stats.powerlaw] for an Lmo-compatible
@@ -639,7 +636,7 @@ implementation.
 ### Gompertz
 
 The [Gompertz distribution](https://wikipedia.org/wiki/Gompertz_distribution)
-[^GOMP] with shape parameter \( \alpha > 0 \) and \( x \ge 0 \), has the
+[@gompertz1833] with shape parameter \( \alpha > 0 \) and \( x \ge 0 \), has the
 following CDF and PPF:
 
 \[
@@ -662,15 +659,10 @@ The general trimmed L-moments of the Gompertz distribution are:
         \Gamma_{\alpha k}(0)
 \]
 
-[^GOMP]:
-    [B. Gompertz (1825)](https://doi.org/10.1098/rstl.1825.0026) -- On the
-    nature of the function expressive of the law of human mortality, and on a
-    new mode of determining the value of life contingencies.
-
 ### GEV
 
-The [GEV](https://wikipedia.org/wiki/GEV_distribution) distribution [^GEV]
-unifies  the
+The [GEV](https://wikipedia.org/wiki/GEV_distribution) distribution
+[@jenkinson1955] unifies the
 [Gumbel](https://wikipedia.org/wiki/Gumbel_distribution),
 [Fréchet](https://wikipedia.org/wiki/Fr%C3%A9chet_distribution),
 and [Weibull](https://wikipedia.org/wiki/Weibull_distribution) distributions.
@@ -720,14 +712,9 @@ Note that the GEV is effectively a reparametrized
 [Tsallis distribution](https://wikipedia.org/wiki/Tsallis_distribution), with
 \( q = 1 - \alpha \).
 
-[^GEV]:
-    [A.F. Jenkinson (1955)](https://doi.org/10.1002/qj.49708134804) --
-    The frequency distribution of the annual maximum (or minimum) values of
-    meteorological elements
-
 ### GLO
 
-The GLO [^GLO], also known as the [shifted log-logistic distribution
+The GLO [@hosking1986], also known as the [shifted log-logistic distribution
 ](https://wikipedia.org/wiki/Shifted_log-logistic_distribution), with shape
 parameter \( \alpha \in \mathbb{R} \), is characterized by the following
 distribution functions:
@@ -772,14 +759,10 @@ Note that the GLO is effectively a reparametrized
 [Tsallis distribution](https://wikipedia.org/wiki/Tsallis_distribution), with
 \( q = 1 - \alpha \).
 
-[^GLO]:
-    [J.R.M. Hosking (1986)
-    ](https://dominoweb.draco.res.ibm.com/reports/RC12210.pdf) --
-    The theory of probability weighted moments
-
 ### GPD
 
-The [GPD](https://wikipedia.org/wiki/Generalized_Pareto_distribution) [^GPD],
+The [GPD](https://wikipedia.org/wiki/Generalized_Pareto_distribution)
+[@hosking1987],
 with shape parameter \( \alpha \in \mathbb{R} \), has for \( x \ge 0 \) the
 distribution functions:
 
@@ -839,11 +822,6 @@ There are several notable special cases of the GPD:
 :   Implemented in as [`scipy.stats.kappa4`][scipy.stats.kappa4].
 ///
 
-[^GPD]:
-    [J.R.M. Hosking & J.R. Wallis (1987)
-    ](https://doi.org/10.1080/00401706.1987.10488243) -- Parameter and
-    Quantile Estimation for the Generalized Pareto Distribution
-
 ### Burr III / Dagum
 
 The *Burr III* distribution [^BURR], also known as the
@@ -892,9 +870,10 @@ setting `k` and `s` to \( \alpha \beta \) and \( \alpha \), respectively.
 ### Burr XII / Pareto IV
 
 The
-[*Burr XII distribution*](https://wikipedia.org/wiki/Burr_distribution) [^BURR]
-has two shape parameters \( \alpha \) and \( \beta \), both restricted to the
-positive reals. It is also known as the *Singh-Maddala distribution*.
+[*Burr XII distribution*](https://wikipedia.org/wiki/Burr_distribution)
+[@burr1942] has two shape parameters \( \alpha \) and \( \beta \), both
+restricted to the positive reals. It is also known as the
+*Singh-Maddala distribution*.
 The alternative parametrization \( \alpha \mapsto 1 / \gamma \), where
 \( \gamma > 0 \), is known as the (standard) type IV
 [*Pareto distribution*](https://w.wiki/8htG#Pareto_types_I–IV)
@@ -955,17 +934,14 @@ location \( \mu = 0 \), and scale \( \sigma = 1 \).
 \( \gamma \equiv \alpha \) and scale \( \sigma = 1 \).
 ///
 
-[^BURR]:
-    [I.W. Burr (1942)](https://doi.org/10.1214%2Faoms%2F1177731607) --
-    Cumulative Frequency Functions
-
 ### Kumaraswamy
 
 For [Kumaraswamy's distribution
-](https://wikipedia.org/wiki/Kumaraswamy_distribution) [^KUM1] with parameters
+](https://wikipedia.org/wiki/Kumaraswamy_distribution) [@kumaraswamy1980] with
+parameters
 <!-- markdownlint-disable-line -->\( \alpha \in \mathbb{R}_{>0} \) and \( \beta \in \mathbb{R}_{>0} \),
 the general solution for the \( r \)th (untrimmed L-moment has been derived by
-M.C. Jones in 2009 [^KUM2]. Lmo has extended these results for the general
+M.C. Jones in 2009 [@jones2009]. Lmo has extended these results for the general
 trimmed L-moments.
 
 The distribution functions are for \( 0 \le x \le 1 \) defined as:
@@ -1008,20 +984,11 @@ There are several notable special cases of the Kumaraswamy distribution:
 :   With \( \alpha = \beta = 1 \) Kumaraswamy is uniform on \( [0, 1] \).
 ///
 
-[^KUM1]:
-    [P. Kumaraswamy](https://doi.org/10.1016/0022-1694(80)90036-0) --
-    A generalized probability density function for double-bounded random
-    processes
-[^KUM2]:
-    [M.C. Jones (2009)](https://doi.org/10.1016/j.stamet.2008.04.001) --
-    Kumaraswamy's distribution: A beta-type distribution with some
-    tractability advantages
-
 ### Wakeby
 
 The [*Wakeby distribution*](https://wikipedia.org/wiki/Wakeby_distribution)
-[^WAK] is quantile-based -- the CDF and PDF are not analytically expressible
-for the general case.
+[@houghton1978] is quantile-based -- the CDF and PDF are not analytically
+expressible for the general case.
 Without loss of generality, Lmo uses a 3-parameter "standardized"
 paremetrization, with shape parameters \( \beta,\ \delta,\ \phi \).
 
@@ -1141,14 +1108,10 @@ There are several notable special cases of the Wakeby distribution:
     is uniform on \( [0, 1] \).
 ///
 
-[^WAK]:
-    [J.C. Houghton (1978)](https://doi.org/10.1029/WR014i006p01105) -- Birth
-    of a parent: The Wakeby Distribution for modeling flood flows
-
 ### GLD
 
-The GLD [^GLD] is a flexible generalization of the [Tukey lambda distribution
-](https://wikipedia.org/wiki/Tukey_lambda_distribution).
+The GLD [@ramberg1974] is a flexible generalization of the [Tukey lambda
+distribution](https://wikipedia.org/wiki/Tukey_lambda_distribution).
 Lmo uses an unconventional "standardized"
 paremetrization, with shape parameters \( \beta,\ \delta,\ \phi \), where
 \( \phi \in [-1, 1] \) replaces the more commonly used shape parameters
@@ -1418,11 +1381,6 @@ There are several notable special cases of the GLD:
     \( [0,\ 2] \)
 ///
 
-[^GLD]:
-    [J.S. Ramberg & B.W. Schmeiser (1974)
-    ](https://doi.org/10.1145/360827.360840) -- An approximate method for
-    generating asymmetric random variables
-
 ## Constants and special functions
 <!-- markdownlint-disable MD051 MD052 -->
 
@@ -1685,6 +1643,8 @@ and constants.
         <td>[`scipy.special.boxcox`][scipy.special.boxcox]</td>
     </tr>
 </table>
+
+\bibliography
 
 *[STD]: Standard deviation
 *[MAD]: Median absolute deviation

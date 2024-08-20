@@ -63,6 +63,10 @@ preview:
 poetry run mkdocs serve
 ```
 
+This will require `pandoc` and `pandoc-citeproc` to be installed on your
+system (e.g. using the conda-forge `pypandoc` package, on
+`apt-get install pandoc pandoc-citeproc` on Ubuntu).
+
 This will make the site available at `http://127.0.0.1:8000/`.
 It automatically reloads when changes are made to the source code or the
 documentation.

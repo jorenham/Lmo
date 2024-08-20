@@ -48,6 +48,12 @@ plugins:
   # https://github.com/mkdocstrings/autorefs
   - autorefs
 
+  # https://github.com/shyamd/mkdocs-bibtex
+  - bibtex:
+      bib_file: docs/bib/refs.bib
+      bib_dir: docs/bib
+      bib_by_default: false
+
   # https://github.com/timvink/mkdocs-git-revision-date-localized-plugin
   - git-revision-date-localized:
       type: iso_date

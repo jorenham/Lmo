@@ -1034,6 +1034,17 @@ files = [
 ]
 
 [[package]]
+name = "latexcodec"
+version = "3.0.0"
+description = "A lexer and codec to work with LaTeX code in Python."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "latexcodec-3.0.0-py3-none-any.whl", hash = "sha256:6f3477ad5e61a0a99bd31a6a370c34e88733a6bad9c921a3ffcfacada12f41a7"},
+    {file = "latexcodec-3.0.0.tar.gz", hash = "sha256:917dc5fe242762cc19d963e6548b42d63a118028cdd3361d62397e3b638b6bc5"},
+]
+
+[[package]]
 name = "markdown"
 version = "3.7"
 description = "Python implementation of John Gruber's Markdown."
@@ -1250,6 +1261,25 @@ files = [
 Markdown = ">=3.3"
 markupsafe = ">=2.0.1"
 mkdocs = ">=1.1"
+
+[[package]]
+name = "mkdocs-bibtex"
+version = "2.16.0"
+description = "An MkDocs plugin that enables managing citations with BibTex"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "mkdocs-bibtex-2.16.0.tar.gz", hash = "sha256:cd018ff597fdadb24e58647805d465b2e8db90ab9c8978c7dbf75bd68e678013"},
+    {file = "mkdocs_bibtex-2.16.0-py3-none-any.whl", hash = "sha256:2474149961407d8e378938f503d2f8b905fb970386aa4284af3a805c65a884a3"},
+]
+
+[package.dependencies]
+mkdocs = ">=1"
+pybtex = ">=0.22"
+pypandoc = ">=1.5"
+requests = ">=2.8.1"
+setuptools = ">=68.0.0"
+validators = ">=0.19.0"
 
 [[package]]
 name = "mkdocs-get-deps"
@@ -1882,6 +1912,25 @@ files = [
 tests = ["pytest"]
 
 [[package]]
+name = "pybtex"
+version = "0.24.0"
+description = "A BibTeX-compatible bibliography processor in Python"
+optional = false
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*"
+files = [
+    {file = "pybtex-0.24.0-py2.py3-none-any.whl", hash = "sha256:e1e0c8c69998452fea90e9179aa2a98ab103f3eed894405b7264e517cc2fcc0f"},
+    {file = "pybtex-0.24.0.tar.gz", hash = "sha256:818eae35b61733e5c007c3fcd2cfb75ed1bc8b4173c1f70b56cc4c0802d34755"},
+]
+
+[package.dependencies]
+latexcodec = ">=1.0.4"
+PyYAML = ">=3.01"
+six = "*"
+
+[package.extras]
+test = ["pytest"]
+
+[[package]]
 name = "pycparser"
 version = "2.22"
 description = "C parser in Python"
@@ -1923,6 +1972,17 @@ pyyaml = "*"
 
 [package.extras]
 extra = ["pygments (>=2.12)"]
+
+[[package]]
+name = "pypandoc"
+version = "1.13"
+description = "Thin wrapper for pandoc."
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "pypandoc-1.13-py3-none-any.whl", hash = "sha256:4c7d71bf2f1ed122aac287113b5c4d537a33bbc3c1df5aed11a7d4a7ac074681"},
+    {file = "pypandoc-1.13.tar.gz", hash = "sha256:31652073c7960c2b03570bd1e94f602ca9bc3e70099df5ead4cea98ff5151c1e"},
+]
 
 [[package]]
 name = "pyparsing"
@@ -2627,6 +2687,20 @@ socks = ["pysocks (>=1.5.6,!=1.5.7,<2.0)"]
 zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
+name = "validators"
+version = "0.33.0"
+description = "Python Data Validation for Humans™"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "validators-0.33.0-py3-none-any.whl", hash = "sha256:134b586a98894f8139865953899fc2daeb3d0c35569552c5518f089ae43ed075"},
+    {file = "validators-0.33.0.tar.gz", hash = "sha256:535867e9617f0100e676a1257ba1e206b9bfd847ddc171e4d44811f07ff0bfbf"},
+]
+
+[package.extras]
+crypto-eth-addresses = ["eth-hash[pycryptodome] (>=0.7.0)"]
+
+[[package]]
 name = "virtualenv"
 version = "20.26.3"
 description = "Virtual Python Environment builder"
@@ -2724,4 +2798,4 @@ pandas = ["pandas"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10.1"
-content-hash = "0882f3eb1a80468b9b379319ee04d091fdf07860afc56efc9041d80f627f8063"
+content-hash = "f283c4008e3df3f82ce1efdaf9da1843ce7a384fbabac796a2e3b212a68cfbbc"
