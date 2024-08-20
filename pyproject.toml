@@ -63,6 +63,7 @@ tox = "^4.18.0"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.6.0"
+mkdocs-bibtex = "^2.16.0"
 mkdocs-git-revision-date-localized-plugin = "^1.2.7"
 mkdocs-include-markdown-plugin = "^6.2.2"
 mkdocs-material = "^9.5.32"
@@ -307,7 +308,7 @@ skip-magic-trailing-comma = true
 
 
 [tool.codespell]
-skip = "./site,*.lock,*.pyc,*.css,*.js,*.svg"
+skip = "./site,*.lock,*.pyc,*.css,*.js,*.svg,*.bib"
 context = 2
 
 

@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - dev
   pull_request:
   workflow_dispatch:
 
@@ -79,7 +80,15 @@ jobs:
     steps:
       - name: install scipy deps
         if: ${{ matrix.python-version == '3.13-dev' }}
-        run: sudo apt-get install libopenblas-dev
+        # run: sudo apt-get install libopenblas-dev
+        run: >
+          sudo apt-get install
+          gcc
+          g++
+          gfortran
+          libopenblas-dev
+          liblapack-dev
+          pkg-config
 
       - uses: actions/checkout@v4.1.7
 
