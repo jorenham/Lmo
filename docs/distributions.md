@@ -936,13 +936,14 @@ location \( \mu = 0 \), and scale \( \sigma = 1 \).
 
 ### Kumaraswamy
 
+<!-- markdownlint-disable MD049 -->
 For [Kumaraswamy's distribution
-](https://wikipedia.org/wiki/Kumaraswamy_distribution) [@kumaraswamy1980] with
-parameters
-<!-- markdownlint-disable-line -->\( \alpha \in \mathbb{R}_{>0} \) and \( \beta \in \mathbb{R}_{>0} \),
-the general solution for the \( r \)th (untrimmed L-moment has been derived by
-M.C. Jones in 2009 [@jones2009]. Lmo has extended these results for the general
-trimmed L-moments.
+](https://wikipedia.org/wiki/Kumaraswamy_distribution) [@kumaraswamy1980]
+with parameters \( \alpha \in \mathbb{R}_{>0} \) and
+\( \beta \in \mathbb{R}_{>0} \), the general solution for the \( r \)th
+untrimmed L-moment has been derived by M.C. Jones in 2009 [@jones2009].
+Lmo has extended these results for the general trimmed L-moments.
+<!-- markdownlint-enable MD049 -->
 
 The distribution functions are for \( 0 \le x \le 1 \) defined as:
 
@@ -1124,7 +1125,7 @@ As with the Wakeby distribution, the PDF and CDF of the GLD are not
 analytically expressible. Instead, the GLD is defined through its PPF:
 
 \[
-x(F) = (\phi + 1) \qlog{1 - \beta}{F} + (\phi - 1) \qlog{1 - \delta}{1 - F}
+x(F) = (1 + \phi) \qlog{1 - \beta}{F} - (1 - \phi) \qlog{1 - \delta}{1 - F}
 \]
 
 The domain is
@@ -1155,14 +1156,14 @@ for \( r = 2, 3, \ldots \) and \( s, t \ge 0 \) as
 
 \[
 r \tlmoment{s, t}{r}
-    = \frac{(-1)^r \ (1 + \phi)}{r + s + t + \beta}
+    = (-1)^r \frac{1 + \phi}{\beta + r + s + t}
     \frac
-        {\B(1 + s + \beta ,\ r - 1 - \beta)}
-        {\B(r + s + t + \beta,\ 1 - \beta)}
-    + \frac{1 - \phi}{r + s + t + \delta}
+        {\B(\beta + s + 1 ,\ r - 1 - \beta)}
+        {\B(\beta + s + t + r,\ 1 - \beta)}
+    + \frac{1 - \phi}{\delta + r + s + t}
     \frac
-        {\B(1 + t + \delta ,\ r - 1 - \delta)}
-        {\B(r + s + t + \delta,\ 1 - \delta)} \ ,
+        {\B(\delta + 1 + t ,\ r - 1 - \delta)}
+        {\B(\delta + s + t + r,\ 1 - \delta)} \ ,
 \]
 
 and the arbitrarily-trimmed L-location is
@@ -1183,7 +1184,7 @@ where
     \displaystyle \frac{1}{\theta}\left(
         1 - \frac
             {\B(1 + k + \theta,\ 2 + s + t)}
-            {\B(1 + k,\ 2 + s + t + \theta)}
+            {\B(1 + k,\ \theta + 2 + s + t)}
     \right)
         & \text{otherwise.}
 \end{cases}
