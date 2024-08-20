@@ -24,6 +24,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: scientific-python/repo-review@v0.11.1
+        with:
+          plugins: sp-repo-review
+
       - name: install poetry
         run: |
           pipx install poetry
@@ -52,11 +56,6 @@ jobs:
 
       - name: basedpyright --verifytypes
         run: poetry run basedpyright --ignoreexternal --verifytypes optype
-
-      # TODO:
-      # - uses: scientific-python/repo-review@v0.11.0
-      #   with:
-      #     plugins: sp-repo-review
 
   test:
     timeout-minutes: 20

@@ -4,10 +4,10 @@ MD007:
   indent: 4
 MD033:
   allowed_elements:
-    - 'br'
-    - 'table'
-    - 'tr'
-    - 'th'
-    - 'td'
-    - 'img'
+    - "br"
+    - "table"
+    - "tr"
+    - "th"
+    - "td"
+    - "img"
 MD041: false
