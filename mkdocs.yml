@@ -10,6 +10,8 @@ strict: true
 
 nav:
   - Overview: index.md
+  - "Examples":
+      - Fitting the GEV: examples/lmm.ipynb
   - Reference: api.md
   - Distributions: distributions.md
   - Contributing: contributing.md
@@ -57,6 +59,7 @@ plugins:
   # https://github.com/timvink/mkdocs-git-revision-date-localized-plugin
   - git-revision-date-localized:
       type: iso_date
+      exclude: ["*.ipynb"]
 
   # https://github.com/mondeja/mkdocs-include-markdown-plugin
   - include-markdown
@@ -71,6 +74,17 @@ plugins:
         - scripts/katex.js
       css_files:
         - styles/theme.css
+
+  # https://github.com/danielfrg/mkdocs-jupyter
+  - mkdocs-jupyter:
+      include: ["*.ipynb"]
+      theme: dark
+      ignore_h1_titles: True
+      execute: false
+      allow_errors: false
+      remove_tag_config:
+        remove_input_tags:
+          - hide_code
 
   # https://github.com/mkdocstrings/mkdocstrings
   # https://github.com/mkdocstrings/python

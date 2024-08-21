@@ -1,3 +1,8 @@
+figure.autolayout: True
+figure.facecolor: "#1e2229"
+figure.edgecolor: "#1e2229"
+
+axes.facecolor: "#1e2229"
 axes.labelcolor: "#e4e4e9d1"
 axes.spines.top: False
 axes.spines.right: False
@@ -10,5 +15,15 @@ ytick.color: "#e4e4e9d1"
 text.color: "#e4e4e9d1"
 font.family: sans-serif
 font.sans-serif: Fira Sans
+
+grid.alpha: 0.5
+
+savefig.dpi: 248
+savefig.facecolor: "#1e2229"
+savefig.edgecolor: "#1e2229"
+savefig.format: svg
+savefig.bbox: tight
+savefig.transparent: True
+savefig.orientation: landscape
 
 # text.usetex: True
