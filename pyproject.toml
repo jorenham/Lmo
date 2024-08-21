@@ -67,6 +67,7 @@ mkdocs = "^1.6.0"
 mkdocs-bibtex = "^2.16.0"
 mkdocs-git-revision-date-localized-plugin = "^1.2.7"
 mkdocs-include-markdown-plugin = "^6.2.2"
+mkdocs-jupyter = "^0.24.8"
 mkdocs-material = "^9.5.32"
 mkdocs-minify-plugin = "^0.8.0"
 mkdocstrings = {version = "^0.25.2", extras = ["python"]}
@@ -88,6 +89,11 @@ pytest-github-actions-annotate-failures = ">=0.2.0,<1.0"
 
 [tool.poetry.extras]
 pandas = ["pandas"]
+
+
+[tool.codespell]
+skip = "*.bib,*.css,*.ipynb,*.js,*.lock,*.pyc,*.svg,./site,"
+context = 2
 
 
 [tool.pytest.ini_options]
@@ -241,6 +247,7 @@ ignore = [
 typing-modules = ["typing_extensions"]
 
 [tool.ruff.lint.per-file-ignores]
+"*.ipynb" = ["I001", "T201", "N812"]
 "tests/*" = ["D", "N806", "ANN", "TCH001", "TCH002", "PLC2701"]
 "typetests/*" = ["D", "INP001"]
 
@@ -315,11 +322,6 @@ indent-style = "space"
 line-ending = "lf"
 quote-style = "single"
 skip-magic-trailing-comma = true
-
-
-[tool.codespell]
-skip = "./site,*.lock,*.pyc,*.css,*.js,*.svg,*.bib"
-context = 2
 
 
 [tool.yapf]
