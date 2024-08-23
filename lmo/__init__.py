@@ -49,7 +49,7 @@ if not TYPE_CHECKING:
     _install()
 
 
-if 'pytest' in sys.modules:  # noqa: PLR2004
+if 'pytest' in sys.modules:
     import numpy as np
 
     if np.__version__.startswith('2.'):

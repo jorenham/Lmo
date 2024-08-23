@@ -46,19 +46,24 @@ _T_poly = TypeVar('_T_poly', bound=PolySeries)
 
 
 @overload
-def eval_sh_jacobi(n: int, a: float, b: float, x: float) -> float: ...
+def eval_sh_jacobi(
+    n: int,
+    a: float | lnpt.Float,
+    b: float | lnpt.Float,
+    x: float | lnpt.Float,
+) -> float: ...
 @overload
 def eval_sh_jacobi(
     n: int,
-    a: float,
-    b: float,
+    a: float | lnpt.Float,
+    b: float | lnpt.Float,
     x: onpt.Array[_T_shape, lnpt.Float],
 ) -> onpt.Array[_T_shape, np.float64]: ...
 def eval_sh_jacobi(
-    n: int,
-    a: float,
-    b: float,
-    x: float | onpt.Array[_T_shape, lnpt.Float],
+    n: int | lnpt.Int,
+    a: float | lnpt.Float,
+    b: float | lnpt.Float,
+    x: float | lnpt.Float | onpt.Array[_T_shape, lnpt.Float],
 ) -> float | onpt.Array[_T_shape, np.float64]:
     """
     Fast evaluation of the n-th shifted Jacobi polynomial.
@@ -66,9 +71,13 @@ def eval_sh_jacobi(
     `scipy.special.eval_jacobi` for n < 4.
     """
     if n == 0:
-        return 1
+        return 1.
 
+    x = np.asarray(x)[()]
     u = 2 * x - 1
+
+    a = float(a)
+    b = float(b)
 
     if a == b == 0:
         if n == 1:

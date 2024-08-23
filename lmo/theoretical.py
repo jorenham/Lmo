@@ -2,6 +2,9 @@
 Theoretical (population) L-moments of known univariate probability
 distributions.
 """
+
+# pyright: reportUnknownMemberType=false
+
 from __future__ import annotations
 
 import functools
@@ -24,6 +27,8 @@ import numpy as np
 import numpy.typing as npt
 import scipy.integrate as spi
 
+import lmo.typing.np as lnpt
+import lmo.typing.scipy as lspt
 from ._poly import eval_sh_jacobi
 from ._utils import (
     clean_order,
@@ -41,8 +46,6 @@ from .special import fourier_jacobi, fpow
 if TYPE_CHECKING:
     import optype.numpy as onpt
 
-    import lmo.typing.np as lnpt
-    import lmo.typing.scipy as lspt
     from .typing import AnyOrder, AnyOrderND, AnyTrim
 
 
@@ -76,13 +79,11 @@ _T_x = TypeVar('_T_x', bound=float | npt.NDArray[np.float64])
 _Tss = ParamSpec('_Tss')
 
 _Pair: TypeAlias = tuple[_T, _T]
-_Fn1: TypeAlias = Callable[[float], float]
+_Fn1: TypeAlias = Callable[[float], float | lnpt.Float]
 _ArrF8: TypeAlias = npt.NDArray[np.float64]
 
 ALPHA: Final[float] = 0.1
 QUAD_LIMIT: Final[int] = 100
-
-# pyright: reportUnknownMemberType=false
 
 
 def _nquad(
@@ -169,7 +170,6 @@ def l_moment_from_cdf(
     alpha: float = ...,
     ppf: _Fn1 | None = ...,
 ) -> _ArrF8: ...
-
 @overload
 def l_moment_from_cdf(
     cdf: _Fn1,
@@ -182,8 +182,6 @@ def l_moment_from_cdf(
     alpha: float = ...,
     ppf: _Fn1 | None = ...,
 ) -> np.float64: ...
-
-
 def l_moment_from_cdf(
     cdf: _Fn1,
     r: AnyOrder | AnyOrderND,
@@ -370,7 +368,6 @@ def l_moment_from_ppf(
     quad_opts: lspt.QuadOptions | None = ...,
     alpha: float = ...,
 ) -> _ArrF8: ...
-
 @overload
 def l_moment_from_ppf(
     ppf: _Fn1,
@@ -382,8 +379,6 @@ def l_moment_from_ppf(
     quad_opts: lspt.QuadOptions | None = ...,
     alpha: float = ...,
 ) -> np.float64: ...
-
-
 def l_moment_from_ppf(
     ppf: _Fn1,
     r: AnyOrder | AnyOrderND,
@@ -489,7 +484,7 @@ def l_moment_from_ppf(
     rs = clean_orders(np.asanyarray(r))
     s, t = clean_trim(trim)
 
-    def integrand(p: float, _r: int) -> float:
+    def integrand(p: float, _r: int, /) -> float | lnpt.Float:
         return p**s * (1 - p) ** t * eval_sh_jacobi(_r - 1, t, s, p) * ppf(p)
 
     quad_kwds = quad_opts or {}
@@ -530,7 +525,6 @@ def l_moment_from_qdf(
     quad_opts: lspt.QuadOptions | None = ...,
     alpha: float = ...,
 ) -> _ArrF8: ...
-
 @overload
 def l_moment_from_qdf(
     qdf: _Fn1,
@@ -542,8 +536,6 @@ def l_moment_from_qdf(
     quad_opts: lspt.QuadOptions | None = ...,
     alpha: float = ...,
 ) -> np.float64: ...
-
-
 def l_moment_from_qdf(
     qdf: _Fn1,
     r: AnyOrder | AnyOrderND,
@@ -594,7 +586,6 @@ def l_ratio_from_cdf(
     alpha: float = ...,
     ppf: _Fn1 | None = ...,
 ) -> _ArrF8: ...
-
 @overload
 def l_ratio_from_cdf(
     cdf: _Fn1,
@@ -608,7 +599,6 @@ def l_ratio_from_cdf(
     alpha: float = ...,
     ppf: _Fn1 | None = ...,
 ) -> _ArrF8: ...
-
 @overload
 def l_ratio_from_cdf(
     cdf: _Fn1,
@@ -621,8 +611,6 @@ def l_ratio_from_cdf(
     quad_opts: lspt.QuadOptions | None = ...,
     alpha: float = ...,
 ) -> np.float64: ...
-
-
 def l_ratio_from_cdf(
     cdf: _Fn1,
     r: AnyOrder | AnyOrderND,
@@ -667,7 +655,6 @@ def l_ratio_from_ppf(
     quad_opts: lspt.QuadOptions | None = ...,
     alpha: float = ...,
 ) -> _ArrF8: ...
-
 @overload
 def l_ratio_from_ppf(
     ppf: _Fn1,
@@ -680,7 +667,6 @@ def l_ratio_from_ppf(
     quad_opts: lspt.QuadOptions | None = ...,
     alpha: float = ...,
 ) -> _ArrF8: ...
-
 @overload
 def l_ratio_from_ppf(
     ppf: _Fn1,
@@ -692,10 +678,7 @@ def l_ratio_from_ppf(
     support: _Pair[float] = ...,
     quad_opts: lspt.QuadOptions | None = ...,
     alpha: float = ...,
-) -> np.float64:
-    ...
-
-
+) -> np.float64: ...
 def l_ratio_from_ppf(
     ppf: _Fn1,
     r: AnyOrder | AnyOrderND,
@@ -1625,7 +1608,7 @@ class _VectorizedPPF(Protocol):
         /,
         *,
         r_max: int = ...,
-    ) -> float: ...
+    ) -> np.float64: ...
 
 
 def _validate_l_bounds(
@@ -1888,10 +1871,15 @@ def qdf_from_l_moments(
 
 
 def cdf_from_ppf(
-    ppf: Callable[Concatenate[float, _Tss], float],
+    ppf: Callable[Concatenate[float, _Tss], lnpt.Float | float],
     /,
 ) -> Callable[Concatenate[float, _Tss], float]:
-    """Numerical inversion of the PPF."""
+    """
+    Numerical inversion of the PPF.
+
+    Note:
+        This function isn't vectorized.
+    """
     from scipy.optimize import (
         root_scalar,  # pyright: ignore[reportUnknownVariableType]
     )
@@ -1900,27 +1888,40 @@ def cdf_from_ppf(
         if np.isnan(x):
             return np.nan
         if x <= ppf(0, *args, **kwds):
-            return 0.
+            return 0
         if x >= ppf(1, *args, **kwds):
-            return 1.
+            return 1
 
-        def _ppf_to_solve(p: float) -> float:
+        def _ppf_to_solve(p: float) -> lnpt.Float | float:
             return ppf(p, *args, **kwds) - x
 
-        return cast(
-            float,
-            root_scalar(_ppf_to_solve, bracket=[0, 1], method='brentq').root,
+        result = cast(
+            lspt.RootResult,
+            root_scalar(_ppf_to_solve, bracket=[0, 1], method='brentq'),
         )
+        return result.root
 
     return cdf
 
 
+@overload
 def entropy_from_qdf(
-    qdf: Callable[Concatenate[float, _Tss], float],
+    qdf: Callable[[float], float | lnpt.Float],
+    /,
+) -> np.float64: ...
+@overload
+def entropy_from_qdf(
+    qdf: Callable[Concatenate[float, _Tss], float | lnpt.Float],
     /,
     *args: _Tss.args,
     **kwds: _Tss.kwargs,
-) -> float:
+) -> np.float64: ...
+def entropy_from_qdf(
+    qdf: Callable[Concatenate[float, _Tss], float | lnpt.Float],
+    /,
+    *args: _Tss.args,
+    **kwds: _Tss.kwargs,
+) -> np.float64:
     r"""
     Evaluate the (differential / continuous) entropy \( H(X) \) of a
     univariate random variable \( X \), from its *quantile density
@@ -1953,7 +1954,7 @@ def entropy_from_qdf(
         ](https://wikipedia.org/wiki/Differential_entropy)
 
     """
-    def ic(p: float) -> float:
+    def ic(p: float) -> np.float64:
         return np.log(qdf(p, *args, **kwds))
 
-    return cast(float, spi.quad(ic, 0, 1, limit=QUAD_LIMIT)[0])
+    return cast(np.float64, spi.quad(ic, 0, 1, limit=QUAD_LIMIT)[0])

@@ -314,14 +314,13 @@ allow-dunder-method-names = [
     "__array__",
     "__lmo_register__",
 ]
-allow-magic-value-types = ["int"]
+allow-magic-value-types = ["int" ,"str"]
 
 [tool.ruff.format]
 docstring-code-format = true
 indent-style = "space"
 line-ending = "lf"
 quote-style = "single"
-skip-magic-trailing-comma = true
 
 
 [tool.yapf]

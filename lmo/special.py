@@ -167,7 +167,7 @@ def gamma2(
 
 
 @overload
-def harmonic(n: lnpt.AnyScalarFloat, /, out: None = ...) -> float: ...
+def harmonic(n: lnpt.AnyScalarFloat, /, out: None = ...) -> np.float64: ...
 @overload
 def harmonic(
     n: lnpt.AnyArrayFloat,
@@ -185,7 +185,7 @@ def harmonic(
     /,
     out: onpt.Array[_T_shape, _T_float] | None = None,
 ) -> (
-    float
+    np.float64
     | onpt.Array[_T_shape, _T_float]
     | onpt.Array[onpt.AtLeast1D, np.float64]
 ):
