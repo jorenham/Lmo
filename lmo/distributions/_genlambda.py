@@ -136,7 +136,7 @@ def _genlambda_lmo0(
     if b <= -1 - s and d <= -1 - t:
         return math.nan
 
-    def _lmo0_partial(trim: float, theta: float) -> np.float64:
+    def _lmo0_partial(trim: float, theta: float) -> float | np.float64:
         if r == 1 and theta == 0:
             return harmonic(trim) - harmonic(s + t + 1)
 
@@ -246,20 +246,20 @@ class genlambda_gen(cast(type[lspt.AnyRV], _rv_continuous)):
             m2 = (
                 a**2
                 + (c / d1)**2 / (d1 + d)
-                + 2 * a * c / (d * d1) * float(1 - harmonic(1 + d))
+                + 2 * a * c / (d * d1) * (1 - harmonic(1 + d))
             )
         elif d == 0:
             m2 = (
                 c**2
                 + (a / b1)**2 / (b1 + b)
-                + 2 * a * c / (b * b1) * float(1 - harmonic(1 + b))
+                + 2 * a * c / (b * b1) * (1 - harmonic(1 + b))
             )
         else:
             m2 = (
                 (a / b1)**2 / (b1 + b)
                 + (c / d1)**2 / (d1 + d)
                 + 2 * a * c / (b * d) * (
-                    1 / (b1 * d1) - float(sc.beta(b1, d1))
+                    1 / (b1 * d1) - sc.beta(b1, d1)
                 )
             )
 

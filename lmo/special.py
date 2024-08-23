@@ -167,7 +167,7 @@ def gamma2(
 
 
 @overload
-def harmonic(n: lnpt.AnyScalarFloat, /, out: None = ...) -> np.float64: ...
+def harmonic(n: lnpt.AnyScalarFloat, /, out: None = ...) -> float: ...
 @overload
 def harmonic(
     n: lnpt.AnyArrayFloat,
@@ -185,7 +185,7 @@ def harmonic(
     /,
     out: onpt.Array[_T_shape, _T_float] | None = None,
 ) -> (
-    np.float64
+    float
     | onpt.Array[_T_shape, _T_float]
     | onpt.Array[onpt.AtLeast1D, np.float64]
 ):
@@ -220,7 +220,7 @@ def harmonic(
     _n = np.asanyarray(n)
 
     _out = sc.digamma(_n + 1, out) + np.euler_gamma
-    return _out[()] if _n.ndim == 0 and np.isscalar(n) else _out
+    return float(_out[()]) if np.isscalar(n) else _out
 
 
 @overload

@@ -71,7 +71,7 @@ def eval_sh_jacobi(
     `scipy.special.eval_jacobi` for n < 4.
     """
     if n == 0:
-        return 1.
+        return 1
 
     x = np.asarray(x)[()]
     u = 2 * x - 1
