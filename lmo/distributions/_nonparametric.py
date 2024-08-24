@@ -570,10 +570,10 @@ class l_poly:  # noqa: N801
         return np.sqrt(self._var)
 
     @functools.cached_property
-    def _entropy(self, /) -> np.float64:
+    def _entropy(self, /) -> float:
         return entropy_from_qdf(self._qdf)
 
-    def entropy(self, /) -> np.float64:
+    def entropy(self, /) -> float:
         r"""
         [Differential entropy](https://w.wiki/8cR3) \( \mathrm{H}[X] \) of
         random varianble \( X \) of the relevant distribution.

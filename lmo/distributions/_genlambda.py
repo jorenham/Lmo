@@ -275,7 +275,7 @@ class genlambda_gen(cast(type[lspt.AnyRV], _rv_continuous)):
 
         return m1, m2, m3, m4
 
-    def _entropy(self, b: float, d: float, f: float) -> np.float64:
+    def _entropy(self, b: float, d: float, f: float) -> float:
         return entropy_from_qdf(_genlambda_qdf, b, d, f)
 
     def _l_moment(
