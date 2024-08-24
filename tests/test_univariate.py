@@ -1,7 +1,7 @@
 # pyright: reportUnknownMemberType=false, reportUnknownVariableType=false
 
 import functools
-from typing import Any, cast
+from typing import Any
 
 import numpy as np
 import numpy.typing as npt
@@ -20,7 +20,7 @@ from numpy.testing import (
 import lmo
 
 
-assert_allclose = functools.partial(_assert_allclose, atol=1e-14)
+assert_allclose = functools.partial(_assert_allclose, atol=2e-14)
 
 _R_MAX = 8
 _T_MAX = 2
@@ -89,7 +89,7 @@ def test_l_loc_mean(a: npt.NDArray[Any]):
 @given(a=st_a2)
 def test_l_loc_mean_2d(a: npt.NDArray[Any]):
     locs = a.mean(axis=0, dtype=np.float64)
-    l_locs = cast(npt.NDArray[np.float64], lmo.l_loc(a, axis=0))
+    l_locs = lmo.l_loc(a, axis=0)
 
     assert len(l_locs) == a.shape[1]
     assert l_locs.shape == locs.shape

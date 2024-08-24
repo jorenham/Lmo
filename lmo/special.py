@@ -220,7 +220,7 @@ def harmonic(
     _n = np.asanyarray(n)
 
     _out = sc.digamma(_n + 1, out) + np.euler_gamma
-    return _out[()] if _n.ndim == 0 and np.isscalar(n) else _out
+    return float(_out[()]) if np.isscalar(n) else _out
 
 
 @overload

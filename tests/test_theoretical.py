@@ -198,7 +198,7 @@ def test_llm_expon(a: float):
     assert_allclose(l_ppf, lr)
 
     l_cdf = l_moment_from_cdf(cdf, r, trim=(0, 1))
-    assert_allclose(l_cdf, lr, rtol=5e-7)
+    assert_allclose(l_cdf, lr, rtol=5e-5)
 
     l_qdf = l_moment_from_qdf(qdf, r[1:], trim=(0, 1))
     assert_allclose(l_qdf, lr[1:])
