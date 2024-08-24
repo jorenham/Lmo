@@ -1,5 +1,5 @@
 site_name: Lmo
-site_description: Robust stats and fitting using (trimmed) L-Moments
+site_description: Trimmed L-moments for robust statistics.
 site_author: Joren Hammudoglu
 site_url: https://jorenham.github.io/Lmo/
 
@@ -11,6 +11,7 @@ strict: true
 nav:
   - Overview: index.md
   - "Examples":
+      - "L-moments: Explained visually": examples/visual_intro.ipynb
       - Fitting the GEV: examples/lmm.ipynb
   - "Reference":
       - api/L-moments.md

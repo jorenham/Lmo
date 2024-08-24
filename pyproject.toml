@@ -246,7 +246,7 @@ ignore = [
 typing-modules = ["typing_extensions"]
 
 [tool.ruff.lint.per-file-ignores]
-"*.ipynb" = ["I001", "T201", "N812"]
+"*.ipynb" = ["D", "ANN", "I001", "T201", "N812", "N816"]
 "tests/*" = ["D", "N806", "ANN", "TCH001", "TCH002", "PLC2701"]
 "typetests/*" = ["D", "INP001"]
 
