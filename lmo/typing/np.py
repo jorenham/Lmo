@@ -10,7 +10,7 @@ import optype.numpy as onpt
 
 
 __all__ = (
-    'Bool', 'Int', 'Float', 'Natural', 'Integer', 'Real',
+    'Bool', 'Int', 'Float', 'Number', 'Natural', 'Integer', 'Real',
     'AnyScalar', 'AnyScalarBool', 'AnyScalarInt', 'AnyScalarFloat',
     'AnyVector', 'AnyVectorBool', 'AnyVectorFloat', 'AnyVectorFloat',
     'AnyMatrix', 'AnyMatrixBool', 'AnyMatrixInt', 'AnyMatrixFloat',
@@ -28,8 +28,9 @@ __all__ = (
 
 Bool: TypeAlias = np.bool_
 UInt: TypeAlias = np.unsignedinteger[Any]
-Int: TypeAlias = np.signedinteger[Any]
+Int: TypeAlias = np.integer[Any]
 Float: TypeAlias = np.floating[Any]
+Number: TypeAlias = np.number[Any]
 
 Natural: TypeAlias = UInt | Bool
 Integer: TypeAlias = Int | Natural
