@@ -9,15 +9,15 @@ dist/
 site/
 
 # Cache
-.cache/
-.hypothesis/
-.pytest_cache/
-.ruff_cache/
-.tox/
+.cache
+.hypothesis
+.pytest_cache
+.ruff_cache
+.tox
 
 # Environments
 .env
-.venv/
+.venv
 venv/
 
 # IntelliJ
