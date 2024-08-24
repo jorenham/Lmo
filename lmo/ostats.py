@@ -22,7 +22,7 @@ from scipy.special import betainc, betaln
 if TYPE_CHECKING:
     import optype.numpy as onpt
 
-    from .typing import np as lnpt
+    import lmo.typing.np as lnpt
 
 
 __all__ = 'weights', 'from_cdf'

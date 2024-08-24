@@ -28,10 +28,8 @@ from scipy.stats.distributions import rv_continuous, rv_frozen
 import lmo.typing as lmt
 import lmo.typing.np as lnpt
 import lmo.typing.scipy as lspt
-from lmo import (
-    inference,
-    l_moment as l_moment_est,
-)
+from lmo import inference
+from lmo._lm import l_moment as l_moment_est
 from lmo._utils import (
     clean_order,
     clean_orders,
@@ -1089,33 +1087,29 @@ class l_rv_generic(PatchClass):
         self,
         data: lnpt.AnyVectorInt | lnpt.AnyVectorFloat,
         *args: float,
-        n_extra: int = 0,
-        trim: lmt.AnyTrim = 0,
+        n_extra: int = ...,
+        trim: lmt.AnyTrimInt = ...,
         full_output: Literal[True],
-        fit_kwargs: Mapping[str, Any] | None = None,
+        fit_kwargs: Mapping[str, Any] | None = ...,
         **kwds: Any,
-    ) -> tuple[float, ...]:
-        ...
-
+    ) -> tuple[float, ...]: ...
     @overload
     def l_fit(
         self,
         data: lnpt.AnyVectorInt | lnpt.AnyVectorFloat,
         *args: float,
-        n_extra: int = 0,
-        trim: lmt.AnyTrim = 0,
+        n_extra: int = ...,
+        trim: lmt.AnyTrimInt = ...,
         full_output: bool = ...,
-        fit_kwargs: Mapping[str, Any] | None = None,
+        fit_kwargs: Mapping[str, Any] | None = ...,
         **kwds: Any,
-    ) -> tuple[float, ...]:
-        ...
-
+    ) -> tuple[float, ...]: ...
     def l_fit(
         self,
         data: lnpt.AnyVectorInt | lnpt.AnyVectorFloat,
         *args: float,
         n_extra: int = 0,
-        trim: lmt.AnyTrim = 0,
+        trim: lmt.AnyTrimInt = 0,
         full_output: bool = False,
         fit_kwargs: Mapping[str, Any] | None = None,
         random_state: int | np.random.Generator | None = None,

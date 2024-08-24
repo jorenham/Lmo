@@ -18,7 +18,7 @@ from numpy.polynomial._polybase import ABCPolyBase  # noqa: PLC2701
 
 
 if TYPE_CHECKING:
-    from .typing import np as lnpt
+    import lmo.typing.np as lnpt
 
 
 __all__ = (

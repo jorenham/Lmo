@@ -1,7 +1,3 @@
-"""
-Parametric inference using the (Generalized) Method of L-Moments, L-(G)MM.
-"""
-
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, NamedTuple, TypeAlias, cast
@@ -10,28 +6,21 @@ import numpy as np
 import numpy.typing as npt
 from scipy import optimize, special
 
-from ._lm import l_moment as l_moment_est
-from ._lm_co import l_coscale as l_coscale_est
-from ._utils import clean_orders, clean_trim
-from .diagnostic import HypothesisTestResult, l_moment_bounds
-from .theoretical import l_moment_from_ppf
-from .typing import scipy as lspt
+import lmo.typing as lmt
+import lmo.typing.np as lnpt
+import lmo.typing.scipy as lspt
+from lmo._lm import l_moment as l_moment_est
+from lmo._lm_co import l_coscale as l_coscale_est
+from lmo._utils import clean_orders, clean_trim
+from lmo.diagnostic import HypothesisTestResult, l_moment_bounds
+from lmo.theoretical import l_moment_from_ppf
 
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from .typing import (
-        AnyOrderND,
-        AnyTrim,
-        np as lnpt,
-    )
 
-
-__all__ = (
-    'GMMResult',
-    'fit',
-)
+__all__ = 'GMMResult', 'fit'
 
 
 _ArrF8: TypeAlias = npt.NDArray[np.float64]
@@ -156,11 +145,11 @@ class GMMResult(NamedTuple):
 def _loss_step(
     args: _ArrF8,
     l_fn: Callable[..., _ArrF8],
-    r: npt.NDArray[np.int64],
+    r: npt.NDArray[np.intp],
     l_r: _ArrF8,
-    trim: AnyTrim,
+    trim: lmt.AnyTrim,
     w_rr: _ArrF8,
-) -> float:
+) -> np.float64:
     lmbda_r = l_fn(r, *args, trim=trim)
 
     if not np.all(np.isfinite(lmbda_r)):
@@ -168,14 +157,15 @@ def _loss_step(
         raise ValueError(msg)
 
     g_r = lmbda_r - l_r
-    return cast(float, np.sqrt(g_r.T @ w_rr @ g_r))
+    return np.sqrt(cast(np.float64, g_r.T @ w_rr @ g_r))
 
 
 def _get_l_moment_fn(ppf: lspt.RVFunction[...]) -> Callable[..., _ArrF8]:
     def l_moment_fn(
-        r: AnyOrderND,
+        r: lmt.AnyOrderND,
+        /,
         *args: Any,
-        trim: AnyTrim = 0,
+        trim: lmt.AnyTrim = 0,
     ) -> _ArrF8:
         return l_moment_from_ppf(lambda q: ppf(q, *args), r, trim=trim)
 
@@ -184,7 +174,8 @@ def _get_l_moment_fn(ppf: lspt.RVFunction[...]) -> Callable[..., _ArrF8]:
 
 def _get_weights_mc(
     y: _ArrF8,
-    r: npt.NDArray[np.int64],
+    r: npt.NDArray[np.intp],
+    /,
     trim: tuple[int, int] | tuple[float, float] = (0, 0),
 ) -> _ArrF8:
     l_r = l_moment_est(
@@ -219,8 +210,8 @@ def fit(  # noqa: C901
     args0: lnpt.AnyVectorFloat,
     n_obs: int,
     l_moments: lnpt.AnyVectorFloat,
-    r: AnyOrderND | None = None,
-    trim: AnyTrim = 0,
+    r: lmt.AnyOrderND | None = None,
+    trim: int | tuple[int, int] = 0,
     *,
     k: int | None = None,
     k_max: int = 50,
@@ -228,12 +219,7 @@ def fit(  # noqa: C901
 
     l_moment_fn: Callable[..., _ArrF8] | None = None,
     n_mc_samples: int = 9999,
-    random_state: (
-        int
-        | np.random.Generator
-        | np.random.RandomState
-        | None
-    ) = None,
+    random_state: lnpt.Seed | None = None,
     **kwds: Any,
 ) -> GMMResult:
     r"""
@@ -281,12 +267,13 @@ def fit(  # noqa: C901
         - Raise on minimization error, warn on failed k-step convergence
         - Optional `integrality` kwarg with boolean mask for integral params.
         - Implement CUE: Continuously Updating GMM (i.e. implement and
-            use  `_loss_cue()`, then run with `k=1`).
+            use  `_loss_cue()`, then run with `k=1`). See
+            https://github.com/jorenham/Lmo/issues/299
 
     Parameters:
         ppf:
             The (vectorized) quantile function of the probability distribution,
-            with signature `(*args: float, q: T) -> T`.
+            with signature `(q: T, *params: float) -> T`.
         args0:
             Initial estimate of the distribution's parameter values.
         n_obs:
@@ -312,7 +299,7 @@ def fit(  # noqa: C901
             Will be ignored if $k$ is specified or if `n_extra=0`.
         l_moment_fn:
             Function for parametric L-moment calculation, with signature:
-            `(r: int64[], *args, trim: float[2] | int[2]) -> float64[]`.
+            `(r: intp[:], *args, trim: float[2] | int[2]) -> float64[:]`.
         n_mc_samples:
             The number of Monte-Carlo (MC) samples drawn from the
             distribution to to form the weight matrix in step $k > 1$.
@@ -346,9 +333,9 @@ def fit(  # noqa: C901
         raise ValueError(msg)
 
     if r is None:
-        _r = np.arange(1, len(l_r) + 1)
+        _r = np.arange(1, len(l_r) + 1, dtype=np.intp)
     else:
-        _r = clean_orders(np.asarray(r, np.int64))
+        _r = clean_orders(np.asarray(r, np.intp))
 
         _r_nonzero = _r != 0
         l_r, _r = l_r[_r_nonzero], _r[_r_nonzero]
@@ -358,7 +345,7 @@ def fit(  # noqa: C901
         raise ValueError(msg)
 
     _trim = clean_trim(trim)
-    _r = np.arange(1, n_con + 1, dtype=np.int64)
+    _r = np.arange(1, n_con + 1, dtype=np.intp)
 
     # Individual L-moment "natural" scaling constants, making their magnitudes
     # order- and trim- agnostic (used in convergence criterion)
@@ -448,7 +435,7 @@ def fit(  # noqa: C901
         success=success,
         statistic=fun**2,
         eps=eps,
-        n_samp=cast(int, n_obs - sum(_trim)),
+        n_samp=n_obs - int(sum(_trim)),
         n_step=_k,
         n_iter=i,
         weights=w_rr,
