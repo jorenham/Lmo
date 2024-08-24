@@ -54,21 +54,21 @@ optype = {version = "^0.6.1", extras = ["numpy"]}
 codespell = "^2.3.0"
 hypothesis = {version = "^6.111.1", extras = ["numpy"]}
 pre-commit = "^3.8.0"
-basedpyright = "^1.16.0"
+basedpyright = "^1.17.0"
 pytest = "^8.3.2"
 pytest-doctestplus = "^1.2.1"
-ruff = "^0.6.1"
+ruff = "^0.6.2"
 sp-repo-review = {version = "^2024.8.19", extras = ["cli"]}
 tomli = {version = "^2.0.1", python = "<3.11"}
 tox = "^4.18.0"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.6.0"
-mkdocs-bibtex = "^2.16.0"
+mkdocs-bibtex = "^2.16.1"
 mkdocs-git-revision-date-localized-plugin = "^1.2.7"
 mkdocs-include-markdown-plugin = "^6.2.2"
 mkdocs-jupyter = "^0.24.8"
-mkdocs-material = "^9.5.32"
+mkdocs-material = "^9.5.33"
 mkdocs-minify-plugin = "^0.8.0"
 mkdocstrings = {version = "^0.25.2", extras = ["python"]}
 
@@ -137,6 +137,7 @@ reportUnreachable = false  # nothing wrong with `if sys.version_info() >= ...`
 reportUnusedCallResult = false  # https://github.com/microsoft/pyright/issues/8650
 reportUnusedImport = false  # dupe of F401
 reportUnusedVariable = false  # dupe of F841
+reportUnusedParameter = false  # dupe of ARG002
 
 
 [tool.repo-review]
@@ -162,8 +163,8 @@ extend-exclude = [
     ".ruff_cache",
     ".venv",
     ".vscode",
+    "docs/gallery",  # TODO
     "dist",
-    "docs",
     "site",
 ]
 
@@ -247,7 +248,7 @@ ignore = [
 typing-modules = ["typing_extensions"]
 
 [tool.ruff.lint.per-file-ignores]
-"*.ipynb" = ["I001", "T201", "N812"]
+"*.ipynb" = ["D", "ANN", "I001", "T201", "N812", "N816"]
 "tests/*" = ["D", "N806", "ANN", "TCH001", "TCH002", "PLC2701"]
 "typetests/*" = ["D", "INP001"]
 
