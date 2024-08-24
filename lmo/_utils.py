@@ -2,11 +2,10 @@ from __future__ import annotations
 
 import math
 import sys
-from typing import TYPE_CHECKING, Any, Final, TypeAlias, cast
+from typing import TYPE_CHECKING, Any, Final, TypeAlias, cast, overload
 
 import numpy as np
 import numpy.typing as npt
-import optype.numpy as onpt
 
 
 if sys.version_info >= (3, 13):
@@ -15,14 +14,10 @@ else:
     from typing_extensions import LiteralString, TypeVar
 
 if TYPE_CHECKING:
-    from .typing import (
-        AnyAWeights,
-        AnyFWeights,
-        AnyOrder,
-        AnyOrderND,
-        AnyTrim,
-        np as lnpt,
-    )
+    import optype.numpy as onpt
+
+    import lmo.typing as lmt
+    import lmo.typing.np as lnpt
 
 __all__ = (
     'clean_order',
@@ -40,17 +35,17 @@ __all__ = (
 
 
 _SCT = TypeVar('_SCT', bound=np.generic)
-_SCT_uifc = TypeVar('_SCT_uifc', bound=np.number[Any])
-_SCT_ui = TypeVar('_SCT_ui', bound=np.integer[Any], default=np.int_)
-_SCT_f = TypeVar('_SCT_f', bound=np.floating[Any], default=np.float64)
+_SCT_uifc = TypeVar('_SCT_uifc', bound='lnpt.Number')
+_SCT_ui = TypeVar('_SCT_ui', bound='lnpt.Int', default=np.int_)
+_SCT_f = TypeVar('_SCT_f', bound='lnpt.Float', default=np.float64)
 
-_DT_f = TypeVar('_DT_f', bound=np.dtype[np.floating[Any]])
+_DT_f = TypeVar('_DT_f', bound=np.dtype['lnpt.Float'])
 
 _SizeT = TypeVar('_SizeT', bound=int)
 
-_ShapeT = TypeVar('_ShapeT', bound=onpt.AtLeast0D)
-_ShapeT1 = TypeVar('_ShapeT1', bound=onpt.AtLeast1D)
-_ShapeT2 = TypeVar('_ShapeT2', bound=onpt.AtLeast2D)
+_ShapeT = TypeVar('_ShapeT', bound='onpt.AtLeast0D')
+_ShapeT1 = TypeVar('_ShapeT1', bound='onpt.AtLeast1D')
+_ShapeT2 = TypeVar('_ShapeT2', bound='onpt.AtLeast2D')
 
 _DType: TypeAlias = np.dtype[_SCT] | type[_SCT]
 
@@ -148,7 +143,7 @@ def _apply_aweights(
 
 def _sort_like(
     a: onpt.Array[_ShapeT1, _SCT_uifc],
-    i: onpt.Array[tuple[int], np.integer[Any]],
+    i: onpt.Array[tuple[int], lnpt.Int],
     /,
     axis: int | None,
 ) -> onpt.Array[_ShapeT1, _SCT_uifc]:
@@ -183,10 +178,10 @@ def ordered(  # noqa: C901
     y: lnpt.AnyArrayFloat | None = None,
     /,
     axis: int | None = None,
-    dtype: _DType[np.floating[Any]] | None = None,
+    dtype: _DType[lnpt.Float] | None = None,
     *,
-    fweights: AnyFWeights | None = None,
-    aweights: AnyAWeights | None = None,
+    fweights: lmt.AnyFWeights | None = None,
+    aweights: lmt.AnyAWeights | None = None,
     sort: lnpt.SortKind | bool = True,
 ) -> onpt.Array[onpt.AtLeast1D, lnpt.Float]:
     """
@@ -254,7 +249,7 @@ def ordered(  # noqa: C901
 
 
 def clean_order(
-    r: AnyOrder,
+    r: lmt.AnyOrder,
     /,
     name: LiteralString = 'r',
     rmin: int = 0,
@@ -268,11 +263,11 @@ def clean_order(
 
 
 def clean_orders(
-    r: AnyOrderND,
+    r: lmt.AnyOrderND,
     /,
     name: str = 'r',
     rmin: int = 0,
-    dtype: _DType[_SCT_ui] = np.intp,
+    dtype: _DType[_SCT_ui] = np.int_,
 ) -> onpt.Array[Any, _SCT_ui]:
     """Validates and cleans an array-like of (L-)moment orders."""
     _r = np.asarray_chkfinite(r, dtype=dtype)
@@ -291,7 +286,11 @@ _COMMON_TRIM2: Final[frozenset[tuple[int, int]]] = frozenset(
 )
 
 
-def clean_trim(trim: AnyTrim, /) -> tuple[int, int] | tuple[float, float]:
+@overload
+def clean_trim(trim: lmt.AnyTrimInt, /) -> tuple[int, int]: ...
+@overload
+def clean_trim(trim: lmt.AnyTrimFloat, /) -> tuple[float, float]: ...
+def clean_trim(trim: lmt.AnyTrim, /) -> tuple[int, int] | tuple[float, float]:
     """
     Validates and cleans the passed trim; and return a 2-tuple of either ints
     or floats.
@@ -329,7 +328,7 @@ def clean_trim(trim: AnyTrim, /) -> tuple[int, int] | tuple[float, float]:
 
 
 def moments_to_ratio(
-    rs: onpt.Array[Any, np.integer[Any]],
+    rs: onpt.Array[tuple[int, ...], lnpt.Int],
     l_rs: onpt.Array[onpt.AtLeast1D, _SCT_f],
     /,
 ) -> _SCT_f | npt.NDArray[_SCT_f]:
@@ -355,7 +354,7 @@ def moments_to_ratio(
 
 
 def moments_to_stats_cov(
-    t_0r: onpt.Array[tuple[int], np.floating[Any]],
+    t_0r: onpt.Array[tuple[int], lnpt.Float],
     ll_kr: onpt.Array[_ShapeT2, _SCT_f],
 ) -> onpt.Array[_ShapeT2, _SCT_f]:
     # t_0r are L-ratio's for r = 0, 1, ..., R (t_0r[0] == 1 / L-scale)
@@ -387,7 +386,7 @@ def moments_to_stats_cov(
 def l_stats_orders(
     num: _SizeT,
     /,
-    dtype: _DType[_SCT_ui] = np.intp,
+    dtype: _DType[_SCT_ui] = np.int_,
 ) -> tuple[
     onpt.Array[tuple[_SizeT], _SCT_ui],
     onpt.Array[tuple[_SizeT], _SCT_ui],
