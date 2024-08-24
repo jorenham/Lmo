@@ -162,6 +162,7 @@ extend-exclude = [
     ".ruff_cache",
     ".venv",
     ".vscode",
+    "docs/gallery",  # TODO
     "dist",
     "site",
 ]
