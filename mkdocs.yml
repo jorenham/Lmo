@@ -12,8 +12,15 @@ nav:
   - Overview: index.md
   - "Examples":
       - Fitting the GEV: examples/lmm.ipynb
-  - Reference: api.md
-  - Distributions: distributions.md
+  - "Reference":
+      - api/L-moments.md
+      - api/L-comoments.md
+      - api/distributions.md
+      - api/diagnostic.md
+      - api/pandas.md
+      - api/low_level.md
+  - "Theory":
+      - Distributions: distributions.md
   - Contributing: contributing.md
 
 theme:
@@ -24,12 +31,15 @@ theme:
     - content.tabs.link
     - content.tooltips
     - navigation.path
+    - navigation.indexes
+    - navigation.prune
+    - navigation.sections
     - navigation.tabs
     - navigation.tabs.sticky
     - navigation.top
     - navigation.tracking
     - toc.follow
-    - toc.integrate
+    # - toc.integrate
   font:
     text: Fira Sans
     code: Fira Mono
@@ -60,6 +70,7 @@ plugins:
   - git-revision-date-localized:
       type: iso_date
       exclude: ["*.ipynb"]
+      strict: false
 
   # https://github.com/mondeja/mkdocs-include-markdown-plugin
   - include-markdown
@@ -98,19 +109,28 @@ plugins:
             - url: https://docs.scipy.org/doc/scipy/objects.inv
             - url: https://pandas.pydata.org/docs/objects.inv
           options:
-            annotations_path: source
-            docstring_section_style: spacy
+            heading_level: 3
+            annotations_path: brief
+            unwrap_annotated: true
+            docstring_section_style: table
             line_length: 79
             load_external_modules: true
             members_order: source
             merge_init_into_class: true
             show_bases: true
+            show_root_heading: true
             show_root_full_path: true
+            show_root_toc_entry: true
             show_root_members_full_path: true
-            show_root_toc_entry: false
+            show_symbol_type_heading: true
+            show_symbol_type_toc: false
             show_source: false
             show_submodules: false
-            signature_crossrefs: true
+            show_docstring_attributes: false
+            signature_crossrefs: false
+            docstring_options:
+              ignore_init_summary: true
+              trim_doctest_flags: true
 
   # https://squidfunk.github.io/mkdocs-material/plugins/search/
   - search
@@ -152,6 +172,7 @@ markdown_extensions:
           case: lower
   - pymdownx.tasklist:
       custom_checkbox: true
+  - pymdownx.tilde
 
 extra_css:
   - https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css
