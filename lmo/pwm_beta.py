@@ -24,13 +24,10 @@ else:
 if TYPE_CHECKING:
     import optype.numpy as onpt
 
-    from .typing import np as lnpt
+    import lmo.typing.np as lnpt
 
 
-__all__ = (
-    'weights',
-    'cov',
-)
+__all__ = 'weights', 'cov'
 
 
 _F = TypeVar('_F', bound=np.floating[Any], default=np.float64)

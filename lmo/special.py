@@ -8,21 +8,12 @@ import numpy.typing as npt
 import optype.numpy as onpt
 import scipy.special as sc
 
+import lmo.typing as lmt
+import lmo.typing.np as lnpt
 from ._utils import clean_orders
-from .typing import (
-    AnyOrder,
-    AnyOrderND,
-    np as lnpt,
-)
 
 
-__all__ = (
-    'fpow',
-    'gamma2',
-    'harmonic',
-    'norm_sh_jacobi',
-    'fourier_jacobi',
-)
+__all__ = 'fpow', 'gamma2', 'harmonic', 'norm_sh_jacobi', 'fourier_jacobi'
 
 
 _DTYPE_CHARS: Final[str] = '?bBhHiIlLqQpP'
@@ -66,8 +57,6 @@ def fpow(
     /,
     out: onpt.Array[_T_shape, _T_float],
 ) -> onpt.Array[_T_shape, _T_float]: ...
-
-
 def fpow(
     x: lnpt.AnyScalarFloat | lnpt.AnyArrayFloat,
     n: lnpt.AnyScalarFloat | lnpt.AnyArrayFloat,
@@ -126,8 +115,6 @@ def gamma2(
     /,
     out: onpt.Array[_T_shape, _T_float],
 ) -> onpt.Array[_T_shape, _T_float]: ...
-
-
 def gamma2(
     a: lnpt.AnyScalarFloat,
     x: lnpt.AnyScalarFloat | lnpt.AnyArrayFloat,
@@ -224,17 +211,19 @@ def harmonic(
 
 
 @overload
-def norm_sh_jacobi(n: AnyOrder, alpha: float, beta: float) -> np.float64: ...
+def norm_sh_jacobi(
+    n: lmt.AnyOrder,
+    alpha: float,
+    beta: float,
+) -> np.float64: ...
 @overload
 def norm_sh_jacobi(
-    n: AnyOrderND,
+    n: lmt.AnyOrderND,
     alpha: float,
     beta: float,
 ) -> onpt.Array[onpt.AtLeast1D, np.float64]: ...
-
-
 def norm_sh_jacobi(
-    n: AnyOrder | AnyOrderND,
+    n: lmt.AnyOrder | lmt.AnyOrderND,
     alpha: float,
     beta: float,
 ) -> np.float64 | onpt.Array[onpt.AtLeast1D, np.float64]:
