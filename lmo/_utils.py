@@ -40,6 +40,7 @@ _SCT_ui = TypeVar('_SCT_ui', bound='lnpt.Int', default=np.int_)
 _SCT_f = TypeVar('_SCT_f', bound='lnpt.Float', default=np.float64)
 
 _DT_f = TypeVar('_DT_f', bound=np.dtype['lnpt.Float'])
+_AT_f = TypeVar('_AT_f', bound='npt.NDArray[lnpt.Float] | lnpt.Float')
 
 _SizeT = TypeVar('_SizeT', bound=int)
 
@@ -89,20 +90,31 @@ def plotting_positions(
     return np.linspace(x0 / xn, (x0 + n - 1) / xn, n, dtype=np.float64)
 
 
+@overload
+def round0(a: _AT_f, /, tol: float | None = ...) -> _AT_f: ...
+@overload
 def round0(
     a: onpt.CanArray[_ShapeT, _DT_f],
     /,
+    tol: float | None = ...,
+) -> np.ndarray[_ShapeT, _DT_f]: ...
+@overload
+def round0(a: float, /, tol: float | None = ...) -> np.float64: ...
+def round0(
+    a: float | onpt.CanArray[_ShapeT, np.dtype[_SCT_f]],
+    /,
     tol: float | None = None,
-) -> np.ndarray[_ShapeT, _DT_f]:
+) -> onpt.Array[_ShapeT, _SCT_f] | _SCT_f:
     """
     Replace all values `<= tol` with `0`.
 
     Todo:
         - Add an `inplace: bool = False` kwarg
     """
-    _a = np.asarray(a)
+    _a = np.asanyarray(a)
     _tol = np.finfo(_a.dtype).resolution * 2 if tol is None else abs(tol)
-    return cast(np.ndarray[_ShapeT, _DT_f], np.where(np.abs(a) <= _tol, 0, a))
+    out = np.where(np.abs(_a) <= _tol, 0, a)
+    return out[()] if np.isscalar(a) else out
 
 
 def _apply_aweights(
@@ -337,7 +349,10 @@ def moments_to_ratio(
     the L-moment ratio's.
     """
     assert len(rs) == 2
-    assert rs.shape[:l_rs.ndim] == l_rs.shape[:rs.ndim], [rs.shape, l_rs.shape]
+    assert rs.shape[: l_rs.ndim] == l_rs.shape[: rs.ndim], [
+        rs.shape,
+        l_rs.shape,
+    ]
 
     r_eq_s = rs[0] == rs[1]
     if r_eq_s.ndim < l_rs.ndim - 1:
@@ -361,7 +376,7 @@ def moments_to_stats_cov(
     # t_0r[1] isn't used, and can be set to anything
     # ll_kr is the L-moment cov of size R**2 (orders start at 1 here)
     assert len(t_0r) > 0
-    assert (len(t_0r) - 1)**2 == ll_kr.size
+    assert (len(t_0r) - 1) ** 2 == ll_kr.size
 
     t_0, t_r = t_0r[0], t_0r[1:]
     tt_kr = np.empty_like(ll_kr)
