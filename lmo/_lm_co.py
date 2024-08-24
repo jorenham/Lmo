@@ -104,7 +104,7 @@ def l_comoment(
             Floating type to use in computing the L-moments. Default is
             [`numpy.float64`][numpy.float64].
 
-        sort ('quicksort' | 'heapsort' | 'stable'):
+        sort ('quick' | 'heap' | 'stable'):
             Sorting algorithm, see [`numpy.sort`][numpy.sort].
         cache:
             Set to `True` to speed up future L-moment calculations that have

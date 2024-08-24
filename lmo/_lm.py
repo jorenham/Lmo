@@ -360,7 +360,7 @@ def l_moment(
             All `aweights` must be `>=0`, and the sum must be nonzero.
 
             The algorithm is similar to that for weighted quantiles.
-        sort (True | False | 'quicksort' | 'heapsort' | 'stable'):
+        sort (True | False | 'quick' | 'heap' | 'stable'):
             Sorting algorithm, see [`numpy.sort`][numpy.sort].
             Set to `False` if the array is already sorted.
         cache:
@@ -1142,7 +1142,7 @@ def l_moment_influence(
             non-negative int (or float).
 
     Other parameters:
-        sort (True | False | 'quicksort' | 'heapsort' | 'stable'):
+        sort (True | False | 'quick' | 'heap' | 'stable'):
             Sorting algorithm, see [`numpy.sort`][numpy.sort].
             Set to `False` if the array is already sorted.
         tol: Zero-roundoff absolute threshold.
@@ -1225,7 +1225,7 @@ def l_ratio_influence(
             non-negative int or float.
 
     Other parameters:
-        sort (True | False | 'quicksort' | 'heapsort' | 'stable'):
+        sort (True | False | 'quick' | 'heap' | 'stable'):
             Sorting algorithm, see [`numpy.sort`][numpy.sort].
             Set to `False` if the array is already sorted.
         tol: Zero-roundoff absolute threshold.
