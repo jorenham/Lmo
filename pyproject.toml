@@ -308,6 +308,7 @@ banned-from = [
 inline-quotes = "single"
 
 [tool.ruff.lint.flake8-type-checking]
+exempt-modules = ["typing", "typing_extensions"]
 quote-annotations = true
 
 [tool.ruff.lint.pylint]
