@@ -137,6 +137,7 @@ reportUnreachable = false  # nothing wrong with `if sys.version_info() >= ...`
 reportUnusedCallResult = false  # https://github.com/microsoft/pyright/issues/8650
 reportUnusedImport = false  # dupe of F401
 reportUnusedVariable = false  # dupe of F841
+reportUnusedParameter = false  # dupe of ARG002
 
 
 [tool.repo-review]
