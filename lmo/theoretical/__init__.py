@@ -29,8 +29,8 @@ import scipy.integrate as spi
 
 import lmo.typing.np as lnpt
 import lmo.typing.scipy as lspt
-from ._poly import eval_sh_jacobi
-from ._utils import (
+from lmo._poly import eval_sh_jacobi
+from lmo._utils import (
     clean_order,
     clean_orders,
     clean_trim,
@@ -40,13 +40,13 @@ from ._utils import (
     plotting_positions,
     round0,
 )
-from .special import fourier_jacobi, fpow
+from lmo.special import fourier_jacobi, fpow
 
 
 if TYPE_CHECKING:
     import optype.numpy as onpt
 
-    from .typing import AnyOrder, AnyOrderND, AnyTrim
+    import lmo.typing as lmt
 
 
 __all__ = (
@@ -161,9 +161,9 @@ def _tighten_cdf_support(
 @overload
 def l_moment_from_cdf(
     cdf: _Fn1,
-    r: AnyOrderND,
+    r: lmt.AnyOrderND,
     /,
-    trim: AnyTrim = ...,
+    trim: lmt.AnyTrim = ...,
     *,
     support: _Pair[float] | None = ...,
     quad_opts: lspt.QuadOptions | None = ...,
@@ -173,9 +173,9 @@ def l_moment_from_cdf(
 @overload
 def l_moment_from_cdf(
     cdf: _Fn1,
-    r: AnyOrder,
+    r: lmt.AnyOrder,
     /,
-    trim: AnyTrim = ...,
+    trim: lmt.AnyTrim = ...,
     *,
     support: _Pair[float] | None = ...,
     quad_opts: lspt.QuadOptions | None = ...,
@@ -184,9 +184,9 @@ def l_moment_from_cdf(
 ) -> np.float64: ...
 def l_moment_from_cdf(
     cdf: _Fn1,
-    r: AnyOrder | AnyOrderND,
+    r: lmt.AnyOrder | lmt.AnyOrderND,
     /,
-    trim: AnyTrim = 0,
+    trim: lmt.AnyTrim = 0,
     *,
     support: _Pair[float] | None = None,
     quad_opts: lspt.QuadOptions | None = None,
@@ -360,9 +360,9 @@ def l_moment_from_cdf(
 @overload
 def l_moment_from_ppf(
     ppf: _Fn1,
-    r: AnyOrderND,
+    r: lmt.AnyOrderND,
     /,
-    trim: AnyTrim = ...,
+    trim: lmt.AnyTrim = ...,
     *,
     support: _Pair[float] = ...,
     quad_opts: lspt.QuadOptions | None = ...,
@@ -371,9 +371,9 @@ def l_moment_from_ppf(
 @overload
 def l_moment_from_ppf(
     ppf: _Fn1,
-    r: AnyOrder,
+    r: lmt.AnyOrder,
     /,
-    trim: AnyTrim = ...,
+    trim: lmt.AnyTrim = ...,
     *,
     support: _Pair[float] = ...,
     quad_opts: lspt.QuadOptions | None = ...,
@@ -381,9 +381,9 @@ def l_moment_from_ppf(
 ) -> np.float64: ...
 def l_moment_from_ppf(
     ppf: _Fn1,
-    r: AnyOrder | AnyOrderND,
+    r: lmt.AnyOrder | lmt.AnyOrderND,
     /,
-    trim: AnyTrim = 0,
+    trim: lmt.AnyTrim = 0,
     *,
     support: _Pair[float] = (0, 1),
     quad_opts: lspt.QuadOptions | None = None,
@@ -517,9 +517,9 @@ def l_moment_from_ppf(
 @overload
 def l_moment_from_qdf(
     qdf: _Fn1,
-    r: AnyOrderND,
+    r: lmt.AnyOrderND,
     /,
-    trim: AnyTrim = ...,
+    trim: lmt.AnyTrim = ...,
     *,
     support: _Pair[float] = ...,
     quad_opts: lspt.QuadOptions | None = ...,
@@ -528,9 +528,9 @@ def l_moment_from_qdf(
 @overload
 def l_moment_from_qdf(
     qdf: _Fn1,
-    r: AnyOrder,
+    r: lmt.AnyOrder,
     /,
-    trim: AnyTrim = ...,
+    trim: lmt.AnyTrim = ...,
     *,
     support: _Pair[float] = ...,
     quad_opts: lspt.QuadOptions | None = ...,
@@ -538,9 +538,9 @@ def l_moment_from_qdf(
 ) -> np.float64: ...
 def l_moment_from_qdf(
     qdf: _Fn1,
-    r: AnyOrder | AnyOrderND,
+    r: lmt.AnyOrder | lmt.AnyOrderND,
     /,
-    trim: AnyTrim = 0,
+    trim: lmt.AnyTrim = 0,
     *,
     support: _Pair[float] = (0, 1),
     quad_opts: lspt.QuadOptions | None = None,
@@ -576,10 +576,10 @@ def l_moment_from_qdf(
 @overload
 def l_ratio_from_cdf(
     cdf: _Fn1,
-    r: AnyOrderND,
-    s: AnyOrder | AnyOrderND,
+    r: lmt.AnyOrderND,
+    s: lmt.AnyOrder | lmt.AnyOrderND,
     /,
-    trim: AnyTrim = ...,
+    trim: lmt.AnyTrim = ...,
     *,
     support: _Pair[float] | None = ...,
     quad_opts: lspt.QuadOptions | None = ...,
@@ -589,10 +589,10 @@ def l_ratio_from_cdf(
 @overload
 def l_ratio_from_cdf(
     cdf: _Fn1,
-    r: AnyOrder | AnyOrderND,
-    s: AnyOrderND,
+    r: lmt.AnyOrder | lmt.AnyOrderND,
+    s: lmt.AnyOrderND,
     /,
-    trim: AnyTrim = ...,
+    trim: lmt.AnyTrim = ...,
     *,
     support: _Pair[float] | None = ...,
     quad_opts: lspt.QuadOptions | None = ...,
@@ -602,10 +602,10 @@ def l_ratio_from_cdf(
 @overload
 def l_ratio_from_cdf(
     cdf: _Fn1,
-    r: AnyOrder,
-    s: AnyOrder,
+    r: lmt.AnyOrder,
+    s: lmt.AnyOrder,
     /,
-    trim: AnyTrim = ...,
+    trim: lmt.AnyTrim = ...,
     *,
     support: _Pair[float] | None = ...,
     quad_opts: lspt.QuadOptions | None = ...,
@@ -613,10 +613,10 @@ def l_ratio_from_cdf(
 ) -> np.float64: ...
 def l_ratio_from_cdf(
     cdf: _Fn1,
-    r: AnyOrder | AnyOrderND,
-    s: AnyOrder | AnyOrderND,
+    r: lmt.AnyOrder | lmt.AnyOrderND,
+    s: lmt.AnyOrder | lmt.AnyOrderND,
     /,
-    trim: AnyTrim = 0,
+    trim: lmt.AnyTrim = 0,
     *,
     support: _Pair[float] | None = None,
     quad_opts: lspt.QuadOptions | None = None,
@@ -646,10 +646,10 @@ def l_ratio_from_cdf(
 @overload
 def l_ratio_from_ppf(
     ppf: _Fn1,
-    r: AnyOrderND,
-    s: AnyOrder | AnyOrderND,
+    r: lmt.AnyOrderND,
+    s: lmt.AnyOrder | lmt.AnyOrderND,
     /,
-    trim: AnyTrim = ...,
+    trim: lmt.AnyTrim = ...,
     *,
     support: _Pair[float] = ...,
     quad_opts: lspt.QuadOptions | None = ...,
@@ -658,10 +658,10 @@ def l_ratio_from_ppf(
 @overload
 def l_ratio_from_ppf(
     ppf: _Fn1,
-    r: AnyOrder | AnyOrderND,
-    s: AnyOrderND,
+    r: lmt.AnyOrder | lmt.AnyOrderND,
+    s: lmt.AnyOrderND,
     /,
-    trim: AnyTrim = ...,
+    trim: lmt.AnyTrim = ...,
     *,
     support: _Pair[float] = ...,
     quad_opts: lspt.QuadOptions | None = ...,
@@ -670,10 +670,10 @@ def l_ratio_from_ppf(
 @overload
 def l_ratio_from_ppf(
     ppf: _Fn1,
-    r: AnyOrder,
-    s: AnyOrder,
+    r: lmt.AnyOrder,
+    s: lmt.AnyOrder,
     /,
-    trim: AnyTrim = ...,
+    trim: lmt.AnyTrim = ...,
     *,
     support: _Pair[float] = ...,
     quad_opts: lspt.QuadOptions | None = ...,
@@ -681,10 +681,10 @@ def l_ratio_from_ppf(
 ) -> np.float64: ...
 def l_ratio_from_ppf(
     ppf: _Fn1,
-    r: AnyOrder | AnyOrderND,
-    s: AnyOrder | AnyOrderND,
+    r: lmt.AnyOrder | lmt.AnyOrderND,
+    s: lmt.AnyOrder | lmt.AnyOrderND,
     /,
-    trim: AnyTrim = 0,
+    trim: lmt.AnyTrim = 0,
     *,
     support: _Pair[float] = (0, 1),
     quad_opts: lspt.QuadOptions | None = None,
@@ -713,7 +713,7 @@ def l_stats_from_cdf(
     cdf: _Fn1,
     num: int = 4,
     /,
-    trim: AnyTrim = 0,
+    trim: lmt.AnyTrim = 0,
     *,
     support: _Pair[float] | None = None,
     quad_opts: lspt.QuadOptions | None = None,
@@ -761,7 +761,7 @@ def l_stats_from_ppf(
     ppf: _Fn1,
     num: int = 4,
     /,
-    trim: AnyTrim = 0,
+    trim: lmt.AnyTrim = 0,
     *,
     support: _Pair[float] = (0, 1),
     quad_opts: lspt.QuadOptions | None = None,
@@ -804,9 +804,9 @@ def l_stats_from_ppf(
 
 def l_moment_cov_from_cdf(
     cdf: _Fn1,
-    r_max: AnyOrder,
+    r_max: lmt.AnyOrder,
     /,
-    trim: AnyTrim = 0,
+    trim: lmt.AnyTrim = 0,
     *,
     support: _Pair[float] | None = None,
     quad_opts: lspt.QuadOptions | None = None,
@@ -984,8 +984,8 @@ def l_moment_cov_from_cdf(
 def l_stats_cov_from_cdf(
     cdf: _Fn1,
     /,
-    num: AnyOrder = 4,
-    trim: AnyTrim = 0,
+    num: lmt.AnyOrder = 4,
+    trim: lmt.AnyTrim = 0,
     *,
     support: _Pair[float] | None = None,
     quad_opts: lspt.QuadOptions | None = None,
@@ -1087,9 +1087,9 @@ def l_stats_cov_from_cdf(
 
 def l_moment_influence_from_cdf(
     cdf: Callable[[_ArrF8], _ArrF8],
-    r: AnyOrder,
+    r: lmt.AnyOrder,
     /,
-    trim: AnyTrim = 0,
+    trim: lmt.AnyTrim = 0,
     *,
     support: _Pair[float] | None = None,
     l_moment: float | np.float64 | None = None,
@@ -1211,10 +1211,10 @@ def l_moment_influence_from_cdf(
 
 def l_ratio_influence_from_cdf(
     cdf: Callable[[_ArrF8], _ArrF8],
-    r: AnyOrder,
-    k: AnyOrder = 2,
+    r: lmt.AnyOrder,
+    k: lmt.AnyOrder = 2,
     /,
-    trim: AnyTrim = 0,
+    trim: lmt.AnyTrim = 0,
     *,
     support: _Pair[float] | None = None,
     l_moments: _Pair[float] | None = None,
@@ -1333,9 +1333,9 @@ def l_ratio_influence_from_cdf(
 def l_comoment_from_pdf(
     pdf: Callable[[_ArrF8], float],
     cdfs: Sequence[Callable[[float], float]],
-    r: AnyOrder,
+    r: lmt.AnyOrder,
     /,
-    trim: AnyTrim = 0,
+    trim: lmt.AnyTrim = 0,
     *,
     supports: Sequence[_Pair[float]] | None = None,
     quad_opts: lspt.QuadOptions | None = None,
@@ -1547,10 +1547,10 @@ def l_comoment_from_pdf(
 def l_coratio_from_pdf(
     pdf: Callable[[_ArrF8], float],
     cdfs: Sequence[Callable[[float], float]],
-    r: AnyOrder,
-    r0: AnyOrder = 2,
+    r: lmt.AnyOrder,
+    r0: lmt.AnyOrder = 2,
     /,
-    trim: AnyTrim = 0,
+    trim: lmt.AnyTrim = 0,
     *,
     supports: Sequence[_Pair[float]] | None = None,
     quad_opts: lspt.QuadOptions | None = None,
@@ -1682,7 +1682,7 @@ def _monotonic(
 def ppf_from_l_moments(
     lmbda: lnpt.AnyVectorFloat,
     /,
-    trim: AnyTrim = 0,
+    trim: lmt.AnyTrim = 0,
     *,
     support: _Pair[float] = (-np.inf, np.inf),
     validate: bool = True,
@@ -1797,7 +1797,7 @@ def ppf_from_l_moments(
 def qdf_from_l_moments(
     lmbda: lnpt.AnyVectorFloat,
     /,
-    trim: AnyTrim = 0,
+    trim: lmt.AnyTrim = 0,
     *,
     validate: bool = True,
     extrapolate: bool = False,
