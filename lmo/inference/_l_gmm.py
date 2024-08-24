@@ -226,12 +226,14 @@ def fit(  # noqa: C901
     Fit the distribution parameters using the (Generalized) Method of
     L-Moments (L-(G)MM).
 
-    The goal is to find the "true" parameters $\theta_0$ of the distribution.
-    In practise, this is done using a reasonably close estimate, $\theta$.
+    The goal is to find the "true" parameters $\bm{\theta^*}$ of the
+    distribution.
+    In practise, this is done using a reasonably close estimate,
+    $\bm{\hat\theta}$.
 
     In the (non-Generalized) Method of L-moments (L-MM), this is done by
-    solving the system of equations $l^{(s, t)}_r = \lambda^{(s, t)}_r$,
-    for $r = 1, \dots, k$, with $n = |\theta|$ the number of parameters.
+    solving the system of equations $\ell^{(s, t)}_r = \lambda^{(s, t)}_r$,
+    for $r = 1, \dots, n$, with $n$ the number of free parameters.
     Because the amount of parameters matches the amount of *L-moment
     conditions*, the solution is *point-defined*, and can be found using
     simple least squares.
@@ -241,11 +243,16 @@ def fit(  # noqa: C901
     system of $m$ equations:
 
     $$
-    \hat{\theta} =
-        \mathop{\arg \min} \limits_{\theta \in \Theta}
-        (\vec{\lambda}^{(s, t)}_r - \vec{l}^{(s, t)})^T
-        W_m
-        (\vec{\lambda}^{(s, t)}_r - \vec{l}^{(s, t)})
+    \bm{\hat\theta} =
+        \mathop{\arg \min} \limits_{\theta \in \Theta} \Bigl\{
+            \left[
+                \bm{\lambda}^{(s, t)}(X_\theta) - \bm{\ell}^{(s, t)}
+            \right]^T
+            W_m
+            \left[
+                \bm{\lambda}^{(s, t)}(X_\theta) - \bm{\ell}^{(s, t)}
+            \right]
+        \Bigr\}
         \, ,
     $$
 
@@ -267,13 +274,13 @@ def fit(  # noqa: C901
         - Raise on minimization error, warn on failed k-step convergence
         - Optional `integrality` kwarg with boolean mask for integral params.
         - Implement CUE: Continuously Updating GMM (i.e. implement and
-            use  `_loss_cue()`, then run with `k=1`). See
-            https://github.com/jorenham/Lmo/issues/299
+            use  `_loss_cue()`, then run with `k=1`), see
+            [#299](https://github.com/jorenham/Lmo/issues/299).
 
     Parameters:
         ppf:
             The (vectorized) quantile function of the probability distribution,
-            with signature `(q: T, *params: float) -> T`.
+            with signature `(q: T, *theta: float) -> T`.
         args0:
             Initial estimate of the distribution's parameter values.
         n_obs:
@@ -299,7 +306,7 @@ def fit(  # noqa: C901
             Will be ignored if $k$ is specified or if `n_extra=0`.
         l_moment_fn:
             Function for parametric L-moment calculation, with signature:
-            `(r: intp[:], *args, trim: float[2] | int[2]) -> float64[:]`.
+            `(r: intp[:], *theta: float, trim: tuple[int, int]) -> float64[:]`.
         n_mc_samples:
             The number of Monte-Carlo (MC) samples drawn from the
             distribution to to form the weight matrix in step $k > 1$.

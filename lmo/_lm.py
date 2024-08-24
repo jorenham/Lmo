@@ -360,7 +360,7 @@ def l_moment(
             All `aweights` must be `>=0`, and the sum must be nonzero.
 
             The algorithm is similar to that for weighted quantiles.
-        sort (True | False | 'quicksort' | 'heapsort' | 'stable'):
+        sort (True | False | 'quick' | 'heap' | 'stable'):
             Sorting algorithm, see [`numpy.sort`][numpy.sort].
             Set to `False` if the array is already sorted.
         cache:
@@ -926,6 +926,7 @@ def l_kurtosis(
 
 
 l_kurt = l_kurtosis
+"""Alias for [`lmo.l_kurtosis`][lmo.l_kurtosis]."""
 
 
 def l_moment_cov(
@@ -1112,7 +1113,7 @@ def l_stats_se(
     return l_ratio_se(a, r, s, trim=trim, axis=axis, dtype=dtype, **kwds)
 
 
-_T_x = TypeVar('_T_x', float, npt.NDArray[_Floating])
+_T_x = TypeVar('_T_x', bound=float | npt.NDArray[_Floating])
 
 
 def l_moment_influence(
@@ -1125,54 +1126,68 @@ def l_moment_influence(
     tol: float = 1e-8,
 ) -> Callable[[_T_x], _T_x]:
     r"""
-    Empirical Influence Function (EIF) of a sample L-moment.
+    Calculate the *Empirical Influence Function (EIF)* for a
+    [sample L-moment][lmo.l_moment] estimate.
 
     Notes:
-        This function is not vectorized.
+        This function is *not* vectorized, and can only be used for a single
+        L-moment order `r`.
+        However, the returned (empirical influence) function *is* vectorized.
 
     Args:
         a: 1-D array-like containing observed samples.
         r: L-moment order. Must be a non-negative integer.
         trim:
             Left- and right- trim. Can be scalar or 2-tuple of
-            non-negative int or float.
+            non-negative int (or float).
 
     Other parameters:
-        sort ('quicksort' | 'heapsort' | 'stable'):
+        sort (True | False | 'quick' | 'heap' | 'stable'):
             Sorting algorithm, see [`numpy.sort`][numpy.sort].
+            Set to `False` if the array is already sorted.
         tol: Zero-roundoff absolute threshold.
 
     Returns:
         influence_function:
             The (vectorized) empirical influence function.
 
+    Raises:
+        ValueError: If `a` is not 1-D array-like.
+        TypeError: If `a` is not a floating-point type.
+
     """
     _r = clean_order(r)
     s, t = clean_trim(trim)
 
-    x_k = np.array(a, copy=bool(sort))
+    x_k = np.array(a, copy=bool(sort), dtype=np.float64)
+    if x_k.ndim != 1:
+        msg = f"'a' must be 1-D array-like, got ndim={x_k.ndim}."
+        raise ValueError(msg)
     x_k = sort_maybe(x_k, sort=sort, inplace=True)
 
     n = len(x_k)
 
-    w_k = l_weights(_r, n, (s, t))[-1]
-    l_r = np.inner(w_k, x_k)
+    w_k: onpt.Array[tuple[int], np.float64] = l_weights(_r, n, (s, t))[-1]
+    l_r = cast(np.float64, w_k @ x_k)
 
     def influence_function(x: _T_x, /) -> _T_x:
-        _x = np.asarray(x)
+        _x = np.asanyarray(x)
 
         # ECDF
         # k = np.maximum(np.searchsorted(x_k, _x, side='right') - 1, 0)
-        w = cast(_T_x, np.interp(
+        w = np.interp(
             _x,
             x_k,
             w_k,
             left=0 if s else w_k[0],
             right=0 if t else w_k[-1],
-        ))
-
+        )
         alpha = n * w * np.where(w, _x, 0)
-        return cast(_T_x, round0(alpha - l_r, tol=tol)[()])
+        out = round0(alpha - l_r, tol=tol)
+
+        if _x.ndim == 0 and np.isscalar(x):
+            return out.item()
+        return cast(_T_x, out)
 
     influence_function.__doc__ = (
         f'Empirical L-moment influence function for {r=}, {trim=}, and {n=}.'
@@ -1193,10 +1208,13 @@ def l_ratio_influence(
     tol: float = 1e-8,
 ) -> Callable[[_T_x], _T_x]:
     r"""
-    Empirical Influence Function (EIF) of a sample L-moment ratio.
+    Calculate the *Empirical Influence Function (EIF)* for a
+    [sample L-moment ratio][lmo.l_ratio] estimate.
 
     Notes:
-        This function is not vectorized.
+        This function is *not* vectorized, and can only be used for a single
+        L-moment order `r`.
+        However, the returned (empirical influence) function *is* vectorized.
 
     Args:
         a: 1-D array-like containing observed samples.
@@ -1207,8 +1225,9 @@ def l_ratio_influence(
             non-negative int or float.
 
     Other parameters:
-        sort ('quicksort' | 'heapsort' | 'stable'):
+        sort (True | False | 'quick' | 'heap' | 'stable'):
             Sorting algorithm, see [`numpy.sort`][numpy.sort].
+            Set to `False` if the array is already sorted.
         tol: Zero-roundoff absolute threshold.
 
     Returns:

@@ -94,24 +94,6 @@ def l_comoment(
         trim:
             Left- and right-trim orders $(s, t)$, non-negative ints or
             floats that are bound by $s + t < n - r$.
-
-            Some special cases include:
-
-            - $(0, 0)$: The original **L**-moment, introduced by Hosking
-                (1990).  Useful for fitting the e.g. log-normal and generalized
-                extreme value (GEV) distributions.
-            - $(0, m)$: **LL**-moment (**L**inear combination of **L**owest
-                order statistics), introduced by Bayazit & Onoz (2002).
-                Assigns more weight to smaller observations.
-            - $(s, 0)$: **LH**-moment (**L**inear combination of **H**igher
-                order statistics), by Wang (1997).
-                Assigns more weight to larger observations.
-            - $(t, t)$: **TL**-moment (**T**rimmed L-moment) $\\lambda_r^t$,
-                with symmetric trimming. First introduced by
-                Elamir & Seheult (2003).
-                Generally more robust than L-moments.
-                Useful for fitting heavy-tailed distributions, such as the
-                Cauchy distribution.
         rowvar:
             If `True`, then each row (axis 0) represents a
             variable, with observations in the columns (axis 1).
@@ -122,7 +104,7 @@ def l_comoment(
             Floating type to use in computing the L-moments. Default is
             [`numpy.float64`][numpy.float64].
 
-        sort ('quicksort' | 'heapsort' | 'stable'):
+        sort ('quick' | 'heap' | 'stable'):
             Sorting algorithm, see [`numpy.sort`][numpy.sort].
         cache:
             Set to `True` to speed up future L-moment calculations that have
@@ -252,7 +234,7 @@ def l_costats(
 ) -> _Array3D[Literal[4], Any, Any, _T_float]:
     """
     Calculates the L-*co*scale, L-corr(elation), L-*co*skew(ness) and
-    L-*co*kurtosis.
+    L-*co*kurt(osis).
 
     Equivalent to `lmo.l_coratio(a, [2, 2, 3, 4], [0, 2, 2, 2], *, **)`.
 
@@ -436,3 +418,4 @@ def l_cokurtosis(
 
 
 l_cokurt = l_cokurtosis
+"""Alias for [`lmo.l_cokurtosis`][lmo.l_cokurtosis]."""

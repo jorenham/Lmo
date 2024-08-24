@@ -10,14 +10,37 @@ import optype.numpy as onpt
 
 
 __all__ = (
-    'Bool', 'Int', 'Float', 'Number', 'Natural', 'Integer', 'Real',
-    'AnyScalar', 'AnyScalarBool', 'AnyScalarInt', 'AnyScalarFloat',
-    'AnyVector', 'AnyVectorBool', 'AnyVectorFloat', 'AnyVectorFloat',
-    'AnyMatrix', 'AnyMatrixBool', 'AnyMatrixInt', 'AnyMatrixFloat',
-    'AnyTensor', 'AnyTensorBool', 'AnyTensorInt', 'AnyTensorFloat',
-    'AnyArray', 'AnyArrayBool', 'AnyArrayInt', 'AnyArrayFloat',
+    'Bool',
+    'Int',
+    'Float',
+    'Number',
+    'Natural',
+    'Integer',
+    'Real',
+    'AnyScalar',
+    'AnyScalarBool',
+    'AnyScalarInt',
+    'AnyScalarFloat',
+    'AnyVector',
+    'AnyVectorBool',
+    'AnyVectorFloat',
+    'AnyVectorFloat',
+    'AnyMatrix',
+    'AnyMatrixBool',
+    'AnyMatrixInt',
+    'AnyMatrixFloat',
+    'AnyTensor',
+    'AnyTensorBool',
+    'AnyTensorInt',
+    'AnyTensorFloat',
+    'AnyArray',
+    'AnyArrayBool',
+    'AnyArrayInt',
+    'AnyArrayFloat',
     'SortKind',
-    'Order', 'OrderReshape', 'OrderCopy',
+    'Order',
+    'OrderReshape',
+    'OrderCopy',
     'RandomState',
     'Casting',
 )
@@ -114,7 +137,14 @@ OrderReshape: TypeAlias = Literal[Order, 'A']
 OrderCopy: TypeAlias = Literal[OrderReshape, 'K']
 """Type of the `order` parameter of e.g. [`np.array`][numpy.array]."""
 
-SortKind: TypeAlias = Literal['quicksort', 'heapsort', 'stable']
+SortKind: TypeAlias = Literal[
+    'quick',
+    'quicksort',
+    'stable',
+    'stablesort',
+    'heap',
+    'heapsort',
+]
 """
 Type of the `kind` parameter of e.g. [`np.sort`][numpy.sort], as
 allowed by numpy's own stubs.
@@ -136,7 +166,7 @@ Seed: TypeAlias = (
     | np.random.SeedSequence
     | np.random.BitGenerator
     | np.random.Generator
-)
+)  # fmt: skip
 """
 Any acceptable "seed" type that can be passed to
 [`numpy.random.default_rng`][numpy.random.default_rng].

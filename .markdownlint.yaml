@@ -10,4 +10,6 @@ MD033:
     - "th"
     - "td"
     - "img"
+    - "sup"
+    - "sub"
 MD041: false

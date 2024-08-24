@@ -28,7 +28,7 @@ r"""A Wakeby random variable, a generalization of
 [`wakeby`][wakeby] takes \( b \), \( d \) and \( f \) as shape parameters.
 
 For a detailed description of the Wakeby distribution, refer to
-[Distributions - Wakeby](distributions.md#wakeby).
+[Distributions - Wakeby](../distributions.md#wakeby).
 """
 
 
@@ -52,7 +52,7 @@ for \( 0 < x < 1,\ a > 0,\ b > 0 \).
 [`kumaraswamy`][kumaraswamy] takes \( a \) and \( b \) as shape parameters.
 
 See Also:
-    - [Theoretical L-moments - Kumaraswamy](distributions.md#kumaraswamy)
+    - [Theoretical L-moments - Kumaraswamy](../distributions.md#kumaraswamy)
 """
 
 
@@ -70,5 +70,5 @@ If `f == 0` and `b == d`, `genlambda` is equivalent to
 shape parameter.
 
 For a detailed description of the GLD, refer to
-[Distributions - GLD](distributions.md#gld).
+[Distributions - GLD](../distributions.md#gld).
 """
