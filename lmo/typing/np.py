@@ -114,7 +114,7 @@ OrderReshape: TypeAlias = Literal[Order, 'A']
 OrderCopy: TypeAlias = Literal[OrderReshape, 'K']
 """Type of the `order` parameter of e.g. [`np.array`][numpy.array]."""
 
-SortKind: TypeAlias = Literal['quicksort', 'heapsort', 'stable']
+SortKind: TypeAlias = Literal['quicksort', 'heapsort', 'stablesort']
 """
 Type of the `kind` parameter of e.g. [`np.sort`][numpy.sort], as
 allowed by numpy's own stubs.
