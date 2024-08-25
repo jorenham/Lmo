@@ -11,7 +11,6 @@ from typing import (
     Any,
     ClassVar,
     Literal,
-    NamedTuple,
     Protocol,
     TypeAlias,
     TypeVar,
@@ -1201,7 +1200,10 @@ class l_rv_generic(PatchClass):
                 scipy_fit(self, data, bounds=bounds, guess=args or None),
             ).params
 
-        _lmo_cache = {}
+        x = np.asarray(data)
+        r = np.arange(1, len(args0) + n_extra + 1)
+
+        _lmo_cache: dict[tuple[float, ...], _ArrF8] = {}
         _lmo_fn = self._l_moment
 
         # temporary cache to speed up L-moment calculations with the same
@@ -1213,17 +1215,18 @@ class l_rv_generic(PatchClass):
         ) -> _ArrF8:
             shapes, loc, scale = args[:-2], args[-2], args[-1]
 
-            # r and trim will be the same within inference.fit; safe to ignore
+            # r and trim are constants, so it's safe to ignore them here
             if shapes in _lmo_cache:
-                lmbda_r = np.asarray(_lmo_cache[shapes], np.float64)
+                lmbda_r = _lmo_cache[shapes]
             else:
                 lmbda_r = _lmo_fn(r, *shapes, trim=trim)
-                _lmo_cache[shapes] = tuple(lmbda_r)
+                lmbda_r.setflags(write=False)  # prevent cache corruption
+                _lmo_cache[shapes] = lmbda_r
 
-            if scale != 1:
-                lmbda_r[r >= 1] *= scale
+            # ensure we're working with a copy
+            lmbda_r = lmbda_r * scale  # noqa: PLR6104
             if loc != 0:
-                lmbda_r[r == 1] += loc
+                lmbda_r[0] += loc
             return lmbda_r
 
         kwargs0: dict[str, Any] = {
@@ -1235,14 +1238,11 @@ class l_rv_generic(PatchClass):
             # => weight matrix is constant between steps, use 1 step by default
             kwargs0['k'] = 1
 
-        x = np.asarray(data)
-        r = np.arange(1, len(args0) + n_extra + 1)
-
         result = inference.fit(
             ppf=self.ppf,
             args0=args0,
             n_obs=x.size,
-            l_moments=l_moment_est(x, r, trim=trim, sort='quicksort'),
+            l_moments=l_moment_est(x, r, trim=trim),
             r=r,
             trim=trim,
             l_moment_fn=lmo_fn,
@@ -1251,12 +1251,7 @@ class l_rv_generic(PatchClass):
         if full_output:
             return result
 
-        params_and_types = [
-            (param.name, int if param.integrality else float)
-            for param in self._param_info()
-        ]
-        FitArgs = NamedTuple('FitArgs', params_and_types)
-        return FitArgs(*result.args)
+        return tuple(map(float, result.args))
 
     def l_fit_loc_scale(
         self,
