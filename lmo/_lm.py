@@ -329,7 +329,7 @@ def l_moment(
             - $(0, 0)$ or $(0)$: The original **L**-moment, introduced by
                 Hosking in 1990.
             - $(t, t)$ or $(t)$: **TL**-moment (**T**rimmed L-moment)
-                $\\lambda_r^t$, with symmetric trimming. First introduced by
+                $\lambda_r^{(t)}$, with symmetric trimming. First introduced by
                 Elamir & Seheult in 2003, and refined by Hosking in 2007.
                 Generally more robust than L-moments. Useful for fitting
                 pathological distributions, such as the Cauchy distribution.
