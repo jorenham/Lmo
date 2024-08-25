@@ -1114,18 +1114,18 @@ class l_rv_generic(PatchClass):
             (Method of L-moment):
 
             >>> norm.l_fit(x, random_state=rng)
-            FitArgs(loc=0.0033145, scale=0.96179)
+            (0.0033145, 0.96179)
             >>> norm.l_fit(x, trim=1, random_state=rng)
-            FitArgs(loc=0.019765, scale=0.96749)
+            (0.0196385, 0.96861)
 
             To use more L-moments than the number of parameters, two in this
             case, `n_extra` can be used. This will use the L-GMM (Generalized
             Method of L-Moments), which results in slightly better estimates:
 
             >>> norm.l_fit(x, n_extra=1, random_state=rng)
-            FitArgs(loc=0.0039747, scale=0.96233)
+            (0.0039747, .96233)
             >>> norm.l_fit(x, trim=1, n_extra=1, random_state=rng)
-            FitArgs(loc=-0.00127874, scale=0.968547)
+            (-0.00127874, 0.968547)
 
         Parameters:
             data:
