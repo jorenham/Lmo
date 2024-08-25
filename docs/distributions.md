@@ -824,7 +824,7 @@ There are several notable special cases of the GPD:
 
 ### Burr III / Dagum
 
-The *Burr III* distribution [^BURR], also known as the
+The *Burr III* distribution [@burr1942], also known as the
 [*Dagum distribution*](https://wikipedia.org/wiki/Dagum_distribution), has two
 shape parameters \( \alpha \) and \( \beta \), both restricted to the
 positive reals
