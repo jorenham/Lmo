@@ -1,5 +1,10 @@
+---
+hide:
+  - navigation
+---
+
 <!-- markdownlint-disable MD051 MD052 -->
-# L-moments of common probability distributions
+# Exact L-moments of probability distributions
 
 This page lists theoretical L-moments [@hosking1990] of popular probability
 distributions.
@@ -33,14 +38,14 @@ Numerical calculation of these L-statistics using [`scipy.stats`][scipy.stats]
 distributions, refer to
 [`rv_continuous.l_stats`][lmo.contrib.scipy_stats.l_rv_generic.l_stats].
 
-For direct calculation of the L-stats from a CDF or PPF, see
-[`l_stats_from_cdf`][lmo.theoretical.l_stats_from_cdf] or
-[`l_stats_from_ppf`][lmo.theoretical.l_stats_from_ppf], respectively.
+For direct calculation of the L-stats from a CDF or PPF function, see
+
+- [`lmo.theoretical.l_stats_from_cdf`][lmo.theoretical.l_stats_from_cdf]
+- [`lmo.theoretical.l_stats_from_ppf`][lmo.theoretical.l_stats_from_ppf]
 ///
 
-An overview of the L-location, L-scale, L-skewness and L-kurtosis,
-of a bunch of popular univariate probability distributions, for which they
-exist (in closed form).
+An overview of the exact L-location, L-scale, L-skewness and L-kurtosis
+of some well-known (univariate) probability distributions.
 
 ### L-stats
 

@@ -160,8 +160,23 @@ markdown_extensions:
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
+      alt: short
+      options:
+        attributes:
+          align: absmiddle
+          height: "20px"
+          width: "20px"
+        image_path: https://github.githubassets.com/images/icons/emoji/unicode/
+        non_standard_image_path: https://github.githubassets.com/images/icons/emoji/
   - pymdownx.highlight
   - pymdownx.inlinehilite
+  - pymdownx.magiclink:
+      repo_url_shortener: true
+      repo_url_shorthand: true
+      provider: github
+      user: jorenham
+      repo: Lmo
+  - pymdownx.saneheaders
   - pymdownx.snippets
   - pymdownx.striphtml
   - pymdownx.superfences
@@ -173,7 +188,8 @@ markdown_extensions:
           case: lower
   - pymdownx.tasklist:
       custom_checkbox: true
-  - pymdownx.tilde
+  - pymdownx.tilde:
+      subscript: false
 
 extra_css:
   - https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css
