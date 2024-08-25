@@ -52,7 +52,7 @@ optype = {version = "^0.6.1", extras = ["numpy"]}
 
 [tool.poetry.group.dev.dependencies]
 codespell = "^2.3.0"
-hypothesis = {version = "^6.111.1", extras = ["numpy"]}
+hypothesis = {version = "^6.111.2", extras = ["numpy"]}
 pre-commit = "^3.8.0"
 basedpyright = "^1.17.0"
 pytest = "^8.3.2"
@@ -75,6 +75,7 @@ mkdocstrings = {version = "^0.25.2", extras = ["python"]}
 [tool.poetry.group.debug.dependencies]
 ipython = "^8.26.0"
 ipykernel = "^6.29.5"
+line_profiler = "4.1.3"
 matplotlib = "^3.9.2"
 typing-extensions = "^4.12.2"
 
