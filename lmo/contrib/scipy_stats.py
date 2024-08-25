@@ -155,7 +155,7 @@ class l_rv_generic(PatchClass):
 
     def _l_moment(
         self,
-        r: npt.NDArray[np.int64],
+        r: npt.NDArray[np.intp],
         *args: Any,
         trim: _Tuple2[int] | _Tuple2[float] = (0, 0),
         quad_opts: lspt.QuadOptions | None = None,
@@ -185,20 +185,12 @@ class l_rv_generic(PatchClass):
         # re-wrap scalars in 0-d arrays (lmo.theoretical unpacks them)
         return np.asarray(lmbda_r)
 
-    def _logqdf(
-        self,
-        u: _ArrF8,
-        *args: Any,
-    ) -> _ArrF8:
+    def _logqdf(self, u: _ArrF8, *args: Any) -> _ArrF8:
         """Overridable log quantile distribution function (QDF)."""
         with np.errstate(divide='ignore'):
             return -self._logpxf(self._ppf(u, *args), *args)
 
-    def _qdf(
-        self,
-        u: _ArrF8,
-        *args: Any,
-    ) -> _ArrF8:
+    def _qdf(self, u: _ArrF8, *args: Any) -> _ArrF8:
         r"""
         Overridable quantile distribution function (QDF).
 
@@ -520,12 +512,7 @@ class l_rv_generic(PatchClass):
             **kwds,
         )
 
-    def l_loc(
-        self,
-        *args: Any,
-        trim: lmt.AnyTrim = 0,
-        **kwds: Any,
-    ) -> float:
+    def l_loc(self, *args: Any, trim: lmt.AnyTrim = 0, **kwds: Any) -> float:
         """
         L-location of the distribution, i.e. the 1st L-moment.
 
@@ -536,12 +523,7 @@ class l_rv_generic(PatchClass):
 
         return float(self.l_moment(1, *args, trim=trim, **kwds))
 
-    def l_scale(
-        self,
-        *args: Any,
-        trim: lmt.AnyTrim = 0,
-        **kwds: Any,
-    ) -> float:
+    def l_scale(self, *args: Any, trim: lmt.AnyTrim = 0, **kwds: Any) -> float:
         """
         L-scale of the distribution, i.e. the 2nd L-moment.
 
@@ -549,31 +531,21 @@ class l_rv_generic(PatchClass):
         """
         return float(self.l_moment(2, *args, trim=trim, **kwds))
 
-    def l_skew(
-        self,
-        *args: Any,
-        trim: lmt.AnyTrim = 0,
-        **kwds: Any,
-    ) -> float:
+    def l_skew(self, *args: Any, trim: lmt.AnyTrim = 0, **kwds: Any) -> float:
         """L-skewness coefficient of the distribution; the 3rd L-moment ratio.
 
         Alias for `X.l_ratio(3, 2, ...)`.
         """
         return float(self.l_ratio(3, 2, *args, trim=trim, **kwds))
 
-    def l_kurtosis(
-        self,
-        *args: Any,
-        trim: lmt.AnyTrim = 0,
-        **kwds: Any,
-    ) -> float:
+    def l_kurt(self, *args: Any, trim: lmt.AnyTrim = 0, **kwds: Any) -> float:
         """L-kurtosis coefficient of the distribution; the 4th L-moment ratio.
 
         Alias for `X.l_ratio(4, 2, ...)`.
         """
         return float(self.l_ratio(4, 2, *args, trim=trim, **kwds))
 
-    l_kurt = l_kurtosis
+    l_kurtosis = l_kurt
 
     def l_moments_cov(
         self,
@@ -1231,7 +1203,7 @@ class l_rv_generic(PatchClass):
         # temporary cache to speed up L-moment calculations with the same
         # shape args
         def lmo_fn(
-            r: npt.NDArray[np.int64],
+            r: npt.NDArray[np.intp],
             *args: float,
             trim: tuple[int, int] | tuple[float, float] = (0, 0),
         ) -> _ArrF8:
