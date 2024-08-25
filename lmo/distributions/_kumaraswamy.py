@@ -14,6 +14,7 @@ from scipy.stats.distributions import rv_continuous as _rv_continuous
 import lmo.typing.scipy as lspt
 from lmo.special import harmonic
 from lmo.theoretical import l_moment_from_ppf
+from ._lm import get_lm_func
 
 
 if TYPE_CHECKING:
@@ -25,31 +26,7 @@ __all__ = ('kumaraswamy_gen',)
 
 _ArrF8: TypeAlias = onpt.Array[tuple[int, ...], np.float64]
 
-
-def _kumaraswamy_lmo0(
-    r: int,
-    s: int,
-    t: int,
-    a: float,
-    b: float,
-) -> np.float64:
-    if r == 0:
-        return np.float64(1)
-
-    k = np.arange(t + 1, r + s + t + 1)
-    return (
-        np.sum(
-            (-1) ** (k - 1)
-            * cast(_ArrF8, sc.comb(r + k - 2, r + t - 1))  # pyright: ignore[reportUnknownMemberType]
-            * cast(_ArrF8, sc.comb(r + s + t, k))  # pyright: ignore[reportUnknownMemberType]
-            * cast(_ArrF8, sc.beta(1 / a, 1 + k * b))
-            / a,
-        )
-        / r
-    )
-
-
-_kumaraswamy_lmo = np.vectorize(_kumaraswamy_lmo0, [float], excluded={1, 2})
+_lm_kumaraswamy = get_lm_func('kumaraswamy')
 
 
 @final
@@ -88,9 +65,9 @@ class kumaraswamy_gen(cast(type[lspt.AnyRV], _rv_continuous)):  # pyright: ignor
         )
 
     @overload
-    def _ppf(self, u: float, a: float, b: float) -> np.float64: ...
-    @overload
     def _ppf(self, u: _ArrF8, a: float, b: float) -> _ArrF8: ...
+    @overload
+    def _ppf(self, u: float, a: float, b: float) -> np.float64: ...
     def _ppf(
         self,
         u: float | _ArrF8,
@@ -115,13 +92,12 @@ class kumaraswamy_gen(cast(type[lspt.AnyRV], _rv_continuous)):  # pyright: ignor
         quad_opts: lspt.QuadOptions | None = None,
     ) -> _ArrF8:
         s, t = trim
-        if quad_opts is not None or isinstance(s, float):
-
+        try:
+            out = _lm_kumaraswamy(r, s, t, a, b)
+        except NotImplementedError:
             def _ppf(u: float, /) -> np.float64:
                 return self._ppf(u, a, b)
 
             out = l_moment_from_ppf(_ppf, r, trim=trim, quad_opts=quad_opts)
-        else:
-            out = cast(_ArrF8, _kumaraswamy_lmo(r, s, t, a, b))
 
         return np.atleast_1d(out)

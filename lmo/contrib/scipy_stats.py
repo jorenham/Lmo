@@ -5,6 +5,7 @@ Extension methods for the (univariate) distributions in
 """
 from __future__ import annotations
 
+import contextlib
 from collections.abc import Callable, Mapping, Sequence
 from typing import (
     Any,
@@ -38,6 +39,7 @@ from lmo._utils import (
     moments_to_ratio,
     round0,
 )
+from lmo.distributions._lm import get_lm_func, has_lm_func
 from lmo.theoretical import (
     l_moment_cov_from_cdf,
     l_moment_from_cdf,
@@ -110,7 +112,7 @@ class l_rv_generic(PatchClass):
     a: float | None
     b: float | None
     badvalue: float | None
-    name: int
+    name: str
     numargs: int
     random_state: np.random.RandomState | np.random.Generator
     shapes: str
@@ -165,13 +167,15 @@ class l_rv_generic(PatchClass):
         `loc=0` and `scale=1`).
 
         Todo:
-            - Sparse caching; key as `(self.name, args, r, trim)`, using a
+            - Sparse caching; key as `(self, args, r, trim)`, using a
             priority queue. Prefer small `r` and `sum(trim)`, skip fractional
             trim.
-            - Dispatch mechanism for providing known theoretical L-moments
-            of specific distributions, `r` and `trim`.
-
         """
+        name = self.name
+        if not quad_opts and has_lm_func(name):
+            with contextlib.suppress(NotImplementedError):
+                return get_lm_func(name)(r, trim[0], trim[1], *args)
+
         cdf, ppf = self._get_xxf(*args)
         lmbda_r = l_moment_from_cdf(
             cdf,
