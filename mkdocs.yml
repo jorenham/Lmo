@@ -20,8 +20,7 @@ nav:
       - api/diagnostic.md
       - api/pandas.md
       - api/low_level.md
-  - "Theory":
-      - Distributions: distributions.md
+  - Distributions: distributions.md
   - Contributing: contributing.md
 
 theme:
