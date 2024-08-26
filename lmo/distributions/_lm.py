@@ -1,8 +1,11 @@
 """
 Known theoretical L-moments for specific distributions.
+The names that are used here, match those in
+[`scipy.stats.distributions`][scipy.stats.distributions].
 """
 from __future__ import annotations
 
+import math
 import sys
 from collections.abc import Callable
 from typing import (
@@ -19,6 +22,7 @@ from typing import (
 )
 
 import numpy as np
+import numpy.typing as npt
 import optype.numpy as onpt
 import scipy.special as sps
 
@@ -36,14 +40,22 @@ if TYPE_CHECKING:
 
 __all__ = [
     'lm_expon',
+    'lm_gumbel_r',
+    'lm_genextreme',
     'lm_kumaraswamy',
     'lm_wakeby',
     'lm_genlambda',
 ]
 
 DistributionName: TypeAlias = Literal[
+    # 0 params
     'expon',
+    'gumbel_r',
+    # 1 params
+    'genextreme',
+    # 2 params
     'kumaraswamy',
+    # 3 params
     'wakeby',
     'genlambda',
 ]
@@ -135,6 +147,121 @@ def lm_expon(r: int, s: float, t: float, /) -> float:
         return 1 / (2 * (t + 1) * (t + 2) * (t + 3))
 
     return sps.beta(r - 1, t + 1) / r
+
+
+_LN2: Final = np.log(2)
+_LN3: Final = np.log(3)
+_LN5: Final = np.log(5)
+
+
+# workaround for partial type annotations (i.e. missing and un-inferrable)
+_binom = cast(
+    Callable[
+        [npt.NDArray[np.intp] | int, npt.NDArray[np.intp] | int],
+        npt.NDArray[np.intp],
+    ],
+    sps.comb,
+)
+
+
+@register_lm_func('gumbel_r')
+def lm_gumbel_r(  # noqa: C901
+    r: int,
+    s: float,
+    t: float,
+    /,
+) -> np.float64 | float:
+    if r == 0:
+        return 1
+
+    if not isinstance(s, int) or not isinstance(t, int):
+        msg = 'fractional trimming'
+        raise NotImplementedError(msg)
+
+    match (r, s, t):
+        case (1, 0, 0):
+            return np.euler_gamma
+        case (1, 0, 1):
+            return np.euler_gamma - _LN2
+        case (1, 1, 1):
+            return np.euler_gamma + _LN2 * 3 - _LN3 * 2
+
+        case (2, 0, 0):
+            return _LN2
+        case (2, 0, 1):
+            return _LN2 * 3 - _LN3 * 3 / 2
+        case (2, 1, 1):
+            return _LN2 * -9 + _LN3 * 2
+
+        case (3, 0, 0):
+            return _LN2 * -3 + _LN3 * 2
+        case (3, 0, 1):
+            return _LN2 * -38 / 3 + _LN3 * 8
+        case (3, 1, 1):
+            return (_LN2 * 110 - _LN3 * 40 - _LN5 * 20) / 3
+
+        case (4, 0, 0):
+            return _LN2 * 16 - _LN3 * 10
+        case (4, 0, 1):
+            return _LN2 * 60 - _LN3 * 25 - _LN5 * 35 / 4
+        case (4, 1, 1):
+            return (_LN2 * -107 + _LN3 * 6 + _LN5 * 42) * 5 / 4
+
+        case _:
+            k0 = s + 1
+            kn = r + s + t
+            k = np.arange(k0, kn + 1, dtype=np.intp)
+            # TODO: the _binom is numerically unstable for r+s+t>8
+            return np.sum(
+                (-1) ** k
+                * _binom(kn, k)
+                * _binom(k + (r - 2), k - k0)
+                * (np.log(k) + np.euler_gamma),
+            ) * (-1) ** (r + s) / r
+
+
+_EPS = sys.float_info.epsilon
+
+
+@register_lm_func('genextreme')
+def lm_genextreme(
+    r: int,
+    s: float,
+    t: float,
+    /,
+    a: float,
+) -> np.float64 | float:
+    if r == 0:
+        return 1
+    if -_EPS / 2 < a < _EPS / 2:  # effectively zero
+        return cast(_LmFunc[[]], lm_gumbel_r.pyfunc)(r, s, t)  # pyright: ignore[reportAttributeAccessIssue]
+
+    if not isinstance(s, int) or not isinstance(t, int):
+        msg = 'fractional trimming'
+        raise NotImplementedError(msg)
+
+    if a < 0 and a.is_integer():
+        msg = 'a cannot be a negative integer'
+        raise ValueError(msg)
+
+    k0 = s + 1
+    kn = r + s + t
+    k = np.arange(k0, kn + 1, dtype=np.intp)
+
+    # gamma will < 0, but `scipy.special.gammaln = (_) -> ln(|gamma(_)|)`
+    # --> flip the sign in the exponent
+    gamma_sgn = -1 if a < 0 and math.floor(a) % 2 else +1
+
+    return np.sum(
+        # TODO: the _binom is numerically unstable for r+s+t>8
+        (-1) ** k
+        * _binom(kn, k)
+        * _binom(k + (r - 2), k - k0)
+        * (1 / a - np.exp(gamma_sgn * sps.gammaln(a) - a * np.log(k))),
+    ) * (-1) ** (r + s) / r
+
+    # TODO
+    raise NotImplementedError
 
 
 @register_lm_func('kumaraswamy')

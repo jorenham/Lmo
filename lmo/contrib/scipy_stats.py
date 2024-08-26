@@ -171,7 +171,7 @@ class l_rv_generic(PatchClass):
             trim.
         """
         name = self.name
-        if not quad_opts and has_lm_func(name):
+        if quad_opts is not None and has_lm_func(name):
             with contextlib.suppress(NotImplementedError):
                 return get_lm_func(name)(r, trim[0], trim[1], *args)
 
@@ -1313,7 +1313,6 @@ class l_rv_frozen(PatchClass):  # noqa: D101
         trim: lmt.AnyTrim = ...,
         quad_opts: lspt.QuadOptions | None = ...,
     ) -> _ArrF8: ...
-
     @overload
     def l_moment(
         self,
@@ -1322,7 +1321,6 @@ class l_rv_frozen(PatchClass):  # noqa: D101
         trim: lmt.AnyTrim = ...,
         quad_opts: lspt.QuadOptions | None = ...,
     ) -> np.float64: ...
-
     def l_moment(  # noqa: D102
         self,
         order: lmt.AnyOrder | lmt.AnyOrderND,
@@ -1347,7 +1345,6 @@ class l_rv_frozen(PatchClass):  # noqa: D101
         trim: lmt.AnyTrim = ...,
         quad_opts: lspt.QuadOptions | None = ...,
     ) -> _ArrF8: ...
-
     @overload
     def l_ratio(
         self,
@@ -1357,7 +1354,6 @@ class l_rv_frozen(PatchClass):  # noqa: D101
         trim: lmt.AnyTrim = ...,
         quad_opts: lspt.QuadOptions | None = ...,
     ) -> np.float64: ...
-
     def l_ratio(  # noqa: D102
         self,
         order: lmt.AnyOrder | lmt.AnyOrderND,

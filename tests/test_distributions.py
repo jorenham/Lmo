@@ -180,3 +180,12 @@ def test_genlambda(b: float, d: float, f: float):
     assert tl_tau_quad[1] > 0 or np.isnan(tl_tau_quad[1])
     tl_tau_theo = X.l_stats(trim=1)
     assert_allclose(tl_tau_theo, tl_tau_quad, atol=1e-7)
+
+
+# TODO: tests for:
+# - lm_expon
+# - lm_gumbel_r
+# - lm_genextreme
+# - lm_kumaraswamy
+# - lm_wakeby
+# - lm_genlambda
