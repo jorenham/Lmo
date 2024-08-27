@@ -787,8 +787,8 @@ compactly expressed as
         & \text{if } \alpha = 0 \wedge r = 1 \\
     \displaystyle \frac{1}{\alpha r} \left[
         \frac
-            {\B(t + 1 - \alpha,\ r - 1 + \alpha)}
-            {\B(r + s + t - 1 - \alpha,\ \alpha)}
+            {\B(r + \alpha - 1,\ t - \alpha + 1)}
+            {\B(\alpha,\ r + s + t - \alpha + 1)}
         - \ffact{1}{r}
     \right]
         & \text{otherwise,}
