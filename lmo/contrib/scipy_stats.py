@@ -5,12 +5,12 @@ Extension methods for the (univariate) distributions in
 """
 from __future__ import annotations
 
+import contextlib
 from collections.abc import Callable, Mapping, Sequence
 from typing import (
     Any,
     ClassVar,
     Literal,
-    NamedTuple,
     Protocol,
     TypeAlias,
     TypeVar,
@@ -38,6 +38,7 @@ from lmo._utils import (
     moments_to_ratio,
     round0,
 )
+from lmo.distributions._lm import get_lm_func, has_lm_func
 from lmo.theoretical import (
     l_moment_cov_from_cdf,
     l_moment_from_cdf,
@@ -110,7 +111,7 @@ class l_rv_generic(PatchClass):
     a: float | None
     b: float | None
     badvalue: float | None
-    name: int
+    name: str
     numargs: int
     random_state: np.random.RandomState | np.random.Generator
     shapes: str
@@ -155,7 +156,7 @@ class l_rv_generic(PatchClass):
 
     def _l_moment(
         self,
-        r: npt.NDArray[np.int64],
+        r: npt.NDArray[np.intp],
         *args: Any,
         trim: _Tuple2[int] | _Tuple2[float] = (0, 0),
         quad_opts: lspt.QuadOptions | None = None,
@@ -165,40 +166,37 @@ class l_rv_generic(PatchClass):
         `loc=0` and `scale=1`).
 
         Todo:
-            - Sparse caching; key as `(self.name, args, r, trim)`, using a
+            - Sparse caching; key as `(self, args, r, trim)`, using a
             priority queue. Prefer small `r` and `sum(trim)`, skip fractional
             trim.
-            - Dispatch mechanism for providing known theoretical L-moments
-            of specific distributions, `r` and `trim`.
-
         """
+        name = self.name
+        if quad_opts is None and has_lm_func(name):
+            with contextlib.suppress(NotImplementedError):
+                return get_lm_func(name)(r, trim[0], trim[1], *args)
+
         cdf, ppf = self._get_xxf(*args)
-        lmbda_r = l_moment_from_cdf(
-            cdf,
-            r,
-            trim=trim,
-            support=self._get_support(*args),
-            ppf=ppf,
-            quad_opts=quad_opts,
-        )
+
+        # TODO: use ppf when appropriate (e.g. genextreme, tukeylambda, kappa4)
+        with np.errstate(over='ignore', under='ignore'):
+            lmbda_r = l_moment_from_cdf(
+                cdf,
+                r,
+                trim=trim,
+                support=self._get_support(*args),
+                ppf=ppf,
+                quad_opts=quad_opts,
+            )
 
         # re-wrap scalars in 0-d arrays (lmo.theoretical unpacks them)
         return np.asarray(lmbda_r)
 
-    def _logqdf(
-        self,
-        u: _ArrF8,
-        *args: Any,
-    ) -> _ArrF8:
+    @np.errstate(divide='ignore')
+    def _logqdf(self, u: _ArrF8, *args: Any) -> _ArrF8:
         """Overridable log quantile distribution function (QDF)."""
-        with np.errstate(divide='ignore'):
-            return -self._logpxf(self._ppf(u, *args), *args)
+        return -self._logpxf(self._ppf(u, *args), *args)
 
-    def _qdf(
-        self,
-        u: _ArrF8,
-        *args: Any,
-    ) -> _ArrF8:
+    def _qdf(self, u: _ArrF8, *args: Any) -> _ArrF8:
         r"""
         Overridable quantile distribution function (QDF).
 
@@ -520,12 +518,7 @@ class l_rv_generic(PatchClass):
             **kwds,
         )
 
-    def l_loc(
-        self,
-        *args: Any,
-        trim: lmt.AnyTrim = 0,
-        **kwds: Any,
-    ) -> float:
+    def l_loc(self, *args: Any, trim: lmt.AnyTrim = 0, **kwds: Any) -> float:
         """
         L-location of the distribution, i.e. the 1st L-moment.
 
@@ -536,12 +529,7 @@ class l_rv_generic(PatchClass):
 
         return float(self.l_moment(1, *args, trim=trim, **kwds))
 
-    def l_scale(
-        self,
-        *args: Any,
-        trim: lmt.AnyTrim = 0,
-        **kwds: Any,
-    ) -> float:
+    def l_scale(self, *args: Any, trim: lmt.AnyTrim = 0, **kwds: Any) -> float:
         """
         L-scale of the distribution, i.e. the 2nd L-moment.
 
@@ -549,31 +537,21 @@ class l_rv_generic(PatchClass):
         """
         return float(self.l_moment(2, *args, trim=trim, **kwds))
 
-    def l_skew(
-        self,
-        *args: Any,
-        trim: lmt.AnyTrim = 0,
-        **kwds: Any,
-    ) -> float:
+    def l_skew(self, *args: Any, trim: lmt.AnyTrim = 0, **kwds: Any) -> float:
         """L-skewness coefficient of the distribution; the 3rd L-moment ratio.
 
         Alias for `X.l_ratio(3, 2, ...)`.
         """
         return float(self.l_ratio(3, 2, *args, trim=trim, **kwds))
 
-    def l_kurtosis(
-        self,
-        *args: Any,
-        trim: lmt.AnyTrim = 0,
-        **kwds: Any,
-    ) -> float:
+    def l_kurt(self, *args: Any, trim: lmt.AnyTrim = 0, **kwds: Any) -> float:
         """L-kurtosis coefficient of the distribution; the 4th L-moment ratio.
 
         Alias for `X.l_ratio(4, 2, ...)`.
         """
         return float(self.l_ratio(4, 2, *args, trim=trim, **kwds))
 
-    l_kurt = l_kurtosis
+    l_kurtosis = l_kurt
 
     def l_moments_cov(
         self,
@@ -1139,18 +1117,18 @@ class l_rv_generic(PatchClass):
             (Method of L-moment):
 
             >>> norm.l_fit(x, random_state=rng)
-            FitArgs(loc=0.0033145, scale=0.96179)
+            (0.0033145, 0.96179)
             >>> norm.l_fit(x, trim=1, random_state=rng)
-            FitArgs(loc=0.019765, scale=0.96749)
+            (0.0196385, 0.96861)
 
             To use more L-moments than the number of parameters, two in this
             case, `n_extra` can be used. This will use the L-GMM (Generalized
             Method of L-Moments), which results in slightly better estimates:
 
             >>> norm.l_fit(x, n_extra=1, random_state=rng)
-            FitArgs(loc=0.0039747, scale=0.96233)
+            (0.0039747, .96233)
             >>> norm.l_fit(x, trim=1, n_extra=1, random_state=rng)
-            FitArgs(loc=-0.00127874, scale=0.968547)
+            (-0.00127874, 0.968547)
 
         Parameters:
             data:
@@ -1225,29 +1203,33 @@ class l_rv_generic(PatchClass):
                 scipy_fit(self, data, bounds=bounds, guess=args or None),
             ).params
 
-        _lmo_cache = {}
+        x = np.asarray(data)
+        r = np.arange(1, len(args0) + n_extra + 1)
+
+        _lmo_cache: dict[tuple[float, ...], _ArrF8] = {}
         _lmo_fn = self._l_moment
 
         # temporary cache to speed up L-moment calculations with the same
         # shape args
         def lmo_fn(
-            r: npt.NDArray[np.int64],
+            r: npt.NDArray[np.intp],
             *args: float,
             trim: tuple[int, int] | tuple[float, float] = (0, 0),
         ) -> _ArrF8:
             shapes, loc, scale = args[:-2], args[-2], args[-1]
 
-            # r and trim will be the same within inference.fit; safe to ignore
+            # r and trim are constants, so it's safe to ignore them here
             if shapes in _lmo_cache:
-                lmbda_r = np.asarray(_lmo_cache[shapes], np.float64)
+                lmbda_r = _lmo_cache[shapes]
             else:
                 lmbda_r = _lmo_fn(r, *shapes, trim=trim)
-                _lmo_cache[shapes] = tuple(lmbda_r)
+                lmbda_r.setflags(write=False)  # prevent cache corruption
+                _lmo_cache[shapes] = lmbda_r
 
-            if scale != 1:
-                lmbda_r[r >= 1] *= scale
+            # ensure we're working with a copy
+            lmbda_r = lmbda_r * scale  # noqa: PLR6104
             if loc != 0:
-                lmbda_r[r == 1] += loc
+                lmbda_r[0] += loc
             return lmbda_r
 
         kwargs0: dict[str, Any] = {
@@ -1259,14 +1241,11 @@ class l_rv_generic(PatchClass):
             # => weight matrix is constant between steps, use 1 step by default
             kwargs0['k'] = 1
 
-        x = np.asarray(data)
-        r = np.arange(1, len(args0) + n_extra + 1)
-
         result = inference.fit(
             ppf=self.ppf,
             args0=args0,
             n_obs=x.size,
-            l_moments=l_moment_est(x, r, trim=trim, sort='quicksort'),
+            l_moments=l_moment_est(x, r, trim=trim),
             r=r,
             trim=trim,
             l_moment_fn=lmo_fn,
@@ -1275,12 +1254,7 @@ class l_rv_generic(PatchClass):
         if full_output:
             return result
 
-        params_and_types = [
-            (param.name, int if param.integrality else float)
-            for param in self._param_info()
-        ]
-        FitArgs = NamedTuple('FitArgs', params_and_types)
-        return FitArgs(*result.args)
+        return tuple(map(float, result.args))
 
     def l_fit_loc_scale(
         self,
@@ -1342,7 +1316,6 @@ class l_rv_frozen(PatchClass):  # noqa: D101
         trim: lmt.AnyTrim = ...,
         quad_opts: lspt.QuadOptions | None = ...,
     ) -> _ArrF8: ...
-
     @overload
     def l_moment(
         self,
@@ -1351,7 +1324,6 @@ class l_rv_frozen(PatchClass):  # noqa: D101
         trim: lmt.AnyTrim = ...,
         quad_opts: lspt.QuadOptions | None = ...,
     ) -> np.float64: ...
-
     def l_moment(  # noqa: D102
         self,
         order: lmt.AnyOrder | lmt.AnyOrderND,
@@ -1376,7 +1348,6 @@ class l_rv_frozen(PatchClass):  # noqa: D101
         trim: lmt.AnyTrim = ...,
         quad_opts: lspt.QuadOptions | None = ...,
     ) -> _ArrF8: ...
-
     @overload
     def l_ratio(
         self,
@@ -1386,7 +1357,6 @@ class l_rv_frozen(PatchClass):  # noqa: D101
         trim: lmt.AnyTrim = ...,
         quad_opts: lspt.QuadOptions | None = ...,
     ) -> np.float64: ...
-
     def l_ratio(  # noqa: D102
         self,
         order: lmt.AnyOrder | lmt.AnyOrderND,

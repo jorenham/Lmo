@@ -5,7 +5,8 @@
         "davidanson.vscode-markdownlint",
         "detachhead.basedpyright",
         "editorconfig.editorconfig",
-        "ms-python.python"
+        "ms-python.python",
+        "notzaki.pandocciter"
     ],
     "unwantedRecommendations": [
         "ms-pyright.pyright",

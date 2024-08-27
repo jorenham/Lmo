@@ -45,11 +45,15 @@ tr.row-double-top > td {
     border-top: 0.15rem double var(--md-typeset-table-color) !important;
 }
 
+.md-grid {
+    max-width: 1440px;
+}
+
 /* Workarounds */
-td,
+/* td,
 th {
     white-space: nowrap;
-}
+} */
 .md-typeset__scrollwrap > .md-typeset__table > table,
 .md-typeset div.arithmatex {
     overflow-y: hidden;

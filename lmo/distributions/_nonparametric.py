@@ -258,8 +258,7 @@ class l_poly:  # noqa: N801
                 Defining number of random variates, defaults to 1.
             random_state:
                 Seed or [`numpy.random.Generator`][numpy.random.Generator]
-                instance. Defaults to
-                [`l_poly.random_state`][lmo.distributions.l_poly.random_state].
+                instance. Defaults to `l_poly.random_state`.
 
         Returns:
             A scalar or array with shape like `size`.

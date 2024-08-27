@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import functools
 from typing import TYPE_CHECKING, TypeAlias, cast, final, overload
 
 import numpy as np
@@ -14,6 +15,7 @@ from scipy.stats.distributions import rv_continuous as _rv_continuous
 import lmo.typing.scipy as lspt
 from lmo.special import harmonic
 from lmo.theoretical import l_moment_from_ppf
+from ._lm import get_lm_func
 
 
 if TYPE_CHECKING:
@@ -25,31 +27,7 @@ __all__ = ('kumaraswamy_gen',)
 
 _ArrF8: TypeAlias = onpt.Array[tuple[int, ...], np.float64]
 
-
-def _kumaraswamy_lmo0(
-    r: int,
-    s: int,
-    t: int,
-    a: float,
-    b: float,
-) -> np.float64:
-    if r == 0:
-        return np.float64(1)
-
-    k = np.arange(t + 1, r + s + t + 1)
-    return (
-        np.sum(
-            (-1) ** (k - 1)
-            * cast(_ArrF8, sc.comb(r + k - 2, r + t - 1))  # pyright: ignore[reportUnknownMemberType]
-            * cast(_ArrF8, sc.comb(r + s + t, k))  # pyright: ignore[reportUnknownMemberType]
-            * cast(_ArrF8, sc.beta(1 / a, 1 + k * b))
-            / a,
-        )
-        / r
-    )
-
-
-_kumaraswamy_lmo = np.vectorize(_kumaraswamy_lmo0, [float], excluded={1, 2})
+_lm_kumaraswamy = get_lm_func('kumaraswamy')
 
 
 @final
@@ -80,24 +58,24 @@ class kumaraswamy_gen(cast(type[lspt.AnyRV], _rv_continuous)):  # pyright: ignor
     def _isf(self, q: _ArrF8, a: float, b: float) -> _ArrF8:
         return (1 - q ** (1 / b)) ** (1 / a)
 
-    def _qdf(self, u: _ArrF8, a: float, b: float) -> _ArrF8:
+    def _qdf(self, q: _ArrF8, a: float, b: float) -> _ArrF8:
         return (
-            (1 - u) ** (1 / (b - 1))
-            * (1 - (1 - u) ** (1 / b)) ** (1 / (a - 1))
+            (1 - q) ** (1 / (b - 1))
+            * (1 - (1 - q) ** (1 / b)) ** (1 / (a - 1))
             / (a * b)
         )
 
     @overload
-    def _ppf(self, u: float, a: float, b: float) -> np.float64: ...
+    def _ppf(self, q: _ArrF8, a: float, b: float) -> _ArrF8: ...
     @overload
-    def _ppf(self, u: _ArrF8, a: float, b: float) -> _ArrF8: ...
+    def _ppf(self, q: float, a: float, b: float) -> np.float64: ...
     def _ppf(
         self,
-        u: float | _ArrF8,
+        q: float | _ArrF8,
         a: float,
         b: float,
     ) -> np.float64 | _ArrF8:
-        return (1 - (1 - u) ** (1 / b)) ** (1 / a)
+        return (1 - (1 - q) ** (1 / b)) ** (1 / a)
 
     def _entropy(self, a: float, b: float) -> np.float64:
         # https://wikipedia.org/wiki/Kumaraswamy_distribution
@@ -108,20 +86,22 @@ class kumaraswamy_gen(cast(type[lspt.AnyRV], _rv_continuous)):  # pyright: ignor
 
     def _l_moment(
         self,
-        r: npt.NDArray[np.int64],
+        r: npt.NDArray[np.intp],
         a: float,
         b: float,
+        *,
         trim: tuple[int, int] | tuple[float, float],
         quad_opts: lspt.QuadOptions | None = None,
     ) -> _ArrF8:
         s, t = trim
-        if quad_opts is not None or isinstance(s, float):
-
-            def _ppf(u: float, /) -> np.float64:
-                return self._ppf(u, a, b)
-
-            out = l_moment_from_ppf(_ppf, r, trim=trim, quad_opts=quad_opts)
+        if quad_opts is not None or isinstance(trim[0], float):
+            out = l_moment_from_ppf(
+                functools.partial(self._ppf, a=a, b=b),
+                r,
+                trim=trim,
+                quad_opts=quad_opts,
+            )
         else:
-            out = cast(_ArrF8, _kumaraswamy_lmo(r, s, t, a, b))
+            out = _lm_kumaraswamy(r, s, t, a, b)
 
         return np.atleast_1d(out)

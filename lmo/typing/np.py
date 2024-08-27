@@ -56,7 +56,7 @@ Float: TypeAlias = np.floating[Any]
 Number: TypeAlias = np.number[Any]
 
 Natural: TypeAlias = UInt | Bool
-Integer: TypeAlias = Int | Natural
+Integer: TypeAlias = np.integer[Any] | np.bool_
 Real: TypeAlias = Float | Integer
 
 

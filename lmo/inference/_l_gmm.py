@@ -12,8 +12,9 @@ import lmo.typing.scipy as lspt
 from lmo._lm import l_moment as l_moment_est
 from lmo._lm_co import l_coscale as l_coscale_est
 from lmo._utils import clean_orders, clean_trim
-from lmo.diagnostic import HypothesisTestResult, l_moment_bounds
+from lmo.diagnostic import HypothesisTestResult
 from lmo.theoretical import l_moment_from_ppf
+from lmo.theoretical._utils import l_coef_factor
 
 
 if TYPE_CHECKING:
@@ -150,14 +151,23 @@ def _loss_step(
     trim: lmt.AnyTrim,
     w_rr: _ArrF8,
 ) -> np.float64:
+    """
+    This is the computational bottleneck of L-(G)MM.
+    So avoid doing slow things here.
+    """
     lmbda_r = l_fn(r, *args, trim=trim)
 
-    if not np.all(np.isfinite(lmbda_r)):
-        msg = f'failed to find the L-moments of ppf{args} with {trim=}'
-        raise ValueError(msg)
+    # if not np.all(np.isfinite(lmbda_r)):
+    #     msg = f'failed to find the L-moments of ppf{args} with {trim=}'
+    #     raise ValueError(msg)
 
-    g_r = lmbda_r - l_r
-    return np.sqrt(cast(np.float64, g_r.T @ w_rr @ g_r))
+    # in-place subtraction to avoid creating a new array
+    g_r = lmbda_r
+    g_r -= l_r
+
+    # `cast()` calls aren't free
+    # return np.sqrt(cast(np.float64, g_r.T @ w_rr @ g_r))
+    return np.sqrt(g_r.T @ w_rr @ g_r)  # pyright: ignore[reportReturnType]
 
 
 def _get_l_moment_fn(ppf: lspt.RVFunction[...]) -> Callable[..., _ArrF8]:
@@ -356,9 +366,7 @@ def fit(  # noqa: C901
 
     # Individual L-moment "natural" scaling constants, making their magnitudes
     # order- and trim- agnostic (used in convergence criterion)
-    l_r_ub = np.r_[1, l_moment_bounds(_r[1:], trim=_trim)]
-    l_2c = l_r[1] / l_r_ub[1]
-    scale_r = cast(_ArrF8, 1 / (l_2c * l_r_ub))
+    scale_r = l_coef_factor(_r, _trim[0], _trim[1]) / l_r[1]
 
     # Initial parametric population L-moments
     _l_moment_fn = l_moment_fn or _get_l_moment_fn(ppf)
@@ -375,7 +383,7 @@ def fit(  # noqa: C901
         k_min, epsmax = 1, l_tol
 
     # Random number generator
-    if isinstance(random_state, np.random.RandomState | np.random.Generator):
+    if isinstance(random_state, np.random.RandomState):
         rng = random_state
     else:
         rng = np.random.default_rng(random_state)

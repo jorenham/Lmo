@@ -4,13 +4,21 @@ from math import exp, factorial, gamma, lgamma, log
 from typing import Concatenate, Final, ParamSpec, TypeAlias, cast
 
 import numpy as np
+import numpy.typing as npt
 import scipy.integrate as spi
+import scipy.special as sps
 
 import lmo.typing.np as lnpt
 import lmo.typing.scipy as lspt
 
 
-__all__ = ('ALPHA', 'QUAD_LIMIT', 'l_const', 'tighten_cdf_support')
+__all__ = (
+    'ALPHA',
+    'QUAD_LIMIT',
+    'l_coef_factor',
+    'l_const',
+    'tighten_cdf_support',
+)
 
 
 _Fn1: TypeAlias = Callable[[float], float | lnpt.Float]
@@ -48,6 +56,29 @@ def l_const(r: int, s: float, t: float, k: int = 0) -> float:
         )
 
     return factorial(r - 1 - k) / r * v
+
+
+def l_coef_factor(
+    r: int | np.intp | npt.NDArray[np.intp],
+    s: float = 0,
+    t: float = 0,
+) -> npt.NDArray[np.float64]:
+    if s == t == 0:
+        return np.sqrt(2 * r - 1)
+
+    assert s + t > -1
+
+    _r = np.asarray(r)
+    c = (
+        np.sqrt(
+            (2 * _r + (s + t - 1))
+            * sps.beta(_r + s, _r + t)
+            / sps.beta(_r, _r + s + t),
+        )
+        * _r
+        / (_r + s + t)
+    )
+    return c[()] if _r.ndim == 0 and np.isscalar(r) else c
 
 
 def tighten_cdf_support(

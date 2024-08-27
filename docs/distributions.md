@@ -1,5 +1,10 @@
+---
+hide:
+  - navigation
+---
+
 <!-- markdownlint-disable MD051 MD052 -->
-# L-moments of common probability distributions
+# Exact L-moments of probability distributions
 
 This page lists theoretical L-moments [@hosking1990] of popular probability
 distributions.
@@ -33,14 +38,14 @@ Numerical calculation of these L-statistics using [`scipy.stats`][scipy.stats]
 distributions, refer to
 [`rv_continuous.l_stats`][lmo.contrib.scipy_stats.l_rv_generic.l_stats].
 
-For direct calculation of the L-stats from a CDF or PPF, see
-[`l_stats_from_cdf`][lmo.theoretical.l_stats_from_cdf] or
-[`l_stats_from_ppf`][lmo.theoretical.l_stats_from_ppf], respectively.
+For direct calculation of the L-stats from a CDF or PPF function, see
+
+- [`lmo.theoretical.l_stats_from_cdf`][lmo.theoretical.l_stats_from_cdf]
+- [`lmo.theoretical.l_stats_from_ppf`][lmo.theoretical.l_stats_from_ppf]
 ///
 
-An overview of the L-location, L-scale, L-skewness and L-kurtosis,
-of a bunch of popular univariate probability distributions, for which they
-exist (in closed form).
+An overview of the exact L-location, L-scale, L-skewness and L-kurtosis
+of some well-known (univariate) probability distributions.
 
 ### L-stats
 
@@ -782,8 +787,8 @@ compactly expressed as
         & \text{if } \alpha = 0 \wedge r = 1 \\
     \displaystyle \frac{1}{\alpha r} \left[
         \frac
-            {\B(t + 1 - \alpha,\ r - 1 + \alpha)}
-            {\B(r + s + t - 1 - \alpha,\ \alpha)}
+            {\B(r + \alpha - 1,\ t - \alpha + 1)}
+            {\B(\alpha,\ r + s + t - \alpha + 1)}
         - \ffact{1}{r}
     \right]
         & \text{otherwise,}
@@ -824,7 +829,7 @@ There are several notable special cases of the GPD:
 
 ### Burr III / Dagum
 
-The *Burr III* distribution [^BURR], also known as the
+The *Burr III* distribution [@burr1942], also known as the
 [*Dagum distribution*](https://wikipedia.org/wiki/Dagum_distribution), has two
 shape parameters \( \alpha \) and \( \beta \), both restricted to the
 positive reals
@@ -964,7 +969,7 @@ Its general \( r \)-th trimmed L-moment are:
 \tlmoment{s,t}{r} =
     \frac{1}{r}
     \sum_{k = t + 1}^{r + s + t}
-        (-1)^{k - 1}
+        (-1)^{k - t - 1}
         \binom{r + k - 2}{r + t - 1}
         \binom{r + s + t}{k}
         \frac{\B\bigl(1 / \alpha,\ 1 + k \beta \bigr)}{\alpha}
