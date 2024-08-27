@@ -171,27 +171,30 @@ class l_rv_generic(PatchClass):
             trim.
         """
         name = self.name
-        if quad_opts is not None and has_lm_func(name):
+        if quad_opts is None and has_lm_func(name):
             with contextlib.suppress(NotImplementedError):
                 return get_lm_func(name)(r, trim[0], trim[1], *args)
 
         cdf, ppf = self._get_xxf(*args)
-        lmbda_r = l_moment_from_cdf(
-            cdf,
-            r,
-            trim=trim,
-            support=self._get_support(*args),
-            ppf=ppf,
-            quad_opts=quad_opts,
-        )
+
+        # TODO: use ppf when appropriate (e.g. genextreme, tukeylambda, kappa4)
+        with np.errstate(over='ignore', under='ignore'):
+            lmbda_r = l_moment_from_cdf(
+                cdf,
+                r,
+                trim=trim,
+                support=self._get_support(*args),
+                ppf=ppf,
+                quad_opts=quad_opts,
+            )
 
         # re-wrap scalars in 0-d arrays (lmo.theoretical unpacks them)
         return np.asarray(lmbda_r)
 
+    @np.errstate(divide='ignore')
     def _logqdf(self, u: _ArrF8, *args: Any) -> _ArrF8:
         """Overridable log quantile distribution function (QDF)."""
-        with np.errstate(divide='ignore'):
-            return -self._logpxf(self._ppf(u, *args), *args)
+        return -self._logpxf(self._ppf(u, *args), *args)
 
     def _qdf(self, u: _ArrF8, *args: Any) -> _ArrF8:
         r"""

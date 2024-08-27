@@ -5,9 +5,9 @@ The names that are used here, match those in
 """
 from __future__ import annotations
 
-import math
 import sys
 from collections.abc import Callable
+from math import log
 from typing import (
     TYPE_CHECKING,
     Concatenate,
@@ -27,6 +27,7 @@ import optype.numpy as onpt
 import scipy.special as sps
 
 from lmo.special import harmonic
+from lmo.theoretical import l_moment_from_ppf
 
 
 if sys.version_info >= (3, 13):
@@ -171,6 +172,11 @@ def lm_gumbel_r(  # noqa: C901
     t: float,
     /,
 ) -> np.float64 | float:
+    """
+    Exact trimmed L-moments of the Gumbel / Extreme Value (EV) distribution.
+
+    Doesn't support fractional trimming.
+    """
     if r == 0:
         return 1
 
@@ -208,33 +214,28 @@ def lm_gumbel_r(  # noqa: C901
             return (_LN2 * -107 + _LN3 * 6 + _LN5 * 42) * 5 / 4
 
         case _:
-            k0 = s + 1
-            kn = r + s + t
-            k = np.arange(k0, kn + 1, dtype=np.intp)
-            # TODO: the _binom is numerically unstable for r+s+t>8
-            return np.sum(
-                (-1) ** k
-                * _binom(kn, k)
-                * _binom(k + (r - 2), k - k0)
-                * (np.log(k) + np.euler_gamma),
-            ) * (-1) ** (r + s) / r
-
-
-_EPS = sys.float_info.epsilon
+            return cast(
+                _LmFunc[[float]],
+                lm_genextreme.pyfunc,  # pyright: ignore[reportAttributeAccessIssue]
+            )(r, s, t, 0)
 
 
 @register_lm_func('genextreme')
-def lm_genextreme(
+def lm_genextreme(  # noqa: C901
     r: int,
     s: float,
     t: float,
     /,
     a: float,
 ) -> np.float64 | float:
+    """
+    Exact trimmed L-moments of the Generalized Extreme Value (GEV)
+    distribution.
+
+    Doesn't support fractional trimming.
+    """
     if r == 0:
         return 1
-    if -_EPS / 2 < a < _EPS / 2:  # effectively zero
-        return cast(_LmFunc[[]], lm_gumbel_r.pyfunc)(r, s, t)  # pyright: ignore[reportAttributeAccessIssue]
 
     if not isinstance(s, int) or not isinstance(t, int):
         msg = 'fractional trimming'
@@ -244,24 +245,50 @@ def lm_genextreme(
         msg = 'a cannot be a negative integer'
         raise ValueError(msg)
 
-    k0 = s + 1
-    kn = r + s + t
-    k = np.arange(k0, kn + 1, dtype=np.intp)
+    if r + s + t < 8:
+        # numerical accurate to within approx. < 1e-12 error
+        k0 = s + 1
+        kn = r + s + t
+        k = np.arange(k0, kn + 1, dtype=np.intp)
 
-    # gamma will < 0, but `scipy.special.gammaln = (_) -> ln(|gamma(_)|)`
-    # --> flip the sign in the exponent
-    gamma_sgn = -1 if a < 0 and math.floor(a) % 2 else +1
+        if a == 0:
+            pwm = np.euler_gamma + np.log(k)
+        else:
+            pwm = (1 / a - sps.gamma(a) / k**a)
 
-    return np.sum(
-        # TODO: the _binom is numerically unstable for r+s+t>8
-        (-1) ** k
-        * _binom(kn, k)
-        * _binom(k + (r - 2), k - k0)
-        * (1 / a - np.exp(gamma_sgn * sps.gammaln(a) - a * np.log(k))),
-    ) * (-1) ** (r + s) / r
+        return np.sum(
+            (-1) ** k
+            * _binom(kn, k)
+            * _binom(r - 2 + k, r - 2 + k0)
+            * pwm,
+        ) * (-1) ** (r + s) / r
 
-    # TODO
-    raise NotImplementedError
+    # NOTE: some performance notes:
+    # - `math.log` is faster for scalar input that `numpy.log`
+    # - conditionals within the function are avoided through multiple functions
+    if a == 0:
+        def _ppf(q: float) -> float:
+            if q <= 0:
+                return -float('inf')
+            if q >= 1:
+                return float('inf')
+            return -log(-log(q))
+    elif a < 0:
+        def _ppf(q: float) -> float:
+            if q <= 0:
+                return 1 / a
+            if q >= 1:
+                return float('inf')
+            return (1 - (-log(q))**a) / a
+    else:  # a > 0
+        def _ppf(q: float) -> float:
+            if q <= 0:
+                return -float('inf')
+            if q >= 1:
+                return 1 / a
+            return (1 - (-log(q))**a) / a
+
+    return l_moment_from_ppf(_ppf, r, (s, t))
 
 
 @register_lm_func('kumaraswamy')
@@ -277,7 +304,7 @@ def lm_kumaraswamy(
     Exact trimmed L-moments of (the location-scale reparametrization of)
     Kumaraswamy's distribution [@kumaraswamy1980].
 
-    Doesn't support fraction trimming.
+    Doesn't support fractional trimming.
     """
     if r == 0:
         return 1
