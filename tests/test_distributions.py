@@ -9,7 +9,7 @@ from scipy.stats import distributions
 from scipy.stats.distributions import tukeylambda, uniform
 
 import lmo.typing as lmt
-from lmo.distributions import genlambda, l_poly, wakeby
+from lmo.distributions import genlambda, kumaraswamy, l_poly, wakeby
 
 
 Q = np.linspace(1 / 100, 1, 99, endpoint=False)
@@ -189,7 +189,7 @@ def test_genlambda(b: float, d: float, f: float):
     assert_allclose(tl_tau_theo, tl_tau_quad, atol=1e-7)
 
 
-@pytest.mark.parametrize('trim', [(0, 0), (0, 1), (1, 1)])
+@pytest.mark.parametrize('trim', [(0, 0), (0, 1), (1, 0), (1, 1)])
 @pytest.mark.parametrize(
     'rv',
     [
@@ -199,6 +199,7 @@ def test_genlambda(b: float, d: float, f: float):
         distributions.gumbel_r(),
         distributions.genextreme(-0.1),
         distributions.genpareto(0.1),
+        kumaraswamy(2, 5),
         # TODO: kumaraswamy, wakeby, genlambda
     ],
 )

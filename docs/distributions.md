@@ -969,7 +969,7 @@ Its general \( r \)-th trimmed L-moment are:
 \tlmoment{s,t}{r} =
     \frac{1}{r}
     \sum_{k = t + 1}^{r + s + t}
-        (-1)^{k - 1}
+        (-1)^{k - t - 1}
         \binom{r + k - 2}{r + t - 1}
         \binom{r + s + t}{k}
         \frac{\B\bigl(1 / \alpha,\ 1 + k \beta \bigr)}{\alpha}

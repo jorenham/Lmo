@@ -416,7 +416,7 @@ def lm_kumaraswamy(
     k = np.arange(t + 1, r + s + t + 1)
     return (
         np.sum(
-            (-1) ** (k - 1)
+            (-1) ** (k - t - 1)
             * cast(_ArrF8, sps.comb(r + k - 2, r + t - 1))  # pyright: ignore[reportUnknownMemberType]
             * cast(_ArrF8, sps.comb(r + s + t, k))  # pyright: ignore[reportUnknownMemberType]
             * cast(_ArrF8, sps.beta(1 / a, 1 + k * b))
