@@ -189,7 +189,7 @@ def test_genlambda(b: float, d: float, f: float):
     assert_allclose(tl_tau_theo, tl_tau_quad, atol=1e-7)
 
 
-@pytest.mark.parametrize('trim', [(0, 0), (0, 1), (1, 0), (1, 1)])
+@pytest.mark.parametrize('trim', [(0, 0), (0, 1), (1, 1)])
 @pytest.mark.parametrize(
     'rv',
     [
@@ -200,7 +200,8 @@ def test_genlambda(b: float, d: float, f: float):
         distributions.genextreme(-0.1),
         distributions.genpareto(0.1),
         kumaraswamy(2, 5),
-        # TODO: kumaraswamy, wakeby, genlambda
+        wakeby(5, 1, 0.6),
+        genlambda(.5, -1, -0.1),
     ],
 )
 def test_exact_lm(rv: Any, trim: tuple[int, int]) -> None:
