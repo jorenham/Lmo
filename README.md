@@ -38,7 +38,7 @@ So Lmo is as fast as sorting your samples (in terms of time-complexity).
 - Goodness-of-fit test, using L-moment or L-moment ratio's.
 - Exact (co)variance structure of the sample- and population L-moments.
 - Theoretical & empirical influence functions of L-moments & L-ratio's.
-- Complete [docs](https://jorenham.github.io/lmo/), including detailed API
+- Complete [docs](https://jorenham.github.io/Lmo/), including detailed API
 reference with usage examples and with mathematical $\TeX$ definitions.
 - Clean Pythonic syntax for ease of use.
 - Vectorized functions for very fast fitting.
@@ -71,7 +71,7 @@ array([0.        , 0.69782723])
 
 ---
 
-See the [documentation](https://jorenham.github.io/lmo/) for more examples and
+See the [documentation](https://jorenham.github.io/Lmo/) for more examples and
 the API reference.
 
 ## Roadmap
@@ -81,7 +81,7 @@ the API reference.
 
 ## Installation
 
-Lmo is on [PyPI](https://pypi.org/project/lmo/), so you can do something like:
+Lmo is on [PyPI](https://pypi.org/project/Lmo/), so you can do something like:
 
 ```shell
 pip install lmo
