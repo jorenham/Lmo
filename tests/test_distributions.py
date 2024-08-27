@@ -188,6 +188,7 @@ def test_genlambda(b: float, d: float, f: float):
 # - lm_expon
 # - lm_gumbel_r
 # - lm_genextreme
+# - lm_genpareto
 # - lm_kumaraswamy
 # - lm_wakeby
 # - lm_genlambda

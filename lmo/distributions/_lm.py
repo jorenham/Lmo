@@ -48,6 +48,7 @@ __all__ = [
     'lm_expon',
     'lm_gumbel_r',
     'lm_genextreme',
+    'lm_genpareto',
     'lm_kumaraswamy',
     'lm_wakeby',
     'lm_genlambda',
@@ -61,6 +62,7 @@ DistributionName: TypeAlias = Literal[
     'gumbel_r',
     # 1 param
     'genextreme',
+    'genpareto',
     # 2 params
     'kumaraswamy',
     # 3 params
@@ -97,6 +99,8 @@ _binom = cast(
 
 
 class _LmVFunc(Protocol[_Tss]):
+    pyfunc: _LmFunc[_Tss]
+
     @overload
     def __call__(
         self,
@@ -277,10 +281,7 @@ def lm_gumbel_r(r: int, s: float, t: float, /) -> np.float64 | float:
             return (_LN2 * -107 + _LN3 * 6 + _LN5 * 42) * 5 / 4
 
         case _:
-            return cast(
-                _LmFunc[[float]],
-                lm_genextreme.pyfunc,  # pyright: ignore[reportAttributeAccessIssue]
-            )(r, s, t, 0)
+            return lm_genextreme.pyfunc(r, s, t, 0)
 
 
 @register_lm_func('genextreme')
@@ -352,6 +353,38 @@ def lm_genextreme(
             return (1 - (-log(q))**a) / a
 
     return l_moment_from_ppf(_ppf, r, (s, t))
+
+
+@register_lm_func('genpareto')
+def lm_genpareto(
+    r: int,
+    s: float,
+    t: float,
+    /,
+    a: float,
+) -> np.float64 | float:
+    """
+    Exact trimmed L-moments of the Generalized Pareto distribution (GPD).
+    """
+    if r == 0:
+        return 1
+    if a == 0:
+        return lm_expon.pyfunc(r, s, t)
+    if a == 1:
+        return lm_uniform.pyfunc(r, s, t)
+
+    if isinstance(t, int):
+        msg = 'fractional trimming'
+        raise NotImplementedError(msg)
+
+    if a >= 1 + t:
+        return float('nan')
+
+    a1m = a - 1
+    n = r + s + t - 1
+    return (sps.beta(r + a1m, t - a1m) / sps.beta(n - a, a) - (r == 1)) / a / r
+
+    raise NotImplementedError
 
 
 @register_lm_func('kumaraswamy')
