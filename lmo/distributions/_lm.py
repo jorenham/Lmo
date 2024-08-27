@@ -305,7 +305,7 @@ def lm_genextreme(
         msg = 'fractional trimming'
         raise NotImplementedError(msg)
 
-    if a < 0 and isinstance(a, int) or a.is_integer():
+    if a < 0 and (isinstance(a, int) or a.is_integer()):
         msg = 'a cannot be a negative integer'
         raise ValueError(msg)
 
