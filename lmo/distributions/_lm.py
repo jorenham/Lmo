@@ -1,8 +1,11 @@
+# ruff: noqa: C901
+
 """
 Known theoretical L-moments for specific distributions.
 The names that are used here, match those in
 [`scipy.stats.distributions`][scipy.stats.distributions].
 """
+
 from __future__ import annotations
 
 import sys
@@ -41,6 +44,7 @@ if TYPE_CHECKING:
 
 __all__ = [
     'lm_uniform',
+    'lm_logistic',
     'lm_expon',
     'lm_gumbel_r',
     'lm_genextreme',
@@ -52,6 +56,7 @@ __all__ = [
 DistributionName: TypeAlias = Literal[
     # 0 params
     'uniform',
+    'logistic',
     'expon',
     'gumbel_r',
     # 1 param
@@ -74,6 +79,21 @@ _LmFunc: TypeAlias = Callable[
 ]
 
 _ShapeT = TypeVar('_ShapeT', bound=tuple[int, ...])
+
+
+_LN2: Final = np.log(2)
+_LN3: Final = np.log(3)
+_LN5: Final = np.log(5)
+
+
+# workaround for partial type annotations (i.e. missing and un-inferrable)
+_binom = cast(
+    Callable[
+        [npt.NDArray[np.intp] | int, npt.NDArray[np.intp] | int],
+        npt.NDArray[np.intp],
+    ],
+    sps.comb,
+)
 
 
 class _LmVFunc(Protocol[_Tss]):
@@ -148,6 +168,45 @@ def lm_uniform(r: int, s: float, t: float, /) -> float:
     return 0
 
 
+@register_lm_func('logistic')
+def lm_logistic(r: int, s: float, t: float, /) -> float:
+    """
+    Exact generalized trimmed L-moments of the standard logistic
+    distribution.
+    """
+    if r == 0:
+        return 1
+
+    if not t.is_integer():
+        msg = 't must be an integer'
+        raise NotImplementedError(msg)
+
+    # symmetric trimming
+    if s == t:
+        if r % 2:
+            return 0
+
+        if s == 0:
+            if r == 2:
+                return 1
+            if r == 4:
+                return 1 / 6
+        if s == 1:
+            if r == 2:
+                return 1 / 2
+            if r == 4:
+                return 1 / 12
+
+        return 2 * sps.beta(r - 1, t + 1) / r
+
+    # asymmetric trimming
+    if r == 1:
+        return harmonic(s) - harmonic(t)
+
+    r1m = r - 1
+    return ((-1) ** r * sps.beta(r1m, s + 1) + sps.beta(r1m, t + 1)) / r
+
+
 @register_lm_func('expon')
 def lm_expon(r: int, s: float, t: float, /) -> float:
     """
@@ -174,28 +233,8 @@ def lm_expon(r: int, s: float, t: float, /) -> float:
     return sps.beta(r - 1, t + 1) / r
 
 
-_LN2: Final = np.log(2)
-_LN3: Final = np.log(3)
-_LN5: Final = np.log(5)
-
-
-# workaround for partial type annotations (i.e. missing and un-inferrable)
-_binom = cast(
-    Callable[
-        [npt.NDArray[np.intp] | int, npt.NDArray[np.intp] | int],
-        npt.NDArray[np.intp],
-    ],
-    sps.comb,
-)
-
-
 @register_lm_func('gumbel_r')
-def lm_gumbel_r(  # noqa: C901
-    r: int,
-    s: float,
-    t: float,
-    /,
-) -> np.float64 | float:
+def lm_gumbel_r(r: int, s: float, t: float, /) -> np.float64 | float:
     """
     Exact trimmed L-moments of the Gumbel / Extreme Value (EV) distribution.
 
@@ -245,7 +284,7 @@ def lm_gumbel_r(  # noqa: C901
 
 
 @register_lm_func('genextreme')
-def lm_genextreme(  # noqa: C901
+def lm_genextreme(
     r: int,
     s: float,
     t: float,
