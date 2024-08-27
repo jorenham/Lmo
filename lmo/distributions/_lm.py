@@ -181,7 +181,7 @@ def lm_logistic(r: int, s: float, t: float, /) -> float:
     if r == 0:
         return 1
 
-    if not t.is_integer():
+    if isinstance(t, float) and not t.is_integer():
         msg = 't must be an integer'
         raise NotImplementedError(msg)
 
@@ -305,7 +305,7 @@ def lm_genextreme(
         msg = 'fractional trimming'
         raise NotImplementedError(msg)
 
-    if a < 0 and a.is_integer():
+    if a < 0 and isinstance(a, int) or a.is_integer():
         msg = 'a cannot be a negative integer'
         raise ValueError(msg)
 
