@@ -11,7 +11,7 @@ from typing import Final, TypeAlias, TypeVar, cast
 
 import numpy as np
 import numpy.typing as npt
-import scipy.special as sc
+import scipy.special as sps
 from scipy.stats._distn_infrastructure import (
     _ShapeInfo,  # noqa: PLC2701  # pyright: ignore[reportPrivateUsage]
 )
@@ -125,7 +125,6 @@ _genlambda_cdf: Final = np.vectorize(
     [float],
     excluded={'ptol', 'xtol', 'maxiter'},
 )
-
 _genlambda_lm: Final = get_lm_func('genlambda')
 
 
@@ -164,11 +163,11 @@ class genlambda_gen(cast(type[lspt.AnyRV], rv_continuous)):
     def _cdf(self, x: _ArrF8, b: float, d: float, f: float) -> _ArrF8:
         return _genlambda_cdf(x, b, d, f)
 
-    def _qdf(self, u: _ArrF8, b: float, d: float, f: float) -> _ArrF8:
-        return _genlambda_qdf(u, b, d, f)
+    def _qdf(self, q: _ArrF8, b: float, d: float, f: float) -> _ArrF8:
+        return _genlambda_qdf(q, b, d, f)
 
-    def _ppf(self, u: _ArrF8, b: float, d: float, f: float) -> _ArrF8:
-        return _genlambda_ppf(u, b, d, f)
+    def _ppf(self, q: _ArrF8, b: float, d: float, f: float) -> _ArrF8:
+        return _genlambda_ppf(q, b, d, f)
 
     def _stats(
         self,
@@ -209,7 +208,7 @@ class genlambda_gen(cast(type[lspt.AnyRV], rv_continuous)):
             m2 = (
                 (a / b1) ** 2 / (b1 + b)
                 + (c / d1) ** 2 / (d1 + d)
-                + 2 * a * c / (b * d) * (1 / (b1 * d1) - sc.beta(b1, d1))
+                + 2 * a * c / (b * d) * (1 / (b1 * d1) - sps.beta(b1, d1))
             )
 
         # Feeling adventurous? You're welcome to contribute these missing
@@ -233,6 +232,7 @@ class genlambda_gen(cast(type[lspt.AnyRV], rv_continuous)):
         b: float,
         d: float,
         f: float,
+        *,
         trim: tuple[int, int] | tuple[float, float],
         quad_opts: lspt.QuadOptions | None = None,
     ) -> _ArrF8:

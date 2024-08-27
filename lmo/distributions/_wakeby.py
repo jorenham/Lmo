@@ -209,50 +209,20 @@ class wakeby_gen(cast(type[lspt.AnyRV], _rv_continuous)):
             super()._fitstart(data, args or (1.0, 1.0, 0.5)),  # pyright: ignore[reportUnknownMemberType,reportAttributeAccessIssue]
         )
 
-    def _pdf(
-        self,
-        x: _ArrF8,
-        b: float,
-        d: float,
-        f: float,
-    ) -> _ArrF8:
+    def _pdf(self, x: _ArrF8, b: float, d: float, f: float) -> _ArrF8:
         # application of the inverse function theorem
         return 1 / self._qdf(self._cdf(x, b, d, f), b, d, f)
 
-    def _cdf(
-        self,
-        x: _ArrF8,
-        b: float,
-        d: float,
-        f: float,
-    ) -> _ArrF8:
+    def _cdf(self, x: _ArrF8, b: float, d: float, f: float) -> _ArrF8:
         return 1 - _wakeby_sf(x, b, d, f)
 
-    def _qdf(
-        self,
-        u: _ArrF8,
-        b: float,
-        d: float,
-        f: float,
-    ) -> _ArrF8:
-        return _wakeby_qdf(u, b, d, f)
+    def _qdf(self, q: _ArrF8, b: float, d: float, f: float) -> _ArrF8:
+        return _wakeby_qdf(q, b, d, f)
 
-    def _ppf(
-        self,
-        p: _ArrF8,
-        b: float,
-        d: float,
-        f: float,
-    ) -> _ArrF8:
-        return _wakeby_isf(1 - p, b, d, f)
+    def _ppf(self, q: _ArrF8, b: float, d: float, f: float) -> _ArrF8:
+        return _wakeby_isf(1 - q, b, d, f)
 
-    def _isf(
-        self,
-        q: _ArrF8,
-        b: float,
-        d: float,
-        f: float,
-    ) -> _ArrF8:
+    def _isf(self, q: _ArrF8, b: float, d: float, f: float) -> _ArrF8:
         return _wakeby_isf(q, b, d, f)
 
     def _stats(
@@ -286,37 +256,6 @@ class wakeby_gen(cast(type[lspt.AnyRV], _rv_continuous)):
 
         return m1, m2, m3, m4
 
-    def _l_moment(
-        self,
-        r: npt.NDArray[np.int64],
-        b: float,
-        d: float,
-        f: float,
-        trim: tuple[int, int] | tuple[float, float],
-        quad_opts: lspt.QuadOptions | None = None,
-    ) -> _ArrF8:
-        s, t = trim
-
-        if quad_opts is not None:
-            # only do numerical integration when quad_opts is passed
-            lmbda_r = cast(
-                float | _ArrF8,
-                l_moment_from_ppf(
-                    cast(
-                        Callable[[float], float],
-                        functools.partial(self._ppf, b=b, d=d, f=f),
-                    ),
-                    r,
-                    trim=trim,
-                    quad_opts=quad_opts,
-                ),
-            )
-            out = lmbda_r
-        else:
-            out = _wakeby_lm(r, s, t, b, d, f)
-
-        return np.atleast_1d(out)
-
     def _entropy(self, b: float, d: float, f: float) -> float:
         """
         Entropy can be calculated from the QDF (PPF derivative) as the
@@ -337,3 +276,32 @@ class wakeby_gen(cast(type[lspt.AnyRV], _rv_continuous)):
 
         ibd = 1 / bd
         return 1 - b + bd * float(sc.hyp2f1(1, ibd, 1 + ibd, f / (f - 1)))
+
+    def _l_moment(
+        self,
+        r: npt.NDArray[np.int64],
+        b: float,
+        d: float,
+        f: float,
+        *,
+        trim: tuple[int, int] | tuple[float, float],
+        quad_opts: lspt.QuadOptions | None = None,
+    ) -> _ArrF8:
+        s, t = trim
+
+        if quad_opts is not None:
+            # only do numerical integration when quad_opts is passed
+            lmbda_r = l_moment_from_ppf(
+                cast(
+                    Callable[[float], float],
+                    functools.partial(self._ppf, b=b, d=d, f=f),
+                ),
+                r,
+                trim=trim,
+                quad_opts=quad_opts,
+            )
+            out = lmbda_r
+        else:
+            out = _wakeby_lm(r, s, t, b, d, f)
+
+        return np.atleast_1d(out)

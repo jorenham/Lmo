@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import functools
 from typing import TYPE_CHECKING, TypeAlias, cast, final, overload
 
 import numpy as np
@@ -57,24 +58,24 @@ class kumaraswamy_gen(cast(type[lspt.AnyRV], _rv_continuous)):  # pyright: ignor
     def _isf(self, q: _ArrF8, a: float, b: float) -> _ArrF8:
         return (1 - q ** (1 / b)) ** (1 / a)
 
-    def _qdf(self, u: _ArrF8, a: float, b: float) -> _ArrF8:
+    def _qdf(self, q: _ArrF8, a: float, b: float) -> _ArrF8:
         return (
-            (1 - u) ** (1 / (b - 1))
-            * (1 - (1 - u) ** (1 / b)) ** (1 / (a - 1))
+            (1 - q) ** (1 / (b - 1))
+            * (1 - (1 - q) ** (1 / b)) ** (1 / (a - 1))
             / (a * b)
         )
 
     @overload
-    def _ppf(self, u: _ArrF8, a: float, b: float) -> _ArrF8: ...
+    def _ppf(self, q: _ArrF8, a: float, b: float) -> _ArrF8: ...
     @overload
-    def _ppf(self, u: float, a: float, b: float) -> np.float64: ...
+    def _ppf(self, q: float, a: float, b: float) -> np.float64: ...
     def _ppf(
         self,
-        u: float | _ArrF8,
+        q: float | _ArrF8,
         a: float,
         b: float,
     ) -> np.float64 | _ArrF8:
-        return (1 - (1 - u) ** (1 / b)) ** (1 / a)
+        return (1 - (1 - q) ** (1 / b)) ** (1 / a)
 
     def _entropy(self, a: float, b: float) -> np.float64:
         # https://wikipedia.org/wiki/Kumaraswamy_distribution
@@ -85,19 +86,22 @@ class kumaraswamy_gen(cast(type[lspt.AnyRV], _rv_continuous)):  # pyright: ignor
 
     def _l_moment(
         self,
-        r: npt.NDArray[np.int64],
+        r: npt.NDArray[np.intp],
         a: float,
         b: float,
+        *,
         trim: tuple[int, int] | tuple[float, float],
         quad_opts: lspt.QuadOptions | None = None,
     ) -> _ArrF8:
         s, t = trim
-        try:
+        if quad_opts is not None or isinstance(trim[0], float):
+            out = l_moment_from_ppf(
+                functools.partial(self._ppf, a=a, b=b),
+                r,
+                trim=trim,
+                quad_opts=quad_opts,
+            )
+        else:
             out = _lm_kumaraswamy(r, s, t, a, b)
-        except NotImplementedError:
-            def _ppf(u: float, /) -> np.float64:
-                return self._ppf(u, a, b)
-
-            out = l_moment_from_ppf(_ppf, r, trim=trim, quad_opts=quad_opts)
 
         return np.atleast_1d(out)
