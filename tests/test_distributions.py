@@ -1,13 +1,14 @@
 import functools
-from typing import cast
+from typing import Any, cast
 
 import numpy as np
+import numpy.typing as npt
 import pytest
 from numpy.testing import assert_allclose as _assert_allclose
+from scipy.stats import distributions
 from scipy.stats.distributions import tukeylambda, uniform
 
 import lmo.typing as lmt
-import lmo.typing.scipy as lspt
 from lmo.distributions import genlambda, l_poly, wakeby
 
 
@@ -23,7 +24,7 @@ assert_allclose = functools.partial(_assert_allclose, atol=1e-9)
 def test_l_poly_eq_uniform(trim: lmt.AnyTrim):
     p0 = x0 = np.linspace(0, 1)
 
-    X = cast('lspt.RVContinuous', uniform())
+    X = cast(Any, uniform())
     X_hat = l_poly(X.l_moment([1, 2], trim=trim), trim=trim)
 
     t4 = X.l_stats(trim=trim)
@@ -51,24 +52,27 @@ def test_l_poly_eq_uniform(trim: lmt.AnyTrim):
     assert_allclose(H_hat, H)
 
 
-@pytest.mark.parametrize('scale', [1, .5, 2])
+@pytest.mark.parametrize('scale', [1, 0.5, 2])
 @pytest.mark.parametrize('loc', [0, 1, -1])
-@pytest.mark.parametrize(('b', 'd', 'f'), [
-    (1, 0, 1),
-    (0, 0, 1),
-    (0, 0.9, 0),
-    (0, 1.2, 0),
-    (0.9, 0, 1),
-    (1.2, 0, 1),
-    (1, 1, .5),
-    (1, 1, .9),
-    (.8, 1.2, .4),
-    (.3, .3, .7),
-    (3, -2, .69),
-    (1, -0.9, .5),
-])
+@pytest.mark.parametrize(
+    ('b', 'd', 'f'),
+    [
+        (1, 0, 1),
+        (0, 0, 1),
+        (0, 0.9, 0),
+        (0, 1.2, 0),
+        (0.9, 0, 1),
+        (1.2, 0, 1),
+        (1, 1, 0.5),
+        (1, 1, 0.9),
+        (0.8, 1.2, 0.4),
+        (0.3, 0.3, 0.7),
+        (3, -2, 0.69),
+        (1, -0.9, 0.5),
+    ],
+)
 def test_wakeby(b: float, d: float, f: float, loc: float, scale: float):
-    X = wakeby(b, d, f, loc, scale)
+    X = cast(Any, wakeby(b, d, f, loc, scale))
 
     assert X.cdf(X.support()[0]) == 0
     assert X.ppf(0) == X.support()[0]
@@ -98,8 +102,8 @@ def test_wakeby(b: float, d: float, f: float, loc: float, scale: float):
 
 @pytest.mark.parametrize('lam', [0, 0.14, 1, -1])
 def test_genlambda_tukeylamba(lam: float):
-    X0 = cast(lspt.RVContinuous, tukeylambda(lam))
-    X = genlambda(lam, lam, 0)
+    X0 = cast(Any, tukeylambda(lam))
+    X = cast(Any, genlambda(lam, lam, 0))
 
     x0 = X0.ppf(Q)
     x = X.ppf(Q)
@@ -107,7 +111,10 @@ def test_genlambda_tukeylamba(lam: float):
     assert x[-1] <= X.support()[1]
     assert_allclose(x, x0)
 
-    _pp = np.linspace(X0.ppf(0.05), X0.ppf(0.95), 100)
+    _pp = cast(
+        npt.NDArray[np.float64],
+        np.linspace(X0.ppf(0.05), X0.ppf(0.95), 100),
+    )
     u0 = X0.cdf(_pp)
     u = X.cdf(_pp)
     assert_allclose(u, u0)
@@ -135,10 +142,10 @@ def test_genlambda_tukeylamba(lam: float):
 # @pytest.mark.parametrize('scale', [1, .5, 2])
 # @pytest.mark.parametrize('loc', [0, 1, -1])
 @pytest.mark.parametrize('f', [0, 1, -1])
-@pytest.mark.parametrize('d', [0, .5, 2, -0.9, -1.95])
-@pytest.mark.parametrize('b', [0, .5, 1, -0.9, -1.95])
+@pytest.mark.parametrize('d', [0, 0.5, 2, -0.9, -1.95])
+@pytest.mark.parametrize('b', [0, 0.5, 1, -0.9, -1.95])
 def test_genlambda(b: float, d: float, f: float):
-    X = genlambda(b, d, f)
+    X = cast(Any, genlambda(b, d, f))
 
     assert X.cdf(X.support()[0]) == 0
     assert X.ppf(0) == X.support()[0]
@@ -182,13 +189,24 @@ def test_genlambda(b: float, d: float, f: float):
     assert_allclose(tl_tau_theo, tl_tau_quad, atol=1e-7)
 
 
-# TODO: tests for:
-# - lm_uniform
-# - lm_logistic
-# - lm_expon
-# - lm_gumbel_r
-# - lm_genextreme
-# - lm_genpareto
-# - lm_kumaraswamy
-# - lm_wakeby
-# - lm_genlambda
+@pytest.mark.parametrize('trim', [(0, 0), (0, 1), (1, 1)])
+@pytest.mark.parametrize(
+    'rv',
+    [
+        distributions.uniform(),
+        distributions.logistic(),
+        distributions.expon(),
+        distributions.gumbel_r(),
+        distributions.genextreme(-0.1),
+        distributions.genpareto(0.1),
+        # TODO: kumaraswamy, wakeby, genlambda
+    ],
+)
+def test_exact_lm(rv: Any, trim: tuple[int, int]) -> None:
+    r = np.arange(1, 9)
+    # if `quad_opts` is not None, the numerical fallback is used
+    lm_quad = rv.l_moment(r, trim=trim, quad_opts={})
+    lm_exact = rv.l_moment(r, trim=trim)
+
+    assert not np.all(lm_exact == lm_quad)
+    assert_allclose(lm_exact, lm_quad)

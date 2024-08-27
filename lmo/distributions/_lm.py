@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import sys
 from collections.abc import Callable
-from math import log
+from math import gamma, log
 from typing import (
     TYPE_CHECKING,
     Concatenate,
@@ -199,7 +199,7 @@ def lm_logistic(r: int, s: float, t: float, /) -> float:
             if r == 2:
                 return 1 / 2
             if r == 4:
-                return 1 / 12
+                return 1 / 24
 
         return 2 * sps.beta(r - 1, t + 1) / r
 
@@ -264,7 +264,7 @@ def lm_gumbel_r(r: int, s: float, t: float, /) -> np.float64 | float:
         case (2, 0, 1):
             return _LN2 * 3 - _LN3 * 3 / 2
         case (2, 1, 1):
-            return _LN2 * -9 + _LN3 * 2
+            return _LN2 * -9 + _LN3 * 6
 
         case (3, 0, 0):
             return _LN2 * -3 + _LN3 * 2
@@ -373,18 +373,22 @@ def lm_genpareto(
     if a == 1:
         return lm_uniform.pyfunc(r, s, t)
 
-    if isinstance(t, int):
+    if not isinstance(t, int):
         msg = 'fractional trimming'
         raise NotImplementedError(msg)
 
     if a >= 1 + t:
         return float('nan')
 
-    a1m = a - 1
-    n = r + s + t - 1
-    return (sps.beta(r + a1m, t - a1m) / sps.beta(n - a, a) - (r == 1)) / a / r
+    b = a - 1
+    n = r + s + t + 1
 
-    raise NotImplementedError
+    if r == 1 and s == 0:
+        return 1 / (t - b)
+    if r == 1:
+        return (gamma(t - b) / gamma(r + t) * gamma(n) / gamma(n - a) - 1) / a
+
+    return sps.beta(r + b, t - b) / (a * sps.beta(n - a, a)) / r
 
 
 @register_lm_func('kumaraswamy')
