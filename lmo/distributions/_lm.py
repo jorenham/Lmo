@@ -40,6 +40,7 @@ if TYPE_CHECKING:
 
 
 __all__ = [
+    'lm_uniform',
     'lm_expon',
     'lm_gumbel_r',
     'lm_genextreme',
@@ -50,9 +51,10 @@ __all__ = [
 
 DistributionName: TypeAlias = Literal[
     # 0 params
+    'uniform',
     'expon',
     'gumbel_r',
-    # 1 params
+    # 1 param
     'genextreme',
     # 2 params
     'kumaraswamy',
@@ -122,6 +124,28 @@ def get_lm_func(name: DistributionName, /) -> _LmVFunc[...]:
     `KeyError` if not registered.
     """
     return _LM_REGISTRY[name]
+
+
+@register_lm_func('uniform')
+def lm_uniform(r: int, s: float, t: float, /) -> float:
+    """
+    Exact generalized* trimmed L-moments of the standard uniform distribution
+    on the interval [0, 1].
+
+    *: Only the `s` trim-length can be fractional.
+    """
+    if r == 0:
+        return 1
+
+    if not isinstance(t, int):
+        msg = 't must be an integer'
+        raise NotImplementedError(msg)
+
+    if r == 1:
+        return (1 + s) / (2 + s + t)
+    if r == 2:
+        return 1 / (2 * (3 + s + t))
+    return 0
 
 
 @register_lm_func('expon')

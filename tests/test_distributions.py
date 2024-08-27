@@ -183,6 +183,7 @@ def test_genlambda(b: float, d: float, f: float):
 
 
 # TODO: tests for:
+# - lm_uniform
 # - lm_expon
 # - lm_gumbel_r
 # - lm_genextreme
