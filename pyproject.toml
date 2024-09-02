@@ -70,7 +70,7 @@ mkdocs-include-markdown-plugin = "^6.2.2"
 mkdocs-jupyter = "^0.24.8"
 mkdocs-material = "^9.5.33"
 mkdocs-minify-plugin = "^0.8.0"
-mkdocstrings = {version = "^0.25.2", extras = ["python"]}
+mkdocstrings = {version = ">=0.25.2,<0.27.0", extras = ["python"]}
 
 [tool.poetry.group.debug.dependencies]
 ipython = "^8.26.0"
