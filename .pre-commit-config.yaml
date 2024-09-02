@@ -60,7 +60,7 @@ repos:
       - id: markdownlint
 
   - repo: https://github.com/python-poetry/poetry
-    rev: 1.8.3
+    rev: 1.8.0
     hooks:
       - id: poetry-check
 
@@ -72,7 +72,7 @@ repos:
           - tomli
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.6.2
+    rev: v0.6.3
     hooks:
       - id: ruff
         args: [--fix, --show-fixes]
