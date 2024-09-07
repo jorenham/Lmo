@@ -3118,6 +3118,21 @@ doc = ["jupyterlite-pyodide-kernel", "jupyterlite-sphinx (>=0.13.1)", "jupytext"
 test = ["Cython", "array-api-strict (>=2.0)", "asv", "gmpy2", "hypothesis (>=6.30)", "meson", "mpmath", "ninja", "pooch", "pytest", "pytest-cov", "pytest-timeout", "pytest-xdist", "scikit-umfpack", "threadpoolctl"]
 
 [[package]]
+name = "scipy-stubs"
+version = "1.4.1a2"
+description = "Type stubs for SciPy"
+optional = false
+python-versions = "<4.0.0,>=3.10.1"
+files = [
+    {file = "scipy_stubs-1.4.1a2-py3-none-any.whl", hash = "sha256:41e4d15c4d5fcc72c700785e6d5f2c3f29a69e9bf1d07a3238e82ed0313643d6"},
+    {file = "scipy_stubs-1.4.1a2.tar.gz", hash = "sha256:888fef9197ee45d8ea4618d8e3428b5ff1c322aa2644964d2129715d858894d9"},
+]
+
+[package.dependencies]
+optype = ">=0.6.1,<0.7.0"
+scipy = ">=1.14.1,<2.0.0"
+
+[[package]]
 name = "setuptools"
 version = "74.1.2"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
@@ -3480,8 +3495,9 @@ files = [
 
 [extras]
 pandas = ["pandas"]
+typing = ["scipy-stubs"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10.1"
-content-hash = "d4862b1dfc69735768f9cac31b23d18f502faeafee761c5bcba1159daf6eb1bc"
+content-hash = "17e57065151e8ccea9b6aa14750d88f8980c25cf3aa1a238212c3ebb4b464f9f"
