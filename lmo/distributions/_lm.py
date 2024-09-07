@@ -36,7 +36,10 @@ from lmo.theoretical import l_moment_from_ppf
 if sys.version_info >= (3, 13):
     from typing import TypeIs
 else:
-    from typing_extensions import TypeIs
+    try:
+        from typing_extensions import TypeIs
+    except ImportError:
+        from typing import TypeGuard as TypeIs
 
 if TYPE_CHECKING:
     import lmo.typing.np as lnpt
