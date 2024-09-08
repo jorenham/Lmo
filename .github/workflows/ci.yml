@@ -33,7 +33,7 @@ jobs:
           poetry config virtualenvs.create true --local
           poetry config virtualenvs.in-project true --local
 
-      - uses: actions/setup-python@v5.2.0
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: poetry
@@ -42,7 +42,7 @@ jobs:
         run: poetry check
 
       - name: poetry install
-        run: poetry install --without debug,docs --with pandas
+        run: poetry install --without debug,docs --all-extras
 
       - name: codespell
         run: poetry run codespell .
