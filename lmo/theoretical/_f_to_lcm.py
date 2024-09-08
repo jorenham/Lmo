@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from functools import partial
 from typing import TYPE_CHECKING, TypeAlias, TypeVar
 
 import numpy as np
@@ -233,7 +234,8 @@ def l_comoment_from_pdf(
                 quad_opts=quad_opts,
             )
         elif _r:
-            l_r[i, j] = spi.nquad(integrand, limits, (i, j), opts=quad_opts)[0]
+            fn = partial(integrand, i=i, j=j)
+            l_r[i, j] = spi.nquad(fn, limits, opts=quad_opts)[0]
 
     return round0(l_r)
 
