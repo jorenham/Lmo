@@ -15,7 +15,7 @@ from typing import (
 
 import numpy as np
 import numpy.typing as npt
-from scipy.integrate import quad  # pyright: ignore[reportUnknownVariableType]
+from scipy.integrate import quad
 
 import lmo.typing as lmt
 import lmo.typing.np as lnpt
