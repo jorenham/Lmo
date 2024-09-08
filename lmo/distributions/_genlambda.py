@@ -6,28 +6,37 @@ from __future__ import annotations
 
 import functools
 import math
-from collections.abc import Callable, Sequence
-from typing import Final, TypeAlias, TypeVar, cast
+import sys
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Final, TypeAlias, TypeVar, cast
 
 import numpy as np
 import numpy.typing as npt
 import scipy.special as sps
-from scipy.stats._distn_infrastructure import (
-    _ShapeInfo,  # noqa: PLC2701  # pyright: ignore[reportPrivateUsage]
-)
+from scipy.stats._distn_infrastructure import _ShapeInfo  # noqa: PLC2701
 from scipy.stats.distributions import rv_continuous
 
-import lmo.typing.scipy as lspt
 from lmo.special import harmonic
 from lmo.theoretical import entropy_from_qdf, l_moment_from_ppf
 from ._lm import get_lm_func
 
 
+if sys.version_info >= (3, 13):
+    from typing import override
+else:
+    from typing_extensions import override
+
+if TYPE_CHECKING:
+    import lmo.typing.scipy as lspt
+
+
 __all__ = ('genlambda_gen',)
 
 
+_F8: TypeAlias = float | np.float64
 _ArrF8: TypeAlias = npt.NDArray[np.float64]
-_T_f8 = TypeVar('_T_f8', bound=float | np.float64 | _ArrF8)
+
+_XT = TypeVar('_XT', bound=_F8 | _ArrF8)
 
 
 def _genlambda_support(b: float, d: float, f: float) -> tuple[float, float]:
@@ -54,8 +63,8 @@ _genlambda_ppf: Final = np.vectorize(_genlambda_ppf0, [float])
 
 
 @np.errstate(divide='ignore')
-def _genlambda_qdf(q: _T_f8, b: float, d: float, f: float) -> _T_f8:
-    return cast(_T_f8, (1 + f) * q ** (b - 1) + (1 - f) * (1 - q) ** (d - 1))
+def _genlambda_qdf(q: _XT, b: float, d: float, f: float) -> _XT:
+    return cast(_XT, (1 + f) * q ** (b - 1) + (1 - f) * (1 - q) ** (d - 1))
 
 
 def _genlambda_cdf0(  # noqa: C901
@@ -128,47 +137,57 @@ _genlambda_cdf: Final = np.vectorize(
 _genlambda_lm: Final = get_lm_func('genlambda')
 
 
-class genlambda_gen(cast(type[lspt.AnyRV], rv_continuous)):
-    def _argcheck(self, b: float, d: float, f: float) -> int:
+class genlambda_gen(rv_continuous):
+    @override
+    def _argcheck(self, /, b: _F8, d: _F8, f: _F8) -> np.bool_:  # pyright: ignore[reportIncompatibleMethodOverride]
         return np.isfinite(b) & np.isfinite(d) & (f >= -1) & (f <= 1)
 
-    def _shape_info(self) -> Sequence[_ShapeInfo]:
+    @override
+    def _shape_info(self, /) -> list[_ShapeInfo]:
         ibeta = _ShapeInfo('b', False, (-np.inf, np.inf), (False, False))
         idelta = _ShapeInfo('d', False, (-np.inf, np.inf), (False, False))
         iphi = _ShapeInfo('f', False, (-1, 1), (True, True))
         return [ibeta, idelta, iphi]
 
+    @override
     def _get_support(
         self,
+        /,
         b: float,
         d: float,
         f: float,
     ) -> tuple[float, float]:
         return _genlambda_support(b, d, f)
 
+    @override
     def _fitstart(
         self,
+        /,
         data: _ArrF8,
         args: tuple[float, float, float] | None = None,
     ) -> tuple[float, float, float, float, float]:
         #  Arbitrary, but the default f=1 is a bad start
         return cast(
             tuple[float, float, float, float, float],
-            super()._fitstart(data, args or (1.0, 1.0, 0.0)),  # pyright: ignore[reportUnknownMemberType,reportAttributeAccessIssue]
+            super()._fitstart(data, args or (1.0, 1.0, 0.0)),
         )
 
-    def _pdf(self, x: _ArrF8, b: float, d: float, f: float) -> _ArrF8:
-        return 1 / self._qdf(self._cdf(x, b, d, f), b, d, f)
+    @override
+    def _pdf(self, /, x: _XT, b: float, d: float, f: float) -> _XT:  # pyright: ignore[reportIncompatibleMethodOverride]
+        return cast(_XT, 1 / self._qdf(self._cdf(x, b, d, f), b, d, f))
 
-    def _cdf(self, x: _ArrF8, b: float, d: float, f: float) -> _ArrF8:
+    @override
+    def _cdf(self, /, x: _XT, b: float, d: float, f: float) -> _XT:  # pyright: ignore[reportIncompatibleMethodOverride]
         return _genlambda_cdf(x, b, d, f)
 
-    def _qdf(self, q: _ArrF8, b: float, d: float, f: float) -> _ArrF8:
+    def _qdf(self, /, q: _XT, b: float, d: float, f: float) -> _XT:
         return _genlambda_qdf(q, b, d, f)
 
-    def _ppf(self, q: _ArrF8, b: float, d: float, f: float) -> _ArrF8:
+    @override
+    def _ppf(self, /, q: _XT, b: float, d: float, f: float) -> _XT:  # pyright: ignore[reportIncompatibleMethodOverride]
         return _genlambda_ppf(q, b, d, f)
 
+    @override
     def _stats(
         self,
         b: float,
