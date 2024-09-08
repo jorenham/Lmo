@@ -177,7 +177,7 @@ def peaks_jacobi(
     # otherwise, peaks are at the ends, and at the roots of the derivative
     x = np.empty(n + 1)
     x[0] = -1
-    x[1:-1] = scs.roots_jacobi(n - 1, a + 1, b + 1)[0]  # pyright: ignore[reportUnknownMemberType]
+    x[1:-1] = scs.roots_jacobi(n - 1, a + 1, b + 1)[0]
     x[-1] = 1
 
     return np.round(x, 15) + 0.0  # cleanup of numerical noise
@@ -316,7 +316,7 @@ def _jacobi_coefs(
     b: float,
 ) -> onpt.Array[tuple[int], np.float64]:
     p_n: np.poly1d
-    p_n = scs.jacobi(n, a, b)  # pyright: ignore[reportUnknownMemberType]
+    p_n = scs.jacobi(n, a, b)
     return p_n.coef[::-1]
 
 
