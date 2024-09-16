@@ -1,7 +1,7 @@
 import functools
 from collections.abc import Callable, Sequence
 from math import exp, factorial, gamma, lgamma, log
-from typing import Concatenate, Final, ParamSpec, TypeAlias, cast
+from typing import Concatenate, Final, ParamSpec, TypeAlias
 
 import numpy as np
 import numpy.typing as npt
@@ -116,10 +116,8 @@ def nquad(
     *args: _Tss.args,
     **kwds: _Tss.kwargs,
 ) -> float:
-    # nquad only has an `args` param for some invalid reason
-    fn = functools.partial(integrand, **kwds) if kwds else integrand
+    if kwds:
+        integrand = functools.partial(integrand, *args, **kwds)
+        args = ()  # pyright: ignore[reportAssignmentType]
 
-    return cast(
-        tuple[float, float],
-        spi.nquad(fn, domains[::-1], args, opts=opts),  # pyright: ignore[reportUnknownMemberType]
-    )[0]
+    return spi.nquad(integrand, domains[::-1], args=args, opts=opts)[0]

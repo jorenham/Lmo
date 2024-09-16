@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import functools
-from typing import TYPE_CHECKING, TypeAlias, TypeVar, cast
+from functools import partial
+from typing import TYPE_CHECKING, TypeAlias, TypeVar
 
 import numpy as np
 import numpy.typing as npt
@@ -216,7 +216,8 @@ def l_comoment_from_pdf(
 
     c = l_const(_r, s, t)
 
-    def integrand(i: int, j: int, /, *xs: float) -> float:
+    # def integrand(*xs: float, i: int, j: int) -> float:
+    def integrand(*xs: float, i: int, j: int) -> float:
         x = np.asarray(xs)
         q_j = cdfs[j](x[j])
         p_j = eval_sh_jacobi(_r - 1, t, s, q_j)
@@ -233,14 +234,8 @@ def l_comoment_from_pdf(
                 quad_opts=quad_opts,
             )
         elif _r:
-            l_r[i, j] = cast(
-                float,
-                spi.nquad(  # pyright: ignore[reportUnknownMemberType]
-                    functools.partial(integrand, i, j),
-                    limits,
-                    opts=quad_opts,
-                )[0],
-            )
+            fn = partial(integrand, i=i, j=j)
+            l_r[i, j] = spi.nquad(fn, limits, opts=quad_opts)[0]
 
     return round0(l_r)
 

@@ -18,7 +18,7 @@ from typing import (
 
 import numpy as np
 import numpy.typing as npt
-from scipy.integrate import quad  # pyright: ignore[reportUnknownVariableType]
+from scipy.integrate import quad
 from scipy.optimize import (
     OptimizeWarning,
     minimize,  # pyright: ignore[reportUnknownVariableType]
@@ -192,7 +192,7 @@ _gof_stat = cast(
 
 
 def l_moment_gof(
-    rv_or_cdf: lspt.AnyRV | Callable[[float], float],
+    rv_or_cdf: lspt.RV | Callable[[float], float],
     l_moments: _ArrF8,
     n_obs: int,
     /,
@@ -288,7 +288,7 @@ def l_moment_gof(
 
 
 def l_stats_gof(
-    rv_or_cdf: lspt.AnyRV | Callable[[float], float],
+    rv_or_cdf: lspt.RV | Callable[[float], float],
     l_stats: _ArrF8,
     n_obs: int,
     /,
@@ -727,7 +727,7 @@ def rejection_point(
         return max(abs(influence_fn(-x)), abs(influence_fn(x)))
 
     def obj(r: _ArrF8) -> float:
-        return quad(integrand, r[0], np.inf)[0]  # pyright: ignore[reportUnknownVariableType]
+        return quad(integrand, r[0], np.inf)[0]
 
     res = cast(
         lspt.OptimizeResult,
