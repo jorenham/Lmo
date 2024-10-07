@@ -53,7 +53,7 @@ optype = {version = "^0.6.1", extras = ["numpy"]}
 [tool.poetry.group.dev.dependencies]
 codespell = "^2.3.0"
 hypothesis = {version = "^6.112.0", extras = ["numpy"]}
-pre-commit = "^3.8.0"
+pre-commit = ">=3.8,<5.0"
 basedpyright = "^1.17.2"
 pytest = "^8.3.2"
 pytest-doctestplus = "^1.2.1"
