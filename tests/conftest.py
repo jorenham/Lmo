@@ -1,15 +1,21 @@
 # ruff: noqa: SLF001
 # pyright: reportPrivateUsage=false
-import contextlib
+from __future__ import annotations
 
-import optype as opt
+import contextlib
+from typing import TYPE_CHECKING
+
 import pytest
 
 from lmo import _lm
 
 
+if TYPE_CHECKING:
+    from collections.abc import Generator
+
+
 @contextlib.contextmanager
-def tmp_cache() -> opt.CanIterSelf[_lm._Cache]:
+def tmp_cache() -> Generator[_lm._Cache, None, None]:
     cache_tmp: _lm._Cache = {}
     cache_old, _lm._CACHE = _lm._CACHE, cache_tmp
     try:
@@ -19,7 +25,7 @@ def tmp_cache() -> opt.CanIterSelf[_lm._Cache]:
 
 
 @pytest.fixture(name='tmp_cache')
-def tmp_cache_fixture():
+def tmp_cache_fixture() -> Generator[_lm._Cache, None, None]:
     with tmp_cache() as cache:
         assert not cache
         yield cache
