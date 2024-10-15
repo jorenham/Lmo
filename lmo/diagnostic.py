@@ -736,14 +736,12 @@ def rejection_point(
     def obj(r: _ArrF8) -> float:
         return quad(integrand, r[0], np.inf)[0]
 
-    res = cast(
-        lspt.OptimizeResult,
-        minimize(
-            obj,
-            bounds=[(rho_min, rho_max)],
-            x0=[rho_min],
-            method='COBYLA',
-        ),
+    # TO
+    res = minimize(
+        obj,
+        bounds=[(rho_min, rho_max)],
+        x0=[rho_min],
+        method='COBYLA',
     )
 
     rho = cast(float, res.x[0])

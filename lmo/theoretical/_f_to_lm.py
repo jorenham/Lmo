@@ -1,8 +1,15 @@
 from __future__ import annotations
 
-import sys
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Final, TypeAlias, TypeVar, cast, overload
+from typing import (
+    TYPE_CHECKING,
+    Final,
+    TypeAlias,
+    TypeVar,
+    Unpack,
+    cast,
+    overload,
+)
 
 import numpy as np
 import numpy.typing as npt
@@ -20,11 +27,6 @@ from lmo._utils import (
 )
 from ._utils import l_const, tighten_cdf_support
 
-
-if sys.version_info > (3, 13):
-    from typing import Unpack
-else:
-    from typing_extensions import Unpack
 
 if TYPE_CHECKING:
     import lmo.typing as lmt

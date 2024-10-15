@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import sys
 from math import comb, lgamma
-from typing import Any, TypeAlias, cast
+from typing import Any, TypeAlias, assert_never, cast
 
 import numpy as np
 import numpy.typing as npt
@@ -14,11 +14,9 @@ import lmo.typing.np as lnpt
 
 
 if sys.version_info >= (3, 13):
-    from typing import TypeVar, Unpack, assert_never
+    from typing import TypeVar
 else:
-    from typing import assert_never
-
-    from typing_extensions import TypeVar, Unpack
+    from typing_extensions import TypeVar
 
 
 __all__ = (
@@ -44,10 +42,10 @@ _Square: TypeAlias = onpt.Array[tuple[_K, _K], _T]
 
 def sandwich(
     A: onpt.Array[tuple[_K, _R], np.floating[Any]],
-    X: onpt.Array[tuple[_R, Unpack[tuple[_R, ...]]], np.floating[Any]],
+    X: onpt.Array[tuple[_R, *tuple[_R, ...]], np.floating[Any]],
     /,
     dtype: _DType[_TF] = np.float64,
-) -> onpt.Array[tuple[_K, Unpack[tuple[_K, ...]]], _TF]:
+) -> onpt.Array[tuple[_K, *tuple[_K, ...]], _TF]:
     """
     Calculates the "sandwich" matrix product (`A @ X @ A.T`) along the
     specified `X` axis.

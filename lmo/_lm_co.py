@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import sys
-from typing import TYPE_CHECKING, Any, Literal, TypeAlias, cast
+from typing import TYPE_CHECKING, Any, Literal, TypeAlias, Unpack, cast
 
 import numpy as np
 
@@ -11,9 +11,9 @@ from ._utils import clean_order, clean_orders, ordered
 
 
 if sys.version_info >= (3, 13):
-    from typing import TypeVar, Unpack
+    from typing import TypeVar
 else:
-    from typing_extensions import TypeVar, Unpack
+    from typing_extensions import TypeVar
 
 if TYPE_CHECKING:
     import optype.numpy as onpt

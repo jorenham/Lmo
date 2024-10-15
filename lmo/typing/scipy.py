@@ -5,7 +5,15 @@
 from __future__ import annotations
 
 import sys
-from typing import TYPE_CHECKING, Any, Literal, TypeAlias, TypedDict
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Literal,
+    LiteralString,
+    TypeAlias,
+    TypedDict,
+    overload,
+)
 
 import numpy as np
 import numpy.typing as npt
@@ -20,17 +28,8 @@ from scipy.stats._distn_infrastructure import (
 
 
 if sys.version_info >= (3, 13):
-    from typing import (
-        LiteralString,
-        ParamSpec,
-        Protocol,
-        TypeVar,
-        overload,
-        runtime_checkable,
-    )
+    from typing import ParamSpec, Protocol, TypeVar, runtime_checkable
 else:
-    from typing import LiteralString, overload
-
     from typing_extensions import (
         ParamSpec,
         Protocol,
@@ -41,10 +40,11 @@ else:
 if TYPE_CHECKING:
     from collections.abc import ItemsView, Iterator, KeysView, ValuesView
 
-    import optype as opt
     import optype.numpy as onpt
+    from optype import CanGetitem
 
     import lmo.typing.np as lnpt
+
 
 __all__ = (
     'FitResult',
@@ -84,10 +84,10 @@ class QuadOptions(TypedDict, total=False):
     epsabs: float
     epsrel: float
     limit: int
-    points: opt.CanGetitem[
-        int,
-        float | np.floating[Any] | np.integer[Any] | np.bool_,
-    ]
+    points: (
+        CanGetitem[int, float | np.floating[Any] | np.integer[Any] | np.bool_]
+        | onpt.Array[tuple[int], np.floating[Any] | np.integer[Any] | np.bool_]
+    )
     weight: QuadWeights
     wvar: float | tuple[float, float]
     wopts: tuple[int, npt.NDArray[np.float32 | np.float64]]
