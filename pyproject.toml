@@ -71,7 +71,7 @@ mkdocstrings = {version = ">=0.26.2,<0.27.0", extras = ["python"]}
 [tool.poetry.group.debug.dependencies]
 ipython = "^8.28.0"
 ipykernel = "^6.29.5"
-line_profiler = "4.1.3"
+line_profiler = {version = "4.1.3", python = "<3.13"}
 matplotlib = "^3.9.2"
 scipy-stubs = "^1.4.1a3"
 typing-extensions = "^4.12.2"
