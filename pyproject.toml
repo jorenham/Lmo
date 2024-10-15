@@ -5,7 +5,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "lmo"
-version = "0.14.2"
+version = "0.15.0.dev0"
 description = "L-Moments for robust statistics & inference."
 authors = ["Joren Hammudoglu <jhammudoglu@gmail.com>"]
 readme = "README.md"
@@ -43,6 +43,7 @@ typing_extensions = {version = "^4.8", python = "<3.13"}
 # https://scientific-python.org/specs/spec-0000/
 numpy =  ">=1.24"
 scipy = "^1.10"
+scipy-stubs = {version = "^1.14.1.0", optional = true}
 pandas = {version = ">=2.0", optional = true}
 optype = {version = "^0.6.1", extras = ["numpy"]}
 
@@ -70,8 +71,9 @@ mkdocstrings = {version = ">=0.26.2,<0.27.0", extras = ["python"]}
 [tool.poetry.group.debug.dependencies]
 ipython = "^8.28.0"
 ipykernel = "^6.29.5"
-line_profiler = "4.1.3"
+line_profiler = {version = "4.1.3", python = "<3.13"}
 matplotlib = "^3.9.2"
+scipy-stubs = "^1.4.1a3"
 typing-extensions = "^4.12.2"
 
 [tool.poetry.group.pandas.dependencies]
@@ -84,6 +86,7 @@ optional = true
 pytest-github-actions-annotate-failures = ">=0.2.0,<1.0"
 
 [tool.poetry.extras]
+typing = ["scipy-stubs"]
 pandas = ["pandas"]
 
 [tool.codespell]
@@ -100,7 +103,7 @@ addopts = [
 ]
 doctest_optionflags = ["NORMALIZE_WHITESPACE", "FLOAT_CMP"]
 doctest_plus = "enabled"
-doctest_subpackage_requires = {"lmo/contrib/pandas.py" = "pandas>=1.5"}
+doctest_subpackage_requires = {"lmo/contrib/pandas.py" = "pandas>=2.0"}
 filterwarnings = ["error"]
 log_cli_level = "INFO"
 testpaths = ["lmo", "tests"]
@@ -113,21 +116,37 @@ ignore = ["lmo/contrib/pandas.py"]
 stubPath = "."
 venvPath = "."
 venv = ".venv"
-pythonVersion = "3.10"
-pythonPlatform = "All"
-typeCheckingMode = "all"
 defineConstant = {NP2 = true}
-
-reportAny = false  # TODO
+pythonVersion = "3.11"
+pythonPlatform = "All"
+typeCheckingMode = "strict"
+# discouraged options
+enableTypeIgnoreComments = false
+enableReachabilityAnalysis = false
+# for pyright compatibility
+deprecateTypingAliases = true
+reportMissingModuleSource = true
+reportCallInDefaultInitializer = true
+reportImplicitOverride = true
+reportImplicitStringConcatenation = true
 reportImportCycles = false  # TODO
-reportInvalidCast = false  # TODO
-
-reportMissingTypeStubs = false  # scipy has no stubs
-reportUnreachable = false  # nothing wrong with `if sys.version_info() >= ...`
+reportMissingSuperCall = true
+reportPropertyTypeMismatch = true
+reportShadowedImports = true
+reportUninitializedInstanceVariable = true
+reportUnnecessaryTypeIgnoreComment = true
 reportUnusedCallResult = false  # https://github.com/microsoft/pyright/issues/8650
+reportUnreachable = false  # `if sys.version_info() >= ...`
+reportAny = false  # TODO
+reportIgnoreCommentWithoutRule = true
+reportPrivateLocalImportUsage = true
+reportImplicitRelativeImport = true
+reportInvalidCast = false  # TODO
+reportUnsafeMultipleInheritance = true
+# already handled by ruff
+reportUnusedParameter = false  # dupe of ARG002
 reportUnusedImport = false  # dupe of F401
 reportUnusedVariable = false  # dupe of F841
-reportUnusedParameter = false  # dupe of ARG002
 
 [tool.repo-review]
 ignore = [
@@ -139,7 +158,7 @@ ignore = [
 
 [tool.ruff]
 src = ["lmo", "tests"]
-target-version = "py310"
+target-version = "py311"
 line-length = 79
 indent-width = 4
 show-fixes = true
@@ -279,7 +298,6 @@ banned-from = [
     "numpy",
     "numpy.polynomial",
     "numpy.typing",
-    "optype",
     "optype.numpy",
 ]
 
@@ -289,7 +307,6 @@ banned-from = [
 "lmo.typing.scipy" = "lspt"
 "numpy.polynomial" = "npp"
 "numpy.typing" = "npt"
-"optype" = "opt"
 "optype.numpy" = "onpt"
 
 [tool.ruff.lint.flake8-quotes]

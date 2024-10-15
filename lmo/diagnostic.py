@@ -1,7 +1,9 @@
 """Hypothesis tests, estimator properties, and performance metrics."""
+
 from __future__ import annotations
 
 import math
+import sys
 import warnings
 from collections.abc import Callable
 from math import lgamma
@@ -18,11 +20,8 @@ from typing import (
 
 import numpy as np
 import numpy.typing as npt
-from scipy.integrate import quad  # pyright: ignore[reportUnknownVariableType]
-from scipy.optimize import (
-    OptimizeWarning,
-    minimize,  # pyright: ignore[reportUnknownVariableType]
-)
+from scipy.integrate import quad
+from scipy.optimize import OptimizeWarning, minimize
 from scipy.special import chdtrc
 from scipy.stats.distributions import rv_continuous, rv_frozen
 
@@ -36,6 +35,12 @@ from .special import fpow
 from .typing import AnyOrder, AnyOrderND, AnyTrim
 
 
+if sys.version_info >= (3, 13):
+    from typing import TypeIs
+else:
+    from typing_extensions import TypeIs
+
+
 if TYPE_CHECKING:
     from .contrib.scipy_stats import l_rv_generic
 
@@ -44,10 +49,8 @@ __all__ = (
     'normaltest',
     'l_moment_gof',
     'l_stats_gof',
-
     'l_moment_bounds',
     'l_ratio_bounds',
-
     'rejection_point',
     'error_sensitivity',
     'shift_sensitivity',
@@ -157,7 +160,7 @@ def normaltest(
 
     # theoretical L-skew and L-kurtosis of the normal distribution (for all
     # loc/mu and scale/sigma)
-    tau3, tau4 = .0, 60 * constants.theta_m_bar - 9
+    tau3, tau4 = 0.0, 60 * constants.theta_m_bar - 9
 
     z3 = (t3 - tau3) / np.sqrt(
         0.1866 / n + (np.sqrt(0.8000) / n) ** 2,
@@ -174,25 +177,22 @@ def normaltest(
     return HypothesisTestResult(k2, p_value)
 
 
-def _gof_stat_single(l_obs: _ArrF8, l_exp: _ArrF8, cov: _ArrF8) -> np.float64:
+def _gof_stat_single(l_obs: _ArrF8, l_exp: _ArrF8, cov: _ArrF8) -> float:
     err = l_obs - l_exp
     prec = np.linalg.inv(cov)  # precision matrix
-    return cast(np.float64, err.T @ prec @ err)
+    return float(err.T @ prec @ err)
 
 
-_gof_stat = cast(
-    Callable[[_ArrF8, _ArrF8, _ArrF8], _ArrF8],
-    np.vectorize(
-        _gof_stat_single,
-        otypes=[float],
-        excluded={1, 2},
-        signature='(n)->()',
-    ),
+_gof_stat = np.vectorize(
+    _gof_stat_single,
+    otypes=[float],
+    excluded={1, 2},
+    signature='(n)->()',
 )
 
 
 def l_moment_gof(
-    rv_or_cdf: lspt.AnyRV | Callable[[float], float],
+    rv_or_cdf: lspt.RV | Callable[[float], float],
     l_moments: _ArrF8,
     n_obs: int,
     /,
@@ -283,12 +283,16 @@ def l_moment_gof(
         lambda_rr = l_moment_cov_from_cdf(cdf, n, trim, **kwargs)
 
     stat = n_obs * _gof_stat(l_r.T, lambda_r, lambda_rr).T[()]
-    pval = cast(float | _ArrF8, chdtrc(n, stat))
+    pval = chdtrc(n, stat)
     return HypothesisTestResult(stat, pval)
 
 
+def _is_rv(x: object) -> TypeIs[lspt.RV]:
+    return isinstance(x, lspt.RV)
+
+
 def l_stats_gof(
-    rv_or_cdf: lspt.AnyRV | Callable[[float], float],
+    rv_or_cdf: lspt.RV | Callable[[float], float],
     l_stats: _ArrF8,
     n_obs: int,
     /,
@@ -305,16 +309,16 @@ def l_stats_gof(
         msg = f'at least 2 L-stats are required, got {n}'
         raise TypeError(msg)
 
-    if isinstance(rv_or_cdf, rv_continuous.__base__ | rv_frozen):
+    if _is_rv(rv_or_cdf):
         rv = cast('l_rv_generic', rv_or_cdf)
         tau_r = rv.l_stats(moments=n, trim=trim, **kwargs)
         tau_rr = rv.l_stats_cov(moments=n, trim=trim, **kwargs)
     else:
         from .theoretical import l_stats_cov_from_cdf, l_stats_from_cdf
 
-        cdf = cast(Callable[[float], float], rv_or_cdf)
-        tau_r = l_stats_from_cdf(cdf, n, trim, **kwargs)
+        cdf = rv_or_cdf
         tau_rr = l_stats_cov_from_cdf(cdf, n, trim, **kwargs)
+        tau_r = l_stats_from_cdf(cdf, n, trim, **kwargs)
 
     stat = n_obs * _gof_stat(t_r.T, tau_r, tau_rr).T[()]
     pval = cast(float | _ArrF8, chdtrc(n, stat))
@@ -329,22 +333,23 @@ def _lm2_bounds_single(r: int, trim: _Tuple2[float]) -> float:
         case (0, 0):
             return 1 / (2 * r - 1)
         case (0, 1) | (1, 0):
-            return (r + 1)**2 / (r * (2 * r - 1) * (2 * r + 1))
+            return (r + 1) ** 2 / (r * (2 * r - 1) * (2 * r + 1))
         case (1, 1):
             return (
-                (r + 1)**2 * (r + 2)**2
+                (r + 1) ** 2
+                * (r + 2) ** 2
                 / (2 * r**2 * (2 * r - 1) * (2 * r + 1) * (2 * r + 1))
             )
         case (s, t):
             return np.exp(
-                lgamma(r - .5)
+                lgamma(r - 0.5)
                 - lgamma(s + t + 1)
-                + lgamma(s + .5)
+                + lgamma(s + 0.5)
                 - lgamma(r + s)
-                + lgamma(t + .5)
+                + lgamma(t + 0.5)
                 - lgamma(r + t)
                 + lgamma(r + s + t + 1) * 2
-                - lgamma(r + s + t + .5),
+                - lgamma(r + s + t + 0.5),
             ) / (np.pi * 2 * r**2)
 
 
@@ -361,13 +366,15 @@ _lm2_bounds = cast(
 
 @overload
 def l_moment_bounds(
-    r: AnyOrderND, /,
+    r: AnyOrderND,
+    /,
     trim: AnyTrim = ...,
     scale: float = ...,
 ) -> _ArrF8: ...
 @overload
 def l_moment_bounds(
-    r: AnyOrder, /,
+    r: AnyOrder,
+    /,
     trim: AnyTrim = ...,
     scale: float = ...,
 ) -> float: ...
@@ -727,16 +734,14 @@ def rejection_point(
         return max(abs(influence_fn(-x)), abs(influence_fn(x)))
 
     def obj(r: _ArrF8) -> float:
-        return quad(integrand, r[0], np.inf)[0]  # pyright: ignore[reportUnknownVariableType]
+        return quad(integrand, r[0], np.inf)[0]
 
-    res = cast(
-        lspt.OptimizeResult,
-        minimize(
-            obj,
-            bounds=[(rho_min, rho_max)],
-            x0=[rho_min],
-            method='COBYLA',
-        ),
+    # TO
+    res = minimize(
+        obj,
+        bounds=[(rho_min, rho_max)],
+        x0=[rho_min],
+        method='COBYLA',
     )
 
     rho = cast(float, res.x[0])
@@ -797,23 +802,11 @@ def error_sensitivity(
 
     bounds = None if np.isneginf(a) and np.isposinf(b) else [(a, b)]
 
-    res = cast(
-        lspt.OptimizeResult,
-        minimize(
-            obj,
-            bounds=bounds,
-            x0=[min(max(0, a), b)],
-            method='COBYLA',
-        ),
-    )
+    res = minimize(obj, bounds=bounds, x0=[min(max(0, a), b)], method='COBYLA')
     if not res.success:
-        warnings.warn(
-            res.message,
-            OptimizeWarning,
-            stacklevel=1,
-        )
+        warnings.warn(res.message, OptimizeWarning, stacklevel=1)
 
-    return -res.fun
+    return float(-res.fun)
 
 
 def shift_sensitivity(
@@ -884,20 +877,13 @@ def shift_sensitivity(
     a, b = domain
     bounds = None if np.isneginf(a) and np.isposinf(b) else [(a, b)]
 
-    res = cast(
-        lspt.OptimizeResult,
-        minimize(
-            obj,
-            bounds=bounds,
-            x0=[min(max(0, a), b), min(max(1, a), b)],
-            method='COBYLA',
-        ),
+    res = minimize(
+        obj,
+        bounds=bounds,
+        x0=[min(max(0, a), b), min(max(1, a), b)],
+        method='COBYLA',
     )
     if not res.success:
-        warnings.warn(
-            cast(str, res.message),
-            OptimizeWarning,
-            stacklevel=1,
-        )
+        warnings.warn(res.message, OptimizeWarning, stacklevel=1)
 
-    return -res.fun
+    return float(-res.fun)

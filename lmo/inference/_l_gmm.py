@@ -6,9 +6,6 @@ import numpy as np
 import numpy.typing as npt
 from scipy import optimize, special
 
-import lmo.typing as lmt
-import lmo.typing.np as lnpt
-import lmo.typing.scipy as lspt
 from lmo._lm import l_moment as l_moment_est
 from lmo._lm_co import l_coscale as l_coscale_est
 from lmo._utils import clean_orders, clean_trim
@@ -19,6 +16,12 @@ from lmo.theoretical._utils import l_coef_factor
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+
+    import optype.numpy as onpt
+
+    import lmo.typing as lmt
+    import lmo.typing.np as lnpt
+    import lmo.typing.scipy as lspt
 
 
 __all__ = 'GMMResult', 'fit'
@@ -54,6 +57,7 @@ class GMMResult(NamedTuple):
             The final weight (precision, inverse covariance) matrix.
 
     """
+
     n_samp: int
     n_step: int
     n_iter: int
@@ -215,6 +219,16 @@ def _get_weights_mc(
         return np.linalg.pinv(l_rr)
 
 
+def _ensure_1d_f8(
+    arr: lnpt.AnyVectorFloat,
+) -> onpt.Array[tuple[int], np.float64]:
+    out = np.asarray_chkfinite(arr)
+    if out.ndim != 1:
+        err = f'expected 1D array, got {out.shape}'
+        raise ValueError(err)
+    return out
+
+
 def fit(  # noqa: C901
     ppf: lspt.RVFunction[...],
     args0: lnpt.AnyVectorFloat,
@@ -226,7 +240,6 @@ def fit(  # noqa: C901
     k: int | None = None,
     k_max: int = 50,
     l_tol: float = 1e-4,
-
     l_moment_fn: Callable[..., _ArrF8] | None = None,
     n_mc_samples: int = 9999,
     random_state: lnpt.Seed | None = None,
@@ -341,13 +354,9 @@ def fit(  # noqa: C901
 
     """
     # Validate the input
-    theta = np.asarray_chkfinite(args0, np.float64)
+    theta = _ensure_1d_f8(args0)
+    l_r = _ensure_1d_f8(l_moments)
     n_par = len(theta)
-
-    l_r = np.asarray_chkfinite(l_moments)
-    if l_r.ndim != 1:
-        msg = 'l_moments must be a 1-d array-like'
-        raise ValueError(msg)
 
     if r is None:
         _r = np.arange(1, len(l_r) + 1, dtype=np.intp)
@@ -408,24 +417,17 @@ def fit(  # noqa: C901
 
     for _k in range(1, k_max + 1):
         # calculate the weight matrix
-        if n_con > n_par:
-            w_rr = _get_weights_mc(
-                ppf(cast(_ArrF8, qs), *theta),
-                _r,
-                trim=_trim,
-            )
+        if n_con > n_par and qs is not None:
+            w_rr = _get_weights_mc(ppf(qs, *theta), _r, trim=_trim)
 
         # run the optimizer
-        res = cast(
-            lspt.OptimizeResult,
-            optimize.minimize(  # pyright: ignore[reportUnknownMemberType]
-                _loss_step,
-                theta,
-                args=(_l_moment_fn, _r, l_r, _trim, w_rr),
-                **kwds,
-            ),
+        res = optimize.minimize(
+            _loss_step,
+            theta,  # pyright: ignore[reportArgumentType]
+            args=(_l_moment_fn, _r, l_r, _trim, w_rr),
+            **kwds,
         )
-        i += res.nfev
+        i += cast(int, res.nfev)
         fun = res.fun
         theta = res.x
 
@@ -448,7 +450,7 @@ def fit(  # noqa: C901
     return GMMResult(
         args=tuple(theta),
         success=success,
-        statistic=fun**2,
+        statistic=float(fun**2),
         eps=eps,
         n_samp=n_obs - int(sum(_trim)),
         n_step=_k,

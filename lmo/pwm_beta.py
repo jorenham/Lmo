@@ -16,9 +16,9 @@ from ._utils import ordered
 
 
 if sys.version_info >= (3, 13):
-    from typing import TypeVar, Unpack
+    from typing import TypeVar
 else:
-    from typing_extensions import TypeVar, Unpack
+    from typing_extensions import TypeVar
 
 
 if TYPE_CHECKING:
@@ -103,7 +103,7 @@ def cov(
     axis: int,
     dtype: _DType[_F] = np.float64,
     **kwds: Any,
-) -> onpt.Array[tuple[_R, _R, Unpack[tuple[int, ...]]], _F]: ...
+) -> onpt.Array[tuple[_R, _R, *tuple[int, ...]], _F]: ...
 def cov(
     a: lnpt.AnyArrayFloat,
     r: int,

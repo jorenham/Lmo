@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import functools
-from typing import TYPE_CHECKING, TypeAlias, cast, final, overload
+import math
+import sys
+from typing import TYPE_CHECKING, Any, TypeAlias, TypeVar, cast, final
 
 import numpy as np
 import numpy.typing as npt
@@ -12,81 +14,100 @@ from scipy.stats._distn_infrastructure import (
 )
 from scipy.stats.distributions import rv_continuous as _rv_continuous
 
-import lmo.typing.scipy as lspt
 from lmo.special import harmonic
 from lmo.theoretical import l_moment_from_ppf
 from ._lm import get_lm_func
 
 
+if sys.version_info >= (3, 13):
+    from typing import override
+else:
+    from typing_extensions import override
+
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    import lmo.typing.scipy as lspt
 
 
 __all__ = ('kumaraswamy_gen',)
 
-
+_F8: TypeAlias = float | np.float64
 _ArrF8: TypeAlias = onpt.Array[tuple[int, ...], np.float64]
+
+_XT = TypeVar('_XT', _F8, _ArrF8)
+
 
 _lm_kumaraswamy = get_lm_func('kumaraswamy')
 
 
+# pyright: reportIncompatibleMethodOverride=false
+
 @final
-class kumaraswamy_gen(cast(type[lspt.AnyRV], _rv_continuous)):  # pyright: ignore[reportGeneralTypeIssues]
-    def _argcheck(self, a: float, b: float) -> bool:
+class kumaraswamy_gen(_rv_continuous):
+    @override
+    def _argcheck(self, /, a: _F8, b: _F8) -> bool | np.bool_:
         return (a > 0) & (b > 0)
 
-    def _shape_info(self) -> Sequence[_ShapeInfo]:
+    @override
+    def _shape_info(self, /) -> list[_ShapeInfo]:
         ia = _ShapeInfo('a', False, (0, np.inf), (False, False))
         ib = _ShapeInfo('b', False, (0, np.inf), (False, False))
         return [ia, ib]
 
-    def _get_support(self, a: float, b: float) -> tuple[float, float]:  # noqa: ARG002
+    @override
+    def _get_support(self, /, a: _F8, b: _F8) -> tuple[_F8, _F8]:
         return 0.0, 1.0
 
-    def _pdf(self, x: _ArrF8, a: float, b: float) -> _ArrF8:
-        return a * b * x ** (a - 1) * (1 - x**a) ** (b - 1)
+    @override
+    def _pdf(self, /, x: _XT, a: float, b: float) -> _XT:
+        return cast(_XT, a * b * x ** (a - 1) * (1 - x**a) ** (b - 1))
 
-    def _logpdf(self, x: _ArrF8, a: float, b: float) -> _ArrF8:
-        return np.log(a * b) + (a - 1) * np.log(x) + (b - 1) * np.log(1 - x**a)
-
-    def _cdf(self, x: _ArrF8, a: float, b: float) -> _ArrF8:
-        return 1 - (1 - x**a) ** b
-
-    def _sf(self, x: _ArrF8, a: float, b: float) -> _ArrF8:
-        return (1 - x**a) ** (b - 1)
-
-    def _isf(self, q: _ArrF8, a: float, b: float) -> _ArrF8:
-        return (1 - q ** (1 / b)) ** (1 / a)
-
-    def _qdf(self, q: _ArrF8, a: float, b: float) -> _ArrF8:
-        return (
-            (1 - q) ** (1 / (b - 1))
-            * (1 - (1 - q) ** (1 / b)) ** (1 / (a - 1))
-            / (a * b)
+    @override
+    def _logpdf(self, /, x: _XT, a: float, b: float) -> _XT:
+        return cast(
+            _XT,
+            np.log(a * b) + (a - 1) * np.log(x) + (b - 1) * np.log(1 - x**a),
         )
 
-    @overload
-    def _ppf(self, q: _ArrF8, a: float, b: float) -> _ArrF8: ...
-    @overload
-    def _ppf(self, q: float, a: float, b: float) -> np.float64: ...
-    def _ppf(
+    @override
+    def _cdf(self, /, x: _XT, a: float, b: float) -> _XT:
+        return cast(_XT, 1 - (1 - x**a) ** b)
+
+    @override
+    def _sf(self, /, x: _XT, a: float, b: float) -> _XT:
+        return cast(_XT, (1 - x**a) ** (b - 1))
+
+    @override
+    def _isf(self, /, q: _XT, a: float, b: float) -> _XT:
+        return cast(_XT, (1 - q ** (1 / b)) ** (1 / a))
+
+    def _qdf(self, /, q: _XT, a: float, b: float) -> _XT:
+        p = 1 - q
+        return cast(
+            _XT,
+            p ** (1 / (b - 1)) * (1 - p ** (1 / b)) ** (1 / (a - 1)) / (a * b),
+        )
+
+    @override
+    def _ppf(self, /, q: _XT, a: float, b: float) -> _XT:
+        return cast(_XT, (1 - (1 - q) ** (1 / b)) ** (1 / a))
+
+    def _entropy(self, a: float, b: float) -> float:
+        # https://wikipedia.org/wiki/Kumaraswamy_distribution
+        return (1 - 1 / b) + (1 - 1 / a) * harmonic(b) - math.log(a * b)
+
+    @override
+    def _munp(
         self,
-        q: float | _ArrF8,
+        /,
+        n: int | np.integer[Any] | npt.NDArray[np.integer[Any]],
         a: float,
         b: float,
-    ) -> np.float64 | _ArrF8:
-        return (1 - (1 - q) ** (1 / b)) ** (1 / a)
-
-    def _entropy(self, a: float, b: float) -> np.float64:
-        # https://wikipedia.org/wiki/Kumaraswamy_distribution
-        return (1 - 1 / b) + (1 - 1 / a) * harmonic(b) - np.log(a * b)
-
-    def _munp(self, n: int, a: float, b: float) -> float:
-        return b * cast(float, sc.beta(1 + n / a, b))
+    ) -> _ArrF8:
+        return b * sc.beta(1 + n / a, b)
 
     def _l_moment(
         self,
-        r: npt.NDArray[np.intp],
+        r: npt.NDArray[np.int_],
         a: float,
         b: float,
         *,

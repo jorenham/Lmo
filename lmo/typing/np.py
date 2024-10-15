@@ -41,7 +41,7 @@ __all__ = (
     'Order',
     'OrderReshape',
     'OrderCopy',
-    'RandomState',
+    'RNG',
     'Casting',
 )
 
@@ -154,7 +154,7 @@ This means that it's possible to select stable-sort by passing
 ruin the fun).
 """
 
-RandomState: TypeAlias = np.random.Generator | np.random.RandomState
+RNG: TypeAlias = np.random.Generator | np.random.RandomState
 """
 Union of the [`numpy.random.Generator`][numpy.random.Generator] and the
 (legacy) [`numpy.random.RandomState`][numpy.random.RandomState] "RNG" types,

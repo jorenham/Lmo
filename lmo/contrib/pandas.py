@@ -50,6 +50,7 @@ from typing import (
     Literal,
     Protocol,
     TypeAlias,
+    Unpack,
     cast,
     final,
 )
@@ -71,9 +72,9 @@ from lmo._utils import clean_trim, moments_to_ratio
 
 
 if sys.version_info >= (3, 13):
-    from typing import TypeVar, Unpack
+    from typing import TypeVar
 else:
-    from typing_extensions import TypeVar, Unpack
+    from typing_extensions import TypeVar
 
 if TYPE_CHECKING:
     from collections.abc import Callable

@@ -11,7 +11,9 @@ import numpy.typing as npt
 if sys.version_info >= (3, 13):
     from typing import LiteralString, TypeVar
 else:
-    from typing_extensions import LiteralString, TypeVar
+    from typing import LiteralString
+
+    from typing_extensions import TypeVar
 
 if TYPE_CHECKING:
     import optype.numpy as onpt

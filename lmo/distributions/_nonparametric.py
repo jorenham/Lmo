@@ -15,7 +15,7 @@ from typing import (
 
 import numpy as np
 import numpy.typing as npt
-from scipy.integrate import quad  # pyright: ignore[reportUnknownVariableType]
+from scipy.integrate import quad
 
 import lmo.typing as lmt
 import lmo.typing.np as lnpt
@@ -32,7 +32,9 @@ from lmo.theoretical import (
 if sys.version_info >= (3, 13):
     from typing import LiteralString, Protocol, Self, TypeVar
 else:
-    from typing_extensions import LiteralString, Protocol, Self, TypeVar
+    from typing import LiteralString, Self
+
+    from typing_extensions import Protocol, TypeVar
 
 if TYPE_CHECKING:
     from collections.abc import Callable

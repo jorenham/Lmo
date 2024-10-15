@@ -1,40 +1,60 @@
+from __future__ import annotations
+
 import functools
 import math
+import sys
 import warnings
-from collections.abc import Callable, Sequence
-from typing import Final, TypeAlias, TypeVar, cast
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Final, TypeAlias, TypeVar, cast
 
 import numpy as np
 import numpy.typing as npt
+import optype.numpy as onpt
 import scipy.special as sc
 from scipy.stats._distn_infrastructure import (
     _ShapeInfo,  # noqa: PLC2701  # pyright: ignore[reportPrivateUsage]
 )
-from scipy.stats.distributions import rv_continuous as _rv_continuous
+from scipy.stats.distributions import rv_continuous
 
-import lmo.typing.scipy as lspt
+
+if sys.version_info >= (3, 13):
+    from typing import override
+else:
+    from typing_extensions import override
+
 from lmo.theoretical import l_moment_from_ppf
 from ._lm import get_lm_func
+
+
+if TYPE_CHECKING:
+    import lmo.typing.scipy as lspt
 
 
 __all__ = ('wakeby_gen',)
 
 
-_ArrF8: TypeAlias = npt.NDArray[np.float64]
+# NOTE: this is equivalent to `float` IFF `numpy >= 2.2`, see:
+# https://github.com/numpy/numpy/pull/27334
+_F8: TypeAlias = float | np.float64
+_ArrF8: TypeAlias = onpt.Array[tuple[int, ...], np.float64]
 
-_PT = TypeVar('_PT', float, _ArrF8)
+_XT = TypeVar('_XT', _F8, _ArrF8)
+
+_MICRO: Final = 1e-6
+_NaN: Final = float('nan')
+_INF: Final = float('inf')
 
 
-def _wakeby_ub(b: float, d: float, f: float) -> float:
+def _wakeby_ub(b: _F8, d: _F8, f: _F8) -> _F8:
     """Upper bound of the domain of Wakeby's distribution function."""
     if d < 0:
         return f / b - (1 - f) / d
-    if f == 1 and b:
+    if b and (f == 1 or abs(f - 1) <= _MICRO):
         return 1 / b
-    return np.inf
+    return _INF
 
 
-def _wakeby_isf0(q: float, b: float, d: float, f: float) -> float:
+def _wakeby_isf0(q: _F8, b: _F8, d: _F8, f: _F8) -> _F8:
     """Inverse survival function, does not validate params."""
     if q <= 0:
         return _wakeby_ub(b, d, f)
@@ -61,15 +81,15 @@ def _wakeby_isf0(q: float, b: float, d: float, f: float) -> float:
 _wakeby_isf = np.vectorize(_wakeby_isf0, [float])
 
 
-def _wakeby_qdf(p: _PT, b: float, d: float, f: float) -> _PT:
+def _wakeby_qdf(p: _XT, b: _F8, d: _F8, f: _F8) -> _XT:
     """Quantile density function (QDF), the derivative of the PPF."""
     q = 1 - p
     lhs = f * q ** (b - 1)
     rhs = (1 - f) / q ** (d + 1)
-    return cast(_PT, lhs + rhs)
+    return cast(_XT, lhs + rhs)
 
 
-def _wakeby_sf0(x: float, b: float, d: float, f: float) -> float:  # noqa: C901
+def _wakeby_sf0(x: _F8, b: _F8, d: _F8, f: _F8) -> _F8:  # noqa: C901
     """
     Numerical approximation of Wakeby's survival function.
 
@@ -105,13 +125,11 @@ def _wakeby_sf0(x: float, b: float, d: float, f: float) -> float:  # noqa: C901
         # https://wikipedia.org/wiki/Lambert_W_function
         # it's easy to show that this is valid for all x, f, and d
         w = (1 - f) / f
-        return (
-            w
-            / sc.lambertw(  # pyright: ignore[reportUnknownMemberType]
-                w * math.exp((1 + d * x) / f - 1),
-            )
-        ) ** (1 / d)
+        return float(
+            (w / sc.lambertw(w * math.exp((1 + d * x) / f - 1))) ** (1 / d),
+        )
 
+    z: _F8
     if x < _wakeby_isf0(0.9, b, d, f):
         z = 0
     elif x >= _wakeby_isf0(0.01, b, d, f):
@@ -130,7 +148,7 @@ def _wakeby_sf0(x: float, b: float, d: float, f: float) -> float:  # noqa: C901
 
     for _ in range(maxit):
         bz = -b * z
-        eb = math.exp(bz) if bz >= ufl else 0
+        eb = math.exp(bz) if bz >= ufl else 0 * bz
         gb = (1 - eb) / b if abs(b) > eps else z
 
         ed = math.exp(d * z)
@@ -141,11 +159,12 @@ def _wakeby_sf0(x: float, b: float, d: float, f: float) -> float:  # noqa: C901
         qd1 = f * eb + (1 - f) * ed
         qd2 = -f * b * eb + (1 - f) * d * ed
 
-        tmp = qd1 - 0.5 * qd0 * qd2 / qd1
+        tmp: _F8 = qd1 - 0.5 * qd0 * qd2 / qd1
         if tmp <= 0:
             tmp = qd1
 
-        z_inc = min(qd0 / tmp, 3)
+        # NOTE: float64 will be fixed
+        z_inc = min(qd0 / tmp, 3)  # pyright: ignore[reportArgumentType]
         z_new = z + z_inc
         if z_new <= 0:
             z /= 5
@@ -168,8 +187,9 @@ _wakeby_sf: Final = np.vectorize(_wakeby_sf0, [float])
 _wakeby_lm: Final = get_lm_func('wakeby')
 
 
-class wakeby_gen(cast(type[lspt.AnyRV], _rv_continuous)):
-    def _argcheck(self, b: float, d: float, f: float) -> int:
+class wakeby_gen(rv_continuous):
+    @override
+    def _argcheck(self, /, b: _F8, d: _F8, f: _F8) -> bool | np.bool_:  # pyright: ignore[reportIncompatibleMethodOverride]
         return (
             np.isfinite(b)
             & np.isfinite(d)
@@ -181,50 +201,54 @@ class wakeby_gen(cast(type[lspt.AnyRV], _rv_continuous)):
             & ((f < 1) | (d == 0))
         )
 
-    def _shape_info(self) -> Sequence[_ShapeInfo]:
+    @override
+    def _shape_info(self) -> list[_ShapeInfo]:
         ibeta = _ShapeInfo('b', False, (-np.inf, np.inf), (False, False))
         idelta = _ShapeInfo('d', False, (-np.inf, np.inf), (False, False))
         iphi = _ShapeInfo('f', False, (0, 1), (True, True))
         return [ibeta, idelta, iphi]
 
-    def _get_support(
-        self,
-        b: float,
-        d: float,
-        f: float,
-    ) -> tuple[float, float]:
+    @override
+    def _get_support(self, /, b: _F8, d: _F8, f: _F8) -> tuple[_F8, _F8]:
         if not self._argcheck(b, d, f):
-            return math.nan, math.nan
+            return _NaN, _NaN
 
-        return cast(float, self.a), _wakeby_ub(b, d, f)
+        return 0.0, _wakeby_ub(b, d, f)
 
+    @override
     def _fitstart(
         self,
+        /,
         data: _ArrF8,
         args: tuple[float, float, float] | None = None,
     ) -> tuple[float, float, float, float, float]:
         #  Arbitrary, but the default f=1 is a bad start
         return cast(
             tuple[float, float, float, float, float],
-            super()._fitstart(data, args or (1.0, 1.0, 0.5)),  # pyright: ignore[reportUnknownMemberType,reportAttributeAccessIssue]
+            super()._fitstart(data, args or (1.0, 1.0, 0.5)),
         )
 
-    def _pdf(self, x: _ArrF8, b: float, d: float, f: float) -> _ArrF8:
+    @override
+    def _pdf(self, /, x: _XT, b: float, d: float, f: float) -> _XT:  # pyright: ignore[reportIncompatibleMethodOverride]
         # application of the inverse function theorem
         return 1 / self._qdf(self._cdf(x, b, d, f), b, d, f)
 
-    def _cdf(self, x: _ArrF8, b: float, d: float, f: float) -> _ArrF8:
+    @override
+    def _cdf(self, /, x: _XT, b: float, d: float, f: float) -> _XT:  # pyright: ignore[reportIncompatibleMethodOverride]
         return 1 - _wakeby_sf(x, b, d, f)
 
-    def _qdf(self, q: _ArrF8, b: float, d: float, f: float) -> _ArrF8:
+    def _qdf(self, /, q: _XT, b: float, d: float, f: float) -> _XT:
         return _wakeby_qdf(q, b, d, f)
 
-    def _ppf(self, q: _ArrF8, b: float, d: float, f: float) -> _ArrF8:
+    @override
+    def _ppf(self, /, q: _XT, b: float, d: float, f: float) -> _XT:  # pyright: ignore[reportIncompatibleMethodOverride]
         return _wakeby_isf(1 - q, b, d, f)
 
-    def _isf(self, q: _ArrF8, b: float, d: float, f: float) -> _ArrF8:
+    @override
+    def _isf(self, /, q: _XT, b: float, d: float, f: float) -> _XT:  # pyright: ignore[reportIncompatibleMethodOverride]
         return _wakeby_isf(q, b, d, f)
 
+    @override
     def _stats(
         self,
         b: float,
@@ -233,7 +257,7 @@ class wakeby_gen(cast(type[lspt.AnyRV], _rv_continuous)):
     ) -> tuple[float, float, float | None, float | None]:
         if d >= 1:
             # hard NaN (not inf); indeterminate integral
-            return math.nan, math.nan, math.nan, math.nan
+            return _NaN, _NaN, _NaN, _NaN
 
         u = f / (1 + b)
         v = (1 - f) / (1 - d)
@@ -241,17 +265,17 @@ class wakeby_gen(cast(type[lspt.AnyRV], _rv_continuous)):
         m1 = u + v
 
         if d >= 1 / 2:
-            return m1, math.nan, math.nan, math.nan
+            return m1, _NaN, _NaN, _NaN
 
         m2 = u**2 / (1 + 2 * b) + 2 * u * v / (1 + b - d) + v**2 / (1 - 2 * d)
 
         # no skewness and kurtosis (yet?); the equations are kinda huge...
         if d >= 1 / 3:
-            return m1, m2, math.nan, math.nan
+            return m1, m2, _NaN, _NaN
         m3 = None
 
         if d >= 1 / 4:
-            return m1, m2, m3, math.nan
+            return m1, m2, m3, _NaN
         m4 = None
 
         return m1, m2, m3, m4

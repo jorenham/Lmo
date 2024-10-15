@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Concatenate, ParamSpec, cast, overload
+from typing import TYPE_CHECKING, Concatenate, ParamSpec, overload
 
 import numpy as np
 import scipy.integrate as spi
@@ -70,10 +70,7 @@ def entropy_from_qdf(
         ](https://wikipedia.org/wiki/Differential_entropy)
 
     """
-    def ic(p: float) -> np.float64:
+    def ic(p: float, /) -> np.float64:
         return np.log(qdf(p, *args, **kwds))
 
-    return cast(
-        float,
-        spi.quad(ic, 0, 1, limit=QUAD_LIMIT)[0],  # pyright: ignore[reportUnknownMemberType]
-    )
+    return spi.quad(ic, 0, 1, limit=QUAD_LIMIT)[0]
