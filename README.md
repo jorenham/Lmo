@@ -76,34 +76,43 @@ array([0.        , 0.69782723])
 See the [documentation](https://jorenham.github.io/Lmo/) for more examples and
 the API reference.
 
-## Roadmap
-
-- Automatic trim-length selection.
-- Plotting utilities (deps optional), e.g. for L-moment ratio diagrams.
-
 ## Installation
 
-Lmo is on [PyPI](https://pypi.org/project/Lmo/), so you can do something like:
+Lmo is available on [PyPI](https://pypi.org/project/Lmo/), and can be installed
+with:
 
 ```shell
 pip install lmo
 ```
 
+If you care about static typing, then it is recommended to install Lmo as
+`Lmo[typing]`, i.e.:
+
+```shell
+pip install Lmo[typing]
+```
+
+## Roadmap
+
+- Automatic trim-length selection.
+- Plotting utilities (deps optional), e.g. for L-moment ratio diagrams.
+
 ### Dependencies
 
 These are automatically installed by your package manager when installing Lmo.
 
-| Package      | Supported versions |
-| ------------ | ------------------ |
-| [Python][PY] | `>=3.11`           |
-| [NumPy][NP]  | `>=1.24`           |
-| [SciPy][SP]  | `>=1.10`           |
+|                | version  |
+| -------------: | -------- |
+| [`python`][PY] | `>=3.11` |
+| [`numpy`][NP]  | `>=1.24` |
+| [`scipy`][SP]  | `>=1.10` |
 
 Additionally, Lmo supports the following optional packages:
 
-| Package      | Supported versions | Installation              |
-| ------------ | ------------------ | ------------------------- |
-| [Pandas][PD] | `>=2.0`            | `pip install Lmo[pandas]` |
+|                      | version      | `pip install _` | extra requirements |
+| -------------------: | ------------ | --------------- | ------------------ |
+| [`scipy-stubs`][SPT] | `>=1.14.1.0` | `Lmo[typing]`   | `scipy >= 1.14.1`  |
+| [`pandas`][PD]       | `>=2.0`      | `Lmo[pandas]`   |                    |
 
 See [SPEC 0][SPEC0] for more information.
 
@@ -111,6 +120,7 @@ See [SPEC 0][SPEC0] for more information.
 [NP]: https://github.com/numpy/numpy
 [SP]: https://github.com/scipy/scipy
 [PD]: https://github.com/pandas-dev/pandas
+[SPT]: https://github.com/jorenham/scipy-stubs
 [SPEC0]: https://scientific-python.org/specs/spec-0000/
 
 ## Foundational Literature
