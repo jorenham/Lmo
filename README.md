@@ -95,15 +95,15 @@ These are automatically installed by your package manager when installing Lmo.
 
 | Package      | Supported versions |
 | ------------ | ------------------ |
-| [Python][PY] | `>=3.10`           |
+| [Python][PY] | `>=3.11`           |
 | [NumPy][NP]  | `>=1.24`           |
-| [SciPy][SP]  | `>=1.10`            |
+| [SciPy][SP]  | `>=1.10`           |
 
 Additionally, Lmo supports the following optional packages:
 
 | Package      | Supported versions | Installation              |
 | ------------ | ------------------ | ------------------------- |
-| [Pandas][PD] | `>=1.5`            | `pip install Lmo[pandas]` |
+| [Pandas][PD] | `>=2.0`            | `pip install Lmo[pandas]` |
 
 See [SPEC 0][SPEC0] for more information.
 
