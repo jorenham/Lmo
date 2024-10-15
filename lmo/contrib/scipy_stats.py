@@ -15,6 +15,8 @@ from typing import (
     Protocol,
     TypeAlias,
     TypeVar,
+    TypedDict,
+    Unpack,
     cast,
     overload,
 )
@@ -98,6 +100,10 @@ class PatchClass:
             setattr(base, name, method)
 
         cls.patched.add(base)
+
+
+class _TrimKwargs(TypedDict, total=False):
+    trim: tuple[int, int] | tuple[float, float]
 
 
 class l_rv_generic(PatchClass):
@@ -1219,7 +1225,7 @@ class l_rv_generic(PatchClass):
         def lmo_fn(
             _r: npt.NDArray[np.intp],
             *_args: float,
-            _trim: tuple[int, int] | tuple[float, float] = (0, 0),
+            **kwds: Unpack[_TrimKwargs],
         ) -> _ArrF8:
             shapes, loc, scale = _args[:-2], _args[-2], _args[-1]
 
@@ -1227,7 +1233,7 @@ class l_rv_generic(PatchClass):
             if shapes in _lmo_cache:
                 lmbda_r = _lmo_cache[shapes]
             else:
-                lmbda_r = _lmo_fn(_r, *shapes, trim=_trim)
+                lmbda_r = _lmo_fn(_r, *shapes, **kwds)
                 lmbda_r.setflags(write=False)  # prevent cache corruption
                 _lmo_cache[shapes] = lmbda_r
 
