@@ -5,6 +5,7 @@
 ![Lmo - License][IMG-BSD]
 [![Lmo - PyPI][IMG-PYPI]](https://pypi.org/project/Lmo/)
 [![Lmo - Versions][IMG-VER]](https://github.com/jorenham/Lmo)
+[![Lmo - SPEC 0][IMG-SPEC0]](https://scientific-python.org/specs/spec-0000/)
 ![Lmo - CI][IMG-CI]
 [![Lmo - Pre-commit][IMG-PC]](https://github.com/pre-commit/pre-commit)
 [![Lmo - Ruff][IMG-RUFF]](https://github.com/astral-sh/ruff)
@@ -17,6 +18,7 @@
 [IMG-pC]: https://img.shields.io/badge/pre--commit-enabled-orange?logo=pre-commit
 [IMG-RUFF]: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json
 [IMG-BPR]: https://img.shields.io/badge/basedpyright-checked-42b983
+[IMG-SPEC0]: https://img.shields.io/badge/SPEC-0-green?labelColor=%23004811&color=%235CA038
 
 Unlike the legacy
 [product-moments](https://wikipedia.org/wiki/Moment_(mathematics)), the
@@ -94,8 +96,8 @@ These are automatically installed by your package manager when installing Lmo.
 | Package      | Supported versions |
 | ------------ | ------------------ |
 | [Python][PY] | `>=3.10`           |
-| [NumPy][NP]  | `>=1.23`           |
-| [SciPy][SP]  | `>=1.9`            |
+| [NumPy][NP]  | `>=1.24`           |
+| [SciPy][SP]  | `>=1.10`            |
 
 Additionally, Lmo supports the following optional packages:
 
