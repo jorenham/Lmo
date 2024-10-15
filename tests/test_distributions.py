@@ -200,7 +200,7 @@ def test_genlambda(b: float, d: float, f: float):
         distributions.genpareto(0.1),
         kumaraswamy(2, 5),
         wakeby(5, 1, 0.6),
-        genlambda(.5, -1, -0.1),
+        genlambda(0.5, -1, -0.1),
     ],
 )
 def test_exact_lm(rv: Any, trim: tuple[int, int]) -> None:

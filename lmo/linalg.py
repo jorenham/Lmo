@@ -1,5 +1,6 @@
 # ruff: noqa: N803
 """Linear algebra and linearized orthogonal polynomials."""
+
 from __future__ import annotations
 
 import sys
@@ -157,29 +158,15 @@ def ir_pascal(k: _K, /, dtype: _DType[_TF]) -> _Square[_K, _TF]:
     return np.asarray(out, dtype)
 
 
-def _sh_jacobi_i(
-    k: _K,
-    a: int,
-    b: int,
-    /,
-    dtype: _DType[_TI],
-) -> _Square[_K, _TI]:
+def _sh_jacobi_i(k: _K, a: int, b: int, /, dtype: _DType[_TI]) -> _Square[_K, _TI]:
     out = np.zeros((k, k), dtype=dtype)
     for r in range(k):
         for j in range(r + 1):
-            out[r, j] = (
-                (-1) ** (r - j) * comb(r + a + b + j, j) * comb(r + b, r - j)
-            )
+            out[r, j] = (-1) ** (r - j) * comb(r + a + b + j, j) * comb(r + b, r - j)
     return out
 
 
-def _sh_jacobi_f(
-    k: _K,
-    a: float,
-    b: float,
-    /,
-    dtype: _DType[_TI],
-) -> _Square[_K, _TI]:
+def _sh_jacobi_f(k: _K, a: float, b: float, /, dtype: _DType[_TI]) -> _Square[_K, _TI]:
     out = np.zeros((k, k), dtype=dtype)
 
     # semi dynamic programming
@@ -197,7 +184,7 @@ def _sh_jacobi_f(
                 - lfact_jb[j]
                 - lfact_j[j]
                 - lfact_j[r - j]
-                - log_rab_fpow_a,
+                - log_rab_fpow_a
             )
     return out
 

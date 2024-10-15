@@ -27,7 +27,6 @@ from scipy.stats.distributions import rv_continuous, rv_frozen
 
 import lmo.typing.np as lnpt
 import lmo.typing.scipy as lspt
-
 from . import constants
 from ._lm import l_ratio
 from ._poly import extrema_jacobi
@@ -635,7 +634,7 @@ def l_ratio_bounds(
                     + lgamma(t + 2)
                     - lgamma(_ri + t)
                     + lgamma(_ri + s + t + 1)
-                    - lgamma(s + t + 3)  # noqa: COM812
+                    - lgamma(s + t + 3)
                 )
             )
 
@@ -774,9 +773,9 @@ def error_sensitivity(
         >>> from scipy.stats import expon
         >>> ll_skew_if = expon.l_ratio_influence(3, 2, trim=(0, 1))
         >>> ll_kurt_if = expon.l_ratio_influence(4, 2, trim=(0, 1))
-        >>> error_sensitivity(ll_skew_if, domain=(0, float('inf')))
+        >>> error_sensitivity(ll_skew_if, domain=(0, float("inf")))
         1.814657
-        >>> error_sensitivity(ll_kurt_if, domain=(0, float('inf')))
+        >>> error_sensitivity(ll_kurt_if, domain=(0, float("inf")))
         1.377743
 
     Args:
@@ -837,7 +836,7 @@ def shift_sensitivity(
         >>> from scipy.stats import expon
         >>> ll_skew_if = expon.l_ratio_influence(3, 2, trim=(0, 1))
         >>> ll_kurt_if = expon.l_ratio_influence(4, 2, trim=(0, 1))
-        >>> domain = 0, float('inf')
+        >>> domain = 0, float("inf")
         >>> shift_sensitivity(ll_skew_if, domain)
         0.837735
         >>> shift_sensitivity(ll_kurt_if, domain)

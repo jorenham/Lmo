@@ -9,7 +9,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Final, cast
 
 import lmo.typing.scipy as lspt
-
 from . import _lm
 from ._genlambda import genlambda_gen
 from ._kumaraswamy import kumaraswamy_gen

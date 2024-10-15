@@ -178,24 +178,26 @@ preview = true
 select = ["ALL"]
 ignore = [
     "DOC",      # pydoclint
-    "S101",     # flake8-bandit: assert
     "FBT",      # flake8-boolean-trap
     "CPY",      # flake8-copyright
     "EM",       # flake8-errmsg
     "TD",       # flake8-todos
     "FIX",      # flake8-fixme
     "ERA",      # eradicate
-
     # pydocstyle
     "D200",     # fits-on-one-line
     "D205",     # blank-line-after-summary
     "D212",     # multi-line-summary-first-line
-
     # flake8-annotations
     "ANN101",   # missing-type-self (deprecated)
     "ANN102",   # missing-type-cls (deprecated)
     "ANN401",   # any-type
-
+    # flake8-bandit
+    "S101",     # assert
+    # flake8-commas
+    "COM812",   # missing-trailing-comma (ruff format)
+    # flake8-implicit-str-concat
+    "ISC001",   # single-line-implicit-string-concatenation (ruff format)
     # pylint
     "PLC0415",  # import-outside-top-level
     "PLR0904",  # too-many-arguments
@@ -206,7 +208,6 @@ ignore = [
     "PLR0915",  # too-many-statements
     "PLR0917",  # too-many-positional
     "PLR6301",  # no-self-use
-
     # ruff
     "RUF021",   # parenthesize-chained-operators
 ]
@@ -235,11 +236,11 @@ combine-as-imports = true
 force-wrap-aliases = true
 known-first-party = ["lmo"]
 known-third-party = ["numpy", "pandas", "scipy"]
+no-lines-before = ["future", "local-folder"]
 split-on-trailing-comma = false
 
 [tool.ruff.lint.flake8-import-conventions]
 banned-from = [
-    "lmo.typing",
     "lmo.typing.np",
     "lmo.typing.scipy",
     "numpy",

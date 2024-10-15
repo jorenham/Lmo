@@ -16,7 +16,6 @@ from scipy.stats.distributions import rv_continuous as _rv_continuous
 
 from lmo.special import harmonic
 from lmo.theoretical import l_moment_from_ppf
-
 from ._lm import get_lm_func
 
 if sys.version_info >= (3, 13):
@@ -40,6 +39,7 @@ _lm_kumaraswamy = get_lm_func("kumaraswamy")
 
 
 # pyright: reportIncompatibleMethodOverride=false
+
 
 @final
 class kumaraswamy_gen(_rv_continuous):

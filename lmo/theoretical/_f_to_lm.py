@@ -17,7 +17,6 @@ from lmo._utils import (
     moments_to_ratio,
     round0,
 )
-
 from ._utils import l_const, tighten_cdf_support
 
 if TYPE_CHECKING:
@@ -252,7 +251,7 @@ def l_moment_from_cdf(
             l_const(_r, s, t, 1) / np.sqrt(2 * _r - 1)
             * _df_quad3(ig, a, b, c, d, _r, **kwds)
             + loc0 * (_r == 1)
-        )
+        )  # fmt: skip
 
     l_r_cache: dict[int, float] = {}
     l_r = np.empty_like(rs, dtype=np.float64)

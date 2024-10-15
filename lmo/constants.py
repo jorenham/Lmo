@@ -1,4 +1,5 @@
 """Mathematical constants."""
+
 from typing import Final
 
 __all__ = "theta_m", "theta_m_bar"

@@ -198,7 +198,7 @@ def test_l_scale_linear_scale(
 
 
 def test_ll_trim_ev():
-    a = np.array([0., 1., 2., 3., 4., 5., 6.])
+    a = np.array([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
     a.setflags(write=False)
     a_ev = np.r_[a[:-1], 1e9]
     a_ev.setflags(write=False)
@@ -211,7 +211,7 @@ def test_ll_trim_ev():
 
 
 def test_lh_trim_ev():
-    a = np.array([-6., -5., -4., -3., -2., -1., 0.])
+    a = np.array([-6.0, -5.0, -4.0, -3.0, -2.0, -1.0, 0.0])
     a.setflags(write=False)
     a_ev = np.r_[-1e9, a[1:]]
     a_ev.setflags(write=False)
@@ -224,7 +224,7 @@ def test_lh_trim_ev():
 
 
 def test_tl_trim_ev():
-    a = np.array([-3., -2., -1., 0., 1., 2., 3.])
+    a = np.array([-3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0])
     a.setflags(write=False)
     a_ev = np.r_[-1e9, a[1:-1], 1e9]
     a_ev.setflags(write=False)
@@ -237,7 +237,7 @@ def test_tl_trim_ev():
 
 
 def test_ll_trim_inf():
-    a = np.array([0., 1., 2., 3., 4., 5., 6.])
+    a = np.array([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
     a.setflags(write=False)
     a_inf = np.r_[a[:-1], np.inf]
     a_inf.setflags(write=False)
@@ -250,7 +250,7 @@ def test_ll_trim_inf():
 
 
 def test_lh_trim_inf():
-    a = np.array([-6., -5., -4., -3., -2., -1., 0.])
+    a = np.array([-6.0, -5.0, -4.0, -3.0, -2.0, -1.0, 0.0])
     a.setflags(write=False)
     a_inf = np.r_[-np.inf, a[1:]]
     a_inf.setflags(write=False)
@@ -263,7 +263,7 @@ def test_lh_trim_inf():
 
 
 def test_tl_trim_inf():
-    a = np.array([-3., -2., -1., 0., 1., 2., 3.])
+    a = np.array([-3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0])
     a.setflags(write=False)
     a_inf = np.r_[-np.inf, a[1:-1], np.inf]
     a_inf.setflags(write=False)

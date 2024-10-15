@@ -76,11 +76,11 @@ _AnyScalar: TypeAlias = _ST | _ST_py | onpt.CanArray[tuple[()], np.dtype[_ST]]
 _AnyVector: TypeAlias = (
     onpt.CanArray[tuple[int], np.dtype[_ST]]
     | _PyVector[_AnyScalar[_ST, _ST_py]]
-)
+)  # fmt: skip
 _AnyMatrix: TypeAlias = (
     onpt.CanArray[tuple[int, int], np.dtype[_ST]]
     | _PyVector[_AnyVector[_ST, _ST_py]]
-)
+)  # fmt: skip
 
 # these will result in {0,1,2,N}-D arrays when passed to `np.array` (no need
 # for a broken "nested sequence" type)

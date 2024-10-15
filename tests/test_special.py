@@ -17,10 +17,10 @@ C_EXAMPLES = [
     [512],
     [1, 0],
     [0, 1],
-    [1, .5],
-    [1, -.5],
+    [1, 0.5],
+    [1, -0.5],
     [0, 0, 1],
-    [1, .5, .25],
+    [1, 0.5, 0.25],
     np.log1p(np.arange(256, 0, -1)),
 ]
 
@@ -39,10 +39,7 @@ def test_fourier_legendre(c: list[float]):
 )
 @pytest.mark.parametrize("c", C_EXAMPLES)
 def test_fourier_jacobi(a: float, b: float, c: list[float]):
-    y_expect = np.sum([
-        cn * eval_jacobi(n, a, b, X)
-        for n, cn in enumerate(c)
-    ], axis=0)
+    y_expect = np.sum([cn * eval_jacobi(n, a, b, X) for n, cn in enumerate(c)], axis=0)
     y_true = fourier_jacobi(X, c, a, b)
 
     assert_allclose(y_true, y_expect, atol=1e-15)

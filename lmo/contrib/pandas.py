@@ -41,6 +41,7 @@ Examples:
 
     ```
 """
+
 from __future__ import annotations
 
 import sys
@@ -129,6 +130,7 @@ class Series(_BaseSeries):  # pyright: ignore[reportMissingTypeArgument]
     and registered as
     [series accessors][pandas.api.extensions.register_series_accessor].
     """
+
     @classmethod
     def __lmo_register__(  # noqa: D105
         cls,
@@ -288,6 +290,7 @@ class DataFrame(pd.DataFrame):
     and registered as
     [dataframe accessors][pandas.api.extensions.register_dataframe_accessor].
     """
+
     @classmethod
     def __lmo_register__(  # noqa: D105
         cls,

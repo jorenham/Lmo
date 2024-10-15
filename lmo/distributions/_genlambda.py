@@ -20,7 +20,6 @@ from scipy.stats.distributions import rv_continuous
 
 from lmo.special import harmonic
 from lmo.theoretical import entropy_from_qdf, l_moment_from_ppf
-
 from ._lm import get_lm_func
 
 if sys.version_info >= (3, 13):

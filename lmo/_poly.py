@@ -6,6 +6,7 @@ See Also:
     - [Classic orthogonal polynomials - Wikipedia
     ](https://wikipedia.org/wiki/Classical_orthogonal_polynomials)
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, TypeAlias, TypeVar, cast, overload
@@ -96,23 +97,16 @@ def eval_sh_jacobi(
     if n == 1:
         return (a + b + 2) * x - b - 1
     if n == 2:
-        return (
-            b * (b + 3)
-            - (a + b + 3) * (
-                2 * b + 4
-                - (a + b + 4) * x
-            ) * x
-        ) / 2 + 1
+        return (b * (b + 3) - (a + b + 3) * (2 * b + 4 - (a + b + 4) * x) * x) / 2 + 1
     if n == 3:
         return (
             (1 + a) * (2 + a) * (3 + a)
-            + (4 + a + b) * (
+            + (4 + a + b)
+            * (
                 3 * (2 + a) * (3 + a)
-                + (5 + a + b) * (
-                    3 * (3 + a)
-                    + (6 + a + b) * (x - 1)
-                ) * (x - 1)
-            ) * (x - 1)
+                + (5 + a + b) * (3 * (3 + a) + (6 + a + b) * (x - 1)) * (x - 1)
+            )
+            * (x - 1)
         ) / 6
 
     # don't use `eval_sh_jacobi`: https://github.com/scipy/scipy/issues/18988
@@ -168,10 +162,10 @@ def peaks_jacobi(
     """
     if n == 0:
         # constant; any x is a "peak"; so take the "middle ground"
-        return np.array([0.])
+        return np.array([0.0])
     if n == 1:
         # linear; the peaks are only at the ends
-        return np.array([-1., 1.])
+        return np.array([-1.0, 1.0])
 
     # otherwise, peaks are at the ends, and at the roots of the derivative
     x = np.empty(n + 1)
@@ -309,11 +303,7 @@ def extrema_jacobi(n: int, a: float, b: float) -> tuple[float, float]:
     return cast(float, np.min(p)), cast(float, np.max(p))
 
 
-def _jacobi_coefs(
-    n: int,
-    a: float,
-    b: float,
-) -> onpt.Array[tuple[int], np.float64]:
+def _jacobi_coefs(n: int, a: float, b: float) -> onpt.Array[tuple[int], np.float64]:
     p_n: np.poly1d
     p_n = scs.jacobi(n, a, b)
     return p_n.coef[::-1]

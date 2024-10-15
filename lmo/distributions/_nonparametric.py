@@ -44,8 +44,7 @@ if TYPE_CHECKING:
 _Trim: TypeAlias = tuple[int, int] | tuple[float, float]
 _MomentType: TypeAlias = Literal[0, 1]
 _LPolyParams: TypeAlias = (
-    tuple[lnpt.AnyVectorFloat]
-    | tuple[lnpt.AnyVectorFloat, lmt.AnyTrim]
+    tuple[lnpt.AnyVectorFloat] | tuple[lnpt.AnyVectorFloat, lmt.AnyTrim]
 )
 
 
@@ -68,9 +67,7 @@ _Tuple1: TypeAlias = tuple[_T]
 _Tuple2: TypeAlias = tuple[_T, _T]
 _Tuple3: TypeAlias = tuple[_T, _T, _T]
 _Tuple4: TypeAlias = tuple[_T, _T, _T, _T]
-_Tuple4m: TypeAlias = (
-    tuple[()] | _Tuple1[_T] | _Tuple2[_T] | _Tuple3[_T] | _Tuple4[_T]
-)
+_Tuple4m: TypeAlias = tuple[()] | _Tuple1[_T] | _Tuple2[_T] | _Tuple3[_T] | _Tuple4[_T]
 
 
 NaN: Final[np.float64] = np.float64(np.nan)

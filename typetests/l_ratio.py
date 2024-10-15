@@ -24,9 +24,9 @@ assert_type(lmo.l_ratio(X, 4, 2, 0), np.float64)
 assert_type(lmo.l_ratio(X, 4, 2, 1), np.float64)
 assert_type(lmo.l_ratio(X, 4, 2, trim=1), np.float64)
 assert_type(lmo.l_ratio(X, 4, 2, trim=(1, 1)), np.float64)
-assert_type(lmo.l_ratio(X, 4, 2, trim=(.5, .5)), np.float64)
-assert_type(lmo.l_ratio(X, 4, 2, trim=(1, .5)), np.float64)
-assert_type(lmo.l_ratio(X, 4, 2, trim=(.5, 1)), np.float64)
+assert_type(lmo.l_ratio(X, 4, 2, trim=(0.5, 0.5)), np.float64)
+assert_type(lmo.l_ratio(X, 4, 2, trim=(1, 0.5)), np.float64)
+assert_type(lmo.l_ratio(X, 4, 2, trim=(0.5, 1)), np.float64)
 
 # sctype
 assert_type(lmo.l_ratio(X, 4, 2, dtype=np.float32), np.float32)

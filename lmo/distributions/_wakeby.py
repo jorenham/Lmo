@@ -22,7 +22,6 @@ else:
     from typing_extensions import override
 
 from lmo.theoretical import l_moment_from_ppf
-
 from ._lm import get_lm_func
 
 if TYPE_CHECKING:
@@ -117,16 +116,13 @@ def _wakeby_sf0(x: _F8, b: _F8, d: _F8, f: _F8) -> _F8:  # noqa: C901
     if b == d and b > 0:
         # unnamed special case
         cx = b * x
-        return (
-            (2 * f - cx - 1 + math.sqrt((cx + 1) ** 2 - 4 * cx * f)) / (2 * f)
-        ) ** (1 / b)
+        f2 = 2 * f
+        return ((f2 - cx + math.sqrt((cx + 1) ** 2 - 2 * cx * f2) - 1) / f2) ** (1 / b)
     if b == 0 and d != 0:
         # https://wikipedia.org/wiki/Lambert_W_function
         # it's easy to show that this is valid for all x, f, and d
         w = (1 - f) / f
-        return float(
-            (w / sc.lambertw(w * math.exp((1 + d * x) / f - 1))) ** (1 / d),
-        )
+        return float((w / sc.lambertw(w * math.exp((1 + d * x) / f - 1))) ** (1 / d))
 
     z: _F8
     if x < _wakeby_isf0(0.9, b, d, f):

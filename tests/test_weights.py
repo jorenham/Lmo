@@ -14,7 +14,6 @@ from numpy.testing import (
 )
 
 from lmo import l_weights
-
 from .conftest import tmp_cache
 
 # matches np.allclose

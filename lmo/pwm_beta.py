@@ -4,6 +4,7 @@ probability-weighted moments (PWM's), $\beta_k = M_{1,k,0}$.
 
 Primarily used as an intermediate step for L-moment estimation.
 """
+
 from __future__ import annotations
 
 import sys
@@ -195,7 +196,7 @@ def cov(
             v_ki[i] = (
                 ffact[k, i] * ffact[m, j_k[i:]]
                 + ffact[m, i] * ffact[k, j_l[i:]]
-            ) @ x[i + 1 :]
+            ) @ x[i + 1 :]  # fmt: skip
 
         # `(n-k-1)^(l+1)`
         denom = n * (n - k - m - 1) * ffact[m, n - k - 1]

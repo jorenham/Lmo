@@ -1,4 +1,5 @@
 """Unbiased sample estimators of the generalized trimmed L-moments."""
+
 from __future__ import annotations
 
 import sys
@@ -63,10 +64,7 @@ _Vectorized: TypeAlias = _SCT_f | npt.NDArray[_SCT_f]
 _Floating: TypeAlias = np.floating[Any]
 
 # (dtype.char, n, s, t)
-_CacheKey: TypeAlias = (
-    tuple[str, int, int, int]
-    | tuple[str, int, float, float]
-)
+_CacheKey: TypeAlias = tuple[str, int, int, int] | tuple[str, int, float, float]
 # `r: _T_order >= 4`
 _CacheArray: TypeAlias = onpt.Array[tuple[_OrderT, _SizeT], np.longdouble]
 _Cache: TypeAlias = dict[_CacheKey, _CacheArray[Any, Any]]

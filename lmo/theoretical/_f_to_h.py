@@ -69,6 +69,7 @@ def entropy_from_qdf(
         ](https://wikipedia.org/wiki/Differential_entropy)
 
     """
+
     def ic(p: float, /) -> np.float64:
         return np.log(qdf(p, *args, **kwds))
 

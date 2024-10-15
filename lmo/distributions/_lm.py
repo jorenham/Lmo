@@ -284,13 +284,7 @@ def lm_gumbel_r(r: int, s: float, t: float, /) -> np.float64 | float:
 
 
 @register_lm_func("genextreme")
-def lm_genextreme(
-    r: int,
-    s: float,
-    t: float,
-    /,
-    a: float,
-) -> np.float64 | float:
+def lm_genextreme(r: int, s: float, t: float, /, a: float) -> np.float64 | float:
     """
     Exact trimmed L-moments of the Generalized Extreme Value (GEV)
     distribution.
@@ -314,54 +308,51 @@ def lm_genextreme(
         kn = r + s + t
         k = np.arange(k0, kn + 1, dtype=np.intp)
 
-        pwm = np.euler_gamma + np.log(k) if a == 0 else 1 / a - sps.gamma(a) / k ** a
+        pwm = np.euler_gamma + np.log(k) if a == 0 else 1 / a - sps.gamma(a) / k**a
 
         return np.sum(
             (-1) ** k
             * _binom(kn, k)
             * _binom(r - 2 + k, r - 2 + k0)
             * pwm,
-        ) * (-1) ** (r + s) / r
+        ) * (-1) ** (r + s) / r  # fmt: skip
 
     # NOTE: some performance notes:
     # - `math.log` is faster for scalar input that `numpy.log`
     # - conditionals within the function are avoided through multiple functions
     if a == 0:
+
         def _ppf(q: float) -> float:
             if q <= 0:
                 return -float("inf")
             if q >= 1:
                 return float("inf")
             return -log(-log(q))
+
     elif a < 0:
+
         def _ppf(q: float) -> float:
             if q <= 0:
                 return 1 / a
             if q >= 1:
                 return float("inf")
-            return (1 - (-log(q))**a) / a
+            return (1 - (-log(q)) ** a) / a
+
     else:  # a > 0
+
         def _ppf(q: float) -> float:
             if q <= 0:
                 return -float("inf")
             if q >= 1:
                 return 1 / a
-            return (1 - (-log(q))**a) / a
+            return (1 - (-log(q)) ** a) / a
 
     return l_moment_from_ppf(_ppf, r, (s, t))
 
 
 @register_lm_func("genpareto")
-def lm_genpareto(
-    r: int,
-    s: float,
-    t: float,
-    /,
-    a: float,
-) -> np.float64 | float:
-    """
-    Exact trimmed L-moments of the Generalized Pareto distribution (GPD).
-    """
+def lm_genpareto(r: int, s: float, t: float, /, a: float) -> np.float64 | float:
+    """Exact trimmed L-moments of the Generalized Pareto distribution (GPD)."""
     if r == 0:
         return 1
     if a == 0:

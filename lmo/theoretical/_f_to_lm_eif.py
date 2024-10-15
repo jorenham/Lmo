@@ -10,7 +10,6 @@ import lmo.typing.np as lnpt
 import lmo.typing.scipy as lspt
 from lmo._poly import eval_sh_jacobi
 from lmo._utils import clean_order, clean_trim, round0
-
 from ._f_to_lm import l_moment_from_cdf
 from ._utils import ALPHA, l_const, tighten_cdf_support
 

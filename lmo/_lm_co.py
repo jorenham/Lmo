@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING, Any, Literal, TypeAlias, Unpack, cast
 import numpy as np
 
 import lmo.typing as lmt
-
 from ._lm import l_weights
 from ._utils import clean_order, clean_orders, ordered
 
@@ -175,7 +174,7 @@ def l_comoment(
     # projection/hat matrix of shape (r_max - r_min, n)
     p_k = l_weights(r_max, n, trim=trim, dtype=dtype, cache=cache)
     if r_min > 1:
-        p_k = p_k[r_min - 1:]
+        p_k = p_k[r_min - 1 :]
 
     # L-comoment matrices for k = r_min, ..., r_max
     l_kij = np.empty((p_k.shape[0], m, m), dtype=dtype, order="F")

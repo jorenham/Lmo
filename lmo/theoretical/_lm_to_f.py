@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Protocol, TypeAlias, TypeVar, cast, overload
@@ -44,11 +43,7 @@ class _VectorizedPPF(Protocol):
     ) -> np.float64: ...
 
 
-def _validate_l_bounds(
-    l_r: _ArrF8,
-    s: float,
-    t: float,
-) -> None:
+def _validate_l_bounds(l_r: _ArrF8, s: float, t: float) -> None:
     if (l2 := l_r[1]) <= 0:
         msg = f"L-scale must be >0, got lmda[1] = {l2}"
         raise ValueError(msg)
@@ -68,10 +63,7 @@ def _validate_l_bounds(
         r_invalid = list(np.argwhere(invalid) + 3)
         if len(r_invalid) == 1:
             r_invalid = r_invalid[0]
-        msg = (
-            f"L-moment(s) with r = {r_invalid}) are not within the valid"
-            f"range"
-        )
+        msg = f"L-moment(s) with r = {r_invalid}) are not within the valid range"
         raise ValueError(msg)
 
     # validate an l-skewness / l-kurtosis relative inequality that is
@@ -97,7 +89,7 @@ def _validate_l_bounds(
 
 
 def _monotonic(
-    f: Callable[[_ArrF8], _ArrF8],
+    f: Callable[[_ArrF8], np.float64 | _ArrF8],
     a: float,
     b: float,
     n: int = 100,
@@ -205,7 +197,7 @@ def ppf_from_l_moments(
         u: npt.ArrayLike,
         *,
         r_max: int = -1,
-    ) -> float | _ArrF8:
+    ) -> np.float64 | _ArrF8:
         y = np.asarray(u)
         y = np.where((y < 0) | (y > 1), np.nan, 2 * y - 1)
 
@@ -217,7 +209,7 @@ def ppf_from_l_moments(
 
         return np.clip(x, *support)[()]
 
-    if validate and not _monotonic(cast(_VectorizedPPF, ppf), 0, 1):
+    if validate and not _monotonic(ppf, 0, 1):
         msg = (
             "PPF is not monotonically increasing (not invertable); "
             "consider increasing the trim"
