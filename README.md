@@ -50,7 +50,7 @@ Let's calculate the TL-location and TL-scale of a small amount of samples:
 >>> import lmo
 >>> rng = np.random.default_rng(1980)
 >>> x = rng.standard_cauchy(96)  # pickle me, Lmo
->>> lmo.l_moment(x, [1, 2], trim=(1, 1)).
+>>> lmo.l_moment(x, [1, 2], trim=(1, 1))
 array([-0.17937038,  0.68287665])
 ```
 
