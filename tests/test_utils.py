@@ -7,7 +7,6 @@ from hypothesis.extra import numpy as hnp
 
 from lmo._utils import ordered
 
-
 st_n = st.integers(2, 50)
 st_x1 = hnp.arrays(shape=st_n, dtype=np.float64, elements=st.floats(-10, 10))
 

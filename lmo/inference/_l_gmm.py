@@ -13,7 +13,6 @@ from lmo.diagnostic import HypothesisTestResult
 from lmo.theoretical import l_moment_from_ppf
 from lmo.theoretical._utils import l_coef_factor
 
-
 if TYPE_CHECKING:
     from collections.abc import Callable
 
@@ -24,7 +23,7 @@ if TYPE_CHECKING:
     import lmo.typing.scipy as lspt
 
 
-__all__ = 'GMMResult', 'fit'
+__all__ = "GMMResult", "fit"
 
 
 _ArrF8: TypeAlias = npt.NDArray[np.float64]
@@ -108,7 +107,7 @@ class GMMResult(NamedTuple):
 
         """
         if not (df := self.n_extra):
-            msg = 'The Sargan Hansen J-test requires `n_extra > 0`'
+            msg = "The Sargan Hansen J-test requires `n_extra > 0`"
             raise ValueError(msg)
 
         stat = self.statistic
@@ -199,7 +198,7 @@ def _get_weights_mc(
         axis=-1,
         # cache=True,
         # `y` is sorted -> stablesort is faster than quicksort
-        sort='stable',
+        sort="stable",
     )
 
     # l_rr = np.cov(l_r)
@@ -208,7 +207,7 @@ def _get_weights_mc(
     # L-moment estimates follow a normal distribution.
     # Note that the L-scale of standard normal is 1/sqrt(pi).
     # l_r is fully unordered, so quicksort is likely to be faster than stable
-    l_rr = l_coscale_est(l_r, sort='quicksort')
+    l_rr = l_coscale_est(l_r, sort="quicksort")
     # convert the L-coscale to an (asymmetric) quasi-covariance matrix
     l_rr *= l_rr.diagonal() * np.pi
 
@@ -224,7 +223,7 @@ def _ensure_1d_f8(
 ) -> onpt.Array[tuple[int], np.float64]:
     out = np.asarray_chkfinite(arr)
     if out.ndim != 1:
-        err = f'expected 1D array, got {out.shape}'
+        err = f"expected 1D array, got {out.shape}"
         raise ValueError(err)
     return out
 
@@ -367,7 +366,7 @@ def fit(  # noqa: C901
         l_r, _r = l_r[_r_nonzero], _r[_r_nonzero]
 
     if (n_con := len(_r)) < n_par:
-        msg = f'under-determined L-moment conditions: {n_con} < {n_par}'
+        msg = f"under-determined L-moment conditions: {n_con} < {n_par}"
         raise ValueError(msg)
 
     _trim = clean_trim(trim)
@@ -405,7 +404,7 @@ def fit(  # noqa: C901
         qs = None
 
     # Set the default `scipy.optimize.minimize` method
-    kwds.setdefault('method', 'Nelder-Mead')
+    kwds.setdefault("method", "Nelder-Mead")
 
     # Initial state
     _k = 0

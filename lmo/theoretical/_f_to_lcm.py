@@ -14,7 +14,6 @@ from lmo._utils import clean_order, clean_trim, round0
 from ._f_to_lm import l_moment_from_cdf
 from ._utils import l_const, tighten_cdf_support
 
-
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
 
@@ -22,9 +21,9 @@ if TYPE_CHECKING:
     import lmo.typing.scipy as lspt
 
 
-__all__ = ['l_comoment_from_pdf', 'l_coratio_from_pdf']
+__all__ = ["l_comoment_from_pdf", "l_coratio_from_pdf"]
 
-_T = TypeVar('_T')
+_T = TypeVar("_T")
 
 _Pair: TypeAlias = tuple[_T, _T]
 _ArrF8: TypeAlias = npt.NDArray[np.float64]
@@ -221,7 +220,7 @@ def l_comoment_from_pdf(
         x = np.asarray(xs)
         q_j = cdfs[j](x[j])
         p_j = eval_sh_jacobi(_r - 1, t, s, q_j)
-        return c * x[i] * q_j**s * (1 - q_j)**t * p_j * pdf(x)
+        return c * x[i] * q_j**s * (1 - q_j) ** t * p_j * pdf(x)
 
     # TODO: parallelize
     for i, j in np.ndindex(l_r.shape):

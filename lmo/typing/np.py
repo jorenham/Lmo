@@ -8,41 +8,40 @@ from typing import Any, Literal, TypeAlias, TypeVar
 import numpy as np
 import optype.numpy as onpt
 
-
 __all__ = (
-    'Bool',
-    'Int',
-    'Float',
-    'Number',
-    'Natural',
-    'Integer',
-    'Real',
-    'AnyScalar',
-    'AnyScalarBool',
-    'AnyScalarInt',
-    'AnyScalarFloat',
-    'AnyVector',
-    'AnyVectorBool',
-    'AnyVectorFloat',
-    'AnyVectorFloat',
-    'AnyMatrix',
-    'AnyMatrixBool',
-    'AnyMatrixInt',
-    'AnyMatrixFloat',
-    'AnyTensor',
-    'AnyTensorBool',
-    'AnyTensorInt',
-    'AnyTensorFloat',
-    'AnyArray',
-    'AnyArrayBool',
-    'AnyArrayInt',
-    'AnyArrayFloat',
-    'SortKind',
-    'Order',
-    'OrderReshape',
-    'OrderCopy',
-    'RNG',
-    'Casting',
+    "RNG",
+    "AnyArray",
+    "AnyArrayBool",
+    "AnyArrayFloat",
+    "AnyArrayInt",
+    "AnyMatrix",
+    "AnyMatrixBool",
+    "AnyMatrixFloat",
+    "AnyMatrixInt",
+    "AnyScalar",
+    "AnyScalarBool",
+    "AnyScalarFloat",
+    "AnyScalarInt",
+    "AnyTensor",
+    "AnyTensorBool",
+    "AnyTensorFloat",
+    "AnyTensorInt",
+    "AnyVector",
+    "AnyVectorBool",
+    "AnyVectorFloat",
+    "AnyVectorFloat",
+    "Bool",
+    "Casting",
+    "Float",
+    "Int",
+    "Integer",
+    "Natural",
+    "Number",
+    "Order",
+    "OrderCopy",
+    "OrderReshape",
+    "Real",
+    "SortKind",
 )
 
 
@@ -62,14 +61,14 @@ Real: TypeAlias = Float | Integer
 
 # Array and array-likes, with generic shape
 
-_ST = TypeVar('_ST', bound=np.generic)
+_ST = TypeVar("_ST", bound=np.generic)
 
 
 _PyScalar: TypeAlias = bool | int | float | complex | str | bytes
 # _PyScalar: TypeAlias = bool | int | float | complex
-_ST_py = TypeVar('_ST_py', bound=_PyScalar)
+_ST_py = TypeVar("_ST_py", bound=_PyScalar)
 
-_T = TypeVar('_T')
+_T = TypeVar("_T")
 _PyVector: TypeAlias = Sequence[_T]
 
 
@@ -77,11 +76,11 @@ _AnyScalar: TypeAlias = _ST | _ST_py | onpt.CanArray[tuple[()], np.dtype[_ST]]
 _AnyVector: TypeAlias = (
     onpt.CanArray[tuple[int], np.dtype[_ST]]
     | _PyVector[_AnyScalar[_ST, _ST_py]]
-)
+)  # fmt: skip
 _AnyMatrix: TypeAlias = (
     onpt.CanArray[tuple[int, int], np.dtype[_ST]]
     | _PyVector[_AnyVector[_ST, _ST_py]]
-)
+)  # fmt: skip
 
 # these will result in {0,1,2,N}-D arrays when passed to `np.array` (no need
 # for a broken "nested sequence" type)
@@ -92,7 +91,7 @@ AnyMatrix: TypeAlias = _AnyMatrix[np.generic, _PyScalar]
 AnyTensor: TypeAlias = (
     onpt.CanArray[onpt.AtLeast3D, np.dtype[np.generic]]
     | _PyVector[AnyMatrix]
-    | _PyVector['AnyTensor']
+    | _PyVector["AnyTensor"]
 )
 AnyArray: TypeAlias = AnyScalar | AnyVector | AnyMatrix | AnyTensor
 
@@ -102,7 +101,7 @@ AnyMatrixBool: TypeAlias = _AnyMatrix[Bool, bool]
 AnyTensorBool: TypeAlias = (
     onpt.CanArray[onpt.AtLeast3D, np.dtype[Bool]]
     | _PyVector[AnyMatrixBool]
-    | _PyVector['AnyTensorBool']
+    | _PyVector["AnyTensorBool"]
 )
 AnyArrayBool: TypeAlias = AnyVectorBool | AnyMatrixBool | AnyTensorBool
 
@@ -112,7 +111,7 @@ AnyMatrixInt: TypeAlias = _AnyMatrix[Integer, int]
 AnyTensorInt: TypeAlias = (
     onpt.CanArray[onpt.AtLeast3D, np.dtype[Integer]]
     | _PyVector[AnyMatrixInt]
-    | _PyVector['AnyTensorInt']
+    | _PyVector["AnyTensorInt"]
 )
 AnyArrayInt: TypeAlias = AnyVectorInt | AnyMatrixInt | AnyTensorInt
 
@@ -122,7 +121,7 @@ AnyMatrixFloat: TypeAlias = _AnyMatrix[Real, float]
 AnyTensorFloat: TypeAlias = (
     onpt.CanArray[onpt.AtLeast1D, np.dtype[Real]]
     | _PyVector[AnyMatrixFloat]
-    | _PyVector['AnyTensorFloat']
+    | _PyVector["AnyTensorFloat"]
 )
 AnyArrayFloat: TypeAlias = AnyVectorFloat | AnyMatrixFloat | AnyTensorFloat
 
@@ -130,20 +129,20 @@ AnyArrayFloat: TypeAlias = AnyVectorFloat | AnyMatrixFloat | AnyTensorFloat
 # Various type aliases
 
 
-Order: TypeAlias = Literal['C', 'F']
+Order: TypeAlias = Literal["C", "F"]
 """Type of the `order` parameter of e.g. [`np.empty`][numpy.empty]."""
-OrderReshape: TypeAlias = Literal[Order, 'A']
+OrderReshape: TypeAlias = Literal[Order, "A"]
 """Type of the `order` parameter of e.g. [`np.reshape`][numpy.array]."""
-OrderCopy: TypeAlias = Literal[OrderReshape, 'K']
+OrderCopy: TypeAlias = Literal[OrderReshape, "K"]
 """Type of the `order` parameter of e.g. [`np.array`][numpy.array]."""
 
 SortKind: TypeAlias = Literal[
-    'quick',
-    'quicksort',
-    'stable',
-    'stablesort',
-    'heap',
-    'heapsort',
+    "quick",
+    "quicksort",
+    "stable",
+    "stablesort",
+    "heap",
+    "heapsort",
 ]
 """
 Type of the `kind` parameter of e.g. [`np.sort`][numpy.sort], as
@@ -172,5 +171,5 @@ Any acceptable "seed" type that can be passed to
 [`numpy.random.default_rng`][numpy.random.default_rng].
 """
 
-Casting: TypeAlias = Literal['no', 'equiv', 'safe', 'same_kind', 'unsafe']
+Casting: TypeAlias = Literal["no", "equiv", "safe", "same_kind", "unsafe"]
 """See [`numpy.can_cast`][numpy.can_cast]."""

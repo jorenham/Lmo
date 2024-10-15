@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Protocol, TypeAlias, TypeVar, cast, overload
@@ -9,7 +8,6 @@ import numpy.typing as npt
 from lmo._utils import clean_trim, plotting_positions
 from lmo.special import fourier_jacobi, fpow
 
-
 if TYPE_CHECKING:
     from collections.abc import Callable
 
@@ -19,11 +17,11 @@ if TYPE_CHECKING:
     import lmo.typing.np as lnpt
 
 
-_T = TypeVar('_T')
+_T = TypeVar("_T")
 _Pair: TypeAlias = tuple[_T, _T]
 _ArrF8: TypeAlias = npt.NDArray[np.float64]
 
-__all__ = ['ppf_from_l_moments', 'qdf_from_l_moments']
+__all__ = ["ppf_from_l_moments", "qdf_from_l_moments"]
 
 
 class _VectorizedPPF(Protocol):
@@ -45,13 +43,9 @@ class _VectorizedPPF(Protocol):
     ) -> np.float64: ...
 
 
-def _validate_l_bounds(
-    l_r: _ArrF8,
-    s: float,
-    t: float,
-) -> None:
+def _validate_l_bounds(l_r: _ArrF8, s: float, t: float) -> None:
     if (l2 := l_r[1]) <= 0:
-        msg = f'L-scale must be >0, got lmda[1] = {l2}'
+        msg = f"L-scale must be >0, got lmda[1] = {l2}"
         raise ValueError(msg)
 
     if len(l_r) <= 2:
@@ -69,10 +63,7 @@ def _validate_l_bounds(
         r_invalid = list(np.argwhere(invalid) + 3)
         if len(r_invalid) == 1:
             r_invalid = r_invalid[0]
-        msg = (
-            f'L-moment(s) with r = {r_invalid}) are not within the valid'
-            f'range'
-        )
+        msg = f"L-moment(s) with r = {r_invalid}) are not within the valid range"
         raise ValueError(msg)
 
     # validate an l-skewness / l-kurtosis relative inequality that is
@@ -86,19 +77,19 @@ def _validate_l_bounds(
 
     if abs(t3) >= t3_max:
         if t3 < 0:
-            msg_t3_size, msg_t3_trim = 'small', 's'
+            msg_t3_size, msg_t3_trim = "small", "s"
         else:
-            msg_t3_size, msg_t3_trim = 'large', 't'
+            msg_t3_size, msg_t3_trim = "large", "t"
 
         msg = (
-            f'L-skewness is too {msg_t3_size} ({t3:.4f}); consider '
-            f'increasing {msg_t3_trim}'
+            f"L-skewness is too {msg_t3_size} ({t3:.4f}); consider "
+            f"increasing {msg_t3_trim}"
         )
         raise ValueError(msg)
 
 
 def _monotonic(
-    f: Callable[[_ArrF8], _ArrF8],
+    f: Callable[[_ArrF8], np.float64 | _ArrF8],
     a: float,
     b: float,
     n: int = 100,
@@ -182,7 +173,7 @@ def ppf_from_l_moments(
     """
     l_r = np.asarray(lmbda)
     if (_n := len(l_r)) < 2:
-        msg = f'at least 2 L-moments required, got len(lmbda) = {_n}'
+        msg = f"at least 2 L-moments required, got len(lmbda) = {_n}"
         raise ValueError(msg)
 
     s, t = clean_trim(trim)
@@ -192,7 +183,7 @@ def ppf_from_l_moments(
 
     a, b = support
     if a >= b:
-        msg = f'invalid support; expected a < b, got a, b = {a}, {b}'
+        msg = f"invalid support; expected a < b, got a, b = {a}, {b}"
         raise ValueError(msg)
 
     # r = np.arange(1, _n + 1)
@@ -206,7 +197,7 @@ def ppf_from_l_moments(
         u: npt.ArrayLike,
         *,
         r_max: int = -1,
-    ) -> float | _ArrF8:
+    ) -> np.float64 | _ArrF8:
         y = np.asarray(u)
         y = np.where((y < 0) | (y > 1), np.nan, 2 * y - 1)
 
@@ -218,10 +209,10 @@ def ppf_from_l_moments(
 
         return np.clip(x, *support)[()]
 
-    if validate and not _monotonic(cast(_VectorizedPPF, ppf), 0, 1):
+    if validate and not _monotonic(ppf, 0, 1):
         msg = (
-            'PPF is not monotonically increasing (not invertable); '
-            'consider increasing the trim'
+            "PPF is not monotonically increasing (not invertable); "
+            "consider increasing the trim"
         )
         raise ValueError(msg)
 
@@ -262,7 +253,7 @@ def qdf_from_l_moments(
     """
     l_r = np.asarray(lmbda)
     if (_n := len(l_r)) < 2:
-        msg = f'at least 2 L-moments required, got len(lmbda) = {_n}'
+        msg = f"at least 2 L-moments required, got len(lmbda) = {_n}"
         raise ValueError(msg)
 
     s, t = clean_trim(trim)
@@ -298,7 +289,7 @@ def qdf_from_l_moments(
         return x[()]
 
     if validate and np.any(qdf(plotting_positions(100)) < 0):
-        msg = 'QDF is not positive; consider increasing the trim'
+        msg = "QDF is not positive; consider increasing the trim"
         raise ValueError(msg)
 
     return cast(_VectorizedPPF, qdf)

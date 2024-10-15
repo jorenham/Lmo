@@ -4,6 +4,7 @@ probability-weighted moments (PWM's), $\beta_k = M_{1,k,0}$.
 
 Primarily used as an intermediate step for L-moment estimation.
 """
+
 from __future__ import annotations
 
 import sys
@@ -13,7 +14,6 @@ import numpy as np
 import numpy.typing as npt
 
 from ._utils import ordered
-
 
 if sys.version_info >= (3, 13):
     from typing import TypeVar
@@ -27,12 +27,12 @@ if TYPE_CHECKING:
     import lmo.typing.np as lnpt
 
 
-__all__ = 'weights', 'cov'
+__all__ = "cov", "weights"
 
 
-_F = TypeVar('_F', bound=np.floating[Any], default=np.float64)
-_R = TypeVar('_R', bound=int)
-_N = TypeVar('_N', bound=int)
+_F = TypeVar("_F", bound=np.floating[Any], default=np.float64)
+_R = TypeVar("_R", bound=int)
+_N = TypeVar("_N", bound=int)
 
 _DType: TypeAlias = np.dtype[_F] | type[_F]
 
@@ -68,7 +68,7 @@ def weights(
 
     """
     if not (0 <= r <= n):
-        msg = f'expected 0 <= r <= n, got {r=} and {n=}'
+        msg = f"expected 0 <= r <= n, got {r=} and {n=}"
         raise ValueError(msg)
 
     i1 = np.arange(1, n + 1, dtype=dtype)
@@ -159,7 +159,7 @@ def cov(
     # ensure that at most ffact[..., -k_max] will give 0
     ffact = np.c_[ffact, np.zeros((r, r))]
 
-    spec: str = 'i..., i...'
+    spec: str = "i..., i..."
 
     # for k == l (variances on the diagonal):
     # sum(
@@ -196,7 +196,7 @@ def cov(
             v_ki[i] = (
                 ffact[k, i] * ffact[m, j_k[i:]]
                 + ffact[m, i] * ffact[k, j_l[i:]]
-            ) @ x[i + 1 :]
+            ) @ x[i + 1 :]  # fmt: skip
 
         # `(n-k-1)^(l+1)`
         denom = n * (n - k - m - 1) * ffact[m, n - k - 1]

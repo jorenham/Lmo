@@ -9,7 +9,6 @@ import pytest
 
 from lmo import _lm
 
-
 if TYPE_CHECKING:
     from collections.abc import Generator
 
@@ -24,7 +23,7 @@ def tmp_cache() -> Generator[_lm._Cache, None, None]:
         _lm._CACHE = cache_old
 
 
-@pytest.fixture(name='tmp_cache')
+@pytest.fixture(name="tmp_cache")
 def tmp_cache_fixture() -> Generator[_lm._Cache, None, None]:
     with tmp_cache() as cache:
         assert not cache

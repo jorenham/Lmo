@@ -5,7 +5,7 @@ try:
 except ImportError:
     pd = None
 
-__all__ = ('install',)
+__all__ = ("install",)
 
 
 def install() -> None:
@@ -16,8 +16,10 @@ def install() -> None:
     when `lmo` is imported.
     """
     from .scipy_stats import install as install_scipy_stats
+
     install_scipy_stats()
 
     if pd is not None:
         from .pandas import install as install_pandas
+
         install_pandas()

@@ -34,7 +34,6 @@ from ._utils import clean_orders, clean_trim
 from .special import fpow
 from .typing import AnyOrder, AnyOrderND, AnyTrim
 
-
 if sys.version_info >= (3, 13):
     from typing import TypeIs
 else:
@@ -46,18 +45,18 @@ if TYPE_CHECKING:
 
 
 __all__ = (
-    'normaltest',
-    'l_moment_gof',
-    'l_stats_gof',
-    'l_moment_bounds',
-    'l_ratio_bounds',
-    'rejection_point',
-    'error_sensitivity',
-    'shift_sensitivity',
+    "error_sensitivity",
+    "l_moment_bounds",
+    "l_moment_gof",
+    "l_ratio_bounds",
+    "l_stats_gof",
+    "normaltest",
+    "rejection_point",
+    "shift_sensitivity",
 )
 
 
-_T = TypeVar('_T')
+_T = TypeVar("_T")
 
 _Tuple2: TypeAlias = tuple[_T, _T]
 _ArrF8: TypeAlias = npt.NDArray[np.float64]
@@ -96,7 +95,7 @@ class HypothesisTestResult(NamedTuple):
         confidence level (5% by default).
         """
         if not (0 < level < 1):
-            msg = 'significance level must lie between 0 and 1'
+            msg = "significance level must lie between 0 and 1"
             raise ValueError(msg)
         return self.pvalue < np.float64(level)
 
@@ -187,7 +186,7 @@ _gof_stat = np.vectorize(
     _gof_stat_single,
     otypes=[float],
     excluded={1, 2},
-    signature='(n)->()',
+    signature="(n)->()",
 )
 
 
@@ -266,13 +265,13 @@ def l_moment_gof(
     l_r = np.asarray_chkfinite(l_moments)
 
     if (n := len(l_r)) < 2:
-        msg = f'at least the first 2 L-moments are required, got {n}'
+        msg = f"at least the first 2 L-moments are required, got {n}"
         raise TypeError(msg)
 
     r = np.arange(1, 1 + n)
 
     if isinstance(rv_or_cdf, rv_continuous.__base__ | rv_frozen):
-        rv = cast('l_rv_generic', rv_or_cdf)
+        rv = cast("l_rv_generic", rv_or_cdf)
         lambda_r = rv.l_moment(r, trim=trim, **kwargs)
         lambda_rr = rv.l_moments_cov(n, trim=trim, **kwargs)
     else:
@@ -306,11 +305,11 @@ def l_stats_gof(
     t_r = np.asarray_chkfinite(l_stats)
 
     if (n := t_r.shape[0]) < 2:
-        msg = f'at least 2 L-stats are required, got {n}'
+        msg = f"at least 2 L-stats are required, got {n}"
         raise TypeError(msg)
 
     if _is_rv(rv_or_cdf):
-        rv = cast('l_rv_generic', rv_or_cdf)
+        rv = cast("l_rv_generic", rv_or_cdf)
         tau_r = rv.l_stats(moments=n, trim=trim, **kwargs)
         tau_rr = rv.l_stats_cov(moments=n, trim=trim, **kwargs)
     else:
@@ -327,7 +326,7 @@ def l_stats_gof(
 
 def _lm2_bounds_single(r: int, trim: _Tuple2[float]) -> float:
     if r == 1:
-        return float('inf')
+        return float("inf")
 
     match trim:
         case (0, 0):
@@ -359,7 +358,7 @@ _lm2_bounds = cast(
         _lm2_bounds_single,
         otypes=[float],
         excluded={1},
-        signature='()->()',
+        signature="()->()",
     ),
 )
 
@@ -635,7 +634,7 @@ def l_ratio_bounds(
                     + lgamma(t + 2)
                     - lgamma(_ri + t)
                     + lgamma(_ri + s + t + 1)
-                    - lgamma(s + t + 3)  # noqa: COM812
+                    - lgamma(s + t + 3)
                 )
             )
 
@@ -724,7 +723,7 @@ def rejection_point(
 
     """
     if not 0 <= rho_min < rho_max:
-        msg = f'expected 0 <= rho_min < rho_max, got {rho_min=} and {rho_max=}'
+        msg = f"expected 0 <= rho_min < rho_max, got {rho_min=} and {rho_max=}"
         raise ValueError(msg)
 
     if influence_fn(rho_max) != 0 or influence_fn(-rho_max) != 0:
@@ -741,7 +740,7 @@ def rejection_point(
         obj,
         bounds=[(rho_min, rho_max)],
         x0=[rho_min],
-        method='COBYLA',
+        method="COBYLA",
     )
 
     rho = cast(float, res.x[0])
@@ -774,9 +773,9 @@ def error_sensitivity(
         >>> from scipy.stats import expon
         >>> ll_skew_if = expon.l_ratio_influence(3, 2, trim=(0, 1))
         >>> ll_kurt_if = expon.l_ratio_influence(4, 2, trim=(0, 1))
-        >>> error_sensitivity(ll_skew_if, domain=(0, float('inf')))
+        >>> error_sensitivity(ll_skew_if, domain=(0, float("inf")))
         1.814657
-        >>> error_sensitivity(ll_kurt_if, domain=(0, float('inf')))
+        >>> error_sensitivity(ll_kurt_if, domain=(0, float("inf")))
         1.377743
 
     Args:
@@ -802,7 +801,7 @@ def error_sensitivity(
 
     bounds = None if np.isneginf(a) and np.isposinf(b) else [(a, b)]
 
-    res = minimize(obj, bounds=bounds, x0=[min(max(0, a), b)], method='COBYLA')
+    res = minimize(obj, bounds=bounds, x0=[min(max(0, a), b)], method="COBYLA")
     if not res.success:
         warnings.warn(res.message, OptimizeWarning, stacklevel=1)
 
@@ -837,7 +836,7 @@ def shift_sensitivity(
         >>> from scipy.stats import expon
         >>> ll_skew_if = expon.l_ratio_influence(3, 2, trim=(0, 1))
         >>> ll_kurt_if = expon.l_ratio_influence(4, 2, trim=(0, 1))
-        >>> domain = 0, float('inf')
+        >>> domain = 0, float("inf")
         >>> shift_sensitivity(ll_skew_if, domain)
         0.837735
         >>> shift_sensitivity(ll_kurt_if, domain)
@@ -881,7 +880,7 @@ def shift_sensitivity(
         obj,
         bounds=bounds,
         x0=[min(max(0, a), b), min(max(1, a), b)],
-        method='COBYLA',
+        method="COBYLA",
     )
     if not res.success:
         warnings.warn(res.message, OptimizeWarning, stacklevel=1)

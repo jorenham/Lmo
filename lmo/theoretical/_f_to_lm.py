@@ -1,15 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import (
-    TYPE_CHECKING,
-    Final,
-    TypeAlias,
-    TypeVar,
-    Unpack,
-    cast,
-    overload,
-)
+from typing import TYPE_CHECKING, Final, TypeAlias, TypeVar, Unpack, cast, overload
 
 import numpy as np
 import numpy.typing as npt
@@ -27,23 +19,22 @@ from lmo._utils import (
 )
 from ._utils import l_const, tighten_cdf_support
 
-
 if TYPE_CHECKING:
     import lmo.typing as lmt
 
 
 __all__ = [
-    'l_moment_from_cdf',
-    'l_moment_from_ppf',
-    'l_moment_from_qdf',
-    'l_ratio_from_cdf',
-    'l_ratio_from_ppf',
-    'l_stats_from_cdf',
-    'l_stats_from_ppf',
+    "l_moment_from_cdf",
+    "l_moment_from_ppf",
+    "l_moment_from_qdf",
+    "l_ratio_from_cdf",
+    "l_ratio_from_ppf",
+    "l_stats_from_cdf",
+    "l_stats_from_ppf",
 ]
 
 
-_T = TypeVar('_T')
+_T = TypeVar("_T")
 
 
 _Pair: TypeAlias = tuple[_T, _T]
@@ -250,7 +241,7 @@ def l_moment_from_cdf(
     loc0 = a if np.isfinite(a) and a > 0 else 0
 
     kwds = quad_opts or {}
-    _ = kwds.setdefault('limit', QUAD_LIMIT)
+    _ = kwds.setdefault("limit", QUAD_LIMIT)
 
     def _l_moment_single(_r: int) -> float:
         if _r == 0:
@@ -260,7 +251,7 @@ def l_moment_from_cdf(
             l_const(_r, s, t, 1) / np.sqrt(2 * _r - 1)
             * _df_quad3(ig, a, b, c, d, _r, **kwds)
             + loc0 * (_r == 1)
-        )
+        )  # fmt: skip
 
     l_r_cache: dict[int, float] = {}
     l_r = np.empty_like(rs, dtype=np.float64)
@@ -405,7 +396,7 @@ def l_moment_from_ppf(
         return p**s * (1 - p) ** t * eval_sh_jacobi(_r - 1, t, s, p) * ppf(p)
 
     kwds = quad_opts or {}
-    _ = kwds.setdefault('limit', QUAD_LIMIT)
+    _ = kwds.setdefault("limit", QUAD_LIMIT)
 
     def _l_moment_single(_r: int) -> float:
         if _r == 0:

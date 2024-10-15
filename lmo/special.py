@@ -1,72 +1,67 @@
 """Mathematical "special" functions, extending `scipy.special`."""
+
 from __future__ import annotations
 
-from typing import Any, Final, TypeVar, cast, overload
+import sys
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Any, Final, TypeAlias, cast, overload
 
 import numpy as np
 import numpy.typing as npt
 import optype.numpy as onpt
 import scipy.special as sc
 
-import lmo.typing as lmt
-import lmo.typing.np as lnpt
 from ._utils import clean_orders
 
+if TYPE_CHECKING:
+    from lmo.typing import AnyOrder, AnyOrderND
 
-__all__ = 'fpow', 'gamma2', 'harmonic', 'norm_sh_jacobi', 'fourier_jacobi'
+if sys.version_info >= (3, 13):
+    from typing import Protocol, TypeVar, runtime_checkable
+else:
+    from typing_extensions import Protocol, TypeVar, runtime_checkable
+
+__all__ = "fourier_jacobi", "fpow", "gamma2", "harmonic", "norm_sh_jacobi"
 
 
-_DTYPE_CHARS: Final[str] = '?bBhHiIlLqQpP'
+_DTYPE_CHARS: Final[str] = "?bBhHiIlLqQpP"
 
-_T_shape = TypeVar('_T_shape', bound=onpt.AtLeast1D)
-_T_float = TypeVar('_T_float', bound=lnpt.Float)
+_ArrayT = TypeVar("_ArrayT", bound=onpt.Array)
+_ShapeT = TypeVar("_ShapeT", infer_variance=True, bound=tuple[int, ...])
+_SCT = TypeVar("_SCT", infer_variance=True, bound=np.number[Any] | np.bool_)
+
+
+# this includes `np.ndarray` but excludes `np.generic`
+@runtime_checkable
+class _CanLenArray(onpt.CanArray[_ShapeT, np.dtype[_SCT]], Protocol[_ShapeT, _SCT]):
+    def __len__(self, /) -> int: ...
+
+
+_F8: TypeAlias = np.float64
+_F8ND: TypeAlias = onpt.Array[onpt.AtLeast1D, np.float64]
+
+_Real: TypeAlias = np.floating[Any] | np.integer[Any] | np.bool_
+_Real_in: TypeAlias = float | _Real
+_RealND: TypeAlias = _CanLenArray[_ShapeT, _SCT]
+_RealND_in: TypeAlias = _RealND[Any, _Real] | Sequence["_Real_in | _RealND_in"]
 
 
 @overload
-def fpow(
-    x: lnpt.AnyScalarFloat,
-    n: lnpt.AnyScalarFloat,
-    /,
-    out: None = ...,
-) -> np.float64: ...
+def fpow(x: _Real_in, n: _Real_in, /, out: None = None) -> _F8: ...
 @overload
-def fpow(
-    x: lnpt.AnyArrayFloat,
-    n: lnpt.AnyScalarFloat | lnpt.AnyArrayFloat,
-    /,
-    out: None = ...,
-) -> onpt.Array[onpt.AtLeast1D, np.float64]: ...
+def fpow(x: _RealND_in, n: _Real_in | _RealND_in, /, out: None = None) -> _F8ND: ...
 @overload
-def fpow(
-    x: lnpt.AnyScalarFloat,
-    n: lnpt.AnyArrayFloat,
-    /,
-    out: None = ...,
-) -> onpt.Array[onpt.AtLeast1D, np.float64]: ...
+def fpow(x: _Real_in, n: _RealND_in, /, out: None = None) -> _F8ND: ...
 @overload
-def fpow(
-    x: lnpt.AnyArrayFloat,
-    n: lnpt.AnyScalarFloat | lnpt.AnyArrayFloat,
-    /,
-    out: onpt.Array[_T_shape, _T_float],
-) -> onpt.Array[_T_shape, _T_float]: ...
+def fpow(x: _RealND_in, n: _Real_in | _RealND_in, /, out: _ArrayT) -> _ArrayT: ...
 @overload
+def fpow(x: _Real_in, n: _RealND_in, /, out: _ArrayT) -> _ArrayT: ...
 def fpow(
-    x: lnpt.AnyScalarFloat,
-    n: lnpt.AnyArrayFloat,
+    x: _Real_in | _RealND_in,
+    n: _Real_in | _RealND_in,
     /,
-    out: onpt.Array[_T_shape, _T_float],
-) -> onpt.Array[_T_shape, _T_float]: ...
-def fpow(
-    x: lnpt.AnyScalarFloat | lnpt.AnyArrayFloat,
-    n: lnpt.AnyScalarFloat | lnpt.AnyArrayFloat,
-    /,
-    out: onpt.Array[_T_shape, _T_float] | None = None,
-) -> (
-    np.float64
-    | onpt.Array[_T_shape, _T_float]
-    | onpt.Array[onpt.AtLeast1D, np.float64]
-):
+    out: _ArrayT | None = None,
+) -> _ArrayT | _F8 | _F8ND:
     r"""
     Factorial power, or falling factorial.
 
@@ -95,36 +90,17 @@ def fpow(
 
 
 @overload
-def gamma2(
-    a: lnpt.AnyScalarFloat,
-    x: lnpt.AnyScalarFloat,
-    /,
-    out: None = ...,
-) -> np.float64: ...
+def gamma2(a: _Real_in, x: _Real_in, /, out: None = None) -> _F8: ...
 @overload
-def gamma2(
-    a: lnpt.AnyScalarFloat,
-    x: lnpt.AnyArrayFloat,
-    /,
-    out: None = ...,
-) -> onpt.Array[onpt.AtLeast1D, np.float64]: ...
+def gamma2(a: _Real_in, x: _RealND_in, /, out: None = None) -> _F8ND: ...
 @overload
+def gamma2(a: _Real_in, x: _RealND_in, /, out: _ArrayT) -> _ArrayT: ...
 def gamma2(
-    a: lnpt.AnyScalarFloat,
-    x: lnpt.AnyArrayFloat,
+    a: _Real_in,
+    x: _Real_in | _RealND_in,
     /,
-    out: onpt.Array[_T_shape, _T_float],
-) -> onpt.Array[_T_shape, _T_float]: ...
-def gamma2(
-    a: lnpt.AnyScalarFloat,
-    x: lnpt.AnyScalarFloat | lnpt.AnyArrayFloat,
-    /,
-    out: onpt.Array[_T_shape, _T_float] | None = None,
-) -> (
-    np.float64
-    | onpt.Array[_T_shape, _T_float]
-    | onpt.Array[onpt.AtLeast1D, np.float64]
-):
+    out: _ArrayT | None = None,
+) -> _ArrayT | _F8 | _F8ND:
     r"""
     Incomplete (upper) gamma function.
 
@@ -154,28 +130,16 @@ def gamma2(
 
 
 @overload
-def harmonic(n: lnpt.AnyScalarFloat, /, out: None = ...) -> float: ...
+def harmonic(n: _Real_in, /, out: None = None) -> float: ...
 @overload
-def harmonic(
-    n: lnpt.AnyArrayFloat,
-    /,
-    out: None = ...,
-) -> onpt.Array[onpt.AtLeast1D, np.float64]: ...
+def harmonic(n: _RealND_in, /, out: None = None) -> _F8ND: ...
 @overload
+def harmonic(n: _RealND_in, /, out: _ArrayT) -> _ArrayT: ...
 def harmonic(
-    n: lnpt.AnyArrayFloat,
+    n: _Real_in | _RealND_in,
     /,
-    out: onpt.Array[_T_shape, _T_float],
-) -> onpt.Array[_T_shape, _T_float]: ...
-def harmonic(
-    n: lnpt.AnyScalarFloat | lnpt.AnyArrayFloat,
-    /,
-    out: onpt.Array[_T_shape, _T_float] | None = None,
-) -> (
-    float
-    | onpt.Array[_T_shape, _T_float]
-    | onpt.Array[onpt.AtLeast1D, np.float64]
-):
+    out: _ArrayT | None = None,
+) -> _ArrayT | float | _F8ND:
     r"""
     Harmonic number \( H_n = \sum_{k=1}^{n} 1 / k \), extended for real and
     complex argument via analytic contunuation.
@@ -205,28 +169,15 @@ def harmonic(
         - [Harmonic number - Wikipedia](https://w.wiki/A63b)
     """
     _n = np.asanyarray(n)
-
     _out = sc.digamma(_n + 1, out) + np.euler_gamma
-    return float(_out[()]) if np.isscalar(n) else _out
+    return _out.item() if np.isscalar(n) and out is None else _out
 
 
 @overload
-def norm_sh_jacobi(
-    n: lmt.AnyOrder,
-    alpha: float,
-    beta: float,
-) -> np.float64: ...
+def norm_sh_jacobi(n: AnyOrder, alpha: float, beta: float) -> _F8: ...
 @overload
-def norm_sh_jacobi(
-    n: lmt.AnyOrderND,
-    alpha: float,
-    beta: float,
-) -> onpt.Array[onpt.AtLeast1D, np.float64]: ...
-def norm_sh_jacobi(
-    n: lmt.AnyOrder | lmt.AnyOrderND,
-    alpha: float,
-    beta: float,
-) -> np.float64 | onpt.Array[onpt.AtLeast1D, np.float64]:
+def norm_sh_jacobi(n: AnyOrderND, alpha: float, beta: float) -> _F8ND: ...
+def norm_sh_jacobi(n: AnyOrder | AnyOrderND, alpha: float, beta: float) -> _F8 | _F8ND:
     r"""
     Evaluate the (weighted) \( L^2 \)-norm of a shifted Jacobi polynomial.
 
@@ -253,13 +204,13 @@ def norm_sh_jacobi(
     the normalized Jacobi polynomial on \( [0, 1] \).
     """
     if alpha <= -1:
-        msg = f'alpha must be > -1, got {alpha}'
+        msg = f"alpha must be > -1, got {alpha}"
         raise ValueError(msg)
     if beta <= -1:
-        msg = f'beta must be > -1, got {beta}'
+        msg = f"beta must be > -1, got {beta}"
         raise ValueError(msg)
 
-    r = clean_orders(np.asanyarray(n), 'n') + 1
+    r = clean_orders(np.asanyarray(n), "n") + 1
 
     if alpha == beta == 0:
         # shifted Legendre
@@ -278,25 +229,15 @@ def norm_sh_jacobi(
 
 
 @overload
-def fourier_jacobi(
-    x: lnpt.AnyArrayFloat,
-    c: lnpt.AnyArrayFloat,
-    a: float,
-    b: float,
-) -> onpt.Array[Any, np.float64]: ...
+def fourier_jacobi(x: _Real_in, c: _RealND_in, a: float, b: float) -> _F8: ...
 @overload
+def fourier_jacobi(x: _RealND_in, c: _RealND_in, a: float, b: float) -> _F8ND: ...
 def fourier_jacobi(
-    x: lnpt.AnyScalarFloat,
-    c: lnpt.AnyArrayFloat,
+    x: _Real_in | _RealND_in,
+    c: _RealND_in,
     a: float,
     b: float,
-) -> np.float64: ...
-def fourier_jacobi(
-    x: lnpt.AnyScalarFloat | lnpt.AnyArrayFloat,
-    c: lnpt.AnyArrayFloat,
-    a: float,
-    b: float,
-) -> np.float64 | onpt.Array[onpt.AtLeast1D, np.float64]:
+) -> _F8 | _F8ND:
     r"""
     Evaluate the Fourier-Jacobi series, using the Clenshaw summation
     algorithm.
@@ -324,8 +265,8 @@ def fourier_jacobi(
             Array-like of coefficients, ordered from low to high. All
             coefficients to the right are considered zero.
 
-            For instance, `[4, 3, 2]` gives \( 4 \jacobi{0}{a}{b}{x} +
-            3 \jacobi{1}{a}{b}{x} + 2 \jacobi{2}{a}{b}{x} \).
+            For instance, `[4, 3, 2]` gives
+            \( 4 \jacobi{0}{a}{b}{x} + 3 \jacobi{1}{a}{b}{x} + 2 \jacobi{2}{a}{b}{x} \).
         a: Jacobi parameter \( a > -1 \).
         b: Jacobi parameter \( a > -1 \).
 
@@ -350,7 +291,7 @@ def fourier_jacobi(
     _x = np.asanyarray(x)
 
     if len(_c) == 0:
-        return 0. * _x
+        return 0.0 * _x
 
     # temporarily replace inf's with abs(_) > 1, and track the sign
     if hasinfs := np.any(infs := np.isinf(_x)):
@@ -358,7 +299,7 @@ def fourier_jacobi(
 
     # "backwards" recursion (left-reduction)
     # y[k+2] and y[k+1]
-    y2, y1 = 0., 0.
+    y2, y1 = 0.0, 0.0
     # continue until y[0]
     for k in range(len(_c) - 1, 0, -1):
         # Jacobi recurrence terms
@@ -366,17 +307,12 @@ def fourier_jacobi(
         w = u + v  # = a + b + 2*k
         # alpha[k]
         p1 = (
-            (w + 1) * (
-                2 * k * (v - u)
-                + w * (u - v + (w + 2) * _x)
-            )
+            (w + 1)
+            * (2 * k * (v - u) + w * (u - v + (w + 2) * _x))
             / (2 * w * (k + 1) * (w - k + 1))
         )
         # beta[k+1]
-        q2 = -(
-            (u + 1) * (v + 1) * (w + 4)
-            / ((w + 2) * (k + 2) * (w - k + 2))
-        )
+        q2 = -((u + 1) * (v + 1) * (w + 4) / ((w + 2) * (k + 2) * (w - k + 2)))
 
         # update the state; "forget" y[k+2]
         y1, y2 = _c[k] + p1 * y1 + q2 * y2, y1
@@ -386,10 +322,7 @@ def fourier_jacobi(
     f1 = (a - b + (a + b + 2) * _x) / 2
 
     # beta[1]
-    q1 = -(
-        (a + 1) * (b + 1) * (a + b + 4)
-        / (2 * (a + b + 2)**2)
-    )
+    q1 = -((a + 1) * (b + 1) * (a + b + 4) / (2 * (a + b + 2) ** 2))
 
     # Behold! The magic of Clenshaw's algorithm:
     out: npt.NDArray[np.float64] = _c[0] * f0 + y1 * f1 + y2 * q1 * f0

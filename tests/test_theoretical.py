@@ -26,17 +26,16 @@ from lmo.theoretical import (
     qdf_from_l_moments,
 )
 
-
 assert_allclose = functools.partial(_assert_allclose, atol=1e-12)
 
 norm_cdf = cast(Callable[[float], float], ndtr)
 norm_ppf = cast(Callable[[float], float], ndtri)
 
 
-@np.errstate(over='ignore', under='ignore')
+@np.errstate(over="ignore", under="ignore")
 def norm_qdf(x: float) -> float:
     # cool, eh?
-    return np.sqrt(2 * np.pi) * np.exp(norm_ppf(x)**2 / 2)
+    return np.sqrt(2 * np.pi) * np.exp(norm_ppf(x) ** 2 / 2)
 
 
 def cauchy_cdf(x: float) -> float:
@@ -48,7 +47,7 @@ def cauchy_ppf(p: float) -> float:
 
 
 def cauchy_qdf(p: float) -> float:
-    return np.pi / np.sin(p * np.pi)**2
+    return np.pi / np.sin(p * np.pi) ** 2
 
 
 def expon_cdf(x: float, a: float = 1) -> float:
@@ -63,24 +62,24 @@ def expon_qdf(p: float, a: float = 1) -> float:
     return a / (1 - p)
 
 
-@np.errstate(over='ignore', under='ignore')
+@np.errstate(over="ignore", under="ignore")
 def gumbel_cdf(x: float, loc: float = 0, scale: float = 1) -> float:
     return np.exp(-np.exp(-(x - loc) / scale))
 
 
-@np.errstate(over='ignore', under='ignore')
+@np.errstate(over="ignore", under="ignore")
 def gumbel_ppf(p: float, loc: float = 0, scale: float = 1) -> float:
     return loc - scale * np.log(-np.log(p))
 
 
-@np.errstate(over='ignore', under='ignore', divide='ignore')
+@np.errstate(over="ignore", under="ignore", divide="ignore")
 def gumbel_qdf(p: float, loc: float = 0, scale: float = 1) -> float:
     # return loc - scale / (p * np.log(p))
     return loc + scale / np.log(np.exp(-p * np.log(p)))
 
 
 def rayleigh_cdf(x: float) -> float:
-    return -np.expm1(-x**2 / 2)
+    return -np.expm1(-(x**2) / 2)
 
 
 def rayleigh_ppf(p: float) -> float:
@@ -100,7 +99,7 @@ def uniform_ppf(p: float) -> float:
 
 
 def uniform_qdf(p: float) -> float:
-    return ((p > 0) & (p < 1)) * 1.
+    return ((p > 0) & (p < 1)) * 1.0
 
 
 @given(a=st.floats(0.1, 10))
@@ -162,7 +161,8 @@ def test_tlm_normal():
 
     # QDF is shift-invariant, so it can't be used to find the L-loc
     tl_qdf = l_moment_from_qdf(
-        lambda u: 1 / IQ.pdf(IQ.inv_cdf(u)), r[1:],
+        lambda u: 1 / IQ.pdf(IQ.inv_cdf(u)),
+        r[1:],
         trim=1,
     )
     assert_allclose(tl_qdf, tl[1:])
@@ -205,12 +205,15 @@ def test_llm_expon(a: float):
 
 
 def test_lm_cov_uniform():
-    k4 = np.array([
-        [1 / 2, 0, -1 / 10, 0],
-        [0, 1 / 30, 0, -1 / 70],
-        [-1 / 10, 0, 1 / 35, 0],
-        [0, -1 / 70, 0, 1 / 105],
-    ]) / 6
+    k4 = (
+        np.array([
+            [1 / 2, 0, -1 / 10, 0],
+            [0, 1 / 30, 0, -1 / 70],
+            [-1 / 10, 0, 1 / 35, 0],
+            [0, -1 / 70, 0, 1 / 105],
+        ])
+        / 6
+    )
     k4_hat = l_moment_cov_from_cdf(lambda x: x, 4)
 
     assert_allclose(k4, k4_hat)
@@ -282,13 +285,18 @@ def test_ls_cov_uniform():
 
 @settings(deadline=1_000)
 @given(
-    ppf=st.one_of(*map(st.just, [
-        uniform_ppf,
-        norm_ppf,
-        gumbel_ppf,
-        rayleigh_ppf,
-        expon_ppf,
-    ])),
+    ppf=st.one_of(
+        *map(
+            st.just,
+            [
+                uniform_ppf,
+                norm_ppf,
+                gumbel_ppf,
+                rayleigh_ppf,
+                expon_ppf,
+            ],
+        )
+    ),
     rmax=st.integers(2, 8),
     trim=st.tuples(st.integers(0, 1), st.integers(0, 3)),
 )
@@ -297,7 +305,7 @@ def test_ppf_from_l_moments_identity(
     rmax: int,
     trim: tuple[int, int] | int,
 ):
-    r = np.mgrid[1: rmax + 1]
+    r = np.mgrid[1 : rmax + 1]
     l_r = l_moment_from_ppf(ppf, r, trim)
 
     ppf_hat = ppf_from_l_moments(l_r, trim=trim, validate=False)
@@ -305,19 +313,24 @@ def test_ppf_from_l_moments_identity(
     assert_allclose(l_r_hat, l_r)
 
     l_0 = np.zeros(4)
-    l_0_hat = l_moment_from_ppf(ppf_hat, np.mgrid[rmax + 1: rmax + 5], trim)
+    l_0_hat = l_moment_from_ppf(ppf_hat, np.mgrid[rmax + 1 : rmax + 5], trim)
     assert_allclose(l_0_hat, l_0)
 
 
 @settings(deadline=1_000)
 @given(
-    qdf=st.one_of(*map(st.just, [
-        uniform_qdf,
-        norm_qdf,
-        gumbel_qdf,
-        rayleigh_qdf,
-        expon_qdf,
-    ])),
+    qdf=st.one_of(
+        *map(
+            st.just,
+            [
+                uniform_qdf,
+                norm_qdf,
+                gumbel_qdf,
+                rayleigh_qdf,
+                expon_qdf,
+            ],
+        )
+    ),
     rmax=st.integers(3, 8),
     trim=st.tuples(st.integers(0, 1), st.integers(0, 3)),
 )
@@ -326,7 +339,7 @@ def test_qdf_from_l_moments_identity(
     rmax: int,
     trim: tuple[int, int] | int,
 ):
-    r = np.mgrid[2: rmax + 1]
+    r = np.mgrid[2 : rmax + 1]
     l_r = l_moment_from_qdf(qdf, r, trim)
 
     qdf_hat = qdf_from_l_moments(np.r_[0, l_r], trim=trim, validate=False)
@@ -334,5 +347,5 @@ def test_qdf_from_l_moments_identity(
     assert_allclose(l_r_hat, l_r)
 
     l_0 = np.zeros(4)
-    l_0_hat = l_moment_from_qdf(qdf_hat, np.mgrid[rmax + 1: rmax + 5], trim)
+    l_0_hat = l_moment_from_qdf(qdf_hat, np.mgrid[rmax + 1 : rmax + 5], trim)
     assert_allclose(l_0_hat, l_0)

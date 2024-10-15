@@ -1,4 +1,5 @@
 """Unbiased sample estimators of the generalized trimmed L-moments."""
+
 from __future__ import annotations
 
 import sys
@@ -23,7 +24,6 @@ from ._utils import (
 from .linalg import ir_pascal, sandwich, sh_legendre, trim_matrix
 from .typing import AnyOrder, AnyOrderND
 
-
 if sys.version_info >= (3, 13):
     from typing import TypeVar
 else:
@@ -37,41 +37,34 @@ if TYPE_CHECKING:
 
 
 __all__ = (
-    'l_weights',
-
-    'l_moment',
-    'l_ratio',
-    'l_stats',
-
-    'l_loc',
-    'l_scale',
-    'l_variation',
-    'l_skew',
-    'l_kurtosis',
-    'l_kurt',
-
-    'l_moment_cov',
-    'l_ratio_se',
-    'l_stats_se',
-
-    'l_moment_influence',
-    'l_ratio_influence',
+    "l_kurt",
+    "l_kurtosis",
+    "l_loc",
+    "l_moment",
+    "l_moment_cov",
+    "l_moment_influence",
+    "l_ratio",
+    "l_ratio_influence",
+    "l_ratio_se",
+    "l_scale",
+    "l_skew",
+    "l_stats",
+    "l_stats_se",
+    "l_variation",
+    "l_weights",
 )
 
 
-_OrderT = TypeVar('_OrderT', bound=int)
-_SizeT = TypeVar('_SizeT', bound=int)
-_SCT_f = TypeVar('_SCT_f', bound=np.floating[Any], default=np.float64)
+_OrderT = TypeVar("_OrderT", bound=int)
+_SizeT = TypeVar("_SizeT", bound=int)
+_SCT_f = TypeVar("_SCT_f", bound=np.floating[Any], default=np.float64)
 
 _DType: TypeAlias = np.dtype[_SCT_f] | type[_SCT_f]
 _Vectorized: TypeAlias = _SCT_f | npt.NDArray[_SCT_f]
 _Floating: TypeAlias = np.floating[Any]
 
 # (dtype.char, n, s, t)
-_CacheKey: TypeAlias = (
-    tuple[str, int, int, int]
-    | tuple[str, int, float, float]
-)
+_CacheKey: TypeAlias = tuple[str, int, int, int] | tuple[str, int, float, float]
 # `r: _T_order >= 4`
 _CacheArray: TypeAlias = onpt.Array[tuple[_OrderT, _SizeT], np.longdouble]
 _Cache: TypeAlias = dict[_CacheKey, _CacheArray[Any, Any]]
@@ -210,7 +203,7 @@ def l_weights(
             L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
     """
     if r_max < 0:
-        msg = f'r must be non-negative, got {r_max}'
+        msg = f"r must be non-negative, got {r_max}"
         raise ValueError(msg)
 
     dtype = np.dtype(dtype)
@@ -222,7 +215,7 @@ def l_weights(
     s, t = clean_trim(trim)
 
     if (n_min := r_max + s + t) > n:
-        msg = f'expected n >= r + s + t, got {n} < {n_min}'
+        msg = f"expected n >= r + s + t, got {n} < {n_min}"
         raise ValueError(msg)
 
     key = dtype.char, n, s, t
@@ -981,16 +974,16 @@ def l_moment_cov(
     Todo:
         - Use the direct (Jacobi) method from Hosking (2015).
     """
-    _r_max = clean_order(r_max, 'r_max')
+    _r_max = clean_order(r_max, "r_max")
     _trim = cast(tuple[int, int], clean_trim(trim))
 
     if any(int(t) != t for t in _trim):
-        msg = 'l_moment_cov does not support fractional trimming (yet)'
+        msg = "l_moment_cov does not support fractional trimming (yet)"
         raise TypeError(msg)
 
     ks = _r_max + sum(_trim)
     if ks < _r_max:
-        msg = 'trimmings must be positive'
+        msg = "trimmings must be positive"
         raise ValueError(msg)
 
     # projection matrix: PWMs -> generalized trimmed L-moments
@@ -1065,7 +1058,7 @@ def l_ratio_se(
     s_rs = k_l[_r, _s]  # Cov[l_r, l_s]
 
     # the classic approximation to propagation of uncertainty for an RV ratio
-    with np.errstate(divide='ignore', invalid='ignore'):
+    with np.errstate(divide="ignore", invalid="ignore"):
         _s_tt = (l_r / l_s) ** 2 * (
             s_rr / l_r**2 + s_ss / l_s**2 - 2 * s_rs / (l_r * l_s)
         )
@@ -1113,7 +1106,7 @@ def l_stats_se(
     return l_ratio_se(a, r, s, trim=trim, axis=axis, dtype=dtype, **kwds)
 
 
-_T_x = TypeVar('_T_x', bound=float | npt.NDArray[_Floating])
+_T_x = TypeVar("_T_x", bound=float | npt.NDArray[_Floating])
 
 
 def l_moment_influence(
@@ -1190,7 +1183,7 @@ def l_moment_influence(
         return cast(_T_x, out)
 
     influence_function.__doc__ = (
-        f'Empirical L-moment influence function for {r=}, {trim=}, and {n=}.'
+        f"Empirical L-moment influence function for {r=}, {trim=}, and {n=}."
     )
     # piggyback the L-moment, to avoid recomputing it in l_ratio_influence
     influence_function.l = l_r  # pyright: ignore[reportFunctionMemberAccess]
@@ -1235,7 +1228,7 @@ def l_ratio_influence(
             The (vectorized) empirical influence function.
 
     """
-    _r, _s = clean_order(r), clean_order(s, name='s')
+    _r, _s = clean_order(r), clean_order(s, name="s")
 
     _x = np.array(a, copy=bool(sort))
     _x = sort_maybe(_x, sort=sort, inplace=True)
@@ -1249,7 +1242,7 @@ def l_ratio_influence(
         (eif_r.l, eif_k.l),  # pyright: ignore[reportFunctionMemberAccess]
     )
     if abs(l_k) <= tol * abs(l_r):
-        msg = f'L-ratio ({r=}, {s=}) denominator is approximately zero.'
+        msg = f"L-ratio ({r=}, {s=}) denominator is approximately zero."
         raise ZeroDivisionError(msg)
 
     t_r = l_r / l_k
@@ -1262,7 +1255,7 @@ def l_ratio_influence(
         return cast(_T_x, round0((psi_r - t_r * psi_k) / l_k, tol=tol)[()])
 
     influence_function.__doc__ = (
-        f'Theoretical influence function for L-moment ratio with r={_r}, '
-        f'k={_s}, {trim=}, and {n=}'
+        f"Theoretical influence function for L-moment ratio with r={_r}, "
+        f"k={_s}, {trim=}, and {n=}"
     )
     return influence_function

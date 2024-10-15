@@ -23,10 +23,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: scientific-python/repo-review@v0.11.2
-        with:
-          plugins: sp-repo-review
-
       - name: install poetry
         run: |
           pipx install poetry
@@ -44,17 +40,30 @@ jobs:
       - name: poetry install
         run: poetry install --without debug,docs --all-extras
 
+      - name: repo-review
+        run: poetry run repo-review .
+
+      - name: markdownlint
+        uses: DavidAnson/markdownlint-cli2-action@v17
+        with:
+          config: ".markdownlint.yaml"
+          globs: "*.md"
+
+      - name: blacken-docs
+        run: git ls-files -z -- '*.md' | xargs -0 poetry run blacken-docs
+
       - name: codespell
         run: poetry run codespell .
 
       - name: ruff check
-        run: poetry run ruff check --output-format=github
+        run: |
+          poetry run ruff check --output-format=github
+          poetry run ruff format --check
 
       - name: basedpyright
-        run: poetry run basedpyright
-
-      - name: basedpyright --verifytypes
-        run: poetry run basedpyright --ignoreexternal --verifytypes optype
+        run: |
+          poetry run basedpyright
+          poetry run basedpyright --ignoreexternal --verifytypes lmo
 
   test:
     timeout-minutes: 20

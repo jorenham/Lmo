@@ -9,7 +9,6 @@ import numpy as np
 import optype.numpy as onpt
 from optype import CanSequence
 
-
 if sys.version_info >= (3, 13):
     from typing import TypedDict
 else:
@@ -20,14 +19,14 @@ if TYPE_CHECKING:
 
 
 __all__ = [
-    'AnyAWeights',
-    'AnyFWeights',
-    'AnyOrder',
-    'AnyOrderND',
-    'AnyTrimInt',
-    'AnyTrim',
-    'LComomentOptions',
-    'LMomentOptions',
+    "AnyAWeights",
+    "AnyFWeights",
+    "AnyOrder",
+    "AnyOrderND",
+    "AnyTrim",
+    "AnyTrimInt",
+    "LComomentOptions",
+    "LMomentOptions",
 ]
 
 

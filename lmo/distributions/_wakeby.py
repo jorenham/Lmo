@@ -16,7 +16,6 @@ from scipy.stats._distn_infrastructure import (
 )
 from scipy.stats.distributions import rv_continuous
 
-
 if sys.version_info >= (3, 13):
     from typing import override
 else:
@@ -25,12 +24,11 @@ else:
 from lmo.theoretical import l_moment_from_ppf
 from ._lm import get_lm_func
 
-
 if TYPE_CHECKING:
     import lmo.typing.scipy as lspt
 
 
-__all__ = ('wakeby_gen',)
+__all__ = ("wakeby_gen",)
 
 
 # NOTE: this is equivalent to `float` IFF `numpy >= 2.2`, see:
@@ -38,11 +36,11 @@ __all__ = ('wakeby_gen',)
 _F8: TypeAlias = float | np.float64
 _ArrF8: TypeAlias = onpt.Array[tuple[int, ...], np.float64]
 
-_XT = TypeVar('_XT', _F8, _ArrF8)
+_XT = TypeVar("_XT", _F8, _ArrF8)
 
 _MICRO: Final = 1e-6
-_NaN: Final = float('nan')
-_INF: Final = float('inf')
+_NaN: Final = float("nan")
+_INF: Final = float("inf")
 
 
 def _wakeby_ub(b: _F8, d: _F8, f: _F8) -> _F8:
@@ -118,16 +116,13 @@ def _wakeby_sf0(x: _F8, b: _F8, d: _F8, f: _F8) -> _F8:  # noqa: C901
     if b == d and b > 0:
         # unnamed special case
         cx = b * x
-        return (
-            (2 * f - cx - 1 + math.sqrt((cx + 1) ** 2 - 4 * cx * f)) / (2 * f)
-        ) ** (1 / b)
+        f2 = 2 * f
+        return ((f2 - cx + math.sqrt((cx + 1) ** 2 - 2 * cx * f2) - 1) / f2) ** (1 / b)
     if b == 0 and d != 0:
         # https://wikipedia.org/wiki/Lambert_W_function
         # it's easy to show that this is valid for all x, f, and d
         w = (1 - f) / f
-        return float(
-            (w / sc.lambertw(w * math.exp((1 + d * x) / f - 1))) ** (1 / d),
-        )
+        return float((w / sc.lambertw(w * math.exp((1 + d * x) / f - 1))) ** (1 / d))
 
     z: _F8
     if x < _wakeby_isf0(0.9, b, d, f):
@@ -175,7 +170,7 @@ def _wakeby_sf0(x: _F8, b: _F8, d: _F8, f: _F8) -> _F8:  # noqa: C901
             break
     else:
         warnings.warn(
-            'Wakeby SF did not converge, the result may be unreliable',
+            "Wakeby SF did not converge, the result may be unreliable",
             RuntimeWarning,
             stacklevel=4,
         )
@@ -184,7 +179,7 @@ def _wakeby_sf0(x: _F8, b: _F8, d: _F8, f: _F8) -> _F8:  # noqa: C901
 
 
 _wakeby_sf: Final = np.vectorize(_wakeby_sf0, [float])
-_wakeby_lm: Final = get_lm_func('wakeby')
+_wakeby_lm: Final = get_lm_func("wakeby")
 
 
 class wakeby_gen(rv_continuous):
@@ -203,9 +198,9 @@ class wakeby_gen(rv_continuous):
 
     @override
     def _shape_info(self) -> list[_ShapeInfo]:
-        ibeta = _ShapeInfo('b', False, (-np.inf, np.inf), (False, False))
-        idelta = _ShapeInfo('d', False, (-np.inf, np.inf), (False, False))
-        iphi = _ShapeInfo('f', False, (0, 1), (True, True))
+        ibeta = _ShapeInfo("b", False, (-np.inf, np.inf), (False, False))
+        idelta = _ShapeInfo("d", False, (-np.inf, np.inf), (False, False))
+        iphi = _ShapeInfo("f", False, (0, 1), (True, True))
         return [ibeta, idelta, iphi]
 
     @override

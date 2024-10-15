@@ -6,7 +6,6 @@ import numpy.typing as npt
 
 import lmo
 
-
 _ArrayF8: TypeAlias = npt.NDArray[np.float64]
 
 X = [0.14543334, 2.17509751, 0.60844233, 1.47809552, -1.32510269, 1.0979731]
@@ -27,9 +26,9 @@ assert_type(lmo.l_moment(X, 2, 0), np.float64)
 assert_type(lmo.l_moment(X, 2, 1), np.float64)
 assert_type(lmo.l_moment(X, 2, trim=1), np.float64)
 assert_type(lmo.l_moment(X, 2, trim=(1, 1)), np.float64)
-assert_type(lmo.l_moment(X, 2, trim=(.5, .5)), np.float64)
-assert_type(lmo.l_moment(X, 2, trim=(1, .5)), np.float64)
-assert_type(lmo.l_moment(X, 2, trim=(.5, 1)), np.float64)
+assert_type(lmo.l_moment(X, 2, trim=(0.5, 0.5)), np.float64)
+assert_type(lmo.l_moment(X, 2, trim=(1, 0.5)), np.float64)
+assert_type(lmo.l_moment(X, 2, trim=(0.5, 1)), np.float64)
 
 # vectorized r
 assert_type(lmo.l_moment(X, [1, 2, 3, 4]), _ArrayF8)

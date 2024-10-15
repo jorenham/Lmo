@@ -51,12 +51,11 @@ from lmo.theoretical import (
     l_stats_cov_from_cdf,
 )
 
+__all__ = "install", "l_rv_frozen", "l_rv_generic"
 
-__all__ = 'install', 'l_rv_frozen', 'l_rv_generic'
 
-
-_T = TypeVar('_T')
-_T_x = TypeVar('_T_x', bound=float | npt.NDArray[np.float64])
+_T = TypeVar("_T")
+_T_x = TypeVar("_T_x", bound=float | npt.NDArray[np.float64])
 
 _Tuple2: TypeAlias = tuple[_T, _T]
 _Tuple4: TypeAlias = tuple[_T, _T, _T, _T]
@@ -85,17 +84,17 @@ class PatchClass:
     @classmethod
     def patch(cls, base: type[object]) -> None:
         if not isinstance(base, type):  # pyright: ignore[reportUnnecessaryIsInstance]
-            msg = 'patch() argument must be a type'
+            msg = "patch() argument must be a type"
             raise TypeError(msg)
         if base in cls.patched:
-            msg = f'{base.__qualname__} already patched'
+            msg = f"{base.__qualname__} already patched"
             raise TypeError(msg)
 
         for name, method in cls.__dict__.items():
-            if name.startswith('__') or not callable(method):
+            if name.startswith("__") or not callable(method):
                 continue
             if hasattr(base, name):
-                msg = f'{base.__qualname__}.{name}() already exists'
+                msg = f"{base.__qualname__}.{name}() already exists"
                 raise TypeError(msg)
             setattr(base, name, method)
 
@@ -187,7 +186,7 @@ class l_rv_generic(PatchClass):
         cdf, ppf = self._get_xxf(*args)
 
         # TODO: use ppf when appropriate (e.g. genextreme, tukeylambda, kappa4)
-        with np.errstate(over='ignore', under='ignore'):
+        with np.errstate(over="ignore", under="ignore"):
             lmbda_r = l_moment_from_cdf(
                 cdf,
                 r,
@@ -200,7 +199,7 @@ class l_rv_generic(PatchClass):
         # re-wrap scalars in 0-d arrays (lmo.theoretical unpacks them)
         return np.asarray(lmbda_r)
 
-    @np.errstate(divide='ignore')
+    @np.errstate(divide="ignore")
     def _logqdf(self, u: _ArrF8, *args: Any) -> _ArrF8:
         """Overridable log quantile distribution function (QDF)."""
         return -self._logpxf(self._ppf(u, *args), *args)
@@ -1015,20 +1014,20 @@ class l_rv_generic(PatchClass):
         for i, param in enumerate(self._param_info()):
             name = param.name
             if param.integrality:
-                msg = f'integral parameter ({name!r}) fitting is not supported'
+                msg = f"integral parameter ({name!r}) fitting is not supported"
                 raise NotImplementedError(msg)
 
             a, b = param.domain
 
-            for key in (f'{i}', f'f{name}', f'fix_{name}'):
+            for key in (f"{i}", f"f{name}", f"fix_{name}"):
                 if key in kwds:
                     if a == b:
-                        msg = f'multiple fixed args given for {name!r}#{i}'
+                        msg = f"multiple fixed args given for {name!r}#{i}"
                         raise ValueError(msg)
 
                     val = cast(float, kwds.pop(key))
                     if not (a <= val <= b):
-                        msg = f'expected {a} <= {name} <= {b}, got {key}={val}'
+                        msg = f"expected {a} <= {name} <= {b}, got {key}={val}"
                         raise ValueError(msg)
 
                     a = b = val
@@ -1061,8 +1060,8 @@ class l_rv_generic(PatchClass):
         )
         if np.any(np.isnan(l_dist)):
             msg = (
-                f'Method of L-moments encountered a non-finite  {self.name}'
-                f'L-moment and cannot continue.'
+                f"Method of L-moments encountered a non-finite  {self.name}"
+                f"L-moment and cannot continue."
             )
             raise ValueError(msg)
 
@@ -1244,13 +1243,13 @@ class l_rv_generic(PatchClass):
             return lmbda_r
 
         kwargs0: dict[str, Any] = {
-            'bounds': bounds,
-            'random_state': random_state or self.random_state,
+            "bounds": bounds,
+            "random_state": random_state or self.random_state,
         }
         if not len(self._shape_info()):
             # no shape params; weight matrix only depends linearly on scale
             # => weight matrix is constant between steps, use 1 step by default
-            kwargs0['k'] = 1
+            kwargs0["k"] = 1
 
         result = inference.fit(
             ppf=self.ppf,
@@ -1303,7 +1302,7 @@ class l_rv_generic(PatchClass):
         l1_hat, l2_hat = l_moment_est(data, [1, 2], trim=clean_trim(trim))
 
         scale_hat = l2_hat / l2
-        with np.errstate(invalid='ignore'):
+        with np.errstate(invalid="ignore"):
             loc_hat = l1_hat - scale_hat * l1
 
         if not np.isfinite(loc_hat):

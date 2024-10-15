@@ -11,18 +11,11 @@ import scipy.special as sps
 import lmo.typing.np as lnpt
 import lmo.typing.scipy as lspt
 
-
-__all__ = (
-    'ALPHA',
-    'QUAD_LIMIT',
-    'l_coef_factor',
-    'l_const',
-    'tighten_cdf_support',
-)
+__all__ = ("ALPHA", "QUAD_LIMIT", "l_coef_factor", "l_const", "tighten_cdf_support")
 
 
 _Fn1: TypeAlias = Callable[[float], float | lnpt.Float]
-_Tss = ParamSpec('_Tss')
+_Tss = ParamSpec("_Tss")
 
 ALPHA: Final[float] = 0.1
 QUAD_LIMIT: Final[int] = 100
@@ -48,11 +41,11 @@ def l_const(r: int, s: float, t: float, k: int = 0) -> float:
         v = exp(lgamma(r + s + t + 1) - lgamma(r + s) - lgamma(r + t))
     else:
         return exp(
-            +lgamma(r + s + t + 1)
+            lgamma(r + s + t + 1)
             - lgamma(r + s)
             - lgamma(r + t)
             + lgamma(r - k)
-            - log(r),
+            - log(r)
         )
 
     return factorial(r - 1 - k) / r * v
@@ -109,9 +102,7 @@ def tighten_cdf_support(
 
 def nquad(
     integrand: Callable[Concatenate[float, float, _Tss], float],
-    domains: Sequence[
-        tuple[float, float] | Callable[..., tuple[float, float]],
-    ],
+    domains: Sequence[tuple[float, float] | Callable[..., tuple[float, float]],],
     opts: lspt.QuadOptions | None = None,
     *args: _Tss.args,
     **kwds: _Tss.kwargs,

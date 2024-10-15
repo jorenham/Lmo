@@ -2,7 +2,6 @@
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
-
 [tool.poetry]
 name = "lmo"
 version = "0.15.0.dev0"
@@ -35,19 +34,24 @@ classifiers = [
 Documentation = "https://jorenham.github.io/Lmo/"
 "Bug Tracker" = "https://github.com/jorenham/Lmo/issues"
 
+[tool.poetry.extras]
+typing = ["scipy-stubs"]
+pandas = ["pandas"]
+
 [tool.poetry.dependencies]
 python = "^3.11"
-typing_extensions = {version = "^4.8", python = "<3.13"}
+typing_extensions = {version = "^4.10", python = "<3.13"}
 
 # https://numpy.org/neps/nep-0029-deprecation_policy.html
 # https://scientific-python.org/specs/spec-0000/
 numpy =  ">=1.24"
 scipy = "^1.10"
-scipy-stubs = {version = "^1.14.1.0", optional = true}
-pandas = {version = ">=2.0", optional = true}
 optype = {version = "^0.6.1", extras = ["numpy"]}
+scipy-stubs = {version = "^1.14.1.0", optional = true}
+pandas = {version = "^2.0", optional = true}
 
 [tool.poetry.group.dev.dependencies]
+blacken-docs = "^1.19.0"
 codespell = "^2.3.0"
 hypothesis = {version = "^6.115.2", extras = ["numpy"]}
 pre-commit = "^4.0.1"
@@ -56,24 +60,24 @@ pytest = "^8.3.3"
 pytest-doctestplus = "^1.2.1"
 ruff = "^0.6.9"
 sp-repo-review = {version = "^2024.8.19", extras = ["cli"]}
-tox = "^4.21.2"
+tox = "^4.22.0"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.6.1"
 mkdocs-bibtex = "^2.16.2"
 mkdocs-git-revision-date-localized-plugin = "^1.2.9"
 mkdocs-include-markdown-plugin = "^6.2.2"
-mkdocs-jupyter = "^0.25.0"
-mkdocs-material = "^9.5.40"
+mkdocs-jupyter = "^0.25.1"
+mkdocs-material = "^9.5.41"
 mkdocs-minify-plugin = "^0.8.0"
 mkdocstrings = {version = ">=0.26.2,<0.27.0", extras = ["python"]}
 
 [tool.poetry.group.debug.dependencies]
 ipython = "^8.28.0"
 ipykernel = "^6.29.5"
-line_profiler = {version = "4.1.3", python = "<3.13"}
+line_profiler = {version = "^4.1.3", python = "<3.13"}
 matplotlib = "^3.9.2"
-scipy-stubs = "^1.4.1a3"
+scipy-stubs = "*"
 typing-extensions = "^4.12.2"
 
 [tool.poetry.group.pandas.dependencies]
@@ -84,10 +88,6 @@ pandas-stubs = ">=2.0"
 optional = true
 [tool.poetry.group.github.dependencies]
 pytest-github-actions-annotate-failures = ">=0.2.0,<1.0"
-
-[tool.poetry.extras]
-typing = ["scipy-stubs"]
-pandas = ["pandas"]
 
 [tool.codespell]
 skip = "*.bib,*.css,*.ipynb,*.js,*.lock,*.pyc,*.svg,./site,"
@@ -120,9 +120,10 @@ defineConstant = {NP2 = true}
 pythonVersion = "3.11"
 pythonPlatform = "All"
 typeCheckingMode = "strict"
+enableExperimentalFeatures = true
 # discouraged options
-enableTypeIgnoreComments = false
 enableReachabilityAnalysis = false
+enableTypeIgnoreComments = false
 # for pyright compatibility
 deprecateTypingAliases = true
 reportMissingModuleSource = true
@@ -157,86 +158,46 @@ ignore = [
 ]
 
 [tool.ruff]
+force-exclude = true
+extend-exclude = ["docs/gallery"]  # TODO
+indent-width = 4
+line-length = 88
+show-fixes = true
 src = ["lmo", "tests"]
 target-version = "py311"
-line-length = 79
-indent-width = 4
-show-fixes = true
-force-exclude = true
-extend-exclude = [
-    ".github",
-    ".hypothesis",
-    ".pytest_cache",
-    ".ruff_cache",
-    ".venv",
-    ".vscode",
-    "docs/gallery",  # TODO
-    "dist",
-    "site",
-]
+
+[tool.ruff.format]
+docstring-code-format = true
+indent-style = "space"
+line-ending = "lf"
+preview = true
+quote-style = "double"
 
 [tool.ruff.lint]
 preview = true
-select = [
-    "F",        # pyflakes
-    "E",        # pycodestyle error
-    "W",        # pycodestyle warning
-    "C90",      # mccabe
-    "I",        # isort
-    "N",        # pep8-naming
-    "D",        # pydocstyle
-    "UP",       # pyupgrade
-    "YTT",      # flake8-2020
-    "ANN",      # flake8-annotations
-    "BLE",      # flake8-blind-except
-    "B",        # flake8-bugbear
-    "A",        # flake8-builtins
-    "COM",      # flake8-commas
-    "C4",       # flake8-comprehensions
-    "DTZ",      # flake8-datetimez
-    "T10",      # flake8-debugger
-    "EXE",      # flake8-executable
-    "FA",       # flake8-future-annotations
-    "ISC",      # flake8-implicit-str-concat
-    "ICN",      # flake8-import-conventions
-    "INP",      # flake8-no-pep420
-    "LOG",      # flake8-logging
-    "G",        # flake8-logging-format
-    "PIE",      # flake8-pie
-    "T20",      # flake8-print
-    "PYI",      # flake8-pyi
-    "PT",       # flake8-pytest-style
-    "Q",        # flake8-quotes
-    "RSE",      # flake8-raise
-    "RET",      # flake8-return
-    "SLF",      # flake8-self
-    "SLOT",     # flake8-slots
-    "SIM",      # flake8-simplify
-    "TID",      # flake8-tidy-imports
-    "TCH",      # flake8-type-checking
-    "ARG",      # flake8-unused-arguments
-    "PTH",      # flake8-use-pathlib
-    "PD",       # pandas-vet
-    "PGH",      # pygrep-hooks
-    "PL",       # pylint
-    "TRY",      # tryceratops
-    "FLY",      # flynt
-    "NPY",      # NumPy-specific rules
-    "PERF",     # perflint,
-    "FURB",     # refurb
-    "RUF",      # ruff
-]
+select = ["ALL"]
 ignore = [
+    "DOC",      # pydoclint
+    "FBT",      # flake8-boolean-trap
+    "CPY",      # flake8-copyright
+    "EM",       # flake8-errmsg
+    "TD",       # flake8-todos
+    "FIX",      # flake8-fixme
+    "ERA",      # eradicate
     # pydocstyle
     "D200",     # fits-on-one-line
     "D205",     # blank-line-after-summary
     "D212",     # multi-line-summary-first-line
-
     # flake8-annotations
     "ANN101",   # missing-type-self (deprecated)
     "ANN102",   # missing-type-cls (deprecated)
     "ANN401",   # any-type
-
+    # flake8-bandit
+    "S101",     # assert
+    # flake8-commas
+    "COM812",   # missing-trailing-comma (ruff format)
+    # flake8-implicit-str-concat
+    "ISC001",   # single-line-implicit-string-concatenation (ruff format)
     # pylint
     "PLC0415",  # import-outside-top-level
     "PLR0904",  # too-many-arguments
@@ -247,12 +208,10 @@ ignore = [
     "PLR0915",  # too-many-statements
     "PLR0917",  # too-many-positional
     "PLR6301",  # no-self-use
-
     # ruff
     "RUF021",   # parenthesize-chained-operators
-    "RUF022",   # unsorted-dunder-all
 ]
-typing-modules = ["typing_extensions"]
+typing-modules = ["typing", "typing_extensions"]
 
 [tool.ruff.lint.per-file-ignores]
 "*.ipynb" = ["D", "ANN", "I001", "T201", "N812", "N816"]
@@ -261,9 +220,6 @@ typing-modules = ["typing_extensions"]
 
 [tool.ruff.lint.pep8-naming]
 extend-ignore-names = ["*_gen", "l_rv_*"]
-
-[tool.ruff.lint.pycodestyle]
-max-line-length = 79
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
@@ -280,19 +236,11 @@ combine-as-imports = true
 force-wrap-aliases = true
 known-first-party = ["lmo"]
 known-third-party = ["numpy", "pandas", "scipy"]
-lines-after-imports = 2
-lines-between-types = 0
 no-lines-before = ["future", "local-folder"]
 split-on-trailing-comma = false
 
-[tool.ruff.lint.flake8-annotations]
-allow-star-arg-any = true
-suppress-dummy-args = true
-suppress-none-returning = true
-
 [tool.ruff.lint.flake8-import-conventions]
 banned-from = [
-    "lmo.typing",
     "lmo.typing.np",
     "lmo.typing.scipy",
     "numpy",
@@ -309,9 +257,6 @@ banned-from = [
 "numpy.typing" = "npt"
 "optype.numpy" = "onpt"
 
-[tool.ruff.lint.flake8-quotes]
-inline-quotes = "single"
-
 [tool.ruff.lint.flake8-type-checking]
 exempt-modules = ["typing", "typing_extensions"]
 quote-annotations = true
@@ -319,12 +264,6 @@ quote-annotations = true
 [tool.ruff.lint.pylint]
 allow-dunder-method-names = ["__array__", "__lmo_register__"]
 allow-magic-value-types = ["int" ,"str"]
-
-[tool.ruff.format]
-docstring-code-format = true
-indent-style = "space"
-line-ending = "lf"
-quote-style = "single"
 
 [tool.tox]
 isolated_build = true

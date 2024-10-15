@@ -6,6 +6,7 @@ See Also:
     - [Classic orthogonal polynomials - Wikipedia
     ](https://wikipedia.org/wiki/Classical_orthogonal_polynomials)
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, TypeAlias, TypeVar, cast, overload
@@ -16,20 +17,19 @@ import optype.numpy as onpt
 import scipy.special as scs
 from numpy.polynomial._polybase import ABCPolyBase  # noqa: PLC2701
 
-
 if TYPE_CHECKING:
     import lmo.typing.np as lnpt
 
 
 __all__ = (
-    'PolySeries',
-    'eval_sh_jacobi',
-    'peaks_jacobi',
-    'arg_extrema_jacobi',
-    'extrema_jacobi',
-    'jacobi',
-    'jacobi_series',
-    'roots',
+    "PolySeries",
+    "arg_extrema_jacobi",
+    "eval_sh_jacobi",
+    "extrema_jacobi",
+    "jacobi",
+    "jacobi_series",
+    "peaks_jacobi",
+    "roots",
 )
 
 
@@ -41,8 +41,8 @@ else:
     PolySeries: TypeAlias = ABCPolyBase
 
 
-_T_shape = TypeVar('_T_shape', bound=onpt.AtLeast1D)
-_T_poly = TypeVar('_T_poly', bound=PolySeries)
+_T_shape = TypeVar("_T_shape", bound=onpt.AtLeast1D)
+_T_poly = TypeVar("_T_poly", bound=PolySeries)
 
 
 @overload
@@ -97,23 +97,16 @@ def eval_sh_jacobi(
     if n == 1:
         return (a + b + 2) * x - b - 1
     if n == 2:
-        return (
-            b * (b + 3)
-            - (a + b + 3) * (
-                2 * b + 4
-                - (a + b + 4) * x
-            ) * x
-        ) / 2 + 1
+        return (b * (b + 3) - (a + b + 3) * (2 * b + 4 - (a + b + 4) * x) * x) / 2 + 1
     if n == 3:
         return (
             (1 + a) * (2 + a) * (3 + a)
-            + (4 + a + b) * (
+            + (4 + a + b)
+            * (
                 3 * (2 + a) * (3 + a)
-                + (5 + a + b) * (
-                    3 * (3 + a)
-                    + (6 + a + b) * (x - 1)
-                ) * (x - 1)
-            ) * (x - 1)
+                + (5 + a + b) * (3 * (3 + a) + (6 + a + b) * (x - 1)) * (x - 1)
+            )
+            * (x - 1)
         ) / 6
 
     # don't use `eval_sh_jacobi`: https://github.com/scipy/scipy/issues/18988
@@ -169,10 +162,10 @@ def peaks_jacobi(
     """
     if n == 0:
         # constant; any x is a "peak"; so take the "middle ground"
-        return np.array([0.])
+        return np.array([0.0])
     if n == 1:
         # linear; the peaks are only at the ends
-        return np.array([-1., 1.])
+        return np.array([-1.0, 1.0])
 
     # otherwise, peaks are at the ends, and at the roots of the derivative
     x = np.empty(n + 1)
@@ -310,11 +303,7 @@ def extrema_jacobi(n: int, a: float, b: float) -> tuple[float, float]:
     return cast(float, np.min(p)), cast(float, np.max(p))
 
 
-def _jacobi_coefs(
-    n: int,
-    a: float,
-    b: float,
-) -> onpt.Array[tuple[int], np.float64]:
+def _jacobi_coefs(n: int, a: float, b: float) -> onpt.Array[tuple[int], np.float64]:
     p_n: np.poly1d
     p_n = scs.jacobi(n, a, b)
     return p_n.coef[::-1]
@@ -327,7 +316,7 @@ def jacobi(
     b: float,
     domain: tuple[float, float] = (-1, 1),
     window: tuple[float, float] = (-1, 1),
-    symbol: str = 'x',
+    symbol: str = "x",
 ) -> npp.Polynomial:
     return npp.Polynomial(_jacobi_coefs(n, a, b), domain, window, symbol)
 
@@ -365,7 +354,7 @@ def jacobi_series(
     kind: type[_T_poly] | None = None,
     domain: tuple[float, float] = (-1, 1),
     window: tuple[float, float] = (-1, 1),
-    symbol: str = 'x',
+    symbol: str = "x",
 ) -> _T_poly | npp.Polynomial:
     r"""
     Construct a polynomial from the weighted sum of shifted Jacobi
@@ -379,7 +368,7 @@ def jacobi_series(
     """
     w = cast(onpt.Array[tuple[int], np.float64], np.asarray(coef))
     if w.ndim != 1:
-        msg = 'coefs must be 1-D'
+        msg = "coefs must be 1-D"
         raise ValueError(msg)
 
     p = sum(
@@ -411,10 +400,7 @@ def roots(
         onpt.Array[tuple[int], np.float64],
         p.roots(),
     )
-    if not np.isrealobj(z) and np.isrealobj(p.domain):
-        x = z[np.isreal(z)].real
-    else:
-        x = z
+    x = z[np.isreal(z)].real if not np.isrealobj(z) and np.isrealobj(p.domain) else z
 
     if not outside and len(x):
         a, b = np.sort(p.domain)

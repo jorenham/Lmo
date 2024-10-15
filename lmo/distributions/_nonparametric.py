@@ -28,7 +28,6 @@ from lmo.theoretical import (
     qdf_from_l_moments,
 )
 
-
 if sys.version_info >= (3, 13):
     from typing import LiteralString, Protocol, Self, TypeVar
 else:
@@ -45,8 +44,7 @@ if TYPE_CHECKING:
 _Trim: TypeAlias = tuple[int, int] | tuple[float, float]
 _MomentType: TypeAlias = Literal[0, 1]
 _LPolyParams: TypeAlias = (
-    tuple[lnpt.AnyVectorFloat]
-    | tuple[lnpt.AnyVectorFloat, lmt.AnyTrim]
+    tuple[lnpt.AnyVectorFloat] | tuple[lnpt.AnyVectorFloat, lmt.AnyTrim]
 )
 
 
@@ -57,21 +55,19 @@ _AnyRealND: TypeAlias = lnpt.AnyArrayInt | lnpt.AnyArrayFloat
 _AnyReal3D_: TypeAlias = lnpt.AnyTensorInt | lnpt.AnyTensorFloat
 _AnyReal2D_: TypeAlias = _AnyReal2D | _AnyReal3D_
 
-_Stats0: TypeAlias = Literal['']
-_Stats1: TypeAlias = Literal['m', 'v', 's', 'k']
-_Stats2: TypeAlias = Literal['mv', 'ms', 'mk', 'vs', 'vk', 'sk']
-_Stats3: TypeAlias = Literal['mvs', 'mvk', 'msk', 'vsk']
-_Stats4: TypeAlias = Literal['mvsk']
+_Stats0: TypeAlias = Literal[""]
+_Stats1: TypeAlias = Literal["m", "v", "s", "k"]
+_Stats2: TypeAlias = Literal["mv", "ms", "mk", "vs", "vk", "sk"]
+_Stats3: TypeAlias = Literal["mvs", "mvk", "msk", "vsk"]
+_Stats4: TypeAlias = Literal["mvsk"]
 _Stats: TypeAlias = Literal[_Stats0, _Stats1, _Stats2, _Stats3, _Stats4]
 
-_T = TypeVar('_T')
+_T = TypeVar("_T")
 _Tuple1: TypeAlias = tuple[_T]
 _Tuple2: TypeAlias = tuple[_T, _T]
 _Tuple3: TypeAlias = tuple[_T, _T, _T]
 _Tuple4: TypeAlias = tuple[_T, _T, _T, _T]
-_Tuple4m: TypeAlias = (
-    tuple[()] | _Tuple1[_T] | _Tuple2[_T] | _Tuple3[_T] | _Tuple4[_T]
-)
+_Tuple4m: TypeAlias = tuple[()] | _Tuple1[_T] | _Tuple2[_T] | _Tuple3[_T] | _Tuple4[_T]
 
 
 NaN: Final[np.float64] = np.float64(np.nan)
@@ -95,11 +91,11 @@ class l_poly:  # noqa: N801
     Polynomial quantile distribution with (only) the given L-moments.
     """
 
-    name: ClassVar[LiteralString] = 'l_poly'
+    name: ClassVar[LiteralString] = "l_poly"
     badvalue: ClassVar[float] = np.nan
     moment_type: ClassVar[_MomentType] = 1
     numargs: ClassVar[int] = 2
-    shapes: ClassVar[LiteralString | None] = 'lmbda, trim'
+    shapes: ClassVar[LiteralString | None] = "lmbda, trim"
 
     _l_moments: Final[onpt.Array[tuple[int], np.float64]]
     _trim: Final[_Trim]
@@ -134,7 +130,7 @@ class l_poly:  # noqa: N801
         """
         _lmbda = np.asarray(lmbda)
         if (_n := len(_lmbda)) < 2:
-            msg = f'at least 2 L-moments required, got len(lmbda) = {_n}'
+            msg = f"at least 2 L-moments required, got len(lmbda) = {_n}"
             raise ValueError(msg)
         self._l_moments = _lmbda
 
@@ -150,6 +146,8 @@ class l_poly:  # noqa: N801
         self._cdf = np.vectorize(self._cdf_single, [float])
 
         self._random_state = _get_rng(seed)
+
+        super().__init__()
 
     @property
     def a(self, /) -> np.float64:
@@ -210,21 +208,18 @@ class l_poly:  # noqa: N801
         """
         x = np.asarray_chkfinite(data)
         if x.ndim != 1:
-            msg = 'expected 1-d data, got shape {{x,shape}}'
+            msg = "expected 1-d data, got shape {{x,shape}}"
             raise TypeError(msg)
 
         n = len(x)
         if n < 2 or np.all(x == x[0]):
-            msg = f'expected at least two unique samples, got {min(n, 1)}'
+            msg = f"expected at least two unique samples, got {min(n, 1)}"
             raise ValueError(msg)
 
-        if moments is None:
-            r_max = round(np.clip(np.cbrt(n), 2, 128))
-        else:
-            r_max = moments
+        r_max = round(np.clip(np.cbrt(n), 2, 128)) if moments is None else moments
 
         if r_max < 2:
-            msg = f'expected >1 moments, got {moments}'
+            msg = f"expected >1 moments, got {moments}"
             raise ValueError(msg)
 
         from lmo._lm import l_moment
@@ -367,7 +362,7 @@ class l_poly:  # noqa: N801
     def logcdf(self, x: _AnyReal0D, /) -> np.float64: ...
     @overload
     def logcdf(self, x: _AnyRealND, /) -> npt.NDArray[np.float64]: ...
-    @np.errstate(divide='ignore')
+    @np.errstate(divide="ignore")
     def logcdf(
         self,
         x: _AnyReal0D | _AnyRealND,
@@ -405,7 +400,7 @@ class l_poly:  # noqa: N801
     def logsf(self, x: _AnyReal0D, /) -> np.float64: ...
     @overload
     def logsf(self, x: _AnyRealND, /) -> npt.NDArray[np.float64]: ...
-    @np.errstate(divide='ignore')
+    @np.errstate(divide="ignore")
     def logsf(
         self,
         x: _AnyReal0D | _AnyRealND,
@@ -648,7 +643,7 @@ class l_poly:  # noqa: N801
         """
         alpha = np.asarray(confidence)
         if np.any((alpha > 1) | (alpha < 0)):
-            msg = 'confidence must be between 0 and 1 inclusive'
+            msg = "confidence must be between 0 and 1 inclusive"
             raise ValueError(msg)
 
         return self._ppf((1 - alpha) / 2), self._ppf((1 + alpha) / 2)
@@ -675,7 +670,7 @@ class l_poly:  # noqa: N801
                 condition holds, using `diagnostics.l_moment_bounds`.
         """
         if n < 0:
-            msg = f'expected n >= 0, got {n}'
+            msg = f"expected n >= 0, got {n}"
             raise ValueError(msg)
         if n == 0:
             return np.float64(1)
@@ -697,7 +692,7 @@ class l_poly:  # noqa: N801
     def stats(self, /, moments: _Stats3) -> _Tuple3[np.float64]: ...
     @overload
     def stats(self, /, moments: _Stats4) -> _Tuple4[np.float64]: ...
-    def stats(self, /, moments: _Stats = 'mv') -> _Tuple4m[np.float64]:
+    def stats(self, /, moments: _Stats = "mv") -> _Tuple4m[np.float64]:
         r"""
         Some product-moment statistics of the given distribution.
 
@@ -721,13 +716,13 @@ class l_poly:  # noqa: N801
         out: list[np.float64] = []
 
         _moments = set(moments)
-        if 'm' in _moments:
+        if "m" in _moments:
             out.append(self._mean)
-        if 'v' in _moments:
+        if "v" in _moments:
             out.append(self._var)
-        if 's' in _moments:
+        if "s" in _moments:
             out.append(self._skew)
-        if 'k' in _moments:
+        if "k" in _moments:
             out.append(self._kurtosis)
 
         return tuple(round0(np.array(out), 1e-15))

@@ -11,14 +11,13 @@ from scipy.stats.distributions import tukeylambda, uniform
 import lmo.typing as lmt
 from lmo.distributions import genlambda, kumaraswamy, l_poly, wakeby
 
-
 Q = np.linspace(1 / 100, 1, 99, endpoint=False)
 
 assert_allclose = functools.partial(_assert_allclose, atol=1e-9)
 
 
 @pytest.mark.parametrize(
-    'trim',
+    "trim",
     [0, 1, (0, 1), (1, 0), (13, 17), (2 / 3, 3 / 4)],
 )
 def test_l_poly_eq_uniform(trim: lmt.AnyTrim):
@@ -31,8 +30,8 @@ def test_l_poly_eq_uniform(trim: lmt.AnyTrim):
     t4_hat = X_hat.l_stats(trim=trim)
     assert_allclose(t4_hat, t4)
 
-    mvsk = X.stats(moments='mvsk')
-    mvsk_hat = X_hat.stats(moments='mvsk')
+    mvsk = X.stats(moments="mvsk")
+    mvsk_hat = X_hat.stats(moments="mvsk")
     assert_allclose(mvsk_hat, mvsk)
 
     x = X.ppf(p0)
@@ -52,10 +51,10 @@ def test_l_poly_eq_uniform(trim: lmt.AnyTrim):
     assert_allclose(H_hat, H)
 
 
-@pytest.mark.parametrize('scale', [1, 0.5, 2])
-@pytest.mark.parametrize('loc', [0, 1, -1])
+@pytest.mark.parametrize("scale", [1, 0.5, 2])
+@pytest.mark.parametrize("loc", [0, 1, -1])
 @pytest.mark.parametrize(
-    ('b', 'd', 'f'),
+    ("b", "d", "f"),
     [
         (1, 0, 1),
         (0, 0, 1),
@@ -100,7 +99,7 @@ def test_wakeby(b: float, d: float, f: float, loc: float, scale: float):
     assert_allclose(tll_stats_theo, tll_stats_quad)
 
 
-@pytest.mark.parametrize('lam', [0, 0.14, 1, -1])
+@pytest.mark.parametrize("lam", [0, 0.14, 1, -1])
 def test_genlambda_tukeylamba(lam: float):
     X0 = cast(Any, tukeylambda(lam))
     X = cast(Any, genlambda(lam, lam, 0))
@@ -120,7 +119,7 @@ def test_genlambda_tukeylamba(lam: float):
     assert_allclose(u, u0)
 
     # the `scipy.statstukeylambda` implementation kinda sucks,,,
-    with np.errstate(divide='ignore'):
+    with np.errstate(divide="ignore"):
         du0 = X0.pdf(_pp)
 
     du = X.pdf(_pp)
@@ -141,9 +140,9 @@ def test_genlambda_tukeylamba(lam: float):
 
 # @pytest.mark.parametrize('scale', [1, .5, 2])
 # @pytest.mark.parametrize('loc', [0, 1, -1])
-@pytest.mark.parametrize('f', [0, 1, -1])
-@pytest.mark.parametrize('d', [0, 0.5, 2, -0.9, -1.95])
-@pytest.mark.parametrize('b', [0, 0.5, 1, -0.9, -1.95])
+@pytest.mark.parametrize("f", [0, 1, -1])
+@pytest.mark.parametrize("d", [0, 0.5, 2, -0.9, -1.95])
+@pytest.mark.parametrize("b", [0, 0.5, 1, -0.9, -1.95])
 def test_genlambda(b: float, d: float, f: float):
     X = cast(Any, genlambda(b, d, f))
 
@@ -189,9 +188,9 @@ def test_genlambda(b: float, d: float, f: float):
     assert_allclose(tl_tau_theo, tl_tau_quad, atol=1e-7)
 
 
-@pytest.mark.parametrize('trim', [(0, 0), (0, 1), (1, 1)])
+@pytest.mark.parametrize("trim", [(0, 0), (0, 1), (1, 1)])
 @pytest.mark.parametrize(
-    'rv',
+    "rv",
     [
         distributions.uniform(),
         distributions.logistic(),
@@ -201,7 +200,7 @@ def test_genlambda(b: float, d: float, f: float):
         distributions.genpareto(0.1),
         kumaraswamy(2, 5),
         wakeby(5, 1, 0.6),
-        genlambda(.5, -1, -0.1),
+        genlambda(0.5, -1, -0.1),
     ],
 )
 def test_exact_lm(rv: Any, trim: tuple[int, int]) -> None:

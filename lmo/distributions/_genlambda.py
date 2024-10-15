@@ -22,7 +22,6 @@ from lmo.special import harmonic
 from lmo.theoretical import entropy_from_qdf, l_moment_from_ppf
 from ._lm import get_lm_func
 
-
 if sys.version_info >= (3, 13):
     from typing import override
 else:
@@ -32,13 +31,13 @@ if TYPE_CHECKING:
     import lmo.typing.scipy as lspt
 
 
-__all__ = ('genlambda_gen',)
+__all__ = ("genlambda_gen",)
 
 
 _F8: TypeAlias = float | np.float64
 _ArrF8: TypeAlias = npt.NDArray[np.float64]
 
-_XT = TypeVar('_XT', bound=_F8 | _ArrF8)
+_XT = TypeVar("_XT", bound=_F8 | _ArrF8)
 
 
 def _genlambda_support(b: float, d: float, f: float) -> tuple[float, float]:
@@ -64,7 +63,7 @@ def _genlambda_ppf0(q: float, b: float, d: float, f: float) -> float:
 _genlambda_ppf: Final = np.vectorize(_genlambda_ppf0, [float])
 
 
-@np.errstate(divide='ignore')
+@np.errstate(divide="ignore")
 def _genlambda_qdf(q: _XT, b: float, d: float, f: float) -> _XT:
     return cast(_XT, (1 + f) * q ** (b - 1) + (1 - f) * (1 - q) ** (d - 1))
 
@@ -134,9 +133,9 @@ def _genlambda_cdf0(  # noqa: C901
 _genlambda_cdf: Final = np.vectorize(
     _genlambda_cdf0,
     [float],
-    excluded={'ptol', 'xtol', 'maxiter'},
+    excluded={"ptol", "xtol", "maxiter"},
 )
-_genlambda_lm: Final = get_lm_func('genlambda')
+_genlambda_lm: Final = get_lm_func("genlambda")
 
 
 class genlambda_gen(rv_continuous):
@@ -146,9 +145,9 @@ class genlambda_gen(rv_continuous):
 
     @override
     def _shape_info(self, /) -> list[_ShapeInfo]:
-        ibeta = _ShapeInfo('b', False, (-np.inf, np.inf), (False, False))
-        idelta = _ShapeInfo('d', False, (-np.inf, np.inf), (False, False))
-        iphi = _ShapeInfo('f', False, (-1, 1), (True, True))
+        ibeta = _ShapeInfo("b", False, (-np.inf, np.inf), (False, False))
+        idelta = _ShapeInfo("d", False, (-np.inf, np.inf), (False, False))
+        iphi = _ShapeInfo("f", False, (-1, 1), (True, True))
         return [ibeta, idelta, iphi]
 
     @override
@@ -203,10 +202,7 @@ class genlambda_gen(rv_continuous):
         a, c = 1 + f, 1 - f
         b1, d1 = 1 + b, 1 + d
 
-        if b == d and f == 0:
-            m1 = 0
-        else:
-            m1 = cast(float, _genlambda_lm(1, 0, 0, b, d, f))
+        m1 = 0 if b == d and f == 0 else cast(float, _genlambda_lm(1, 0, 0, b, d, f))
 
         if b <= -1 / 2 or d <= -1 / 2:
             return m1, math.nan, math.nan, math.nan
