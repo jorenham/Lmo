@@ -43,23 +43,45 @@ reference with usage examples and with mathematical $\TeX$ definitions.
 Even if your data is pathological like
 [Cauchy](https://wikipedia.org/wiki/Cauchy_distribution), and the L-moments
 are not defined, the trimmed L-moments (TL-moments) can be used instead.
-Let's calculate the TL-location and TL-scale of a small amount of samples:
+
+Let's calculate the first two TL-moments (the TL-location and the TL-scale) of a small
+amount of samples drawn from the standard Cauchy distribution:
 
 ```pycon
 >>> import numpy as np
 >>> import lmo
 >>> rng = np.random.default_rng(1980)
->>> x = rng.standard_cauchy(96)  # pickle me, Lmo
->>> lmo.l_moment(x, [1, 2], trim=(1, 1))
+>>> data = rng.standard_cauchy(96)
+>>> lmo.l_moment(data, [1, 2], trim=1)
 array([-0.17937038,  0.68287665])
 ```
 
-Now compare with the theoretical standard Cauchy TL-moments:
+Compared with the theoretical standard Cauchy TL-moments, that pretty close!
 
 ```pycon
 >>> from scipy.stats import cauchy
->>> cauchy.l_moment([1, 2], trim=(1, 1))
+>>> cauchy.l_moment([1, 2], trim=1)
 array([0.        , 0.69782723])
+```
+
+Now let's try this again using the first two conventional moments, i.e. the mean
+and the standard deviation:
+
+```pycon
+>>> from scipy.stats import moment
+>>> np.r_[data.mean(), data.std()]
+array([-1.7113441 , 19.57350731])
+```
+
+So even though the `data` was drawn from the *standard* Cauchy distribution, we can
+immediately see that this look standard at all.
+
+The reason is that the Cauchy distribution doesn't have a mean or standard
+deviation:
+
+```pycon
+>>> np.r_[cauchy.mean(), cauchy.std()]
+array([nan, nan])
 ```
 
 ---
