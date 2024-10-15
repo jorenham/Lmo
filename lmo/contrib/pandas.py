@@ -9,7 +9,7 @@ Examples:
     Univariate summary statistics:
 
     ```pycon
-    >>> df = pd.DataFrame({'a': [1, 2, 2, 3, 4], 'b': [3, 4, 4, 4, 4]})
+    >>> df = pd.DataFrame({"a": [1, 2, 2, 3, 4], "b": [3, 4, 4, 4, 4]})
     >>> df.l_stats()
               a    b
     r
@@ -17,7 +17,7 @@ Examples:
     2  0.700000  0.2
     3  0.142857 -1.0
     4  0.285714  1.0
-    >>> df.aggregate(['mean', 'std', 'skew', 'kurt'])
+    >>> df.aggregate(["mean", "std", "skew", "kurt"])
                  a         b
     mean  2.400000  3.800000
     std   1.140175  0.447214
@@ -29,7 +29,7 @@ Examples:
     Comparison of L-correlation, and Pearson correlation matrices:
 
     ```pycon
-    >>> df = pd.DataFrame({'dogs': [.2, .0, .5, .4], 'cats': [.3, .2, .0, .1]})
+    >>> df = pd.DataFrame({"dogs": [0.2, 0.0, 0.5, 0.4], "cats": [0.3, 0.2, 0.0, 0.1]})
     >>> df.l_corr()
           dogs      cats
     dogs   1.0 -0.764706
