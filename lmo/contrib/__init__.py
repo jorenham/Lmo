@@ -5,7 +5,7 @@ try:
 except ImportError:
     pd = None
 
-__all__ = ('install',)
+__all__ = ("install",)
 
 
 def install() -> None:

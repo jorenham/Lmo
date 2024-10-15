@@ -7,17 +7,16 @@ import scipy.integrate as spi
 
 from ._utils import QUAD_LIMIT
 
-
 if TYPE_CHECKING:
     from collections.abc import Callable
 
     import lmo.typing.np as lnpt
 
 
-__all__ = ['entropy_from_qdf']
+__all__ = ["entropy_from_qdf"]
 
 
-_Tss = ParamSpec('_Tss')
+_Tss = ParamSpec("_Tss")
 
 
 @overload

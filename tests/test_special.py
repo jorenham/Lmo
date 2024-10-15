@@ -9,7 +9,6 @@ from scipy.special import eval_jacobi
 
 from lmo.special import fourier_jacobi
 
-
 X = np.linspace(-1, 1, num=21, dtype=np.float64)
 C_EXAMPLES = [
     [0],
@@ -26,7 +25,7 @@ C_EXAMPLES = [
 ]
 
 
-@pytest.mark.parametrize('c', C_EXAMPLES)
+@pytest.mark.parametrize("c", C_EXAMPLES)
 def test_fourier_legendre(c: list[float]):
     y_expect = legval(X, c)
     y_true = fourier_jacobi(X, c, 0, 0)
@@ -35,10 +34,10 @@ def test_fourier_legendre(c: list[float]):
 
 
 @pytest.mark.parametrize(
-    ('a', 'b'),
+    ("a", "b"),
     [(0, 1), (1, 0), (1, 1), (1 / 137, -1 / 12), (42, 69)],
 )
-@pytest.mark.parametrize('c', C_EXAMPLES)
+@pytest.mark.parametrize("c", C_EXAMPLES)
 def test_fourier_jacobi(a: float, b: float, c: list[float]):
     y_expect = np.sum([
         cn * eval_jacobi(n, a, b, X)

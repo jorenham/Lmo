@@ -10,7 +10,6 @@ from hypothesis.extra import numpy as hnp
 
 import lmo
 
-
 _SEED = 12345
 
 _R_MAX = 8
@@ -23,10 +22,10 @@ st_t = st.integers(0, _T_MAX)
 st_trim = st.tuples(st_t, st_t)
 
 __st_a_kwargs = {
-    'dtype': hnp.floating_dtypes(
-        sizes=(64, 128) if hasattr(np, 'float128') else (64,),
+    "dtype": hnp.floating_dtypes(
+        sizes=(64, 128) if hasattr(np, "float128") else (64,),
     ),
-    'elements': st.floats(-(1 << 20), 1 << 20),
+    "elements": st.floats(-(1 << 20), 1 << 20),
 }
 
 st_m = st.integers(1, 5)

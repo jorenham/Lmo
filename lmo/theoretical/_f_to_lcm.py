@@ -11,9 +11,9 @@ import scipy.integrate as spi
 
 from lmo._poly import eval_sh_jacobi
 from lmo._utils import clean_order, clean_trim, round0
+
 from ._f_to_lm import l_moment_from_cdf
 from ._utils import l_const, tighten_cdf_support
-
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
@@ -22,9 +22,9 @@ if TYPE_CHECKING:
     import lmo.typing.scipy as lspt
 
 
-__all__ = ['l_comoment_from_pdf', 'l_coratio_from_pdf']
+__all__ = ["l_comoment_from_pdf", "l_coratio_from_pdf"]
 
-_T = TypeVar('_T')
+_T = TypeVar("_T")
 
 _Pair: TypeAlias = tuple[_T, _T]
 _ArrF8: TypeAlias = npt.NDArray[np.float64]

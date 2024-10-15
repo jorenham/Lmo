@@ -32,58 +32,54 @@ import scipy.special as sps
 from lmo.special import harmonic
 from lmo.theoretical import l_moment_from_ppf
 
-
 if sys.version_info >= (3, 13):
     from typing import TypeIs
 else:
-    try:
-        from typing_extensions import TypeIs
-    except ImportError:
-        from typing import TypeGuard as TypeIs
+    from typing_extensions import TypeIs
 
 if TYPE_CHECKING:
     import lmo.typing.np as lnpt
 
 
 __all__ = [
-    'lm_uniform',
-    'lm_logistic',
-    'lm_expon',
-    'lm_gumbel_r',
-    'lm_genextreme',
-    'lm_genpareto',
-    'lm_kumaraswamy',
-    'lm_wakeby',
-    'lm_genlambda',
+    "lm_expon",
+    "lm_genextreme",
+    "lm_genlambda",
+    "lm_genpareto",
+    "lm_gumbel_r",
+    "lm_kumaraswamy",
+    "lm_logistic",
+    "lm_uniform",
+    "lm_wakeby",
 ]
 
 DistributionName: TypeAlias = Literal[
     # 0 params
-    'uniform',
-    'logistic',
-    'expon',
-    'gumbel_r',
+    "uniform",
+    "logistic",
+    "expon",
+    "gumbel_r",
     # 1 param
-    'genextreme',
-    'genpareto',
+    "genextreme",
+    "genpareto",
     # 2 params
-    'kumaraswamy',
+    "kumaraswamy",
     # 3 params
-    'wakeby',
-    'genlambda',
+    "wakeby",
+    "genlambda",
 ]
 _LM_REGISTRY: Final[dict[DistributionName, _LmVFunc[...]]] = {}
 
 _ArrF8: TypeAlias = onpt.Array[tuple[int, ...], np.float64]
 
-_Tss = ParamSpec('_Tss')
+_Tss = ParamSpec("_Tss")
 # (r, s, t, *params) -> float
 _LmFunc: TypeAlias = Callable[
     Concatenate[int, float, float, _Tss],
     float | np.float64,
 ]
 
-_ShapeT = TypeVar('_ShapeT', bound=tuple[int, ...])
+_ShapeT = TypeVar("_ShapeT", bound=tuple[int, ...])
 
 
 _LN2: Final = np.log(2)
@@ -153,7 +149,7 @@ def get_lm_func(name: DistributionName, /) -> _LmVFunc[...]:
     return _LM_REGISTRY[name]
 
 
-@register_lm_func('uniform')
+@register_lm_func("uniform")
 def lm_uniform(r: int, s: float, t: float, /) -> float:
     """
     Exact generalized* trimmed L-moments of the standard uniform distribution
@@ -165,7 +161,7 @@ def lm_uniform(r: int, s: float, t: float, /) -> float:
         return 1
 
     if not isinstance(t, int):
-        msg = 't must be an integer'
+        msg = "t must be an integer"
         raise NotImplementedError(msg)
 
     if r == 1:
@@ -175,7 +171,7 @@ def lm_uniform(r: int, s: float, t: float, /) -> float:
     return 0
 
 
-@register_lm_func('logistic')
+@register_lm_func("logistic")
 def lm_logistic(r: int, s: float, t: float, /) -> float:
     """
     Exact generalized trimmed L-moments of the standard logistic
@@ -185,7 +181,7 @@ def lm_logistic(r: int, s: float, t: float, /) -> float:
         return 1
 
     if isinstance(t, float) and not t.is_integer():
-        msg = 't must be an integer'
+        msg = "t must be an integer"
         raise NotImplementedError(msg)
 
     # symmetric trimming
@@ -214,7 +210,7 @@ def lm_logistic(r: int, s: float, t: float, /) -> float:
     return ((-1) ** r * sps.beta(r1m, s + 1) + sps.beta(r1m, t + 1)) / r
 
 
-@register_lm_func('expon')
+@register_lm_func("expon")
 def lm_expon(r: int, s: float, t: float, /) -> float:
     """
     Exact generalized trimmed L-moments of the standard exponential
@@ -240,7 +236,7 @@ def lm_expon(r: int, s: float, t: float, /) -> float:
     return sps.beta(r - 1, t + 1) / r
 
 
-@register_lm_func('gumbel_r')
+@register_lm_func("gumbel_r")
 def lm_gumbel_r(r: int, s: float, t: float, /) -> np.float64 | float:
     """
     Exact trimmed L-moments of the Gumbel / Extreme Value (EV) distribution.
@@ -251,7 +247,7 @@ def lm_gumbel_r(r: int, s: float, t: float, /) -> np.float64 | float:
         return 1
 
     if not isinstance(s, int) or not isinstance(t, int):
-        msg = 'fractional trimming'
+        msg = "fractional trimming"
         raise NotImplementedError(msg)
 
     match (r, s, t):
@@ -287,7 +283,7 @@ def lm_gumbel_r(r: int, s: float, t: float, /) -> np.float64 | float:
             return lm_genextreme.pyfunc(r, s, t, 0)
 
 
-@register_lm_func('genextreme')
+@register_lm_func("genextreme")
 def lm_genextreme(
     r: int,
     s: float,
@@ -305,11 +301,11 @@ def lm_genextreme(
         return 1
 
     if not isinstance(s, int) or not isinstance(t, int):
-        msg = 'fractional trimming'
+        msg = "fractional trimming"
         raise NotImplementedError(msg)
 
     if a < 0 and (isinstance(a, int) or a.is_integer()):
-        msg = 'a cannot be a negative integer'
+        msg = "a cannot be a negative integer"
         raise ValueError(msg)
 
     if r + s + t < 8:
@@ -318,10 +314,7 @@ def lm_genextreme(
         kn = r + s + t
         k = np.arange(k0, kn + 1, dtype=np.intp)
 
-        if a == 0:
-            pwm = np.euler_gamma + np.log(k)
-        else:
-            pwm = (1 / a - sps.gamma(a) / k**a)
+        pwm = np.euler_gamma + np.log(k) if a == 0 else 1 / a - sps.gamma(a) / k ** a
 
         return np.sum(
             (-1) ** k
@@ -336,21 +329,21 @@ def lm_genextreme(
     if a == 0:
         def _ppf(q: float) -> float:
             if q <= 0:
-                return -float('inf')
+                return -float("inf")
             if q >= 1:
-                return float('inf')
+                return float("inf")
             return -log(-log(q))
     elif a < 0:
         def _ppf(q: float) -> float:
             if q <= 0:
                 return 1 / a
             if q >= 1:
-                return float('inf')
+                return float("inf")
             return (1 - (-log(q))**a) / a
     else:  # a > 0
         def _ppf(q: float) -> float:
             if q <= 0:
-                return -float('inf')
+                return -float("inf")
             if q >= 1:
                 return 1 / a
             return (1 - (-log(q))**a) / a
@@ -358,7 +351,7 @@ def lm_genextreme(
     return l_moment_from_ppf(_ppf, r, (s, t))
 
 
-@register_lm_func('genpareto')
+@register_lm_func("genpareto")
 def lm_genpareto(
     r: int,
     s: float,
@@ -377,11 +370,11 @@ def lm_genpareto(
         return lm_uniform.pyfunc(r, s, t)
 
     if not isinstance(t, int):
-        msg = 'fractional trimming'
+        msg = "fractional trimming"
         raise NotImplementedError(msg)
 
     if a >= 1 + t:
-        return float('nan')
+        return float("nan")
 
     b = a - 1
     n = r + s + t + 1
@@ -394,7 +387,7 @@ def lm_genpareto(
     return sps.beta(r + b, t - b) / (a * sps.beta(n - a, a)) / r
 
 
-@register_lm_func('kumaraswamy')
+@register_lm_func("kumaraswamy")
 def lm_kumaraswamy(
     r: int,
     s: float,
@@ -413,7 +406,7 @@ def lm_kumaraswamy(
         return 1
 
     if not isinstance(s, int) or not isinstance(t, int):
-        msg = 'fractional trimming not supported'
+        msg = "fractional trimming not supported"
         raise NotImplementedError(msg)
 
     k = np.arange(t + 1, r + s + t + 1)
@@ -429,7 +422,7 @@ def lm_kumaraswamy(
     )
 
 
-@register_lm_func('wakeby')
+@register_lm_func("wakeby")
 def lm_wakeby(
     r: int,
     s: float,
@@ -469,7 +462,7 @@ def lm_wakeby(
     return float(_lmo0_partial(b, f) + _lmo0_partial(-d, 1 - f))
 
 
-@register_lm_func('genlambda')
+@register_lm_func("genlambda")
 def lm_genlambda(
     r: int,
     s: float,

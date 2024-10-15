@@ -26,16 +26,10 @@ from scipy.stats._distn_infrastructure import (
     rv_generic,
 )
 
-
 if sys.version_info >= (3, 13):
     from typing import ParamSpec, Protocol, TypeVar, runtime_checkable
 else:
-    from typing_extensions import (
-        ParamSpec,
-        Protocol,
-        TypeVar,
-        runtime_checkable,
-    )
+    from typing_extensions import ParamSpec, Protocol, TypeVar, runtime_checkable
 
 if TYPE_CHECKING:
     from collections.abc import ItemsView, Iterator, KeysView, ValuesView
@@ -47,31 +41,31 @@ if TYPE_CHECKING:
 
 
 __all__ = (
-    'FitResult',
-    'OptimizeResult',
-    'QuadWeights',
-    'QuadOptions',
-    'RVFunction',
-    'RV',
-    'RVFrozen',
-    'RVContinuous',
-    'RVContinuousFrozen',
-    'RVDiscrete',
-    'RVDiscreteFrozen',
+    "RV",
+    "FitResult",
+    "OptimizeResult",
+    "QuadOptions",
+    "QuadWeights",
+    "RVContinuous",
+    "RVContinuousFrozen",
+    "RVDiscrete",
+    "RVDiscreteFrozen",
+    "RVFrozen",
+    "RVFunction",
 )
 
-_Tss = ParamSpec('_Tss')
+_Tss = ParamSpec("_Tss")
 
 # scipy.integrate
 
 QuadWeights: TypeAlias = Literal[
-    'cos',
-    'sin',
-    'alg',
-    'alg-loga',
-    'alg-logb',
-    'alg-log',
-    'cauchy',
+    "cos",
+    "sin",
+    "alg",
+    "alg-loga",
+    "alg-logb",
+    "alg-log",
+    "cauchy",
 ]
 
 
@@ -149,21 +143,21 @@ class OptimizeResult(_RichResult, Protocol):
 
 
 RootResultFlag: TypeAlias = Literal[
-    'converged',
-    'sign error',
-    'convergence error',
-    'value error',
-    'no error',
+    "converged",
+    "sign error",
+    "convergence error",
+    "value error",
+    "no error",
 ]
 RootScalarMethod: TypeAlias = Literal[
-    'bisect',
-    'brentq',
-    'brenth',
-    'ridder',
-    'toms748',
-    'newton',
-    'secant',
-    'halley',
+    "bisect",
+    "brentq",
+    "brenth",
+    "ridder",
+    "toms748",
+    "newton",
+    "secant",
+    "halley",
 ]
 
 
@@ -189,7 +183,7 @@ class RootResult(_RichResult, Protocol):
 # scipy.stats
 
 _T_params_co = TypeVar(
-    '_T_params_co',
+    "_T_params_co",
     bound=tuple[np.float64, ...],  # usually a namedtuple
     covariant=True,
     default=tuple[np.float64, np.float64],  # loc, scale
@@ -197,7 +191,7 @@ _T_params_co = TypeVar(
 
 # placeholder for `matplotlib.axes.Axes`.
 _PlotAxes: TypeAlias = Any
-_PlotType: TypeAlias = Literal['hist', 'qq', 'pp', 'cdf']
+_PlotType: TypeAlias = Literal["hist", "qq", "pp", "cdf"]
 
 
 @runtime_checkable

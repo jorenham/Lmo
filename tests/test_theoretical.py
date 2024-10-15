@@ -26,14 +26,13 @@ from lmo.theoretical import (
     qdf_from_l_moments,
 )
 
-
 assert_allclose = functools.partial(_assert_allclose, atol=1e-12)
 
 norm_cdf = cast(Callable[[float], float], ndtr)
 norm_ppf = cast(Callable[[float], float], ndtri)
 
 
-@np.errstate(over='ignore', under='ignore')
+@np.errstate(over="ignore", under="ignore")
 def norm_qdf(x: float) -> float:
     # cool, eh?
     return np.sqrt(2 * np.pi) * np.exp(norm_ppf(x)**2 / 2)
@@ -63,17 +62,17 @@ def expon_qdf(p: float, a: float = 1) -> float:
     return a / (1 - p)
 
 
-@np.errstate(over='ignore', under='ignore')
+@np.errstate(over="ignore", under="ignore")
 def gumbel_cdf(x: float, loc: float = 0, scale: float = 1) -> float:
     return np.exp(-np.exp(-(x - loc) / scale))
 
 
-@np.errstate(over='ignore', under='ignore')
+@np.errstate(over="ignore", under="ignore")
 def gumbel_ppf(p: float, loc: float = 0, scale: float = 1) -> float:
     return loc - scale * np.log(-np.log(p))
 
 
-@np.errstate(over='ignore', under='ignore', divide='ignore')
+@np.errstate(over="ignore", under="ignore", divide="ignore")
 def gumbel_qdf(p: float, loc: float = 0, scale: float = 1) -> float:
     # return loc - scale / (p * np.log(p))
     return loc + scale / np.log(np.exp(-p * np.log(p)))

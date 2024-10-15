@@ -10,16 +10,16 @@ import scipy.special as sc
 
 import lmo.typing as lmt
 import lmo.typing.np as lnpt
+
 from ._utils import clean_orders
 
+__all__ = "fourier_jacobi", "fpow", "gamma2", "harmonic", "norm_sh_jacobi"
 
-__all__ = 'fpow', 'gamma2', 'harmonic', 'norm_sh_jacobi', 'fourier_jacobi'
 
+_DTYPE_CHARS: Final[str] = "?bBhHiIlLqQpP"
 
-_DTYPE_CHARS: Final[str] = '?bBhHiIlLqQpP'
-
-_T_shape = TypeVar('_T_shape', bound=onpt.AtLeast1D)
-_T_float = TypeVar('_T_float', bound=lnpt.Float)
+_T_shape = TypeVar("_T_shape", bound=onpt.AtLeast1D)
+_T_float = TypeVar("_T_float", bound=lnpt.Float)
 
 
 @overload
@@ -253,13 +253,13 @@ def norm_sh_jacobi(
     the normalized Jacobi polynomial on \( [0, 1] \).
     """
     if alpha <= -1:
-        msg = f'alpha must be > -1, got {alpha}'
+        msg = f"alpha must be > -1, got {alpha}"
         raise ValueError(msg)
     if beta <= -1:
-        msg = f'beta must be > -1, got {beta}'
+        msg = f"beta must be > -1, got {beta}"
         raise ValueError(msg)
 
-    r = clean_orders(np.asanyarray(n), 'n') + 1
+    r = clean_orders(np.asanyarray(n), "n") + 1
 
     if alpha == beta == 0:
         # shifted Legendre

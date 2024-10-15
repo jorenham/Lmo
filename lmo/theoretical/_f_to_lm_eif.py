@@ -10,19 +10,19 @@ import lmo.typing.np as lnpt
 import lmo.typing.scipy as lspt
 from lmo._poly import eval_sh_jacobi
 from lmo._utils import clean_order, clean_trim, round0
+
 from ._f_to_lm import l_moment_from_cdf
 from ._utils import ALPHA, l_const, tighten_cdf_support
-
 
 if TYPE_CHECKING:
     import lmo.typing as lmt
 
 
-__all__ = ['l_moment_influence_from_cdf', 'l_ratio_influence_from_cdf']
+__all__ = ["l_moment_influence_from_cdf", "l_ratio_influence_from_cdf"]
 
 
-_T = TypeVar('_T')
-_T_x = TypeVar('_T_x', bound=float | npt.NDArray[np.float64])
+_T = TypeVar("_T")
+_T_x = TypeVar("_T_x", bound=float | npt.NDArray[np.float64])
 
 _Pair: TypeAlias = tuple[_T, _T]
 _Fn1: TypeAlias = Callable[[float], float | lnpt.Float]
@@ -148,7 +148,7 @@ def l_moment_influence_from_cdf(
         return cast(_T_x, round0(alpha - lm, tol)[()])
 
     influence.__doc__ = (
-        f'Theoretical influence function for L-moment with {r=} and {trim=}.'
+        f"Theoretical influence function for L-moment with {r=} and {trim=}."
     )
 
     return influence
@@ -223,7 +223,7 @@ def l_ratio_influence_from_cdf(
     """
     _r, _k = clean_order(int(r)), clean_order(int(k))
 
-    kwds: dict[str, Any] = {'support': support, 'quad_opts': quad_opts}
+    kwds: dict[str, Any] = {"support": support, "quad_opts": quad_opts}
 
     if l_moments is None:
         l_r, l_k = l_moment_from_cdf(
@@ -254,7 +254,7 @@ def l_ratio_influence_from_cdf(
     )
 
     if abs(l_k) <= tol:
-        msg = f'L-ratio ({r=}, {k=}) denominator is approximately zero.'
+        msg = f"L-ratio ({r=}, {k=}) denominator is approximately zero."
         raise ZeroDivisionError(msg)
     t_r = l_r / l_k
 
@@ -266,8 +266,8 @@ def l_ratio_influence_from_cdf(
         return cast(_T_x, round0((psi_r - t_r * psi_k) / l_k, tol=tol)[()])
 
     influence_function.__doc__ = (
-        f'Theoretical influence function for L-moment ratio with r={_r}, '
-        f'k={_k}, and {trim=}.'
+        f"Theoretical influence function for L-moment ratio with r={_r}, "
+        f"k={_k}, and {trim=}."
     )
 
     return influence_function

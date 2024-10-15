@@ -11,18 +11,17 @@ import scipy.special as sps
 import lmo.typing.np as lnpt
 import lmo.typing.scipy as lspt
 
-
 __all__ = (
-    'ALPHA',
-    'QUAD_LIMIT',
-    'l_coef_factor',
-    'l_const',
-    'tighten_cdf_support',
+    "ALPHA",
+    "QUAD_LIMIT",
+    "l_coef_factor",
+    "l_const",
+    "tighten_cdf_support",
 )
 
 
 _Fn1: TypeAlias = Callable[[float], float | lnpt.Float]
-_Tss = ParamSpec('_Tss')
+_Tss = ParamSpec("_Tss")
 
 ALPHA: Final[float] = 0.1
 QUAD_LIMIT: Final[int] = 100

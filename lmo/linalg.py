@@ -12,7 +12,6 @@ import optype.numpy as onpt
 
 import lmo.typing.np as lnpt
 
-
 if sys.version_info >= (3, 13):
     from typing import TypeVar
 else:
@@ -20,21 +19,21 @@ else:
 
 
 __all__ = (
-    'sandwich',
-    'pascal',
-    'ir_pascal',
-    'sh_legendre',
-    'sh_jacobi',
-    'succession_matrix',
-    'trim_matrix',
+    "ir_pascal",
+    "pascal",
+    "sandwich",
+    "sh_jacobi",
+    "sh_legendre",
+    "succession_matrix",
+    "trim_matrix",
 )
 
-_T = TypeVar('_T', bound=np.generic)
-_TF = TypeVar('_TF', bound=np.floating[Any], default=np.float64)
-_TI = TypeVar('_TI', bound=lnpt.Real | np.object_, default=np.int64)
+_T = TypeVar("_T", bound=np.generic)
+_TF = TypeVar("_TF", bound=np.floating[Any], default=np.float64)
+_TI = TypeVar("_TI", bound=lnpt.Real | np.object_, default=np.int64)
 
-_K = TypeVar('_K', bound=int)
-_R = TypeVar('_R', bound=int)
+_K = TypeVar("_K", bound=int)
+_R = TypeVar("_R", bound=int)
 
 _DType: TypeAlias = np.dtype[_T] | type[_T]
 _Square: TypeAlias = onpt.Array[tuple[_K, _K], _T]
@@ -62,7 +61,7 @@ def sandwich(
         - https://wikipedia.org/wiki/Covariance_matrix
     """
     # if X is 1 - d, this is equivalent to: C @ S_b @ C.T
-    spec = 'ui, ij..., vj -> uv...'
+    spec = "ui, ij..., vj -> uv..."
     return np.einsum(spec, A, X, A, dtype=dtype)  # pyright: ignore[reportUnknownMemberType]
 
 
@@ -322,7 +321,7 @@ def sh_jacobi(
         - [`scipy.special.jacobi`][scipy.special.jacobi]
     """
     if k < 0 or a < 0 or b < 0:
-        msg = 'k, a, and b must be >= 0'
+        msg = "k, a, and b must be >= 0"
         raise ValueError(msg)
 
     _sctype = dtype or np.array([a, b]).dtype.type
@@ -463,7 +462,7 @@ def trim_matrix(
             m1 = trim_matrix(r + 1, (s - 1, t), dtype)
             out = m0 @ m1
         case (int(), int()):
-            msg = 'trim values must be non-negative'
+            msg = "trim values must be non-negative"
             raise ValueError(msg)
         case _ as wtf:  # pyright: ignore[reportUnnecessaryComparison]
             assert_never(wtf)

@@ -6,7 +6,6 @@ import numpy.typing as npt
 
 import lmo
 
-
 _ArrayF8: TypeAlias = npt.NDArray[np.float64]
 
 X = [0.14543334, 2.17509751, 0.60844233, 1.47809552, -1.32510269, 1.0979731]

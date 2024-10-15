@@ -16,8 +16,8 @@ from scipy.stats.distributions import rv_continuous as _rv_continuous
 
 from lmo.special import harmonic
 from lmo.theoretical import l_moment_from_ppf
-from ._lm import get_lm_func
 
+from ._lm import get_lm_func
 
 if sys.version_info >= (3, 13):
     from typing import override
@@ -28,15 +28,15 @@ if TYPE_CHECKING:
     import lmo.typing.scipy as lspt
 
 
-__all__ = ('kumaraswamy_gen',)
+__all__ = ("kumaraswamy_gen",)
 
 _F8: TypeAlias = float | np.float64
 _ArrF8: TypeAlias = onpt.Array[tuple[int, ...], np.float64]
 
-_XT = TypeVar('_XT', _F8, _ArrF8)
+_XT = TypeVar("_XT", _F8, _ArrF8)
 
 
-_lm_kumaraswamy = get_lm_func('kumaraswamy')
+_lm_kumaraswamy = get_lm_func("kumaraswamy")
 
 
 # pyright: reportIncompatibleMethodOverride=false
@@ -49,8 +49,8 @@ class kumaraswamy_gen(_rv_continuous):
 
     @override
     def _shape_info(self, /) -> list[_ShapeInfo]:
-        ia = _ShapeInfo('a', False, (0, np.inf), (False, False))
-        ib = _ShapeInfo('b', False, (0, np.inf), (False, False))
+        ia = _ShapeInfo("a", False, (0, np.inf), (False, False))
+        ib = _ShapeInfo("b", False, (0, np.inf), (False, False))
         return [ia, ib]
 
     @override

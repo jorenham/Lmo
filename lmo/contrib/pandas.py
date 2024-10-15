@@ -44,16 +44,7 @@ Examples:
 from __future__ import annotations
 
 import sys
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Literal,
-    Protocol,
-    TypeAlias,
-    Unpack,
-    cast,
-    final,
-)
+from typing import TYPE_CHECKING, Any, Literal, Protocol, TypeAlias, Unpack, cast, final
 
 import numpy as np
 import numpy.typing as npt
@@ -70,7 +61,6 @@ from lmo._lm_co import (
 )
 from lmo._utils import clean_trim, moments_to_ratio
 
-
 if sys.version_info >= (3, 13):
     from typing import TypeVar
 else:
@@ -82,18 +72,18 @@ if TYPE_CHECKING:
     import lmo.typing as lmt
 
 
-__all__ = 'DataFrame', 'Series', 'install'
+__all__ = "DataFrame", "Series", "install"
 
 
-_T = TypeVar('_T')
+_T = TypeVar("_T")
 
-_Axis: TypeAlias = Literal[0, 'index', 1, 'columns']
+_Axis: TypeAlias = Literal[0, "index", 1, "columns"]
 
 
 # `from __future__ import annotations` won't solve this;
 # see https://github.com/pandas-dev/pandas-stubs/discussions/308
-def __ensure_generic(tp: type[_T]):
-    if hasattr(tp, '__class_getitem__'):
+def __ensure_generic(tp: type[_T]) -> None:
+    if hasattr(tp, "__class_getitem__"):
         return
 
     def __class_getitem__(cls: _T, _: Any, /) -> _T:  # noqa: N807
@@ -111,9 +101,9 @@ def _setindex(
     axis: _Axis,
     index: pd.Index[Any],
 ) -> None:
-    if axis in {0, 'index'}:
+    if axis in {0, "index"}:
         df.index = index
-    elif axis in {1, 'columns'}:
+    elif axis in {1, "columns"}:
         df.columns = index
     else:
         msg = f"axis must be one of {{0, 'index', 1, 'columns'}}, got {axis}"
@@ -121,7 +111,7 @@ def _setindex(
 
 
 def _ratio_index(rk: npt.NDArray[np.int64]) -> pd.MultiIndex:
-    return pd.MultiIndex.from_arrays(rk, names=('r', 'k'))
+    return pd.MultiIndex.from_arrays(rk, names=("r", "k"))
 
 
 if TYPE_CHECKING:
@@ -170,7 +160,7 @@ class Series(_BaseSeries):  # pyright: ignore[reportMissingTypeArgument]
 
         return pd.Series(
             cast(npt.NDArray[np.float64], out),
-            index=pd.Index(np.asarray(r), name='r'),
+            index=pd.Index(np.asarray(r), name="r"),
             dtype=float,
             copy=False,
         )
@@ -217,7 +207,7 @@ class Series(_BaseSeries):  # pyright: ignore[reportMissingTypeArgument]
         """
         return pd.Series(
             _l_stats(self, trim=trim, num=num, **kwargs),
-            index=pd.RangeIndex(1, num + 1, name='r'),
+            index=pd.RangeIndex(1, num + 1, name="r"),
             copy=False,
         )
 
@@ -333,14 +323,14 @@ class DataFrame(pd.DataFrame):
         out = self.apply(
             _l_moment,
             axis=axis,
-            result_type='expand',
+            result_type="expand",
             args=(r, trim),
             **kwargs,
         )
         if isinstance(out, pd.DataFrame):
-            _setindex(out, axis, pd.Index(np.asarray(r), name='r'))
-            out.attrs['l_kind'] = 'moment'
-            out.attrs['l_trim'] = clean_trim(trim)
+            _setindex(out, axis, pd.Index(np.asarray(r), name="r"))
+            out.attrs["l_kind"] = "moment"
+            out.attrs["l_trim"] = clean_trim(trim)
         return out
 
     def l_ratio(
@@ -368,15 +358,15 @@ class DataFrame(pd.DataFrame):
         out = self.apply(
             _l_ratio,
             axis=axis,
-            result_type='expand',
+            result_type="expand",
             args=(rk[0], rk[1], trim),
             **kwargs,
         )
         if isinstance(out, pd.DataFrame):
             assert rk.ndim > 1
             _setindex(out, axis, _ratio_index(rk))
-            out.attrs['l_kind'] = 'ratio'
-            out.attrs['l_trim'] = clean_trim(trim)
+            out.attrs["l_kind"] = "ratio"
+            out.attrs["l_trim"] = clean_trim(trim)
         return out
 
     def l_stats(
@@ -396,13 +386,13 @@ class DataFrame(pd.DataFrame):
         out = self.apply(
             _l_stats,
             axis=axis,
-            result_type='expand',
+            result_type="expand",
             args=(trim, num),
             **kwargs,
         )
-        _setindex(out, axis, pd.RangeIndex(1, num + 1, name='r'))
-        out.attrs['l_kind'] = 'stat'
-        out.attrs['l_trim'] = clean_trim(trim)
+        _setindex(out, axis, pd.RangeIndex(1, num + 1, name="r"))
+        out.attrs["l_kind"] = "stat"
+        out.attrs["l_trim"] = clean_trim(trim)
         return out
 
     def l_loc(
@@ -530,20 +520,20 @@ class DataFrame(pd.DataFrame):
         Raises:
             TypeError: If `rowvar=True`, use `df.T.l_comoment` instead.
         """
-        if kwargs.pop('rowvar', False):
-            msg = 'rowvar=True is not supported; use df.T instead'
+        if kwargs.pop("rowvar", False):
+            msg = "rowvar=True is not supported; use df.T instead"
             raise TypeError(msg)
 
-        kwargs |= {'rowvar': False}
+        kwargs |= {"rowvar": False}
         out = pd.DataFrame(
             _l_comoment(self, _r := int(r), trim=trim, **kwargs),
             index=self.columns,
             columns=self.columns,
             copy=False,
         )
-        out.attrs['l_kind'] = 'comoment'
-        out.attrs['l_r'] = _r
-        out.attrs['l_trim'] = clean_trim(trim)
+        out.attrs["l_kind"] = "comoment"
+        out.attrs["l_r"] = _r
+        out.attrs["l_trim"] = clean_trim(trim)
         return out
 
     def l_coratio(
@@ -572,21 +562,21 @@ class DataFrame(pd.DataFrame):
         Raises:
             TypeError: If `rowvar=True`, use `df.T.l_comoment` instead.
         """
-        if kwargs.pop('rowvar', False):
-            msg = 'rowvar=True is not supported; use df.T instead'
+        if kwargs.pop("rowvar", False):
+            msg = "rowvar=True is not supported; use df.T instead"
             raise TypeError(msg)
 
-        kwargs |= {'rowvar': False}
+        kwargs |= {"rowvar": False}
         out = pd.DataFrame(
             _l_coratio(self, _r := int(r), _k := int(k), trim=trim, **kwargs),
             index=self.columns,
             columns=self.columns,
             copy=False,
         )
-        out.attrs['l_kind'] = 'coratio'
-        out.attrs['l_r'] = _r
-        out.attrs['l_k'] = _k
-        out.attrs['l_trim'] = clean_trim(trim)
+        out.attrs["l_kind"] = "coratio"
+        out.attrs["l_r"] = _r
+        out.attrs["l_k"] = _k
+        out.attrs["l_trim"] = clean_trim(trim)
         return out
 
     def l_coloc(
@@ -669,9 +659,9 @@ class _Registerable(Protocol):
     ) -> None: ...
 
 
-def _register_methods(cls: type[_Registerable]):
+def _register_methods(cls: type[_Registerable]) -> None:
     for k, method in cls.__dict__.items():
-        if not k.startswith('_') and callable(method):
+        if not k.startswith("_") and callable(method):
             cls.__lmo_register__(k, method)
 
 

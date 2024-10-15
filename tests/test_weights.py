@@ -14,8 +14,8 @@ from numpy.testing import (
 )
 
 from lmo import l_weights
-from .conftest import tmp_cache
 
+from .conftest import tmp_cache
 
 # matches np.allclose
 assert_allclose = functools.partial(_assert_allclose, rtol=1e-5, atol=1e-8)
@@ -153,7 +153,7 @@ def test_cached(
         w0_orig = w0[0, 0]
         with pytest.raises(
             ValueError,
-            match='assignment destination is read-only',
+            match="assignment destination is read-only",
         ):
             w0[0, 0] = w0_orig + 1
         assert w0[0, 0] == w0_orig

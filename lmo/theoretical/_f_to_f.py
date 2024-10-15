@@ -7,15 +7,14 @@ import numpy as np
 import lmo.typing.np as lnpt
 import lmo.typing.scipy as lspt
 
-
 if TYPE_CHECKING:
     from collections.abc import Callable
 
 
-__all__: list[str] = ['cdf_from_ppf']
+__all__: list[str] = ["cdf_from_ppf"]
 
 
-_Tss = ParamSpec('_Tss')
+_Tss = ParamSpec("_Tss")
 
 
 def cdf_from_ppf(
@@ -28,9 +27,7 @@ def cdf_from_ppf(
     Note:
         This function isn't vectorized.
     """
-    from scipy.optimize import (
-        root_scalar,  # pyright: ignore[reportUnknownVariableType]
-    )
+    from scipy.optimize import root_scalar  # pyright: ignore[reportUnknownVariableType]
 
     def cdf(x: float, /, *args: _Tss.args, **kwds: _Tss.kwargs) -> float:
         if np.isnan(x):
@@ -45,7 +42,7 @@ def cdf_from_ppf(
 
         result = cast(
             lspt.RootResult,
-            root_scalar(_ppf_to_solve, bracket=[0, 1], method='brentq'),
+            root_scalar(_ppf_to_solve, bracket=[0, 1], method="brentq"),
         )
         return result.root
 

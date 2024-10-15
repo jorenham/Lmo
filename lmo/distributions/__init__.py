@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Final, cast
 
 import lmo.typing.scipy as lspt
+
 from . import _lm
 from ._genlambda import genlambda_gen
 from ._kumaraswamy import kumaraswamy_gen
@@ -16,14 +17,13 @@ from ._lm import *  # noqa: F403
 from ._nonparametric import l_poly
 from ._wakeby import wakeby_gen
 
-
-__all__ = ['l_poly', 'kumaraswamy', 'wakeby', 'genlambda']
+__all__ = ["genlambda", "kumaraswamy", "l_poly", "wakeby"]
 __all__ += _lm.__all__
 
 
 # mkdocstring workaround
 if not TYPE_CHECKING:
-    wakeby = wakeby_gen(name='wakeby', a=0.0)
+    wakeby = wakeby_gen(name="wakeby", a=0.0)
     r"""A Wakeby random variable, a generalization of
     [`scipy.stats.genpareto`][scipy.stats.genpareto].
 
@@ -33,11 +33,11 @@ if not TYPE_CHECKING:
     [Distributions - Wakeby](../distributions.md#wakeby).
     """
 else:
-    wakeby: Final = cast(lspt.RVContinuous, wakeby_gen(a=0.0, name='wakeby'))
+    wakeby: Final = cast(lspt.RVContinuous, wakeby_gen(a=0.0, name="wakeby"))
 
 # mkdocstring workaround
 if not TYPE_CHECKING:
-    kumaraswamy = kumaraswamy_gen(name='kumaraswamy', a=0.0, b=1.0)
+    kumaraswamy = kumaraswamy_gen(name="kumaraswamy", a=0.0, b=1.0)
     r"""
     A Kumaraswamy random variable, similar to
     [`scipy.stats.beta`][scipy.stats.beta].
@@ -59,12 +59,12 @@ if not TYPE_CHECKING:
 else:
     kumaraswamy: Final = cast(
         lspt.RVContinuous,
-        kumaraswamy_gen(a=0.0, b=1.0, name='kumaraswamy'),
+        kumaraswamy_gen(a=0.0, b=1.0, name="kumaraswamy"),
     )
 
 # mkdocstring workaround
 if not TYPE_CHECKING:
-    genlambda = genlambda_gen(name='genlambda')
+    genlambda = genlambda_gen(name="genlambda")
     r"""A generalized Tukey-Lambda random variable.
 
     `genlambda` takes `b`, `d` and `f` as shape parameters.
@@ -80,5 +80,5 @@ if not TYPE_CHECKING:
 else:
     genlambda: Final = cast(
         lspt.RVContinuous,
-        genlambda_gen(name='genlambda'),
+        genlambda_gen(name="genlambda"),
     )

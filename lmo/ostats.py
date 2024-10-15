@@ -18,17 +18,16 @@ from typing import TYPE_CHECKING, TypeVar, overload
 import numpy as np
 from scipy.special import betainc, betaln
 
-
 if TYPE_CHECKING:
     import optype.numpy as onpt
 
     import lmo.typing.np as lnpt
 
 
-__all__ = 'weights', 'from_cdf'
+__all__ = "from_cdf", "weights"
 
 
-_T_size = TypeVar('_T_size', bound=int)
+_T_size = TypeVar("_T_size", bound=int)
 
 
 def _weights(
@@ -151,7 +150,7 @@ def from_cdf(
     """
     p = np.asanyarray(F)
     if not np.all((p >= 0) & (p <= 1)):
-        msg = 'F must lie between 0 and 1'
+        msg = "F must lie between 0 and 1"
         raise ValueError(msg)
 
     return betainc(i + 1, n - i, F)

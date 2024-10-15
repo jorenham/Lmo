@@ -16,21 +16,20 @@ from scipy.stats._distn_infrastructure import (
 )
 from scipy.stats.distributions import rv_continuous
 
-
 if sys.version_info >= (3, 13):
     from typing import override
 else:
     from typing_extensions import override
 
 from lmo.theoretical import l_moment_from_ppf
-from ._lm import get_lm_func
 
+from ._lm import get_lm_func
 
 if TYPE_CHECKING:
     import lmo.typing.scipy as lspt
 
 
-__all__ = ('wakeby_gen',)
+__all__ = ("wakeby_gen",)
 
 
 # NOTE: this is equivalent to `float` IFF `numpy >= 2.2`, see:
@@ -38,11 +37,11 @@ __all__ = ('wakeby_gen',)
 _F8: TypeAlias = float | np.float64
 _ArrF8: TypeAlias = onpt.Array[tuple[int, ...], np.float64]
 
-_XT = TypeVar('_XT', _F8, _ArrF8)
+_XT = TypeVar("_XT", _F8, _ArrF8)
 
 _MICRO: Final = 1e-6
-_NaN: Final = float('nan')
-_INF: Final = float('inf')
+_NaN: Final = float("nan")
+_INF: Final = float("inf")
 
 
 def _wakeby_ub(b: _F8, d: _F8, f: _F8) -> _F8:
@@ -175,7 +174,7 @@ def _wakeby_sf0(x: _F8, b: _F8, d: _F8, f: _F8) -> _F8:  # noqa: C901
             break
     else:
         warnings.warn(
-            'Wakeby SF did not converge, the result may be unreliable',
+            "Wakeby SF did not converge, the result may be unreliable",
             RuntimeWarning,
             stacklevel=4,
         )
@@ -184,7 +183,7 @@ def _wakeby_sf0(x: _F8, b: _F8, d: _F8, f: _F8) -> _F8:  # noqa: C901
 
 
 _wakeby_sf: Final = np.vectorize(_wakeby_sf0, [float])
-_wakeby_lm: Final = get_lm_func('wakeby')
+_wakeby_lm: Final = get_lm_func("wakeby")
 
 
 class wakeby_gen(rv_continuous):
@@ -203,9 +202,9 @@ class wakeby_gen(rv_continuous):
 
     @override
     def _shape_info(self) -> list[_ShapeInfo]:
-        ibeta = _ShapeInfo('b', False, (-np.inf, np.inf), (False, False))
-        idelta = _ShapeInfo('d', False, (-np.inf, np.inf), (False, False))
-        iphi = _ShapeInfo('f', False, (0, 1), (True, True))
+        ibeta = _ShapeInfo("b", False, (-np.inf, np.inf), (False, False))
+        idelta = _ShapeInfo("d", False, (-np.inf, np.inf), (False, False))
+        iphi = _ShapeInfo("f", False, (0, 1), (True, True))
         return [ibeta, idelta, iphi]
 
     @override

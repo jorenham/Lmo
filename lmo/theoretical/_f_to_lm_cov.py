@@ -11,18 +11,18 @@ import lmo.typing.np as lnpt
 import lmo.typing.scipy as lspt
 from lmo._poly import eval_sh_jacobi
 from lmo._utils import clean_order, clean_trim, moments_to_stats_cov, round0
+
 from ._f_to_lm import l_moment_from_cdf
 from ._utils import ALPHA, l_const, nquad, tighten_cdf_support
-
 
 if TYPE_CHECKING:
     import lmo.typing as lmt
 
 
-__all__ = ['l_moment_cov_from_cdf', 'l_stats_cov_from_cdf']
+__all__ = ["l_moment_cov_from_cdf", "l_stats_cov_from_cdf"]
 
 
-_T = TypeVar('_T')
+_T = TypeVar("_T")
 
 _Pair: TypeAlias = tuple[_T, _T]
 _Fn1: TypeAlias = Callable[[float], float | lnpt.Float]
@@ -148,7 +148,7 @@ def l_moment_cov_from_cdf(
         - [J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
             L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
     """
-    rs = clean_order(r_max, 'rmax', 0)
+    rs = clean_order(r_max, "rmax", 0)
     if rs == 0:
         return np.empty((0, 0))
 
@@ -193,7 +193,7 @@ def l_moment_cov_from_cdf(
             r,
         )
         if k == r and cov_kr <= 0:
-            msg = f'negative variance encountered at {r}: {cov_kr}'
+            msg = f"negative variance encountered at {r}: {cov_kr}"
             raise RuntimeError(msg)
 
         cov[k, r] = cov[r, k] = cov_kr
@@ -204,8 +204,8 @@ def l_moment_cov_from_cdf(
     if np.any(invalid):
         invalid_kr = list(np.argwhere(invalid)[0])
         msg = (
-            f'invalid covariance matrix: Cauchy-Schwartz inequality violated '
-            f'at {invalid_kr}: \n{cov}'
+            f"invalid covariance matrix: Cauchy-Schwartz inequality violated "
+            f"at {invalid_kr}: \n{cov}"
         )
         raise RuntimeError(msg)
 
@@ -291,7 +291,7 @@ def l_stats_cov_from_cdf(
         - [J.R.M. Hosking (2007) - Some theory and practical uses of trimmed
             L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
     """
-    rs = clean_order(num, 'num', 0)
+    rs = clean_order(num, "num", 0)
     ll_kr = l_moment_cov_from_cdf(
         cdf,
         rs,

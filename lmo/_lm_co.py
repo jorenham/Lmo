@@ -6,9 +6,9 @@ from typing import TYPE_CHECKING, Any, Literal, TypeAlias, Unpack, cast
 import numpy as np
 
 import lmo.typing as lmt
+
 from ._lm import l_weights
 from ._utils import clean_order, clean_orders, ordered
-
 
 if sys.version_info >= (3, 13):
     from typing import TypeVar
@@ -22,25 +22,25 @@ if TYPE_CHECKING:
 
 
 __all__ = (
-    'l_comoment',
-    'l_coratio',
-    'l_costats',
-    'l_coloc',
-    'l_coscale',
-    'l_corr',
-    'l_coskew',
-    'l_cokurtosis',
-    'l_cokurt',
+    "l_cokurt",
+    "l_cokurtosis",
+    "l_coloc",
+    "l_comoment",
+    "l_coratio",
+    "l_corr",
+    "l_coscale",
+    "l_coskew",
+    "l_costats",
 )
 
 
-_T_scalar = TypeVar('_T_scalar', bound=np.generic)
-_T_float = TypeVar('_T_float', bound=np.floating[Any], default=np.float64)
+_T_scalar = TypeVar("_T_scalar", bound=np.generic)
+_T_float = TypeVar("_T_float", bound=np.floating[Any], default=np.float64)
 _DType: TypeAlias = np.dtype[_T_scalar] | type[_T_scalar]
 
-_N0 = TypeVar('_N0', bound=int)
-_N1 = TypeVar('_N1', bound=int)
-_N2 = TypeVar('_N2', bound=int)
+_N0 = TypeVar("_N0", bound=int)
+_N1 = TypeVar("_N1", bound=int)
+_N2 = TypeVar("_N2", bound=int)
 _Array2D: TypeAlias = np.ndarray[tuple[_N0, _N1], np.dtype[_T_scalar]]
 _Array3D: TypeAlias = np.ndarray[tuple[_N0, _N1, _N2], np.dtype[_T_scalar]]
 
@@ -149,7 +149,7 @@ def l_comoment(
     """
     x = np.array(a, subok=True, ndmin=2)
     if x.ndim != 2:
-        msg = f'sample array must be 2-D, got shape {x.shape}'
+        msg = f"sample array must be 2-D, got shape {x.shape}"
         raise ValueError(msg)
 
     if rowvar is None:
@@ -178,7 +178,7 @@ def l_comoment(
         p_k = p_k[r_min - 1:]
 
     # L-comoment matrices for k = r_min, ..., r_max
-    l_kij = np.empty((p_k.shape[0], m, m), dtype=dtype, order='F')
+    l_kij = np.empty((p_k.shape[0], m, m), dtype=dtype, order="F")
 
     for j in range(m):
         # *concomitants* of x[i] w.r.t. x[j] for all i

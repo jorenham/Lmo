@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING, Any, Final, TypeAlias, cast, overload
 import numpy as np
 import numpy.typing as npt
 
-
 if sys.version_info >= (3, 13):
     from typing import LiteralString, TypeVar
 else:
@@ -22,33 +21,33 @@ if TYPE_CHECKING:
     import lmo.typing.np as lnpt
 
 __all__ = (
-    'clean_order',
-    'clean_orders',
-    'clean_trim',
-    'ensure_axis_at',
-    'l_stats_orders',
-    'moments_to_ratio',
-    'moments_to_stats_cov',
-    'sort_maybe',
-    'ordered',
-    'plotting_positions',
-    'round0',
+    "clean_order",
+    "clean_orders",
+    "clean_trim",
+    "ensure_axis_at",
+    "l_stats_orders",
+    "moments_to_ratio",
+    "moments_to_stats_cov",
+    "ordered",
+    "plotting_positions",
+    "round0",
+    "sort_maybe",
 )
 
 
-_SCT = TypeVar('_SCT', bound=np.generic)
-_SCT_uifc = TypeVar('_SCT_uifc', bound='lnpt.Number')
-_SCT_ui = TypeVar('_SCT_ui', bound='lnpt.Int', default=np.int_)
-_SCT_f = TypeVar('_SCT_f', bound='lnpt.Float', default=np.float64)
+_SCT = TypeVar("_SCT", bound=np.generic)
+_SCT_uifc = TypeVar("_SCT_uifc", bound="lnpt.Number")
+_SCT_ui = TypeVar("_SCT_ui", bound="lnpt.Int", default=np.int_)
+_SCT_f = TypeVar("_SCT_f", bound="lnpt.Float", default=np.float64)
 
-_DT_f = TypeVar('_DT_f', bound=np.dtype['lnpt.Float'])
-_AT_f = TypeVar('_AT_f', bound='npt.NDArray[lnpt.Float] | lnpt.Float')
+_DT_f = TypeVar("_DT_f", bound=np.dtype["lnpt.Float"])
+_AT_f = TypeVar("_AT_f", bound="npt.NDArray[lnpt.Float] | lnpt.Float")
 
-_SizeT = TypeVar('_SizeT', bound=int)
+_SizeT = TypeVar("_SizeT", bound=int)
 
-_ShapeT = TypeVar('_ShapeT', bound='onpt.AtLeast0D')
-_ShapeT1 = TypeVar('_ShapeT1', bound='onpt.AtLeast1D')
-_ShapeT2 = TypeVar('_ShapeT2', bound='onpt.AtLeast2D')
+_ShapeT = TypeVar("_ShapeT", bound="onpt.AtLeast0D")
+_ShapeT1 = TypeVar("_ShapeT1", bound="onpt.AtLeast1D")
+_ShapeT2 = TypeVar("_ShapeT2", bound="onpt.AtLeast2D")
 
 _DType: TypeAlias = np.dtype[_SCT] | type[_SCT]
 
@@ -59,7 +58,7 @@ def ensure_axis_at(
     source: int | None,
     destination: int,
     *,
-    order: lnpt.OrderReshape = 'C',
+    order: lnpt.OrderReshape = "C",
 ) -> npt.NDArray[_SCT]:
     """
     Moves the from `source` to `destination` if needed, or returns a flattened
@@ -140,7 +139,7 @@ def _apply_aweights(
     for j in np.ndindex(out.shape[:-1]):
         x_jk, w_jk = x[j], vv[j]
         if w_jk[-1] <= 0:
-            msg = 'weight sum must be positive'
+            msg = "weight sum must be positive"
             raise ValueError(msg)
 
         # linearly interpolate to effectively "stretch" samples with large
@@ -245,7 +244,7 @@ def ordered(  # noqa: C901
 
         # avoid unnecessary repeats by normalizing by the GCD
         if (gcd := np.gcd.reduce(r_kk)) <= 0:
-            msg = 'fweights must be non-negative and have a positive sum'
+            msg = "fweights must be non-negative and have a positive sum"
             raise ValueError(msg)
         if gcd > 1:
             r_kk //= gcd
@@ -265,12 +264,12 @@ def ordered(  # noqa: C901
 def clean_order(
     r: lmt.AnyOrder,
     /,
-    name: LiteralString = 'r',
+    name: LiteralString = "r",
     rmin: int = 0,
 ) -> int:
     """Validates and cleans an single (L-)moment order."""
     if (_r := int(r)) < rmin:
-        msg = f'expected {name} >= {rmin}, got {_r}'
+        msg = f"expected {name} >= {rmin}, got {_r}"
         raise TypeError(msg)
 
     return _r
@@ -279,7 +278,7 @@ def clean_order(
 def clean_orders(
     r: lmt.AnyOrderND,
     /,
-    name: str = 'r',
+    name: str = "r",
     rmin: int = 0,
     dtype: _DType[_SCT_ui] = np.int_,
 ) -> onpt.Array[Any, _SCT_ui]:
@@ -288,7 +287,7 @@ def clean_orders(
 
     if np.any(invalid := _r < rmin):
         i = np.argmax(invalid)
-        msg = f'expected all {name} >= {rmin}, got {name}[{i}] = {_r[i]} '
+        msg = f"expected all {name} >= {rmin}, got {name}[{i}] = {_r[i]} "
         raise TypeError(msg)
 
     return _r
@@ -330,10 +329,10 @@ def clean_trim(trim: lmt.AnyTrim, /) -> tuple[int, int] | tuple[float, float]:
     fractional = False
     for f in map(float, (s, t)):
         if not math.isfinite(f):
-            msg = 'trim orders must be finite'
+            msg = "trim orders must be finite"
             raise ValueError(msg)
         if f <= -1 / 2:
-            msg = 'trim orders must be greater than -1/2'
+            msg = "trim orders must be greater than -1/2"
             raise ValueError(msg)
         if not f.is_integer():
             fractional = True
@@ -362,7 +361,7 @@ def moments_to_ratio(
             r_eq_s.shape + (1,) * (l_rs.ndim - r_eq_s.ndim - 1),
         )
 
-    with np.errstate(divide='ignore', invalid='ignore'):
+    with np.errstate(divide="ignore", invalid="ignore"):
         return np.where(
             r_eq_s,
             np.ones_like(l_rs[0]),
