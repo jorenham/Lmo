@@ -1,4 +1,4 @@
-"""Typing utilities, mostly meant for internal usage."""
+"""Typing utilities meant for internal usage."""
 
 from __future__ import annotations
 
@@ -37,7 +37,7 @@ AnyTrim: TypeAlias = AnyTrimInt | AnyTrimFloat
 
 AnyOrder: TypeAlias = int | np.integer[Any]
 AnyOrderND: TypeAlias = (
-    CanSequence[int, int]
+    CanSequence[int, int, int]
     | onpt.CanArray[tuple[int, ...], np.dtype[np.integer[Any]]]
 )
 
