@@ -29,10 +29,6 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Physics",
     "Topic :: Utilities",
     "Typing :: Typed",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
 ]
 
 [tool.poetry.urls]
@@ -40,40 +36,39 @@ Documentation = "https://jorenham.github.io/Lmo/"
 "Bug Tracker" = "https://github.com/jorenham/Lmo/issues"
 
 [tool.poetry.dependencies]
-python = "^3.10.1"
+python = "^3.11"
 typing_extensions = {version = "^4.8", python = "<3.13"}
 
 # https://numpy.org/neps/nep-0029-deprecation_policy.html
 # https://scientific-python.org/specs/spec-0000/
-numpy =  ">1.24"
-scipy = "^1.10.1"
-pandas = {version = ">=1.5", optional = true}
+numpy =  ">=1.24"
+scipy = "^1.10"
+pandas = {version = ">=2.0", optional = true}
 optype = {version = "^0.6.1", extras = ["numpy"]}
 
 [tool.poetry.group.dev.dependencies]
 codespell = "^2.3.0"
-hypothesis = {version = "^6.112.0", extras = ["numpy"]}
-pre-commit = "^3.8.0"
-basedpyright = "^1.17.2"
-pytest = "^8.3.2"
+hypothesis = {version = "^6.115.2", extras = ["numpy"]}
+pre-commit = "^4.0.1"
+basedpyright = "^1.18.4"
+pytest = "^8.3.3"
 pytest-doctestplus = "^1.2.1"
-ruff = "^0.6.4"
+ruff = "^0.6.9"
 sp-repo-review = {version = "^2024.8.19", extras = ["cli"]}
-tomli = {version = "^2.0.1", python = "<3.11"}
-tox = "^4.18.0"
+tox = "^4.21.2"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.6.1"
 mkdocs-bibtex = "^2.16.2"
-mkdocs-git-revision-date-localized-plugin = "^1.2.7"
+mkdocs-git-revision-date-localized-plugin = "^1.2.9"
 mkdocs-include-markdown-plugin = "^6.2.2"
 mkdocs-jupyter = "^0.25.0"
-mkdocs-material = "^9.5.34"
+mkdocs-material = "^9.5.40"
 mkdocs-minify-plugin = "^0.8.0"
-mkdocstrings = {version = ">=0.26.1,<0.27.0", extras = ["python"]}
+mkdocstrings = {version = ">=0.26.2,<0.27.0", extras = ["python"]}
 
 [tool.poetry.group.debug.dependencies]
-ipython = "^8.27.0"
+ipython = "^8.28.0"
 ipykernel = "^6.29.5"
 line_profiler = "4.1.3"
 matplotlib = "^3.9.2"
@@ -81,7 +76,7 @@ typing-extensions = "^4.12.2"
 
 [tool.poetry.group.pandas.dependencies]
 pandas = "*"
-pandas-stubs = ">=1.5"
+pandas-stubs = ">=2.0"
 
 [tool.poetry.group.github]
 optional = true
@@ -91,11 +86,9 @@ pytest-github-actions-annotate-failures = ">=0.2.0,<1.0"
 [tool.poetry.extras]
 pandas = ["pandas"]
 
-
 [tool.codespell]
 skip = "*.bib,*.css,*.ipynb,*.js,*.lock,*.pyc,*.svg,./site,"
 context = 2
-
 
 [tool.pytest.ini_options]
 minversion = "8.0"
@@ -105,17 +98,13 @@ addopts = [
     "--strict-config",
     "--strict-markers",
 ]
-doctest_optionflags = [
-    "NORMALIZE_WHITESPACE",
-    "FLOAT_CMP",
-]
+doctest_optionflags = ["NORMALIZE_WHITESPACE", "FLOAT_CMP"]
 doctest_plus = "enabled"
 doctest_subpackage_requires = {"lmo/contrib/pandas.py" = "pandas>=1.5"}
 filterwarnings = ["error"]
 log_cli_level = "INFO"
 testpaths = ["lmo", "tests"]
 xfail_strict = true
-
 
 [tool.pyright]
 include = ["lmo", "typetests"]
@@ -140,7 +129,6 @@ reportUnusedImport = false  # dupe of F401
 reportUnusedVariable = false  # dupe of F841
 reportUnusedParameter = false  # dupe of ARG002
 
-
 [tool.repo-review]
 ignore = [
     "PC110",    # no auto-format
@@ -148,7 +136,6 @@ ignore = [
     "MY",       # no mypy
     "RTD",      # no readthedocs
 ]
-
 
 [tool.ruff]
 src = ["lmo", "tests"]
@@ -313,10 +300,7 @@ exempt-modules = ["typing", "typing_extensions"]
 quote-annotations = true
 
 [tool.ruff.lint.pylint]
-allow-dunder-method-names = [
-    "__array__",
-    "__lmo_register__",
-]
+allow-dunder-method-names = ["__array__", "__lmo_register__"]
 allow-magic-value-types = ["int" ,"str"]
 
 [tool.ruff.format]
@@ -324,28 +308,6 @@ docstring-code-format = true
 indent-style = "space"
 line-ending = "lf"
 quote-style = "single"
-
-
-[tool.yapf]
-based_on_style = "pep8"
-align_closing_bracket_with_visual_indent = false
-blank_lines_around_top_level_definition = 1
-blank_line_before_nested_class_or_def = false
-blank_lines_between_top_level_imports_and_variables = 2
-coalesce_brackets = true
-continuation_align_style = "space"
-dedent_closing_brackets = true
-force_multiline_dict = true
-indent_dictionary_value = true
-spaces_around_power_operator = true
-split_all_top_level_comma_separated_values = true
-split_arguments_when_comma_terminated = true
-split_before_arithmetic_operator = true
-split_before_dot = true
-split_before_expression_after_opening_paren = true
-split_before_first_argument = true
-split_complex_comprehension = true
-
 
 [tool.tox]
 legacy_tox_ini = """
@@ -355,7 +317,7 @@ requires = tox>=4
 envlist =
     repo-review
     pre-commit
-    py{310,311,312,313rc1}
+    py{311,312,313}
 
 [testenv]
 description = pytest

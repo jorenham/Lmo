@@ -79,7 +79,7 @@ class PatchClass:
 
     @classmethod
     def patch(cls, base: type[object]) -> None:
-        if not isinstance(base, type):
+        if not isinstance(base, type):  # pyright: ignore[reportUnnecessaryIsInstance]
             msg = 'patch() argument must be a type'
             raise TypeError(msg)
         if base in cls.patched:
