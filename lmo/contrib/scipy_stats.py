@@ -3,6 +3,7 @@
 Extension methods for the (univariate) distributions in
 [`scipy.stats`][scipy.stats].
 """
+
 from __future__ import annotations
 
 import contextlib
@@ -21,7 +22,8 @@ from typing import (
 import numpy as np
 import numpy.typing as npt
 from scipy.stats import (
-    fit as scipy_fit,  # pyright: ignore[reportUnknownVariableType]
+    fit as scipy_fit,
+    rv_discrete,
 )
 from scipy.stats.distributions import rv_continuous, rv_frozen
 
@@ -61,6 +63,7 @@ _ArrF8: TypeAlias = npt.NDArray[np.float64]
 
 class _ShapeInfo(Protocol):
     """Stub for `scipy.stats._distn_infrastructure._ShapeInfo`."""
+
     name: str
     integrality: bool
     domain: Sequence[float]  # in practice a list of size 2 (y no tuple?)
@@ -267,7 +270,7 @@ class l_rv_generic(PatchClass):
             distribution:
 
             >>> from scipy.stats import binom
-            >>> binom(10, .6).l_moment([1, 2, 3, 4]).round(6)
+            >>> binom(10, 0.6).l_moment([1, 2, 3, 4]).round(6)
             array([ 6.      ,  0.862238, -0.019729,  0.096461])
 
         Args:
@@ -476,7 +479,7 @@ class l_rv_generic(PatchClass):
             >>> X = distributions.expon()
             >>> X.l_stats().round(6)
             array([1.      , 0.5     , 0.333333, 0.166667])
-            >>> X.l_stats(trim=(0, 1/2)).round(6)
+            >>> X.l_stats(trim=(0, 1 / 2)).round(6)
             array([0.666667, 0.333333, 0.266667, 0.114286])
             >>> X.l_stats(trim=(0, 1)).round(6)
             array([0.5     , 0.25    , 0.222222, 0.083333])
@@ -990,8 +993,8 @@ class l_rv_generic(PatchClass):
 
     def _reduce_param_bounds(
         self,
-        **kwds: Any,
-    ) -> tuple[dict[str, Any], list[_Tuple2[float | None]]]:
+        **kwds: lnpt.AnyScalarFloat,
+    ) -> tuple[dict[str, lnpt.AnyScalarFloat], list[_Tuple2[float | None]]]:
         """
         Based on `scipy.stats.rv_continuous._reduce_func`.
 
@@ -1063,7 +1066,7 @@ class l_rv_generic(PatchClass):
     @overload
     def l_fit(
         self,
-        data: lnpt.AnyVectorInt | lnpt.AnyVectorFloat,
+        data: lnpt.AnyVectorFloat,
         *args: float,
         n_extra: int = ...,
         trim: lmt.AnyTrimInt = ...,
@@ -1074,7 +1077,7 @@ class l_rv_generic(PatchClass):
     @overload
     def l_fit(
         self,
-        data: lnpt.AnyVectorInt | lnpt.AnyVectorFloat,
+        data: lnpt.AnyVectorFloat,
         *args: float,
         n_extra: int = ...,
         trim: lmt.AnyTrimInt = ...,
@@ -1084,7 +1087,7 @@ class l_rv_generic(PatchClass):
     ) -> tuple[float, ...]: ...
     def l_fit(
         self,
-        data: lnpt.AnyVectorInt | lnpt.AnyVectorFloat,
+        data: lnpt.AnyVectorFloat,
         *args: float,
         n_extra: int = 0,
         trim: lmt.AnyTrimInt = 0,
@@ -1189,21 +1192,23 @@ class l_rv_generic(PatchClass):
             - Support integral parameters.
 
         """
+        x = np.asarray_chkfinite(data)
         _, bounds = self._reduce_param_bounds(**kwds)
 
         if len(args) == len(bounds):
             args0 = args
         elif isinstance(self, rv_continuous):
-            args0 = self.fit(data, *args, **kwds)
+            args0 = self.fit(x, *args, **kwds)
         else:
             # almost never works without custom (finite and tight) bounds...
             # ... and otherwise it'll runs for +-17 exa-eons
-            args0 = cast(
-                lspt.FitResult,
-                scipy_fit(self, data, bounds=bounds, guess=args or None),
-            ).params
+            rv = cast(rv_discrete, self)
+            bounds0 = [
+                (-np.inf if a is None else a, np.inf if b is None else b)
+                for a, b in bounds
+            ]
+            args0 = scipy_fit(rv, x, bounds=bounds0, guess=args or None).params
 
-        x = np.asarray(data)
         r = np.arange(1, len(args0) + n_extra + 1)
 
         _lmo_cache: dict[tuple[float, ...], _ArrF8] = {}
@@ -1212,17 +1217,17 @@ class l_rv_generic(PatchClass):
         # temporary cache to speed up L-moment calculations with the same
         # shape args
         def lmo_fn(
-            r: npt.NDArray[np.intp],
-            *args: float,
-            trim: tuple[int, int] | tuple[float, float] = (0, 0),
+            _r: npt.NDArray[np.intp],
+            *_args: float,
+            _trim: tuple[int, int] | tuple[float, float] = (0, 0),
         ) -> _ArrF8:
-            shapes, loc, scale = args[:-2], args[-2], args[-1]
+            shapes, loc, scale = _args[:-2], _args[-2], _args[-1]
 
             # r and trim are constants, so it's safe to ignore them here
             if shapes in _lmo_cache:
                 lmbda_r = _lmo_cache[shapes]
             else:
-                lmbda_r = _lmo_fn(r, *shapes, trim=trim)
+                lmbda_r = _lmo_fn(_r, *shapes, trim=_trim)
                 lmbda_r.setflags(write=False)  # prevent cache corruption
                 _lmo_cache[shapes] = lmbda_r
 

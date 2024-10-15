@@ -9,7 +9,9 @@ import numpy as np
 import numpy.typing as npt
 import optype.numpy as onpt
 import scipy.special as sc
-from scipy.stats._distn_infrastructure import _ShapeInfo  # noqa: PLC2701
+from scipy.stats._distn_infrastructure import (
+    _ShapeInfo,  # noqa: PLC2701  # pyright: ignore[reportPrivateUsage]
+)
 from scipy.stats.distributions import rv_continuous as _rv_continuous
 
 from lmo.special import harmonic

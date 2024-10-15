@@ -13,7 +13,9 @@ from typing import TYPE_CHECKING, Final, TypeAlias, TypeVar, cast
 import numpy as np
 import numpy.typing as npt
 import scipy.special as sps
-from scipy.stats._distn_infrastructure import _ShapeInfo  # noqa: PLC2701
+from scipy.stats._distn_infrastructure import (
+    _ShapeInfo,  # noqa: PLC2701  # pyright: ignore[reportPrivateUsage]
+)
 from scipy.stats.distributions import rv_continuous
 
 from lmo.special import harmonic
