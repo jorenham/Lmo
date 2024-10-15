@@ -58,7 +58,8 @@ extra:
 
 plugins:
   # https://github.com/mkdocstrings/autorefs
-  - autorefs
+  - autorefs:
+      resolve_closest: true
 
   # https://github.com/shyamd/mkdocs-bibtex
   - bibtex:
@@ -113,7 +114,7 @@ plugins:
             annotations_path: brief
             unwrap_annotated: true
             docstring_section_style: table
-            line_length: 79
+            line_length: 88
             load_external_modules: true
             members_order: source
             merge_init_into_class: true
@@ -140,7 +141,6 @@ markdown_extensions:
   - abbr
   - attr_list
   - def_list
-  - extra
   - footnotes
   - md_in_html
   - sane_lists
@@ -157,8 +157,8 @@ markdown_extensions:
   - pymdownx.blocks.definition
   - pymdownx.blocks.details
   - pymdownx.emoji:
-      emoji_index: !!python/name:material.extensions.emoji.twemoji
-      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+      emoji_index: !!python/name:pymdownx.emoji.gemoji
+      emoji_generator: !!python/name:pymdownx.emoji.to_png
       alt: short
       options:
         attributes:
@@ -167,6 +167,7 @@ markdown_extensions:
           width: "20px"
         image_path: https://github.githubassets.com/images/icons/emoji/unicode/
         non_standard_image_path: https://github.githubassets.com/images/icons/emoji/
+  - pymdownx.extra
   - pymdownx.highlight
   - pymdownx.inlinehilite
   - pymdownx.magiclink:
