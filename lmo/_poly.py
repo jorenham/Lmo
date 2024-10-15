@@ -34,7 +34,7 @@ __all__ = (
 
 
 if TYPE_CHECKING:
-    from typing_extensions import LiteralString
+    from typing import LiteralString
 
     PolySeries: TypeAlias = ABCPolyBase[LiteralString | None]
 else:

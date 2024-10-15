@@ -16,7 +16,9 @@ import lmo.typing.np as lnpt
 if sys.version_info >= (3, 13):
     from typing import TypeVar, Unpack, assert_never
 else:
-    from typing_extensions import TypeVar, Unpack, assert_never
+    from typing import assert_never
+
+    from typing_extensions import TypeVar, Unpack
 
 
 __all__ = (

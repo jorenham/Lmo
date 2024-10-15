@@ -1,9 +1,8 @@
 # pyright: reportUnusedCallResult=false
-from typing import TypeAlias
+from typing import TypeAlias, assert_type
 
 import numpy as np
 import numpy.typing as npt
-from typing_extensions import assert_type
 
 import lmo
 

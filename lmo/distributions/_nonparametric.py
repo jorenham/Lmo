@@ -32,7 +32,9 @@ from lmo.theoretical import (
 if sys.version_info >= (3, 13):
     from typing import LiteralString, Protocol, Self, TypeVar
 else:
-    from typing_extensions import LiteralString, Protocol, Self, TypeVar
+    from typing import LiteralString, Self
+
+    from typing_extensions import Protocol, TypeVar
 
 if TYPE_CHECKING:
     from collections.abc import Callable

@@ -29,12 +29,12 @@ if sys.version_info >= (3, 13):
         runtime_checkable,
     )
 else:
+    from typing import LiteralString, overload
+
     from typing_extensions import (
-        LiteralString,
         ParamSpec,
         Protocol,
         TypeVar,
-        overload,
         runtime_checkable,
     )
 
