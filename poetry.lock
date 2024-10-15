@@ -3532,4 +3532,4 @@ typing = ["scipy-stubs"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "17e6e0472bb6c11aede5493b342d808dc266be9b4db4b99988c59701b9c0a51a"
+content-hash = "ecf4e141f5e38e8ca3036dd96574d93913c69f81360e4219330c99cb92934f98"

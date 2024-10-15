@@ -1,17 +1,12 @@
 {
     "[python]": {
         "editor.defaultFormatter": "charliermarsh.ruff",
-        "editor.rulers": [79, 130]
+        "editor.rulers": [88, 130]
     },
     "[bibtex]": {
         "editor.rulers": []
     },
-    "[markdown]": {
-        "editor.rulers": [80]
-    },
-    "[markdown_latex_combined]": {
-        "editor.rulers": [80]
-    },
+    "editor.rulers": [88],
     "markdown.extension.completion.root": "docs",
     "PandocCiter.DefaultBib": "docs/refs.bib",
     "PandocCiter.DefaultBibs": ["docs"],
