@@ -298,7 +298,6 @@ banned-from = [
     "numpy",
     "numpy.polynomial",
     "numpy.typing",
-    "optype",
     "optype.numpy",
 ]
 
@@ -308,7 +307,6 @@ banned-from = [
 "lmo.typing.scipy" = "lspt"
 "numpy.polynomial" = "npp"
 "numpy.typing" = "npt"
-"optype" = "opt"
 "optype.numpy" = "onpt"
 
 [tool.ruff.lint.flake8-quotes]
