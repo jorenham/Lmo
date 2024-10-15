@@ -51,6 +51,7 @@ scipy-stubs = {version = "^1.14.1.0", optional = true}
 pandas = {version = "^2.0", optional = true}
 
 [tool.poetry.group.dev.dependencies]
+blacken-docs = "^1.19.0"
 codespell = "^2.3.0"
 hypothesis = {version = "^6.115.2", extras = ["numpy"]}
 pre-commit = "^4.0.1"
@@ -62,7 +63,6 @@ sp-repo-review = {version = "^2024.8.19", extras = ["cli"]}
 tox = "^4.22.0"
 
 [tool.poetry.group.docs.dependencies]
-blacken-docs = "^1.19.0"
 mkdocs = "^1.6.1"
 mkdocs-bibtex = "^2.16.2"
 mkdocs-git-revision-date-localized-plugin = "^1.2.9"
