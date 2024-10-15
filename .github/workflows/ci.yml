@@ -50,6 +50,9 @@ jobs:
       - name: ruff check
         run: poetry run ruff check --output-format=github
 
+      - name: ruff format
+        run: poetry run format --check
+
       - name: basedpyright
         run: poetry run basedpyright
 
