@@ -68,7 +68,7 @@ repos:
         additional_dependencies: [black==24.*]
 
   - repo: https://github.com/python-poetry/poetry
-    rev: 1.8.4
+    rev: 1.8.0
     hooks:
       - id: poetry-check
 
@@ -78,7 +78,7 @@ repos:
       - id: codespell
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.6.9
+    rev: v0.7.0
     hooks:
       - id: ruff
         args: [--fix, --show-fixes]
