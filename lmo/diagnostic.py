@@ -192,8 +192,20 @@ _gof_stat = np.vectorize(
 )
 
 
+def _is_rv(x: object) -> TypeIs[lspt.RVFrozen | lspt.RV]:
+    from scipy.stats.distributions import (
+        rv_continuous,
+        rv_discrete,
+        rv_frozen,
+        rv_histogram,
+    )
+
+    # NOTE: this assumes that the (private) `rv_generic` class is a sealed type
+    return isinstance(x, rv_frozen | rv_continuous | rv_discrete | rv_histogram)
+
+
 def l_moment_gof(
-    rv_or_cdf: lspt.RV | _Fn1,
+    rv_or_cdf: lspt.RV | lspt.RVFrozen | _Fn1,
     l_moments: _ArrF8,
     n_obs: int,
     /,
@@ -290,15 +302,8 @@ def l_moment_gof(
     return HypothesisTestResult(stat, pval)
 
 
-def _is_rv(x: object) -> TypeIs[lspt.RV]:
-    from scipy.stats.distributions import rv_continuous, rv_discrete, rv_histogram
-
-    # NOTE: this assumes that the (private) `rv_generic` class is a sealed type
-    return isinstance(x, rv_continuous | rv_discrete | rv_histogram)
-
-
 def l_stats_gof(
-    rv_or_cdf: lspt.RV | _Fn1,
+    rv_or_cdf: lspt.RV | lspt.RVFrozen | _Fn1,
     l_stats: _ArrF8,
     n_obs: int,
     /,
