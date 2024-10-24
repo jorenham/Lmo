@@ -1,14 +1,20 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Final, TypeAlias, TypeVar, Unpack, cast, overload
+from typing import (
+    TYPE_CHECKING,
+    Final,
+    Protocol,
+    TypeAlias,
+    TypeVar,
+    Unpack,
+    cast,
+    overload,
+)
 
 import numpy as np
 import numpy.typing as npt
-import scipy.integrate as spi
 
-import lmo.typing.np as lnpt
-import lmo.typing.scipy as lspt
 from lmo._poly import eval_sh_jacobi
 from lmo._utils import (
     clean_orders,
@@ -21,6 +27,7 @@ from ._utils import l_const, tighten_cdf_support
 
 if TYPE_CHECKING:
     import lmo.typing as lmt
+    import lmo.typing.scipy as lspt
 
 
 __all__ = [
@@ -35,40 +42,55 @@ __all__ = [
 
 
 _T = TypeVar("_T")
+_T_x = TypeVar("_T_x", float, npt.NDArray[np.float64])
+
+
+class _Fn1(Protocol):
+    def __call__(self, x: _T_x, /) -> _T_x: ...
 
 
 _Pair: TypeAlias = tuple[_T, _T]
-_Fn1: TypeAlias = Callable[[float], float | lnpt.Float]
 _ArrF8: TypeAlias = npt.NDArray[np.float64]
+
 
 ALPHA: Final[float] = 0.1
 QUAD_LIMIT: Final[int] = 100
 
 
 def _df_quad3(
-    f: Callable[[float, int], float | lnpt.Float],
+    f: Callable[[float, int], float],
     /,
-    a: float | lnpt.Float,
-    b: float | lnpt.Float,
-    c: float | lnpt.Float,
-    d: float | lnpt.Float,
+    a: float | np.float64,
+    b: float | np.float64,
+    c: float | np.float64,
+    d: float | np.float64,
     r: int,
     **kwds: Unpack[lspt.QuadOptions],
 ) -> float:
+    import scipy.integrate as spi
+
     _integ = cast(Callable[..., tuple[float, float]], spi.quad)
 
-    out = _integ(f, b, c, (r,), **kwds)[0]
+    # TODO(jorenham): Remove this workaround (and pass `f` with `args` directly) after
+    # https://github.com/jorenham/scipy-stubs/issues/139
+
+    def _f(x: float, /) -> float:
+        return f(x, r)
+
+    a, b, c, d = float(a), float(b), float(c), float(d)
+
+    out = spi.quad(_f, b, c, **kwds)[0]
     if a < b:
-        out += _integ(f, a, b, (r,), **kwds)[0]
+        out += spi.quad(_f, a, b, **kwds)[0]
     if c < d:
-        out += _integ(f, c, d, (r,), **kwds)[0]
+        out += spi.quad(_f, c, d, **kwds)[0]
 
     return out
 
 
 @overload
 def l_moment_from_cdf(
-    cdf: _Fn1,
+    cdf: _Fn1 | Callable[[float], float],
     r: lmt.AnyOrderND,
     /,
     trim: lmt.AnyTrim = ...,
@@ -80,7 +102,7 @@ def l_moment_from_cdf(
 ) -> _ArrF8: ...
 @overload
 def l_moment_from_cdf(
-    cdf: _Fn1,
+    cdf: _Fn1 | Callable[[float], float],
     r: lmt.AnyOrder,
     /,
     trim: lmt.AnyTrim = ...,
@@ -91,7 +113,7 @@ def l_moment_from_cdf(
     ppf: _Fn1 | None = ...,
 ) -> np.float64: ...
 def l_moment_from_cdf(
-    cdf: _Fn1,
+    cdf: _Fn1 | Callable[[float], float],
     r: lmt.AnyOrder | lmt.AnyOrderND,
     /,
     trim: lmt.AnyTrim = 0,
@@ -267,7 +289,7 @@ def l_moment_from_cdf(
 
 @overload
 def l_moment_from_ppf(
-    ppf: _Fn1,
+    ppf: _Fn1 | Callable[[float], float],
     r: lmt.AnyOrderND,
     /,
     trim: lmt.AnyTrim = ...,
@@ -278,7 +300,7 @@ def l_moment_from_ppf(
 ) -> _ArrF8: ...
 @overload
 def l_moment_from_ppf(
-    ppf: _Fn1,
+    ppf: _Fn1 | Callable[[float], float],
     r: lmt.AnyOrder,
     /,
     trim: lmt.AnyTrim = ...,
@@ -288,7 +310,7 @@ def l_moment_from_ppf(
     alpha: float = ...,
 ) -> np.float64: ...
 def l_moment_from_ppf(
-    ppf: _Fn1,
+    ppf: _Fn1 | Callable[[float], float],
     r: lmt.AnyOrder | lmt.AnyOrderND,
     /,
     trim: lmt.AnyTrim = 0,
@@ -392,7 +414,7 @@ def l_moment_from_ppf(
     rs = clean_orders(np.asanyarray(r))
     s, t = clean_trim(trim)
 
-    def igf(p: float, _r: int, /) -> float | lnpt.Float:
+    def igf(p: float, _r: int, /) -> float:
         return p**s * (1 - p) ** t * eval_sh_jacobi(_r - 1, t, s, p) * ppf(p)
 
     kwds = quad_opts or {}
@@ -419,7 +441,7 @@ def l_moment_from_ppf(
 
 @overload
 def l_moment_from_qdf(
-    qdf: _Fn1,
+    qdf: _Fn1 | Callable[[float], float],
     r: lmt.AnyOrderND,
     /,
     trim: lmt.AnyTrim = ...,
@@ -430,7 +452,7 @@ def l_moment_from_qdf(
 ) -> _ArrF8: ...
 @overload
 def l_moment_from_qdf(
-    qdf: _Fn1,
+    qdf: _Fn1 | Callable[[float], float],
     r: lmt.AnyOrder,
     /,
     trim: lmt.AnyTrim = ...,
@@ -440,7 +462,7 @@ def l_moment_from_qdf(
     alpha: float = ...,
 ) -> np.float64: ...
 def l_moment_from_qdf(
-    qdf: _Fn1,
+    qdf: _Fn1 | Callable[[float], float],
     r: lmt.AnyOrder | lmt.AnyOrderND,
     /,
     trim: lmt.AnyTrim = 0,

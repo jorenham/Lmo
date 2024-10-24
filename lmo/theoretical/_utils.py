@@ -1,24 +1,30 @@
+from __future__ import annotations
+
 import functools
-from collections.abc import Callable, Sequence
 from math import exp, factorial, gamma, lgamma, log
-from typing import Concatenate, Final, ParamSpec, TypeAlias
+from typing import TYPE_CHECKING, Concatenate, Final, ParamSpec, Protocol, TypeVar
 
 import numpy as np
 import numpy.typing as npt
-import scipy.integrate as spi
-import scipy.special as sps
 
-import lmo.typing.np as lnpt
-import lmo.typing.scipy as lspt
+if TYPE_CHECKING:
+    from collections.abc import Callable, Sequence
+
+    import lmo.typing.scipy as lspt
 
 __all__ = ("ALPHA", "QUAD_LIMIT", "l_coef_factor", "l_const", "tighten_cdf_support")
 
 
-_Fn1: TypeAlias = Callable[[float], float | lnpt.Float]
 _Tss = ParamSpec("_Tss")
+_T_x = TypeVar("_T_x", float, npt.NDArray[np.float64])
 
-ALPHA: Final[float] = 0.1
-QUAD_LIMIT: Final[int] = 100
+
+class _Fn1(Protocol):
+    def __call__(self, x: _T_x, /) -> _T_x: ...
+
+
+ALPHA: Final = 0.1
+QUAD_LIMIT: Final = 100
 
 
 @functools.cache
@@ -33,8 +39,7 @@ def l_const(r: int, s: float, t: float, k: int = 0) -> float:
         if k == 1:
             return 1 / (r - 1)
 
-    # math.lgamma is faster (and has better type annotations) than
-    # scipy.special.loggamma.
+    # math.lgamma is faster than scipy.special.loggamma.
     if r + s + t <= 20:
         v = gamma(r + s + t + 1) / (gamma(r + s) * gamma(r + t))
     elif r + s + t <= 128:
@@ -61,6 +66,8 @@ def l_coef_factor(
 
     assert s + t > -1
 
+    import scipy.special as sps
+
     _r = np.asarray(r)
     c = (
         np.sqrt(
@@ -75,15 +82,11 @@ def l_coef_factor(
 
 
 def tighten_cdf_support(
-    cdf: _Fn1,
+    cdf: _Fn1 | Callable[[float], float],
     support: tuple[float, float] | None = None,
 ) -> tuple[float, float]:
     """Attempt to tighten the support by checking some common bounds."""
     a, b = (-np.inf, np.inf) if support is None else map(float, support)
-
-    # assert a < b, (a, b)
-    # assert (u_a := cdf(a)) == 0, (a, u_a)
-    # assert (u_b := cdf(b)) == 1, (b, u_b)
 
     # attempt to tighten the default support by checking some common bounds
     if cdf(0) == 0:
@@ -107,6 +110,8 @@ def nquad(
     *args: _Tss.args,
     **kwds: _Tss.kwargs,
 ) -> float:
+    import scipy.integrate as spi
+
     if kwds:
         integrand = functools.partial(integrand, *args, **kwds)
         args = ()  # pyright: ignore[reportAssignmentType]

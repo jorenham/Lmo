@@ -1,10 +1,18 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, NamedTuple, TypeAlias, cast
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Concatenate,
+    NamedTuple,
+    Protocol,
+    TypeAlias,
+    TypeVar,
+    cast,
+)
 
 import numpy as np
 import numpy.typing as npt
-from scipy import optimize, special
 
 from lmo._lm import l_moment as l_moment_est
 from lmo._lm_co import l_coscale as l_coscale_est
@@ -20,13 +28,17 @@ if TYPE_CHECKING:
 
     import lmo.typing as lmt
     import lmo.typing.np as lnpt
-    import lmo.typing.scipy as lspt
 
 
 __all__ = "GMMResult", "fit"
 
-
 _ArrF8: TypeAlias = npt.NDArray[np.float64]
+
+_T_x = TypeVar("_T_x", float, _ArrF8)
+
+
+class _Fn1(Protocol):
+    def __call__(self, x: _T_x, /) -> _T_x: ...
 
 
 class GMMResult(NamedTuple):
@@ -110,8 +122,10 @@ class GMMResult(NamedTuple):
             msg = "The Sargan Hansen J-test requires `n_extra > 0`"
             raise ValueError(msg)
 
+        from scipy.special import chdtr
+
         stat = self.statistic
-        pvalue = special.chdtr(df, stat)
+        pvalue = chdtr(df, stat)
         return HypothesisTestResult(stat, pvalue)
 
     @property
@@ -173,14 +187,12 @@ def _loss_step(
     return np.sqrt(g_r.T @ w_rr @ g_r)  # pyright: ignore[reportReturnType]
 
 
-def _get_l_moment_fn(ppf: lspt.RVFunction[...]) -> Callable[..., _ArrF8]:
-    def l_moment_fn(
-        r: lmt.AnyOrderND,
-        /,
-        *args: Any,
-        trim: lmt.AnyTrim = 0,
-    ) -> _ArrF8:
-        return l_moment_from_ppf(lambda q: ppf(q, *args), r, trim=trim)
+def _get_l_moment_fn(ppf: _Fn1) -> Callable[Concatenate[lmt.AnyOrderND, ...], _ArrF8]:
+    def l_moment_fn(r: lmt.AnyOrderND, /, *args: Any, trim: lmt.AnyTrim = 0) -> _ArrF8:
+        def _ppf(q: _T_x, /) -> _T_x:
+            return ppf(q, *args)
+
+        return l_moment_from_ppf(_ppf, r, trim=trim)
 
     return l_moment_fn
 
@@ -229,7 +241,7 @@ def _ensure_1d_f8(
 
 
 def fit(  # noqa: C901
-    ppf: lspt.RVFunction[...],
+    ppf: _Fn1,
     args0: lnpt.AnyVectorFloat,
     n_obs: int,
     l_moments: lnpt.AnyVectorFloat,
@@ -414,15 +426,17 @@ def fit(  # noqa: C901
     success = False
     w_rr = np.eye(n_con) * scale_r
 
+    from scipy.optimize import minimize
+
     for _k in range(1, k_max + 1):
         # calculate the weight matrix
         if n_con > n_par and qs is not None:
             w_rr = _get_weights_mc(ppf(qs, *theta), _r, trim=_trim)
 
         # run the optimizer
-        res = optimize.minimize(
+        res = minimize(
             _loss_step,
-            theta,  # pyright: ignore[reportArgumentType]
+            theta,
             args=(_l_moment_fn, _r, l_r, _trim, w_rr),
             **kwds,
         )

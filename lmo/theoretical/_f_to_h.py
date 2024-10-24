@@ -1,41 +1,30 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Concatenate, ParamSpec, overload
+from collections.abc import Callable
+from typing import Any, Concatenate, ParamSpec, TypeAlias, overload
 
 import numpy as np
-import scipy.integrate as spi
 
 from ._utils import QUAD_LIMIT
-
-if TYPE_CHECKING:
-    from collections.abc import Callable
-
-    import lmo.typing.np as lnpt
-
 
 __all__ = ["entropy_from_qdf"]
 
 
 _Tss = ParamSpec("_Tss")
+_QDF: TypeAlias = (
+    Callable[Concatenate[float, _Tss], float]
+    | Callable[Concatenate[float, _Tss], np.floating[Any]]
+)
 
 
 @overload
-def entropy_from_qdf(
-    qdf: Callable[[float], float | lnpt.Float],
-    /,
-) -> float: ...
+def entropy_from_qdf(qdf: _QDF[[]], /) -> float: ...
 @overload
 def entropy_from_qdf(
-    qdf: Callable[Concatenate[float, _Tss], float | lnpt.Float],
-    /,
-    *args: _Tss.args,
-    **kwds: _Tss.kwargs,
+    qdf: _QDF[_Tss], /, *args: _Tss.args, **kwds: _Tss.kwargs
 ) -> float: ...
 def entropy_from_qdf(
-    qdf: Callable[Concatenate[float, _Tss], float | lnpt.Float],
-    /,
-    *args: _Tss.args,
-    **kwds: _Tss.kwargs,
+    qdf: _QDF[_Tss], /, *args: _Tss.args, **kwds: _Tss.kwargs
 ) -> float:
     r"""
     Evaluate the (differential / continuous) entropy \( H(X) \) of a
@@ -54,11 +43,11 @@ def entropy_from_qdf(
     \]
 
     Args:
-        qdf ( (float, *Ts, **Ts) -> float):
+        qdf ( (float, *Tss.args, **Tss.kwargs) -> float):
             The quantile distribution function (QDF).
-        *args (*Ts):
+        *args (Tss.args):
             Optional additional positional arguments to pass to `qdf`.
-        **kwds (**Ts):
+        **kwds (Tss.kwargs):
             Optional keyword arguments to pass to `qdf`.
 
     Returns:
@@ -69,6 +58,7 @@ def entropy_from_qdf(
         ](https://wikipedia.org/wiki/Differential_entropy)
 
     """
+    import scipy.integrate as spi
 
     def ic(p: float, /) -> np.float64:
         return np.log(qdf(p, *args, **kwds))

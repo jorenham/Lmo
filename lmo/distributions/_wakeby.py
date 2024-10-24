@@ -4,7 +4,6 @@ import functools
 import math
 import sys
 import warnings
-from collections.abc import Callable
 from typing import TYPE_CHECKING, Final, TypeAlias, TypeVar, cast
 
 import numpy as np
@@ -16,13 +15,13 @@ from scipy.stats._distn_infrastructure import (
 )
 from scipy.stats.distributions import rv_continuous
 
+from lmo.theoretical import l_moment_from_ppf
+from ._lm import get_lm_func
+
 if sys.version_info >= (3, 13):
     from typing import override
 else:
     from typing_extensions import override
-
-from lmo.theoretical import l_moment_from_ppf
-from ._lm import get_lm_func
 
 if TYPE_CHECKING:
     import lmo.typing.scipy as lspt
@@ -37,6 +36,7 @@ _F8: TypeAlias = float | np.float64
 _ArrF8: TypeAlias = onpt.Array[tuple[int, ...], np.float64]
 
 _XT = TypeVar("_XT", _F8, _ArrF8)
+
 
 _MICRO: Final = 1e-6
 _NaN: Final = float("nan")
@@ -311,10 +311,7 @@ class wakeby_gen(rv_continuous):
         if quad_opts is not None:
             # only do numerical integration when quad_opts is passed
             lmbda_r = l_moment_from_ppf(
-                cast(
-                    Callable[[float], float],
-                    functools.partial(self._ppf, b=b, d=d, f=f),
-                ),
+                functools.partial(self._ppf, b=b, d=d, f=f),
                 r,
                 trim=trim,
                 quad_opts=quad_opts,

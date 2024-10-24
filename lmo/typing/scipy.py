@@ -78,14 +78,10 @@ class QuadOptions(TypedDict, total=False):
     epsabs: float
     epsrel: float
     limit: int
-    points: (
-        CanGetitem[int, float | np.floating[Any] | np.integer[Any] | np.bool_]
-        | onpt.Array[tuple[int], np.floating[Any] | np.integer[Any] | np.bool_]
-    )
+    points: CanGetitem[int, float | np.floating[Any] | np.integer[Any] | np.bool_]
     weight: QuadWeights
     wvar: float | tuple[float, float]
     wopts: tuple[int, npt.NDArray[np.float32 | np.float64]]
-
     limlst: int
     maxp1: int
 

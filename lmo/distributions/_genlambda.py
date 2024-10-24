@@ -7,7 +7,6 @@ from __future__ import annotations
 import functools
 import math
 import sys
-from collections.abc import Callable
 from typing import TYPE_CHECKING, Final, TypeAlias, TypeVar, cast
 
 import numpy as np
@@ -260,10 +259,7 @@ class genlambda_gen(rv_continuous):
             lmbda_r = cast(
                 float | _ArrF8,
                 l_moment_from_ppf(
-                    cast(
-                        Callable[[float], float],
-                        functools.partial(self._ppf, b=b, d=d, f=f),
-                    ),
+                    functools.partial(self._ppf, b=b, d=d, f=f),
                     r,
                     trim=trim,
                     quad_opts=quad_opts,
