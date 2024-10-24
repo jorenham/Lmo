@@ -7,8 +7,8 @@ Extension methods for the (univariate) distributions in
 from __future__ import annotations
 
 import contextlib
-from collections.abc import Callable, Mapping, Sequence
 from typing import (
+    TYPE_CHECKING,
     Any,
     ClassVar,
     Literal,
@@ -23,10 +23,6 @@ from typing import (
 
 import numpy as np
 import numpy.typing as npt
-from scipy.stats import (
-    fit as scipy_fit,
-    rv_discrete,
-)
 from scipy.stats.distributions import rv_continuous, rv_frozen
 
 import lmo.typing as lmt
@@ -51,11 +47,21 @@ from lmo.theoretical import (
     l_stats_cov_from_cdf,
 )
 
+if TYPE_CHECKING:
+    from collections.abc import Callable, Mapping, Sequence
+
+    from scipy.stats import rv_discrete
+
 __all__ = "install", "l_rv_frozen", "l_rv_generic"
 
 
 _T = TypeVar("_T")
-_T_x = TypeVar("_T_x", bound=float | npt.NDArray[np.float64])
+_T_x = TypeVar("_T_x", float, npt.NDArray[np.float64])
+
+
+class _Fn1(Protocol):
+    def __call__(self, x: _T_x, /) -> _T_x: ...
+
 
 _Tuple2: TypeAlias = tuple[_T, _T]
 _Tuple4: TypeAlias = tuple[_T, _T, _T, _T]
@@ -141,7 +147,7 @@ class l_rv_generic(PatchClass):
     cdf: lspt.RVFunction[...]
     fit: Callable[..., tuple[float, ...]]
     mean: Callable[..., float]
-    ppf: lspt.RVFunction[...]
+    ppf: _Fn1
     std: Callable[..., float]
 
     def _get_xxf(
@@ -149,15 +155,15 @@ class l_rv_generic(PatchClass):
         *args: Any,
         loc: float = 0,
         scale: float = 1,
-    ) -> _Tuple2[Callable[[float], float]]:
+    ) -> _Tuple2[_Fn1]:
         assert scale > 0
 
         _cdf, _ppf = self._cdf, self._ppf
 
-        def cdf(x: float, /) -> float:
+        def cdf(x: _T_x, /) -> _T_x:
             return _cdf(np.array([(x - loc) / scale], dtype=float), *args)[0]
 
-        def ppf(q: float, /) -> float:
+        def ppf(q: _T_x, /) -> _T_x:
             return _ppf(np.array([q], dtype=float), *args)[0] * scale + loc
 
         return cdf, ppf
@@ -814,7 +820,7 @@ class l_rv_generic(PatchClass):
         quad_opts: lspt.QuadOptions | None = None,
         tol: float = 1e-8,
         **kwds: Any,
-    ) -> Callable[[_T_x], _T_x]:
+    ) -> _Fn1:
         r"""
         Returns the influence function (IF) of an L-moment.
 
@@ -883,10 +889,7 @@ class l_rv_generic(PatchClass):
         lm = self.l_moment(r, *args, trim=trim, quad_opts=quad_opts, **kwds)
 
         args, loc, scale = self._parse_args(*args, **kwds)
-        cdf = cast(
-            Callable[[_ArrF8], _ArrF8],
-            self._get_xxf(*args, loc=loc, scale=scale)[0],
-        )
+        cdf = self._get_xxf(*args, loc=loc, scale=scale)[0]
 
         return l_moment_influence_from_cdf(
             cdf,
@@ -980,10 +983,7 @@ class l_rv_generic(PatchClass):
         )
 
         args, loc, scale = self._parse_args(*args, **kwds)
-        cdf = cast(
-            Callable[[_ArrF8], _ArrF8],
-            self._get_xxf(*args, loc=loc, scale=scale)[0],
-        )
+        cdf = self._get_xxf(*args, loc=loc, scale=scale)[0]
 
         return l_ratio_influence_from_cdf(
             cdf,
@@ -1207,7 +1207,9 @@ class l_rv_generic(PatchClass):
         else:
             # almost never works without custom (finite and tight) bounds...
             # ... and otherwise it'll runs for +-17 exa-eons
-            rv = cast(rv_discrete, self)
+            from scipy.stats import fit as scipy_fit
+
+            rv = cast("rv_discrete", self)
             bounds0 = [
                 (-np.inf if a is None else a, np.inf if b is None else b)
                 for a, b in bounds

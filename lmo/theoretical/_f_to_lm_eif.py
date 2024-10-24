@@ -1,35 +1,38 @@
 from __future__ import annotations
 
-from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, TypeAlias, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Protocol, TypeAlias, TypeVar, cast
 
 import numpy as np
 import numpy.typing as npt
 
-import lmo.typing.np as lnpt
-import lmo.typing.scipy as lspt
 from lmo._poly import eval_sh_jacobi
 from lmo._utils import clean_order, clean_trim, round0
 from ._f_to_lm import l_moment_from_cdf
 from ._utils import ALPHA, l_const, tighten_cdf_support
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     import lmo.typing as lmt
+    import lmo.typing.scipy as lspt
 
 
 __all__ = ["l_moment_influence_from_cdf", "l_ratio_influence_from_cdf"]
 
 
 _T = TypeVar("_T")
-_T_x = TypeVar("_T_x", bound=float | npt.NDArray[np.float64])
+_T_x = TypeVar("_T_x", float, npt.NDArray[np.float64])
+
+
+class _Fn1(Protocol):
+    def __call__(self, x: _T_x, /) -> _T_x: ...
+
 
 _Pair: TypeAlias = tuple[_T, _T]
-_Fn1: TypeAlias = Callable[[float], float | lnpt.Float]
-_ArrF8: TypeAlias = npt.NDArray[np.float64]
 
 
 def l_moment_influence_from_cdf(
-    cdf: Callable[[_ArrF8], _ArrF8],
+    cdf: _Fn1,
     r: lmt.AnyOrder,
     /,
     trim: lmt.AnyTrim = 0,
@@ -110,8 +113,7 @@ def l_moment_influence_from_cdf(
             Returns:
                 out
             """
-            _x = np.asanyarray(x, np.float64)[()]
-            return cast(_T_x, _x * 0.0 + 0.0)  # :+)
+            return np.asanyarray(x, np.float64)[()] * 0.0 + 0.0  # pyright: ignore[reportReturnType]
 
         return influence0
 
@@ -119,7 +121,7 @@ def l_moment_influence_from_cdf(
 
     if l_moment is None:
         lm = l_moment_from_cdf(
-            cast(Callable[[float], float], cdf),
+            cdf,
             _r,
             trim=(s, t),
             support=support,
@@ -129,7 +131,7 @@ def l_moment_influence_from_cdf(
     else:
         lm = l_moment
 
-    a, b = support or tighten_cdf_support(cast(_Fn1, cdf), support)
+    a, b = support or tighten_cdf_support(cdf, support)
     c = l_const(_r, s, t)
 
     def influence(x: _T_x, /) -> _T_x:
@@ -154,7 +156,7 @@ def l_moment_influence_from_cdf(
 
 
 def l_ratio_influence_from_cdf(
-    cdf: Callable[[_ArrF8], _ArrF8],
+    cdf: _Fn1,
     r: lmt.AnyOrder,
     k: lmt.AnyOrder = 2,
     /,
@@ -225,44 +227,24 @@ def l_ratio_influence_from_cdf(
     kwds: dict[str, Any] = {"support": support, "quad_opts": quad_opts}
 
     if l_moments is None:
-        l_r, l_k = l_moment_from_cdf(
-            cast(Callable[[float], float], cdf),
-            [_r, _k],
-            trim=trim,
-            alpha=alpha,
-            **kwds,
-        )
+        l_r, l_k = l_moment_from_cdf(cdf, [_r, _k], trim=trim, alpha=alpha, **kwds)
     else:
         l_r, l_k = l_moments
 
-    if_r = l_moment_influence_from_cdf(
-        cdf,
-        _r,
-        trim,
-        l_moment=l_r,
-        tol=0,
-        **kwds,
-    )
-    if_k = l_moment_influence_from_cdf(
-        cdf,
-        _k,
-        trim,
-        l_moment=l_k,
-        tol=0,
-        **kwds,
-    )
+    if_r = l_moment_influence_from_cdf(cdf, _r, trim, l_moment=l_r, tol=0, **kwds)
+    if_k = l_moment_influence_from_cdf(cdf, _k, trim, l_moment=l_k, tol=0, **kwds)
 
     if abs(l_k) <= tol:
         msg = f"L-ratio ({r=}, {k=}) denominator is approximately zero."
         raise ZeroDivisionError(msg)
+
     t_r = l_r / l_k
 
     def influence_function(x: _T_x, /) -> _T_x:
         psi_r = if_r(x)
         # cheat a bit to avoid `inf - inf = nan` situations
         psi_k = np.where(np.isinf(psi_r), 0, if_k(x))
-
-        return cast(_T_x, round0((psi_r - t_r * psi_k) / l_k, tol=tol)[()])
+        return round0((psi_r - t_r * psi_k) / l_k, tol=tol)[()]  # pyright: ignore[reportReturnType]
 
     influence_function.__doc__ = (
         f"Theoretical influence function for L-moment ratio with r={_r}, "

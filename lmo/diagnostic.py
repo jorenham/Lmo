@@ -12,6 +12,7 @@ from typing import (
     Any,
     Final,
     NamedTuple,
+    Protocol,
     TypeAlias,
     TypeVar,
     cast,
@@ -20,13 +21,7 @@ from typing import (
 
 import numpy as np
 import numpy.typing as npt
-from scipy.integrate import quad
-from scipy.optimize import OptimizeWarning, minimize
-from scipy.special import chdtrc
-from scipy.stats.distributions import rv_continuous, rv_frozen
 
-import lmo.typing.np as lnpt
-import lmo.typing.scipy as lspt
 from . import constants
 from ._lm import l_ratio
 from ._poly import extrema_jacobi
@@ -41,8 +36,9 @@ else:
 
 
 if TYPE_CHECKING:
+    import lmo.typing.np as lnpt
+    import lmo.typing.scipy as lspt
     from .contrib.scipy_stats import l_rv_generic
-
 
 __all__ = (
     "error_sensitivity",
@@ -57,6 +53,12 @@ __all__ = (
 
 
 _T = TypeVar("_T")
+_T_x = TypeVar("_T_x", float, npt.NDArray[np.float64])
+
+
+class _Fn1(Protocol):
+    def __call__(self, x: _T_x, /) -> _T_x: ...
+
 
 _Tuple2: TypeAlias = tuple[_T, _T]
 _ArrF8: TypeAlias = npt.NDArray[np.float64]
@@ -191,7 +193,7 @@ _gof_stat = np.vectorize(
 
 
 def l_moment_gof(
-    rv_or_cdf: lspt.RV | Callable[[float], float],
+    rv_or_cdf: lspt.RV | _Fn1,
     l_moments: _ArrF8,
     n_obs: int,
     /,
@@ -270,16 +272,18 @@ def l_moment_gof(
 
     r = np.arange(1, 1 + n)
 
-    if isinstance(rv_or_cdf, rv_continuous.__base__ | rv_frozen):
+    if _is_rv(rv_or_cdf):
         rv = cast("l_rv_generic", rv_or_cdf)
         lambda_r = rv.l_moment(r, trim=trim, **kwargs)
         lambda_rr = rv.l_moments_cov(n, trim=trim, **kwargs)
     else:
         from .theoretical import l_moment_cov_from_cdf, l_moment_from_cdf
 
-        cdf = cast(Callable[[float], float], rv_or_cdf)
+        cdf = rv_or_cdf
         lambda_r = l_moment_from_cdf(cdf, r, trim, **kwargs)
         lambda_rr = l_moment_cov_from_cdf(cdf, n, trim, **kwargs)
+
+    from scipy.special import chdtrc
 
     stat = n_obs * _gof_stat(l_r.T, lambda_r, lambda_rr).T[()]
     pval = chdtrc(n, stat)
@@ -287,11 +291,14 @@ def l_moment_gof(
 
 
 def _is_rv(x: object) -> TypeIs[lspt.RV]:
-    return isinstance(x, lspt.RV)
+    from scipy.stats.distributions import rv_continuous, rv_discrete, rv_histogram
+
+    # NOTE: this assumes that the (private) `rv_generic` class is a sealed type
+    return isinstance(x, rv_continuous | rv_discrete | rv_histogram)
 
 
 def l_stats_gof(
-    rv_or_cdf: lspt.RV | Callable[[float], float],
+    rv_or_cdf: lspt.RV | _Fn1,
     l_stats: _ArrF8,
     n_obs: int,
     /,
@@ -319,8 +326,10 @@ def l_stats_gof(
         tau_rr = l_stats_cov_from_cdf(cdf, n, trim, **kwargs)
         tau_r = l_stats_from_cdf(cdf, n, trim, **kwargs)
 
+    from scipy.special import chdtrc
+
     stat = n_obs * _gof_stat(t_r.T, tau_r, tau_rr).T[()]
-    pval = cast(float | _ArrF8, chdtrc(n, stat))
+    pval = chdtrc(n, stat)
     return HypothesisTestResult(stat, pval)
 
 
@@ -729,19 +738,17 @@ def rejection_point(
     if influence_fn(rho_max) != 0 or influence_fn(-rho_max) != 0:
         return np.nan
 
+    from scipy.integrate import quad
+
     def integrand(x: float) -> float:
         return max(abs(influence_fn(-x)), abs(influence_fn(x)))
 
     def obj(r: _ArrF8) -> float:
         return quad(integrand, r[0], np.inf)[0]
 
-    # TO
-    res = minimize(
-        obj,
-        bounds=[(rho_min, rho_max)],
-        x0=[rho_min],
-        method="COBYLA",
-    )
+    from scipy.optimize import minimize
+
+    res = minimize(obj, bounds=[(rho_min, rho_max)], x0=[rho_min], method="COBYLA")
 
     rho = cast(float, res.x[0])
     if rho <= _MIN_RHO or influence_fn(-rho) or influence_fn(rho):
@@ -800,6 +807,8 @@ def error_sensitivity(
         return -abs(influence_fn(xs[0]))
 
     bounds = None if np.isneginf(a) and np.isposinf(b) else [(a, b)]
+
+    from scipy.optimize import OptimizeWarning, minimize
 
     res = minimize(obj, bounds=bounds, x0=[min(max(0, a), b)], method="COBYLA")
     if not res.success:
@@ -875,6 +884,8 @@ def shift_sensitivity(
 
     a, b = domain
     bounds = None if np.isneginf(a) and np.isposinf(b) else [(a, b)]
+
+    from scipy.optimize import OptimizeWarning, minimize
 
     res = minimize(
         obj,

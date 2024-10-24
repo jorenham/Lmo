@@ -322,7 +322,7 @@ def lm_genextreme(r: int, s: float, t: float, /, a: float) -> np.float64 | float
     # - conditionals within the function are avoided through multiple functions
     if a == 0:
 
-        def _ppf(q: float) -> float:
+        def _ppf(q: float, /) -> float:
             if q <= 0:
                 return -float("inf")
             if q >= 1:
@@ -331,7 +331,7 @@ def lm_genextreme(r: int, s: float, t: float, /, a: float) -> np.float64 | float
 
     elif a < 0:
 
-        def _ppf(q: float) -> float:
+        def _ppf(q: float, /) -> float:
             if q <= 0:
                 return 1 / a
             if q >= 1:
@@ -340,7 +340,7 @@ def lm_genextreme(r: int, s: float, t: float, /, a: float) -> np.float64 | float
 
     else:  # a > 0
 
-        def _ppf(q: float) -> float:
+        def _ppf(q: float, /) -> float:
             if q <= 0:
                 return -float("inf")
             if q >= 1:

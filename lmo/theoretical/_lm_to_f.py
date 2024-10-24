@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Protocol, TypeAlias, TypeVar, cast, overload
+from typing import TYPE_CHECKING, Protocol, TypeAlias, TypeVar
 
 import numpy as np
 import numpy.typing as npt
@@ -11,36 +11,21 @@ from lmo.special import fourier_jacobi, fpow
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    import optype.numpy as onpt
-
     import lmo.typing as lmt
     import lmo.typing.np as lnpt
 
-
-_T = TypeVar("_T")
-_Pair: TypeAlias = tuple[_T, _T]
-_ArrF8: TypeAlias = npt.NDArray[np.float64]
-
 __all__ = ["ppf_from_l_moments", "qdf_from_l_moments"]
 
+_T = TypeVar("_T")
+_T_x = TypeVar("_T_x", float, npt.NDArray[np.float64])
 
-class _VectorizedPPF(Protocol):
-    @overload
-    def __call__(
-        self,
-        u: lnpt.AnyArrayInt | lnpt.AnyArrayFloat,
-        /,
-        *,
-        r_max: int = ...,
-    ) -> _ArrF8: ...
-    @overload
-    def __call__(
-        self,
-        u: lnpt.AnyScalarInt | lnpt.AnyScalarFloat,
-        /,
-        *,
-        r_max: int = ...,
-    ) -> np.float64: ...
+
+class _Fn1(Protocol):
+    def __call__(self, x: _T_x, /) -> _T_x: ...
+
+
+_Pair: TypeAlias = tuple[_T, _T]
+_ArrF8: TypeAlias = npt.NDArray[np.float64]
 
 
 def _validate_l_bounds(l_r: _ArrF8, s: float, t: float) -> None:
@@ -112,7 +97,7 @@ def ppf_from_l_moments(
     support: _Pair[float] = (-np.inf, np.inf),
     validate: bool = True,
     extrapolate: bool = False,
-) -> _VectorizedPPF:
+) -> _Fn1:
     r"""
     Return a PPF (quantile function, or inverse CDF), with the specified.
     L-moments \( \tlmoment{s, t}{1}, \tlmoment{s, t}{2}, \ldots,
@@ -194,10 +179,10 @@ def ppf_from_l_moments(
     c = w * l_r
 
     def ppf(
-        u: npt.ArrayLike,
+        u: _T_x,
         *,
         r_max: int = -1,
-    ) -> np.float64 | _ArrF8:
+    ) -> _T_x:
         y = np.asarray(u)
         y = np.where((y < 0) | (y > 1), np.nan, 2 * y - 1)
 
@@ -207,7 +192,7 @@ def ppf_from_l_moments(
         if extrapolate and _n > 2:
             x = (x + fourier_jacobi(y, _c[:-1], t, s)) / 2
 
-        return np.clip(x, *support)[()]
+        return np.clip(x, *support)[()]  # pyright: ignore[reportReturnType]
 
     if validate and not _monotonic(ppf, 0, 1):
         msg = (
@@ -216,7 +201,7 @@ def ppf_from_l_moments(
         )
         raise ValueError(msg)
 
-    return cast(_VectorizedPPF, ppf)
+    return ppf
 
 
 def qdf_from_l_moments(
@@ -226,7 +211,7 @@ def qdf_from_l_moments(
     *,
     validate: bool = True,
     extrapolate: bool = False,
-) -> _VectorizedPPF:
+) -> _Fn1:
     r"""
     Return the QDF (quantile density function, the derivative of the PPF),
     with the specified L-moments \( \tlmoment{s, t}{1}, \tlmoment{s, t}{2},
@@ -271,11 +256,8 @@ def qdf_from_l_moments(
     )[1:]
     alpha, beta = t + 1, s + 1
 
-    def qdf(
-        u: onpt.AnyFloatingArray,
-        *,
-        r_max: int = -1,
-    ) -> float | _ArrF8:
+    def qdf(u: _T_x, *, r_max: int = -1) -> _T_x:
+        """Quantile Distribution Function (QDF) polynomial approximation."""
         y = np.asanyarray(u, dtype=np.float64)
         # TODO: make this lazy
         y = np.where((y < 0) | (y > 1), np.nan, 2 * y - 1)
@@ -286,10 +268,10 @@ def qdf_from_l_moments(
         if extrapolate and _n > 2:
             x = (x + fourier_jacobi(y, _c[:-1], alpha, beta)) / 2
 
-        return x[()]
+        return x[()]  # pyright: ignore[reportReturnType]
 
     if validate and np.any(qdf(plotting_positions(100)) < 0):
         msg = "QDF is not positive; consider increasing the trim"
         raise ValueError(msg)
 
-    return cast(_VectorizedPPF, qdf)
+    return qdf

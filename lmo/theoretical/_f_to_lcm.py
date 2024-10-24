@@ -3,11 +3,10 @@
 from __future__ import annotations
 
 from functools import partial
-from typing import TYPE_CHECKING, TypeAlias, TypeVar
+from typing import TYPE_CHECKING, Protocol, TypeAlias, TypeVar
 
 import numpy as np
 import numpy.typing as npt
-import scipy.integrate as spi
 
 from lmo._poly import eval_sh_jacobi
 from lmo._utils import clean_order, clean_trim, round0
@@ -24,14 +23,20 @@ if TYPE_CHECKING:
 __all__ = ["l_comoment_from_pdf", "l_coratio_from_pdf"]
 
 _T = TypeVar("_T")
+_T_x = TypeVar("_T_x", float, npt.NDArray[np.float64])
+
+
+class _Fn1(Protocol):
+    def __call__(self, x: _T_x, /) -> _T_x: ...
+
 
 _Pair: TypeAlias = tuple[_T, _T]
 _ArrF8: TypeAlias = npt.NDArray[np.float64]
 
 
 def l_comoment_from_pdf(
-    pdf: Callable[[_ArrF8], float],
-    cdfs: Sequence[Callable[[float], float]],
+    pdf: Callable[[_ArrF8], float] | Callable[[_ArrF8], np.float64],
+    cdfs: Sequence[_Fn1],
     r: lmt.AnyOrder,
     /,
     trim: lmt.AnyTrim = 0,
@@ -211,16 +216,18 @@ def l_comoment_from_pdf(
     _r = clean_order(int(r))
     s, t = clean_trim(trim)
 
-    l_r = np.zeros((n, n))
-
     c = l_const(_r, s, t)
 
     # def integrand(*xs: float, i: int, j: int) -> float:
     def integrand(*xs: float, i: int, j: int) -> float:
-        x = np.asarray(xs)
-        q_j = cdfs[j](x[j])
+        q_j = cdfs[j](xs[j])
         p_j = eval_sh_jacobi(_r - 1, t, s, q_j)
+        x = np.asarray(xs, dtype=np.float64)
         return c * x[i] * q_j**s * (1 - q_j) ** t * p_j * pdf(x)
+
+    from scipy.integrate import nquad
+
+    l_r = np.zeros((n, n))
 
     # TODO: parallelize
     for i, j in np.ndindex(l_r.shape):
@@ -234,14 +241,14 @@ def l_comoment_from_pdf(
             )
         elif _r:
             fn = partial(integrand, i=i, j=j)
-            l_r[i, j] = spi.nquad(fn, limits, opts=quad_opts)[0]
+            l_r[i, j] = nquad(fn, limits, opts=quad_opts)[0]
 
     return round0(l_r)
 
 
 def l_coratio_from_pdf(
-    pdf: Callable[[_ArrF8], float],
-    cdfs: Sequence[Callable[[float], float]],
+    pdf: Callable[[_ArrF8], float] | Callable[[_ArrF8], np.float64],
+    cdfs: Sequence[_Fn1],
     r: lmt.AnyOrder,
     r0: lmt.AnyOrder = 2,
     /,

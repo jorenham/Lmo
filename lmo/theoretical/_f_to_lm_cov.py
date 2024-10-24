@@ -1,14 +1,11 @@
 from __future__ import annotations
 
 import functools
-from collections.abc import Callable
-from typing import TYPE_CHECKING, TypeAlias, TypeVar
+from typing import TYPE_CHECKING, Protocol, TypeAlias, TypeVar, cast
 
 import numpy as np
 import numpy.typing as npt
 
-import lmo.typing.np as lnpt
-import lmo.typing.scipy as lspt
 from lmo._poly import eval_sh_jacobi
 from lmo._utils import clean_order, clean_trim, moments_to_stats_cov, round0
 from ._f_to_lm import l_moment_from_cdf
@@ -16,15 +13,21 @@ from ._utils import ALPHA, l_const, nquad, tighten_cdf_support
 
 if TYPE_CHECKING:
     import lmo.typing as lmt
+    import lmo.typing.scipy as lspt
 
 
 __all__ = ["l_moment_cov_from_cdf", "l_stats_cov_from_cdf"]
 
 
 _T = TypeVar("_T")
+_T_x = TypeVar("_T_x", float, npt.NDArray[np.float64])
+
+
+class _Fn1(Protocol):
+    def __call__(self, x: _T_x, /) -> _T_x: ...
+
 
 _Pair: TypeAlias = tuple[_T, _T]
-_Fn1: TypeAlias = Callable[[float], float | lnpt.Float]
 _ArrF8: TypeAlias = npt.NDArray[np.float64]
 
 
@@ -153,7 +156,7 @@ def l_moment_cov_from_cdf(
 
     s, t = clean_trim(trim)
 
-    _cdf = functools.cache(cdf)
+    _cdf = cast(_Fn1, functools.cache(cdf))
 
     if support is None:
         a, b = tighten_cdf_support(_cdf, (-np.inf, np.inf))
