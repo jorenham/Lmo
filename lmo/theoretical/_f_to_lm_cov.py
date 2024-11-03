@@ -38,7 +38,7 @@ def l_moment_cov_from_cdf(
     trim: lmt.AnyTrim = 0,
     *,
     support: _Pair[float] | None = None,
-    quad_opts: lspt.QuadOptions | None = None,
+    quad_opts: lspt.NQuadOptions | None = None,
 ) -> _ArrF8:
     r"""
     L-moments that are estimated from $n$ samples of a distribution with CDF
@@ -294,12 +294,15 @@ def l_stats_cov_from_cdf(
             L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
     """
     rs = clean_order(num, "num", 0)
+
     ll_kr = l_moment_cov_from_cdf(
         cdf,
         rs,
         trim,
         support=support,
-        quad_opts=quad_opts,
+        # TODO(jorenham): remove this casting with the next scipy-stubs release
+        # https://github.com/jorenham/scipy-stubs/issues/155
+        quad_opts=cast("lspt.NQuadOptions", quad_opts) if quad_opts else None,
     )
     if rs <= 2:
         return ll_kr

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from functools import partial
-from typing import TYPE_CHECKING, Protocol, TypeAlias, TypeVar
+from typing import TYPE_CHECKING, Protocol, TypeAlias, TypeVar, cast
 
 import numpy as np
 import numpy.typing as npt
@@ -241,7 +241,10 @@ def l_comoment_from_pdf(
             )
         elif _r:
             fn = partial(integrand, i=i, j=j)
-            l_r[i, j] = nquad(fn, limits, opts=quad_opts)[0]
+            # TODO(jorenham): remove this casting with the next scipy-stubs release
+            # https://github.com/jorenham/scipy-stubs/issues/155
+            nquad_opts = cast("lspt.NQuadOptions", quad_opts) if quad_opts else None
+            l_r[i, j] = nquad(fn, limits, opts=nquad_opts)[0]
 
     return round0(l_r)
 
