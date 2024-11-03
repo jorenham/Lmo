@@ -151,12 +151,8 @@ reportUnusedImport = false  # dupe of F401
 reportUnusedVariable = false  # dupe of F841
 
 [tool.repo-review]
-ignore = [
-    "PC110",    # no auto-format
-    "PC140",    # no mypy
-    "MY",       # no mypy
-    "RTD",      # no readthedocs
-]
+# TODO: basedmypy
+ignore = ["PC140", "MY", "RTD"]
 
 [tool.ruff]
 force-exclude = true
