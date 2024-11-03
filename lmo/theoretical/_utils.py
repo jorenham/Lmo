@@ -106,7 +106,7 @@ def tighten_cdf_support(
 def nquad(
     integrand: Callable[Concatenate[float, float, _Tss], float],
     domains: Sequence[tuple[float, float] | Callable[..., tuple[float, float]],],
-    opts: lspt.QuadOptions | None = None,
+    opts: lspt.NQuadOptions | None = None,
     *args: _Tss.args,
     **kwds: _Tss.kwargs,
 ) -> float:

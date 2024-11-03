@@ -1,16 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable
-from typing import (
-    TYPE_CHECKING,
-    Final,
-    Protocol,
-    TypeAlias,
-    TypeVar,
-    Unpack,
-    cast,
-    overload,
-)
+from typing import TYPE_CHECKING, Final, Protocol, TypeAlias, TypeVar, Unpack, overload
 
 import numpy as np
 import numpy.typing as npt
@@ -26,19 +16,17 @@ from lmo._utils import (
 from ._utils import l_const, tighten_cdf_support
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     import lmo.typing as lmt
     import lmo.typing.scipy as lspt
 
 
 __all__ = [
-    "l_moment_from_cdf",
-    "l_moment_from_ppf",
-    "l_moment_from_qdf",
-    "l_ratio_from_cdf",
-    "l_ratio_from_ppf",
-    "l_stats_from_cdf",
-    "l_stats_from_ppf",
-]
+    "l_moment_from_cdf", "l_moment_from_ppf", "l_moment_from_qdf",
+    "l_ratio_from_cdf", "l_ratio_from_ppf",
+    "l_stats_from_cdf", "l_stats_from_ppf",
+]  # fmt: skip
 
 
 _T = TypeVar("_T")
@@ -69,21 +57,11 @@ def _df_quad3(
 ) -> float:
     import scipy.integrate as spi
 
-    _integ = cast(Callable[..., tuple[float, float]], spi.quad)
-
-    # TODO(jorenham): Remove this workaround (and pass `f` with `args` directly) after
-    # https://github.com/jorenham/scipy-stubs/issues/139
-
-    def _f(x: float, /) -> float:
-        return f(x, r)
-
-    a, b, c, d = float(a), float(b), float(c), float(d)
-
-    out = spi.quad(_f, b, c, **kwds)[0]
+    out = spi.quad(f, b, c, (r,), **kwds)[0]
     if a < b:
-        out += spi.quad(_f, a, b, **kwds)[0]
+        out += spi.quad(f, a, b, (r,), **kwds)[0]
     if c < d:
-        out += spi.quad(_f, c, d, **kwds)[0]
+        out += spi.quad(f, c, d, (r,), **kwds)[0]
 
     return out
 
@@ -245,7 +223,7 @@ def l_moment_from_cdf(
         p = cdf(x)
         if _r == 1:
             if s or t:  # noqa: SIM108
-                v = cast(float, betainc(s + 1, t + 1, p))
+                v = betainc(s + 1, t + 1, p)
             else:
                 v = p
             return np.heaviside(x, 0.5) - v
