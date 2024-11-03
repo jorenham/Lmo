@@ -211,6 +211,9 @@ ignore = [
     "PLR6301",  # no-self-use
     # ruff
     "RUF021",   # parenthesize-chained-operators
+    # TODO: re-enable once we have `ruff>=0.7.3`
+    # https://github.com/astral-sh/ruff/issues/14047
+    "UP044",
 ]
 typing-modules = ["typing", "typing_extensions"]
 
