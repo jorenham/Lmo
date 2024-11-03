@@ -49,6 +49,10 @@ tr.row-double-top > td {
     max-width: 1440px;
 }
 
+/* Hide overloads */
+.doc-overloads {
+    display: none;
+}
 /* Workarounds */
 /* td,
 th {
