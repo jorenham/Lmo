@@ -121,10 +121,9 @@ These are automatically installed by your package manager when installing Lmo.
 
 Additionally, Lmo supports the following optional packages:
 
-|                      | version      | `pip install _` | extra requirements |
-| -------------------: | ------------ | --------------- | ------------------ |
-| [`scipy-stubs`][SPT] | `>=1.14.1.0` | `Lmo[typing]`   | `scipy >= 1.14.1`  |
-| [`pandas`][PD]       | `>=2.0`      | `Lmo[pandas]`   |                    |
+|                | version | `pip install _` |
+| -------------: | ------- | --------------- |
+| [`pandas`][PD] | `>=2.0` | `Lmo[pandas]`   |
 
 See [SPEC 0][SPEC0] for more information.
 
@@ -157,7 +156,6 @@ See [SPEC 0][SPEC0] for more information.
 [NP]: https://github.com/numpy/numpy
 [SP]: https://github.com/scipy/scipy
 [PD]: https://github.com/pandas-dev/pandas
-[SPT]: https://github.com/jorenham/scipy-stubs
 [SPEC0]: https://scientific-python.org/specs/spec-0000/
 
 <!--overview-end-->
