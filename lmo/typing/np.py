@@ -9,54 +9,39 @@ import numpy as np
 import optype.numpy as onpt
 
 __all__ = (
-    "RNG",
-    "AnyArray",
-    "AnyArrayBool",
     "AnyArrayFloat",
     "AnyArrayInt",
-    "AnyMatrix",
-    "AnyMatrixBool",
     "AnyMatrixFloat",
     "AnyMatrixInt",
-    "AnyScalar",
-    "AnyScalarBool",
     "AnyScalarFloat",
     "AnyScalarInt",
-    "AnyTensor",
-    "AnyTensorBool",
     "AnyTensorFloat",
     "AnyTensorInt",
     "AnyVector",
-    "AnyVectorBool",
     "AnyVectorFloat",
     "AnyVectorFloat",
-    "Bool",
-    "Casting",
     "Float",
     "Int",
-    "Integer",
-    "Natural",
-    "Number",
-    "Order",
-    "OrderCopy",
+    "Integral",
     "OrderReshape",
     "Real",
     "SortKind",
 )
 
 
+def __dir__() -> tuple[str, ...]:
+    return __all__
+
+
 # Some handy scalar type aliases
 
 
-Bool: TypeAlias = np.bool_
-UInt: TypeAlias = np.unsignedinteger[Any]
 Int: TypeAlias = np.integer[Any]
 Float: TypeAlias = np.floating[Any]
 Number: TypeAlias = np.number[Any]
 
-Natural: TypeAlias = UInt | Bool
-Integer: TypeAlias = np.integer[Any] | np.bool_
-Real: TypeAlias = Float | Integer
+Integral: TypeAlias = Int | np.bool_
+Real: TypeAlias = Float | Integral
 
 
 # Array and array-likes, with generic shape
@@ -64,8 +49,7 @@ Real: TypeAlias = Float | Integer
 _ST = TypeVar("_ST", bound=np.generic)
 
 
-_PyScalar: TypeAlias = bool | int | float | complex | str | bytes
-# _PyScalar: TypeAlias = bool | int | float | complex
+_PyScalar: TypeAlias = complex | str | bytes
 _ST_py = TypeVar("_ST_py", bound=_PyScalar)
 
 _T = TypeVar("_T")
@@ -85,31 +69,13 @@ _AnyMatrix: TypeAlias = (
 # these will result in {0,1,2,N}-D arrays when passed to `np.array` (no need
 # for a broken "nested sequence" type)
 
-AnyScalar: TypeAlias = _AnyScalar[np.generic, _PyScalar]
 AnyVector: TypeAlias = _AnyVector[np.generic, _PyScalar]
-AnyMatrix: TypeAlias = _AnyMatrix[np.generic, _PyScalar]
-AnyTensor: TypeAlias = (
-    onpt.CanArray[onpt.AtLeast3D, np.dtype[np.generic]]
-    | _PyVector[AnyMatrix]
-    | _PyVector["AnyTensor"]
-)
-AnyArray: TypeAlias = AnyScalar | AnyVector | AnyMatrix | AnyTensor
 
-AnyScalarBool: TypeAlias = _AnyScalar[Bool, bool]
-AnyVectorBool: TypeAlias = _AnyVector[Bool, bool]
-AnyMatrixBool: TypeAlias = _AnyMatrix[Bool, bool]
-AnyTensorBool: TypeAlias = (
-    onpt.CanArray[onpt.AtLeast3D, np.dtype[Bool]]
-    | _PyVector[AnyMatrixBool]
-    | _PyVector["AnyTensorBool"]
-)
-AnyArrayBool: TypeAlias = AnyVectorBool | AnyMatrixBool | AnyTensorBool
-
-AnyScalarInt: TypeAlias = _AnyScalar[Integer, int]
-AnyVectorInt: TypeAlias = _AnyVector[Integer, int]
-AnyMatrixInt: TypeAlias = _AnyMatrix[Integer, int]
+AnyScalarInt: TypeAlias = _AnyScalar[Integral, int]
+AnyVectorInt: TypeAlias = _AnyVector[Integral, int]
+AnyMatrixInt: TypeAlias = _AnyMatrix[Integral, int]
 AnyTensorInt: TypeAlias = (
-    onpt.CanArray[onpt.AtLeast3D, np.dtype[Integer]]
+    onpt.CanArray[onpt.AtLeast3D, np.dtype[Integral]]
     | _PyVector[AnyMatrixInt]
     | _PyVector["AnyTensorInt"]
 )
@@ -129,21 +95,14 @@ AnyArrayFloat: TypeAlias = AnyVectorFloat | AnyMatrixFloat | AnyTensorFloat
 # Various type aliases
 
 
-Order: TypeAlias = Literal["C", "F"]
-"""Type of the `order` parameter of e.g. [`np.empty`][numpy.empty]."""
-OrderReshape: TypeAlias = Literal[Order, "A"]
+OrderReshape: TypeAlias = Literal["C", "F", "A"]
 """Type of the `order` parameter of e.g. [`np.reshape`][numpy.array]."""
-OrderCopy: TypeAlias = Literal[OrderReshape, "K"]
-"""Type of the `order` parameter of e.g. [`np.array`][numpy.array]."""
 
 SortKind: TypeAlias = Literal[
-    "quick",
-    "quicksort",
-    "stable",
-    "stablesort",
-    "heap",
-    "heapsort",
-]
+    "quick", "quicksort",
+    "stable", "stablesort",
+    "heap", "heapsort",
+]  # fmt: skip
 """
 Type of the `kind` parameter of e.g. [`np.sort`][numpy.sort], as
 allowed by numpy's own stubs.
@@ -151,13 +110,6 @@ Note that the actual implementation just looks at `kind[0].lower() == 'q'`.
 This means that it's possible to select stable-sort by passing
 `kind='SnailSort'` instead of `kind='stable'` (although your typechecker might
 ruin the fun).
-"""
-
-RNG: TypeAlias = np.random.Generator | np.random.RandomState
-"""
-Union of the [`numpy.random.Generator`][numpy.random.Generator] and the
-(legacy) [`numpy.random.RandomState`][numpy.random.RandomState] "RNG" types,
-that are mostly compatible.
 """
 
 Seed: TypeAlias = (
@@ -170,6 +122,3 @@ Seed: TypeAlias = (
 Any acceptable "seed" type that can be passed to
 [`numpy.random.default_rng`][numpy.random.default_rng].
 """
-
-Casting: TypeAlias = Literal["no", "equiv", "safe", "same_kind", "unsafe"]
-"""See [`numpy.can_cast`][numpy.can_cast]."""
