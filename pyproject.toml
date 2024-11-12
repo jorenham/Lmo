@@ -160,7 +160,6 @@ indent-width = 4
 line-length = 88
 show-fixes = true
 src = ["lmo", "tests"]
-target-version = "py311"
 
 [tool.ruff.format]
 docstring-code-format = true
