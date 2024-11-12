@@ -17,6 +17,9 @@ from typing import (
 
 import numpy as np
 import numpy.typing as npt
+from numpy._typing import (
+    _ArrayLikeFloat_co,  # noqa: TCH002  # pyright: ignore[reportPrivateUsage]
+)
 from scipy.stats._distn_infrastructure import (
     rv_continuous,
     rv_continuous_frozen,
@@ -32,9 +35,8 @@ else:
     from typing_extensions import ParamSpec, Protocol, TypeVar, runtime_checkable
 
 if TYPE_CHECKING:
-    from collections.abc import ItemsView, Iterator, KeysView, Sequence, ValuesView
+    from collections.abc import ItemsView, Iterator, KeysView, ValuesView
 
-    import optype as op
     import optype.numpy as onpt
 
     import lmo.typing.np as lnpt
@@ -43,7 +45,6 @@ if TYPE_CHECKING:
 __all__ = (
     "RV",
     "FitResult",
-    "NQuadOptions",
     "OptimizeResult",
     "QuadOptions",
     "QuadWeights",
@@ -69,8 +70,8 @@ QuadWeights: TypeAlias = Literal[
     "cauchy",
 ]
 
-_IntLike: TypeAlias = int | np.int64 | np.int32 | np.int16
-_FloatLike: TypeAlias = float | np.float64 | np.float32
+_IntLike: TypeAlias = int | np.integer[Any]
+_FloatLike: TypeAlias = float | np.floating[Any]
 
 
 class QuadOptions(TypedDict, total=False):
@@ -82,24 +83,10 @@ class QuadOptions(TypedDict, total=False):
     epsabs: _FloatLike
     epsrel: _FloatLike
     limit: _IntLike
-    points: Sequence[float] | onpt.CanArray[Any, np.dtype[np.float64 | np.float32]]
+    points: _ArrayLikeFloat_co
     weight: QuadWeights
     wvar: _FloatLike | tuple[_FloatLike, _FloatLike]
-    wopts: tuple[int, npt.NDArray[np.float64 | np.float32]]
-    maxp1: _IntLike
-    limlst: _IntLike
-
-
-class NQuadOptions(TypedDict, total=False):  # noqa: D101
-    # TODO(jorenham): Replace this with `QuadOptions` after the next scipy-stubs
-    # https://github.com/jorenham/scipy-stubs/issues/155
-    epsabs: float
-    epsrel: float
-    limit: int
-    points: op.CanGetitem[int, float | np.floating[Any] | np.integer[Any] | np.bool_]
-    weight: QuadWeights
-    wvar: float | tuple[float, float]
-    wopts: tuple[int, npt.NDArray[np.float32 | np.float64]]
+    wopts: tuple[_IntLike, npt.NDArray[np.float32 | np.float64]]
 
 
 # scipy.optimize

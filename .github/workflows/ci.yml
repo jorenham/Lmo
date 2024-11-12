@@ -23,25 +23,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: install poetry
-        run: |
-          pipx install poetry
-          poetry config virtualenvs.create true --local
-          poetry config virtualenvs.in-project true --local
-
-      - uses: actions/setup-python@v5
+      - uses: scientific-python/repo-review@v0.11.2
         with:
-          python-version: "3.11"
-          cache: poetry
-
-      - name: poetry check
-        run: poetry check
-
-      - name: poetry install
-        run: poetry install --without debug,docs --all-extras
-
-      - name: repo-review
-        run: poetry run repo-review .
+          plugins: sp-repo-review
 
       - name: markdownlint
         uses: DavidAnson/markdownlint-cli2-action@v17
@@ -49,21 +33,34 @@ jobs:
           config: ".markdownlint.yaml"
           globs: "*.md"
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: uv sync
+        run: >
+          uv sync
+          --frozen
+          --python 3.11
+          --no-group debug
+          --no-group docs
+
       - name: blacken-docs
-        run: git ls-files -z -- '*.md' | xargs -0 poetry run blacken-docs
+        run: git ls-files -z -- '*.md' | xargs -0 uv run blacken-docs
 
       - name: codespell
-        run: poetry run codespell .
+        run: uv run codespell .
 
       - name: ruff check
         run: |
-          poetry run ruff check --output-format=github
-          poetry run ruff format --check
+          uv run ruff check --output-format=github
+          uv run ruff format --check
 
       - name: basedpyright
         run: |
-          poetry run basedpyright
-          poetry run basedpyright --ignoreexternal --verifytypes lmo
+          uv run basedpyright
+          uv run basedpyright --ignoreexternal --verifytypes lmo
 
   test:
     timeout-minutes: 20
@@ -73,7 +70,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         python-version: ["3.11", "3.13"]
-        pandas: ["without", "with"]
+        pandas: ["--no-group pandas", ""]
         exclude:
           - python-version: "3.13"
             pandas: "with"
@@ -83,20 +80,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: install poetry
-        run: pipx install poetry
-
-      - uses: actions/setup-python@v5
+      - name: setup uv
+        uses: astral-sh/setup-uv@v3
         with:
-          python-version: ${{ matrix.python-version }}
-          cache: poetry
+          enable-cache: true
 
-      - name: poetry install
+      - name: setup python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: uv sync
         run: >
-          poetry install
-          --without debug,docs
-          --with github
-          --${{ matrix.pandas }} pandas
+          uv sync
+          --no-group debug
+          --no-group docs
+          ${{ matrix.pandas }}
 
       - name: pytest
-        run: poetry run pytest
+        run: uv run pytest
