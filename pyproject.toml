@@ -1,16 +1,14 @@
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.poetry]
+[project]
 name = "lmo"
+description = "L-moments for robust data science."
 version = "0.15.0.dev0"
-description = "L-Moments for robust statistics & inference."
-authors = ["Joren Hammudoglu <jhammudoglu@gmail.com>"]
+authors = [{name = "Joren Hammudoglu", email = "jhammudoglu@gmail.com"}]
 readme = "README.md"
-license = "BSD-3-Clause"
-homepage = "https://jorenham.github.io/Lmo/"
-repository = "https://github.com/jorenham/Lmo/"
+license = {file = "LICENSE"}
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -18,6 +16,7 @@ classifiers = [
     "Intended Audience :: Education",
     "Intended Audience :: Financial and Insurance Industry",
     "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: BSD License",
     "Natural Language :: English",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3.11",
@@ -32,63 +31,63 @@ classifiers = [
     "Topic :: Utilities",
     "Typing :: Typed",
 ]
+# https://scientific-python.org/specs/spec-0000/
+requires-python = ">=3.11"
+dependencies = [
+    "typing_extensions>=4.10; python_version<'3.13'",
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "scipy-stubs>=1.14.1.3",
+    "optype[numpy]>=0.6.1,<0.7",
+]
 
-[tool.poetry.urls]
+[project.optional-dependencies]
+pandas = ["pandas>=2.0"]
+
+[project.urls]
+Repository = "https://github.com/jorenham/Lmo/"
 Documentation = "https://jorenham.github.io/Lmo/"
 Issues = "https://github.com/jorenham/Lmo/issues"
+Changelog = "https://github.com/jorenham/Lmo/releases"
+Funding = "https://github.com/sponsors/jorenham"
 
-[tool.poetry.extras]
-pandas = ["pandas"]
+[dependency-groups]
+debug = [
+    "ipython>=8.29.0",
+    "ipykernel>=6.29.5",
+    "line_profiler>=4.1.3; python_version<'3.13'",
+    "matplotlib>=3.9.2",
+    "typing-extensions>=4.12.2",
+]
+docs = [
+    "mkdocs>=1.6.1",
+    "mkdocs-bibtex>=2.16.2",
+    "mkdocs-git-revision-date-localized-plugin>=1.3.0",
+    "mkdocs-include-markdown-plugin>=7.0.0",
+    "mkdocs-jupyter>=0.25.1",
+    "mkdocs-material>=9.5.44",
+    "mkdocs-minify-plugin>=0.8.0",
+    "mkdocstrings[python]>=0.26.2,<0.27.0",
+]
+pandas = [
+    "pandas>=2.2.3",
+    "pandas-stubs>=2.2.3.241009",
+]
+dev = [
+    "blacken-docs>=1.19.1",
+    "codespell>=2.3.0",
+    "hypothesis[numpy]>=6.118.8",
+    "pre-commit>=4.0.1",
+    "basedpyright>=1.21.0",
+    "pytest>=8.3.3",
+    "pytest-doctestplus>=1.2.1",
+    "ruff>=0.7.3",
+    "sp-repo-review[cli]>=2024.8.19",
+    "tox>=4.23.2",
+]
 
-[tool.poetry.dependencies]
-python = "^3.11"
-typing_extensions = {version = "^4.10", python = "<3.13"}
-
-# https://numpy.org/neps/nep-0029-deprecation_policy.html
-# https://scientific-python.org/specs/spec-0000/
-numpy =  ">=1.24"
-scipy = "^1.10"
-scipy-stubs = "^1.14.1.2"
-optype = {version = "^0.6.1", extras = ["numpy"]}
-pandas = {version = "^2.0", optional = true}
-
-[tool.poetry.group.dev.dependencies]
-blacken-docs = "^1.19.1"
-codespell = "^2.3.0"
-hypothesis = {version = "^6.116.0", extras = ["numpy"]}
-pre-commit = "^4.0.1"
-basedpyright = "^1.20.0"
-pytest = "^8.3.3"
-pytest-doctestplus = "^1.2.1"
-ruff = ">=0.7.2"
-sp-repo-review = {version = "^2024.8.19", extras = ["cli"]}
-tox = "^4.23.2"
-
-[tool.poetry.group.docs.dependencies]
-mkdocs = "^1.6.1"
-mkdocs-bibtex = "^2.16.2"
-mkdocs-git-revision-date-localized-plugin = "^1.3.0"
-mkdocs-include-markdown-plugin = "^7.0.0"
-mkdocs-jupyter = "^0.25.1"
-mkdocs-material = "^9.5.43"
-mkdocs-minify-plugin = "^0.8.0"
-mkdocstrings = {version = ">=0.26.2,<0.27.0", extras = ["python"]}
-
-[tool.poetry.group.debug.dependencies]
-ipython = "^8.29.0"
-ipykernel = "^6.29.5"
-line_profiler = {version = "^4.1.3", python = "<3.13"}
-matplotlib = "^3.9.2"
-typing-extensions = "^4.12.2"
-
-[tool.poetry.group.pandas.dependencies]
-pandas = "*"
-pandas-stubs = ">=2.0"
-
-[tool.poetry.group.github]
-optional = true
-[tool.poetry.group.github.dependencies]
-pytest-github-actions-annotate-failures = ">=0.2.0,<1.0"
+[tool.uv]
+default-groups = ["dev", "docs", "debug", "pandas"]
 
 [tool.codespell]
 skip = "*.bib,*.css,*.ipynb,*.js,*.lock,*.pyc,*.svg,./site,"
@@ -267,7 +266,6 @@ allow-magic-value-types = ["int" ,"str"]
 
 [tool.tox]
 isolated_build = true
-requires = ["tox>=4.21.2"]
 env_list = ["repo-review", "pre-commit", "3.11", "3.12", "3.13"]
 
 [tool.tox.env_run_base]

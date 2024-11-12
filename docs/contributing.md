@@ -12,19 +12,12 @@ the bug.
 
 ## Environment setup
 
-Ensure you have [poetry](https://python-poetry.org/docs/#installation)
+Ensure you have [uv](https://docs.astral.sh/uv/getting-started/installation/)
 installed.
-It can help to use Lmo's lowest-supported Python version, so that you don't
-accidentally use those bleeding-edge Python features that you shouldn't, e.g.
+You can install the dev dependencies using
 
 ```bash
-poetry env use python3.10
-```
-
-Now you can install the dev dependencies using
-
-```bash
-poetry install --sync
+uv sync
 ```
 
 ### pre-commit
@@ -33,13 +26,13 @@ Lmo uses [pre-commit](https://pre-commit.com/) to ensure that the code is
 formatted and typed correctly when committing the changes.
 
 ```bash
-poetry run pre-commit install
+uv run pre-commit install
 ```
 
 It can also be manually run:
 
 ```bash
-poetry run pre-commit --all-files
+uv run pre-commit --all-files
 ```
 
 ### Testing
@@ -51,7 +44,7 @@ framework.
 The tests can be run using
 
 ```bash
-poetry run pytest
+uv run pytest
 ```
 
 ## Documentation
@@ -60,7 +53,7 @@ If your change involves documentation updates, you can conjure up a live
 preview:
 
 ```bash
-poetry run mkdocs serve
+uv run mkdocs serve
 ```
 
 This will require `pandoc` and `pandoc-citeproc` to be installed on your
