@@ -30,6 +30,10 @@ __all__ = [
 ]
 
 
+def __dir__() -> list[str]:
+    return __all__
+
+
 AnyTrimInt: TypeAlias = int | tuple[int, int]
 AnyTrimFloat: TypeAlias = float | tuple[float, float]
 AnyTrim: TypeAlias = AnyTrimInt | AnyTrimFloat

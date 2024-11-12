@@ -103,7 +103,7 @@ class _LmVFunc(Protocol[_Tss]):
     @overload
     def __call__(
         self,
-        r: onpt.CanArray[_ShapeT, np.dtype[lnpt.Integer]],
+        r: onpt.CanArray[_ShapeT, np.dtype[lnpt.Integral]],
         s: float,
         t: float,
         /,
@@ -113,7 +113,7 @@ class _LmVFunc(Protocol[_Tss]):
     @overload
     def __call__(
         self,
-        r: int | lnpt.Integer,
+        r: int | lnpt.Integral,
         s: float,
         t: float,
         /,
