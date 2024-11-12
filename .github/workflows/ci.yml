@@ -42,7 +42,7 @@ jobs:
         run: >
           uv sync
           --frozen
-          --python 3.10
+          --python 3.11
           --no-group debug
           --no-group docs
 
