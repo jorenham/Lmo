@@ -573,7 +573,7 @@ class l_rv_generic(PatchClass):
         /,
         *args: Any,
         trim: lmt.AnyTrim = 0,
-        quad_opts: lspt.NQuadOptions | None = None,
+        quad_opts: lspt.QuadOptions | None = None,
         **kwds: Any,
     ) -> _ArrF8:
         r"""
@@ -1419,7 +1419,7 @@ class l_rv_frozen(PatchClass):  # noqa: D101
         r_max: int,
         /,
         trim: lmt.AnyTrim = 0,
-        quad_opts: lspt.NQuadOptions | None = None,
+        quad_opts: lspt.QuadOptions | None = None,
     ) -> _ArrF8:
         return self.dist.l_moments_cov(
             r_max,

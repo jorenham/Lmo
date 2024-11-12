@@ -440,7 +440,7 @@ def fit(  # noqa: C901
             args=(_l_moment_fn, _r, l_r, _trim, w_rr),
             **kwds,
         )
-        i += cast(int, res.nfev)
+        i += res.nfev
         fun = res.fun
         theta = res.x
 
