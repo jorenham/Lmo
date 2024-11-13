@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import sys
-from typing import TYPE_CHECKING, Any, TypeAlias
+from typing import TYPE_CHECKING, Any, Protocol, TypeAlias
 
+# pyright: reportPrivateUsage=false
 import numpy as np
+import numpy.typing as npt
 import optype.numpy as onpt
-from optype import CanSequence
+from numpy._typing import _NestedSequence  # noqa: PLC2701
 
 if sys.version_info >= (3, 13):
     from typing import TypedDict
@@ -24,6 +26,7 @@ __all__ = [
     "AnyOrder",
     "AnyOrderND",
     "AnyTrim",
+    "AnyTrimFloat",
     "AnyTrimInt",
     "LComomentOptions",
     "LMomentOptions",
@@ -38,11 +41,14 @@ AnyTrimInt: TypeAlias = int | tuple[int, int]
 AnyTrimFloat: TypeAlias = float | tuple[float, float]
 AnyTrim: TypeAlias = AnyTrimInt | AnyTrimFloat
 
+
+class _CanIntegerArray(Protocol):
+    def __len__(self, /) -> int: ...  # this excludes scalar types
+    def __array__(self, /) -> npt.NDArray[np.integer[Any]]: ...
+
+
 AnyOrder: TypeAlias = int | np.integer[Any]
-AnyOrderND: TypeAlias = (
-    CanSequence[int, int, int]
-    | onpt.CanArray[tuple[int, ...], np.dtype[np.integer[Any]]]
-)
+AnyOrderND: TypeAlias = _CanIntegerArray | _NestedSequence[int | np.integer[Any]]
 
 AnyFWeights: TypeAlias = onpt.Array[tuple[int], np.integer[Any]]
 AnyAWeights: TypeAlias = onpt.Array[onpt.AtLeast1D, np.floating[Any]]

@@ -8,10 +8,8 @@ import numpy as np
 import numpy.typing as npt
 
 if sys.version_info >= (3, 13):
-    from typing import LiteralString, TypeVar
+    from typing import TypeVar
 else:
-    from typing import LiteralString
-
     from typing_extensions import TypeVar
 
 if TYPE_CHECKING:
@@ -37,15 +35,15 @@ __all__ = (
 
 _SCT = TypeVar("_SCT", bound=np.generic)
 _SCT_uifc = TypeVar("_SCT_uifc", bound="lnpt.Number")
-_SCT_ui = TypeVar("_SCT_ui", bound="lnpt.Int", default=np.int_)
-_SCT_f = TypeVar("_SCT_f", bound="lnpt.Float", default=np.float64)
+_SCT_ui = TypeVar("_SCT_ui", bound=np.integer[Any], default=np.intp)
+_SCT_f = TypeVar("_SCT_f", bound=np.floating[Any], default=np.float64)
 
-_DT_f = TypeVar("_DT_f", bound=np.dtype["lnpt.Float"])
-_AT_f = TypeVar("_AT_f", bound="npt.NDArray[lnpt.Float] | lnpt.Float")
+_DT_f = TypeVar("_DT_f", bound=np.dtype[np.floating[Any]])
+_AT_f = TypeVar("_AT_f", bound=np.floating[Any] | npt.NDArray[np.floating[Any]])
 
 _SizeT = TypeVar("_SizeT", bound=int)
 
-_ShapeT = TypeVar("_ShapeT", bound="onpt.AtLeast0D")
+_ShapeT = TypeVar("_ShapeT", bound=tuple[int, ...])
 _ShapeT1 = TypeVar("_ShapeT1", bound="onpt.AtLeast1D")
 _ShapeT2 = TypeVar("_ShapeT2", bound="onpt.AtLeast2D")
 
@@ -261,18 +259,30 @@ def ordered(  # noqa: C901
     return x_kk
 
 
+@overload
+def clean_order(r: lmt.AnyOrder, /, name: str = "r", rmin: int = 0) -> int: ...
+@overload
 def clean_order(
-    r: lmt.AnyOrder,
+    r: lmt.AnyOrderND,
     /,
-    name: LiteralString = "r",
+    name: str = "r",
     rmin: int = 0,
-) -> int:
+) -> npt.NDArray[np.intp]: ...
+def clean_order(
+    r: lmt.AnyOrder | lmt.AnyOrderND,
+    /,
+    name: str = "r",
+    rmin: int = 0,
+) -> int | npt.NDArray[np.intp]:
     """Validates and cleans an single (L-)moment order."""
-    if (_r := int(r)) < rmin:
-        msg = f"expected {name} >= {rmin}, got {_r}"
+    if not isinstance(r, int | np.integer):
+        return clean_orders(r, name=name, rmin=rmin)
+
+    if r < rmin:
+        msg = f"expected {name} >= {rmin}, got {r}"
         raise TypeError(msg)
 
-    return _r
+    return int(r)
 
 
 def clean_orders(
@@ -280,8 +290,8 @@ def clean_orders(
     /,
     name: str = "r",
     rmin: int = 0,
-    dtype: _DType[_SCT_ui] = np.int_,
-) -> onpt.Array[Any, _SCT_ui]:
+    dtype: _DType[_SCT_ui] = np.intp,
+) -> npt.NDArray[_SCT_ui]:
     """Validates and cleans an array-like of (L-)moment orders."""
     _r = np.asarray_chkfinite(r, dtype=dtype)
 
