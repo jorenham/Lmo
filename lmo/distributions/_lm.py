@@ -69,6 +69,31 @@ DistributionName: TypeAlias = Literal[
     "genlambda",
 ]
 _LM_REGISTRY: Final[dict[DistributionName, _LmVFunc[...]]] = {}
+_PPF_REGISTRY: Final[set[str]] = {
+    "arcsine",
+    "cauchy",
+    "halfcauchy",
+    "exponweib",
+    "exponpow",
+    "genlogistic",
+    "genhalflogistic",
+    "gompertz",
+    "gumbel_l",
+    "hypsecant",
+    "invweibull",
+    "kappa3",
+    "kappa4",
+    "laplace",
+    "laplace_asymmetric",
+    "pareto",
+    "truncpareto",
+    "lomax",
+    "powerlaw",
+    "rayleigh",
+    "tukeylambda",
+    "weibull_min",
+    "weibull_max",
+}
 
 _ArrF8: TypeAlias = onpt.Array[tuple[int, ...], np.float64]
 
@@ -125,9 +150,14 @@ class _LmVFunc(Protocol[_Tss]):
 def register_lm_func(
     name: DistributionName,
     /,
+    *,
+    prefer_ppf: bool = True,
 ) -> Callable[[_LmFunc[_Tss]], _LmVFunc[_Tss]]:
     # TODO: vectorize decorator (only for `r`), with correct signature
     assert name not in _LM_REGISTRY
+
+    if prefer_ppf:
+        _PPF_REGISTRY.add(name)
 
     def _wrapper(func: _LmFunc[_Tss], /) -> _LmVFunc[_Tss]:
         vfunc = np.vectorize(func, [float], excluded={1, 2})
@@ -149,7 +179,15 @@ def get_lm_func(name: DistributionName, /) -> _LmVFunc[...]:
     return _LM_REGISTRY[name]
 
 
-@register_lm_func("uniform")
+def prefers_ppf(name: str, /) -> bool:
+    """
+    Whether the distribution with the given name prefers `ppf` over `cdf` for
+    numerical calculation of the L-moments.
+    """
+    return name in _PPF_REGISTRY
+
+
+@register_lm_func("uniform", prefer_ppf=False)
 def lm_uniform(r: int, s: float, t: float, /) -> float:
     """
     Exact generalized* trimmed L-moments of the standard uniform distribution

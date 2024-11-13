@@ -77,7 +77,4 @@ if not TYPE_CHECKING:
     [Distributions - GLD](../distributions.md#gld).
     """
 else:
-    genlambda: Final = cast(
-        lspt.RVContinuous,
-        genlambda_gen(name="genlambda"),
-    )
+    genlambda: Final = cast(lspt.RVContinuous, genlambda_gen(name="genlambda"))

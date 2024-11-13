@@ -8,7 +8,6 @@ from typing import (
     ClassVar,
     Final,
     Literal,
-    LiteralString,
     Protocol,
     Self,
     TypeAlias,
@@ -33,11 +32,15 @@ from lmo.theoretical import (
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    import optype.numpy as onpt
+    import optype as op
 
+
+_F8: TypeAlias = np.float64
+_ArrF8: TypeAlias = npt.NDArray[_F8]
+_VecF8: TypeAlias = np.ndarray[tuple[int], np.dtype[_F8]]
 
 _T = TypeVar("_T")
-_T_x = TypeVar("_T_x", float, npt.NDArray[np.float64])
+_T_x = TypeVar("_T_x", float, _ArrF8)
 
 
 class _Fn1(Protocol):
@@ -68,10 +71,8 @@ _Tuple4: TypeAlias = tuple[_T, _T, _T, _T]
 _Tuple4m: TypeAlias = tuple[()] | _Tuple1[_T] | _Tuple2[_T] | _Tuple3[_T] | _Tuple4[_T]
 
 
-def _get_rng(seed: lnpt.Seed | None = None) -> np.random.Generator:
-    if isinstance(seed, np.random.Generator):
-        return seed
-    return np.random.default_rng(seed)
+def _get_rng(s: lnpt.Seed | None = None, /) -> np.random.Generator:
+    return s if isinstance(s, np.random.Generator) else np.random.default_rng(s)
 
 
 class l_poly:  # noqa: N801
@@ -79,15 +80,15 @@ class l_poly:  # noqa: N801
     Polynomial quantile distribution with (only) the given L-moments.
     """
 
-    name: ClassVar[LiteralString] = "l_poly"
+    name: ClassVar[Literal["l_poly"]] = "l_poly"
     badvalue: ClassVar[float] = np.nan
     moment_type: ClassVar[_MomentType] = 1
-    numargs: ClassVar[int] = 2
-    shapes: ClassVar[LiteralString | None] = "lmbda, trim"
+    numargs: ClassVar[Literal[2]] = 2
+    shapes: ClassVar[Literal["lmbda, trim"]] = "lmbda, trim"
 
-    _l_moments: Final[onpt.Array[tuple[int], np.float64]]
+    _l_moments: Final[_VecF8]
     _trim: Final[_Trim]
-    _support: Final[tuple[np.float64, np.float64]]
+    _support: Final[_Tuple2[_F8]]
 
     _cdf: Final[_Fn1]
     _ppf: Final[_Fn1]
@@ -138,12 +139,12 @@ class l_poly:  # noqa: N801
         super().__init__()
 
     @property
-    def a(self, /) -> np.float64:
+    def a(self, /) -> _F8:
         """Lower bound of the support."""
         return self._support[0]
 
     @property
-    def b(self, /) -> np.float64:
+    def b(self, /) -> _F8:
         """Upper bound of the support."""
         return self._support[1]
 
@@ -153,11 +154,7 @@ class l_poly:  # noqa: N801
         return self._random_state
 
     @random_state.setter
-    def random_state(
-        self,
-        seed: lnpt.Seed,  # pyright: ignore[reportPropertyTypeMismatch]
-        /,
-    ) -> None:
+    def random_state(self, seed: lnpt.Seed, /) -> None:  # pyright: ignore[reportPropertyTypeMismatch]
         self._random_state = _get_rng(seed)
 
     @classmethod
@@ -221,20 +218,20 @@ class l_poly:  # noqa: N801
         /,
         size: Literal[1] | None = None,
         random_state: lnpt.Seed | None = None,
-    ) -> np.float64: ...
+    ) -> _F8: ...
     @overload
     def rvs(
         self,
         /,
         size: int | tuple[int, ...],
         random_state: lnpt.Seed | None = None,
-    ) -> npt.NDArray[np.float64]: ...
+    ) -> _ArrF8: ...
     def rvs(
         self,
         /,
         size: int | tuple[int, ...] | None = None,
         random_state: lnpt.Seed | None = None,
-    ) -> np.float64 | npt.NDArray[np.float64]:
+    ) -> _F8 | _ArrF8:
         """
         Draw random variates from the relevant distribution.
 
@@ -493,7 +490,7 @@ class l_poly:  # noqa: N801
         """
         return self._entropy
 
-    def support(self, /) -> tuple[np.float64, np.float64]:
+    def support(self, /) -> tuple[_F8, _F8]:
         r"""
         The support \( (Q(0), Q(1)) \) of the distribution, where \( Q(p) \)
         is the [PPF][lmo.distributions.l_poly.ppf].
@@ -501,21 +498,14 @@ class l_poly:  # noqa: N801
         return self._support
 
     @overload
-    def interval(self, confidence: _AnyReal0D, /) -> tuple[np.float64, np.float64]: ...
+    def interval(self, confidence: _AnyReal0D, /) -> _Tuple2[_F8]: ...
     @overload
-    def interval(
-        self,
-        confidence: _AnyRealND,
-        /,
-    ) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]: ...
+    def interval(self, confidence: _AnyRealND, /) -> _Tuple2[_ArrF8]: ...
     def interval(
         self,
         confidence: _AnyReal0D | _AnyRealND,
         /,
-    ) -> (
-        tuple[np.float64, np.float64]
-        | tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]
-    ):
+    ) -> _Tuple2[_F8] | _Tuple2[_ArrF8]:
         r"""
         [Confidence interval](https://w.wiki/3kdb) with equal areas around
         the [median][lmo.distributions.l_poly.median].
@@ -545,7 +535,7 @@ class l_poly:  # noqa: N801
 
         return self._ppf((1 - alpha) / 2), self._ppf((1 + alpha) / 2)
 
-    def moment(self, n: int | np.integer[Any], /) -> float:
+    def moment(self, n: op.CanIndex, /) -> float:
         r"""
         Non-central product moment \( \E[X^n] \) of \( X \) of specified
         order \( n \).
@@ -566,6 +556,7 @@ class l_poly:  # noqa: N801
             - For n>=2, attempt tot infer from `_l_moments` if the 2nd moment
                 condition holds, using `diagnostics.l_moment_bounds`.
         """
+        n = int(n)
         if n < 0:
             msg = f"expected n >= 0, got {n}"
             raise ValueError(msg)
@@ -651,7 +642,7 @@ class l_poly:  # noqa: N801
         ppf = self._ppf
 
         def i(u: float, /) -> float:
-            # the cast is safe, since `np.float64 <: float` (at runtime)
+            # the cast is safe, since `_F8 <: float` (at runtime)
             return g(ppf(u))
 
         from scipy.integrate import quad
@@ -660,25 +651,20 @@ class l_poly:  # noqa: N801
         return quad(i, a, b)[0] + quad(i, b, c)[0] + quad(i, c, d)[0]
 
     @overload
-    def l_moment(
-        self,
-        r: lmt.AnyOrder,
-        /,
-        trim: lmt.AnyTrim | None = None,
-    ) -> np.float64: ...
+    def l_moment(self, r: lmt.AnyOrder, /, trim: lmt.AnyTrim | None = None) -> _F8: ...
     @overload
     def l_moment(
         self,
         r: lmt.AnyOrderND,
         /,
         trim: lmt.AnyTrim | None = None,
-    ) -> npt.NDArray[np.float64]: ...
+    ) -> _ArrF8: ...
     def l_moment(
         self,
         r: lmt.AnyOrder | lmt.AnyOrderND,
         /,
         trim: lmt.AnyTrim | None = None,
-    ) -> np.float64 | npt.NDArray[np.float64]:
+    ) -> _F8 | _ArrF8:
         r"""
         Evaluate the population L-moment(s) $\lambda^{(s,t)}_r$.
 
@@ -700,7 +686,7 @@ class l_poly:  # noqa: N801
         k: lmt.AnyOrder,
         /,
         trim: lmt.AnyTrim | None = None,
-    ) -> np.float64: ...
+    ) -> _F8: ...
     @overload
     def l_ratio(
         self,
@@ -708,7 +694,7 @@ class l_poly:  # noqa: N801
         k: lmt.AnyOrder | lmt.AnyOrderND,
         /,
         trim: lmt.AnyTrim | None = None,
-    ) -> npt.NDArray[np.float64]: ...
+    ) -> _ArrF8: ...
     @overload
     def l_ratio(
         self,
@@ -716,14 +702,14 @@ class l_poly:  # noqa: N801
         k: lmt.AnyOrderND,
         /,
         trim: lmt.AnyTrim | None = None,
-    ) -> npt.NDArray[np.float64]: ...
+    ) -> _ArrF8: ...
     def l_ratio(
         self,
         r: lmt.AnyOrder | lmt.AnyOrderND,
         k: lmt.AnyOrder | lmt.AnyOrderND,
         /,
         trim: lmt.AnyTrim | None = None,
-    ) -> np.float64 | npt.NDArray[np.float64]:
+    ) -> _F8 | _ArrF8:
         r"""
         Evaluate the population L-moment ratio('s) $\tau^{(s,t)}_{r,k}$.
 
@@ -741,12 +727,7 @@ class l_poly:  # noqa: N801
         lms = self.l_moment(rs, trim=trim)
         return moments_to_ratio(rs, lms)
 
-    def l_stats(
-        self,
-        /,
-        trim: lmt.AnyTrim | None = None,
-        moments: int = 4,
-    ) -> npt.NDArray[np.float64]:
+    def l_stats(self, /, trim: lmt.AnyTrim | None = None, moments: int = 4) -> _ArrF8:
         r"""
         Evaluate the L-moments (for $r \le 2$) and L-ratio's (for $r > 2$).
 
@@ -811,7 +792,7 @@ class l_poly:  # noqa: N801
         return type(self)
 
     @property
-    def args(self, /) -> tuple[onpt.Array[tuple[int], np.float64], _Trim]:
+    def args(self, /) -> tuple[_VecF8, _Trim]:
         return self._l_moments, self._trim
 
     @property
@@ -829,12 +810,7 @@ class l_poly:  # noqa: N801
         return cls(lmbda, trim, **kwds)
 
     @classmethod
-    def nnlf(
-        cls,
-        /,
-        theta: _LPolyParams,
-        x: npt.NDArray[np.float64],
-    ) -> float | npt.NDArray[np.float64]:
+    def nnlf(cls, /, theta: _LPolyParams, x: _ArrF8) -> float | _ArrF8:
         """
         Negative loglikelihood function.
 
