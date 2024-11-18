@@ -28,7 +28,7 @@ jobs:
           plugins: sp-repo-review
 
       - name: markdownlint
-        uses: DavidAnson/markdownlint-cli2-action@v17
+        uses: DavidAnson/markdownlint-cli2-action@v18
         with:
           config: ".markdownlint.yaml"
           globs: "*.md"
