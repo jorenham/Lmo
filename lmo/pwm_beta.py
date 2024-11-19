@@ -7,42 +7,28 @@ Primarily used as an intermediate step for L-moment estimation.
 
 from __future__ import annotations
 
-import sys
-from typing import TYPE_CHECKING, Any, TypeAlias, cast, overload
+from typing import TYPE_CHECKING, Any, TypeAlias, TypeVar, Unpack, cast, overload
 
 import numpy as np
 import numpy.typing as npt
 
 from ._utils import ordered
 
-if sys.version_info >= (3, 13):
-    from typing import TypeVar
-else:
-    from typing_extensions import TypeVar
-
-
 if TYPE_CHECKING:
     import optype.numpy as onp
 
-    import lmo.typing.np as lnpt
+    import lmo.typing as lmt
 
 
 __all__ = "cov", "weights"
 
 
-_F = TypeVar("_F", bound=np.floating[Any], default=np.float64)
-_R = TypeVar("_R", bound=int)
-_N = TypeVar("_N", bound=int)
+_F = TypeVar("_F", bound=np.floating[Any])
 
 _DType: TypeAlias = np.dtype[_F] | type[_F]
 
 
-def weights(
-    r: _R,
-    n: _N,
-    /,
-    dtype: _DType[_F] = np.float64,
-) -> onp.Array[tuple[_R, _N], _F]:
+def weights(r: int, n: int, /, dtype: _DType[_F] = np.float64) -> onp.Array2D[_F]:
     r"""
     Probability Weighted moment (PWM) projection matrix $B$ of the
     unbiased estimator for $\beta_k = M_{1,k,0}$ for $k = 0, \dots, r - 1$.
@@ -88,30 +74,30 @@ def weights(
 
 @overload
 def cov(
-    a: lnpt.AnyArrayFloat,
-    r: _R,
+    a: onp.ToFloatND,
+    r: int,
     /,
-    axis: None = ...,
+    axis: None = None,
     dtype: _DType[_F] = np.float64,
-    **kwds: Any,
-) -> onp.Array[tuple[_R, _R], _F]: ...
+    **kwds: Unpack[lmt.UnivariateOptions],
+) -> onp.Array2D[_F]: ...
 @overload
 def cov(
-    a: lnpt.AnyArrayFloat,
-    r: _R,
+    a: onp.ToFloatND,
+    r: int,
     /,
     axis: int,
     dtype: _DType[_F] = np.float64,
-    **kwds: Any,
-) -> onp.Array[tuple[_R, _R, *tuple[int, ...]], _F]: ...
+    **kwds: Unpack[lmt.UnivariateOptions],
+) -> onp.Array[onp.AtLeast2D, _F]: ...
 def cov(
-    a: lnpt.AnyArrayFloat,
+    a: onp.ToFloatND,
     r: int,
     /,
     axis: int | None = None,
     dtype: _DType[_F] = np.float64,
-    **kwds: Any,
-) -> onp.Array[Any, _F]:
+    **kwds: Unpack[lmt.UnivariateOptions],
+) -> onp.ArrayND[_F]:
     r"""
     Distribution-free variance-covariance matrix of the probability weighted
     moment (PWM) point estimates $\beta_k = M_{1,k,0}$, with orders

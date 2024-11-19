@@ -8,10 +8,9 @@ from typing import Final, TypeAlias, TypeVar
 import numpy as np
 import optype.numpy as onp
 import scipy.special as sps
-from scipy.stats.distributions import rv_continuous
 
+import lmo.typing as lmt
 from ._lm import get_lm_func
-from ._utils import ShapeInfo
 
 if sys.version_info >= (3, 13):
     from typing import override
@@ -25,7 +24,7 @@ __all__ = ("wakeby_gen",)
 # NOTE: this is equivalent to `float` IFF `numpy >= 2.2`, see:
 # https://github.com/numpy/numpy/pull/27334
 _F8: TypeAlias = float | np.float64
-_ArrF8: TypeAlias = onp.Array[tuple[int, ...], np.float64]
+_ArrF8: TypeAlias = onp.ArrayND[np.float64]
 
 _XT = TypeVar("_XT", _F8, _ArrF8)
 
@@ -174,7 +173,7 @@ _wakeby_sf: Final = np.vectorize(_wakeby_sf0, [float])
 _wakeby_lm: Final = get_lm_func("wakeby")
 
 
-class wakeby_gen(rv_continuous):
+class wakeby_gen(lmt.rv_continuous):
     @override
     def _argcheck(self, /, b: _F8, d: _F8, f: _F8) -> bool | np.bool_:  # pyright: ignore[reportIncompatibleMethodOverride]
         return (
@@ -189,10 +188,10 @@ class wakeby_gen(rv_continuous):
         )
 
     @override
-    def _shape_info(self) -> list[ShapeInfo]:
-        ibeta = ShapeInfo("b", False, (-np.inf, np.inf), (False, False))
-        idelta = ShapeInfo("d", False, (-np.inf, np.inf), (False, False))
-        iphi = ShapeInfo("f", False, (0, 1), (True, True))
+    def _shape_info(self) -> list[lmt.ShapeInfo]:
+        ibeta = lmt.ShapeInfo("b", False, (-np.inf, np.inf), (False, False))
+        idelta = lmt.ShapeInfo("d", False, (-np.inf, np.inf), (False, False))
+        iphi = lmt.ShapeInfo("f", False, (0, 1), (True, True))
         return [ibeta, idelta, iphi]
 
     @override

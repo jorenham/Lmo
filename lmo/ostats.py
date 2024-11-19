@@ -12,55 +12,51 @@ References:
 from __future__ import annotations
 
 import functools
-from math import floor
-from typing import TYPE_CHECKING, TypeVar, overload
+from math import floor, log1p
+from typing import TYPE_CHECKING, Any, TypeAlias, overload
 
 import numpy as np
 from scipy.special import betainc, betaln
 
 if TYPE_CHECKING:
+    import optype as op
     import optype.numpy as onp
-
-    import lmo.typing.np as lnpt
 
 
 __all__ = "from_cdf", "weights"
 
 
-_T_size = TypeVar("_T_size", bound=int)
+_ToReal: TypeAlias = float | np.floating[Any] | np.integer[Any]
 
 
-def _weights(
-    i: float | lnpt.Float,
-    n: float | lnpt.Float,
-    N: _T_size,
-    /,
-) -> onp.Array[tuple[_T_size], np.float64]:
+def _weights(i: float, n: float, N: int, /) -> onp.Array1D[np.float64]:
     assert 0 <= i < n <= N
 
-    j = np.arange(floor(i), N)
-    return np.r_[
-        np.zeros(j[0]),
-        np.exp(
-            betaln(j + 1, N - j)
-            - betaln(i + 1, n - i)
-            - betaln(j - i + 1, N - j - (n - i) + 1)
-            - np.log(N - n + 1),
-        ),
-    ]
+    out = np.zeros(N)
+
+    i0 = floor(i)
+    j = np.arange(i0, N)
+
+    out[i0:] = np.exp(
+        betaln(j + 1, N - j)
+        - betaln(i + 1, n - i)
+        - betaln(j - i + 1, N - j - (n - i) + 1)
+        - log1p(N - n),
+    )
+    return out
 
 
 _weights_cached = functools.lru_cache(1 << 10)(_weights)
 
 
 def weights(
-    i: float | lnpt.Float,
-    n: float | lnpt.Float,
-    N: _T_size,
+    i: _ToReal,
+    n: _ToReal,
+    N: op.CanIndex,
     /,
     *,
     cached: bool = False,
-) -> onp.Array[tuple[_T_size], np.float64]:
+) -> onp.Array1D[np.float64]:
     r"""
     Compute the linear weights $w_{i:n|j:N}$ for $j = 0, \dots, N-1$.
 
@@ -105,37 +101,37 @@ def weights(
         1d array of size $N$ with (ordered) sample weights.
 
     """
-    if i < 0:
-        # negative indexing
-        i = n + i
+    _i = int(i) if float(i).is_integer() else float(i)
+    _n = int(n) if float(n).is_integer() else float(n)
+    _N = int(N)  # noqa: N806
 
-    if (i, n) == (0, 1):
+    if _i < 0:
+        # negative indexing
+        _i += _n
+
+    if (_i, _n) == (0, 1):
         # identity case
-        return np.full(N, 1 / N)
-    if i >= n:
+        return np.full(_N, 1 / _N)
+    if _i >= _n:
         # impossible case
-        return np.full(N, np.nan)
+        return np.full(_N, np.nan)
 
     _fn = _weights_cached if cached else _weights
-    # this return type incosnsitency is due to the first `np.ndarray` type
-    # parameter not being covariant, which is incorrect, but is being worked on
-    return _fn(i, n, N)
+    return _fn(_i, _n, _N)
 
 
 @overload
-def from_cdf(F: lnpt.AnyScalarFloat, i: float, n: float) -> np.float64: ...
+def from_cdf(F: onp.ToFloat, i: _ToReal, n: _ToReal) -> np.float64: ...
 @overload
 def from_cdf(
-    F: lnpt.AnyArrayFloat,
-    i: float,
-    n: float,
+    F: onp.ToFloatND,
+    i: _ToReal,
+    n: _ToReal,
 ) -> onp.Array[onp.AtLeast1D, np.float64]: ...
-
-
 def from_cdf(
-    F: lnpt.AnyScalarFloat | lnpt.AnyArrayFloat,
-    i: float,
-    n: float,
+    F: onp.ToFloat | onp.ToFloatND,
+    i: _ToReal,
+    n: _ToReal,
 ) -> np.float64 | onp.Array[onp.AtLeast1D, np.float64]:
     r"""
     Transform $F(X)$ to $F_{i:n}(X)$, of the $i$th variate within subsamples

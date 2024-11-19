@@ -14,7 +14,7 @@ import scipy.special as sc
 from ._utils import clean_orders
 
 if TYPE_CHECKING:
-    from lmo.typing import AnyOrder, AnyOrderND
+    from lmo.typing import ToOrder0D, ToOrderND
 
 if sys.version_info >= (3, 13):
     from typing import Protocol, TypeVar, runtime_checkable
@@ -174,10 +174,10 @@ def harmonic(
 
 
 @overload
-def norm_sh_jacobi(n: AnyOrder, alpha: float, beta: float) -> _F8: ...
+def norm_sh_jacobi(n: ToOrder0D, alpha: float, beta: float) -> _F8: ...
 @overload
-def norm_sh_jacobi(n: AnyOrderND, alpha: float, beta: float) -> _F8ND: ...
-def norm_sh_jacobi(n: AnyOrder | AnyOrderND, alpha: float, beta: float) -> _F8 | _F8ND:
+def norm_sh_jacobi(n: ToOrderND, alpha: float, beta: float) -> _F8ND: ...
+def norm_sh_jacobi(n: ToOrder0D | ToOrderND, alpha: float, beta: float) -> _F8 | _F8ND:
     r"""
     Evaluate the (weighted) \( L^2 \)-norm of a shifted Jacobi polynomial.
 

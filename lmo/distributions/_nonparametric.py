@@ -17,9 +17,9 @@ from typing import (
 
 import numpy as np
 import numpy.typing as npt
+import optype.numpy as onp
 
 import lmo.typing as lmt
-import lmo.typing.np as lnpt
 from lmo._utils import clean_trim, l_stats_orders, moments_to_ratio, round0
 from lmo.theoretical import (
     cdf_from_ppf,
@@ -49,12 +49,7 @@ class _Fn1(Protocol):
 
 _Trim: TypeAlias = tuple[int, int] | tuple[float, float]
 _MomentType: TypeAlias = Literal[0, 1]
-_LPolyParams: TypeAlias = (
-    tuple[lnpt.AnyVectorFloat] | tuple[lnpt.AnyVectorFloat, lmt.AnyTrim]
-)
-
-_AnyReal0D: TypeAlias = float | np.bool_ | lnpt.Int | lnpt.Float
-_AnyRealND: TypeAlias = lnpt.AnyArrayInt | lnpt.AnyArrayFloat
+_LPolyParams: TypeAlias = tuple[onp.ToFloat1D] | tuple[onp.ToFloat1D, lmt.ToTrim]
 
 _Stats0: TypeAlias = Literal[""]
 _Stats1: TypeAlias = Literal["m", "v", "s", "k"]
@@ -71,7 +66,7 @@ _Tuple4: TypeAlias = tuple[_T, _T, _T, _T]
 _Tuple4m: TypeAlias = tuple[()] | _Tuple1[_T] | _Tuple2[_T] | _Tuple3[_T] | _Tuple4[_T]
 
 
-def _get_rng(s: lnpt.Seed | None = None, /) -> np.random.Generator:
+def _get_rng(s: lmt.Seed | None = None, /) -> np.random.Generator:
     return s if isinstance(s, np.random.Generator) else np.random.default_rng(s)
 
 
@@ -98,11 +93,11 @@ class l_poly:  # noqa: N801
 
     def __init__(
         self,
-        lmbda: lnpt.AnyVectorFloat,
+        lmbda: onp.ToFloat1D,
         /,
-        trim: lmt.AnyTrim = 0,
+        trim: lmt.ToTrim = 0,
         *,
-        seed: lnpt.Seed | None = None,
+        seed: lmt.Seed | None = None,
     ) -> None:
         r"""
         Create a new `l_poly` instance.
@@ -154,16 +149,16 @@ class l_poly:  # noqa: N801
         return self._random_state
 
     @random_state.setter
-    def random_state(self, seed: lnpt.Seed, /) -> None:  # pyright: ignore[reportPropertyTypeMismatch]
+    def random_state(self, seed: lmt.Seed, /) -> None:  # pyright: ignore[reportPropertyTypeMismatch]
         self._random_state = _get_rng(seed)
 
     @classmethod
     def fit(
         cls,
-        data: _AnyRealND,
+        data: onp.ToFloatND,
         /,
         moments: int | None = None,
-        trim: lmt.AnyTrim = 0,
+        trim: lmt.ToTrim = 0,
     ) -> Self:
         r"""
         Fit distribution using the (trimmed) L-moment estimates of the given
@@ -217,20 +212,20 @@ class l_poly:  # noqa: N801
         self,
         /,
         size: Literal[1] | None = None,
-        random_state: lnpt.Seed | None = None,
+        random_state: lmt.Seed | None = None,
     ) -> _F8: ...
     @overload
     def rvs(
         self,
         /,
         size: int | tuple[int, ...],
-        random_state: lnpt.Seed | None = None,
+        random_state: lmt.Seed | None = None,
     ) -> _ArrF8: ...
     def rvs(
         self,
         /,
         size: int | tuple[int, ...] | None = None,
-        random_state: lnpt.Seed | None = None,
+        random_state: lmt.Seed | None = None,
     ) -> _F8 | _ArrF8:
         """
         Draw random variates from the relevant distribution.
@@ -498,12 +493,12 @@ class l_poly:  # noqa: N801
         return self._support
 
     @overload
-    def interval(self, confidence: _AnyReal0D, /) -> _Tuple2[_F8]: ...
+    def interval(self, confidence: onp.ToFloat, /) -> _Tuple2[_F8]: ...
     @overload
-    def interval(self, confidence: _AnyRealND, /) -> _Tuple2[_ArrF8]: ...
+    def interval(self, confidence: onp.ToFloatND, /) -> _Tuple2[_ArrF8]: ...
     def interval(
         self,
-        confidence: _AnyReal0D | _AnyRealND,
+        confidence: onp.ToFloat | onp.ToFloatND,
         /,
     ) -> _Tuple2[_F8] | _Tuple2[_ArrF8]:
         r"""
@@ -651,19 +646,19 @@ class l_poly:  # noqa: N801
         return quad(i, a, b)[0] + quad(i, b, c)[0] + quad(i, c, d)[0]
 
     @overload
-    def l_moment(self, r: lmt.AnyOrder, /, trim: lmt.AnyTrim | None = None) -> _F8: ...
+    def l_moment(self, r: lmt.ToOrder0D, /, trim: lmt.ToTrim | None = None) -> _F8: ...
     @overload
     def l_moment(
         self,
-        r: lmt.AnyOrderND,
+        r: lmt.ToOrderND,
         /,
-        trim: lmt.AnyTrim | None = None,
+        trim: lmt.ToTrim | None = None,
     ) -> _ArrF8: ...
     def l_moment(
         self,
-        r: lmt.AnyOrder | lmt.AnyOrderND,
+        r: lmt.ToOrder0D | lmt.ToOrderND,
         /,
-        trim: lmt.AnyTrim | None = None,
+        trim: lmt.ToTrim | None = None,
     ) -> _F8 | _ArrF8:
         r"""
         Evaluate the population L-moment(s) $\lambda^{(s,t)}_r$.
@@ -682,33 +677,33 @@ class l_poly:  # noqa: N801
     @overload
     def l_ratio(
         self,
-        r: lmt.AnyOrder,
-        k: lmt.AnyOrder,
+        r: lmt.ToOrder0D,
+        k: lmt.ToOrder0D,
         /,
-        trim: lmt.AnyTrim | None = None,
+        trim: lmt.ToTrim | None = None,
     ) -> _F8: ...
     @overload
     def l_ratio(
         self,
-        r: lmt.AnyOrderND,
-        k: lmt.AnyOrder | lmt.AnyOrderND,
+        r: lmt.ToOrderND,
+        k: lmt.ToOrder0D | lmt.ToOrderND,
         /,
-        trim: lmt.AnyTrim | None = None,
+        trim: lmt.ToTrim | None = None,
     ) -> _ArrF8: ...
     @overload
     def l_ratio(
         self,
-        r: lmt.AnyOrder | lmt.AnyOrderND,
-        k: lmt.AnyOrderND,
+        r: lmt.ToOrder0D | lmt.ToOrderND,
+        k: lmt.ToOrderND,
         /,
-        trim: lmt.AnyTrim | None = None,
+        trim: lmt.ToTrim | None = None,
     ) -> _ArrF8: ...
     def l_ratio(
         self,
-        r: lmt.AnyOrder | lmt.AnyOrderND,
-        k: lmt.AnyOrder | lmt.AnyOrderND,
+        r: lmt.ToOrder0D | lmt.ToOrderND,
+        k: lmt.ToOrder0D | lmt.ToOrderND,
         /,
-        trim: lmt.AnyTrim | None = None,
+        trim: lmt.ToTrim | None = None,
     ) -> _F8 | _ArrF8:
         r"""
         Evaluate the population L-moment ratio('s) $\tau^{(s,t)}_{r,k}$.
@@ -727,7 +722,7 @@ class l_poly:  # noqa: N801
         lms = self.l_moment(rs, trim=trim)
         return moments_to_ratio(rs, lms)
 
-    def l_stats(self, /, trim: lmt.AnyTrim | None = None, moments: int = 4) -> _ArrF8:
+    def l_stats(self, /, trim: lmt.ToTrim | None = None, moments: int = 4) -> _ArrF8:
         r"""
         Evaluate the L-moments (for $r \le 2$) and L-ratio's (for $r > 2$).
 
@@ -741,7 +736,7 @@ class l_poly:  # noqa: N801
         r, s = l_stats_orders(moments)
         return self.l_ratio(r, s, trim=trim)
 
-    def l_loc(self, /, trim: lmt.AnyTrim | None = None) -> float:
+    def l_loc(self, /, trim: lmt.ToTrim | None = None) -> float:
         """
         L-location of the distribution, i.e. the 1st L-moment.
 
@@ -752,7 +747,7 @@ class l_poly:  # noqa: N801
         """
         return float(self.l_moment(1, trim=trim))
 
-    def l_scale(self, /, trim: lmt.AnyTrim | None = None) -> float:
+    def l_scale(self, /, trim: lmt.ToTrim | None = None) -> float:
         """
         L-scale of the distribution, i.e. the 2nd L-moment.
 
@@ -763,7 +758,7 @@ class l_poly:  # noqa: N801
         """
         return float(self.l_moment(2, trim=trim))
 
-    def l_skew(self, /, trim: lmt.AnyTrim | None = None) -> float:
+    def l_skew(self, /, trim: lmt.ToTrim | None = None) -> float:
         """L-skewness coefficient of the distribution; the 3rd L-moment ratio.
 
         Alias for `l_poly.l_ratio(3, 2, ...)`.
@@ -773,7 +768,7 @@ class l_poly:  # noqa: N801
         """
         return float(self.l_ratio(3, 2, trim=trim))
 
-    def l_kurtosis(self, /, trim: lmt.AnyTrim | None = None) -> float:
+    def l_kurtosis(self, /, trim: lmt.ToTrim | None = None) -> float:
         """L-kurtosis coefficient of the distribution; the 4th L-moment ratio.
 
         Alias for `l_poly.l_ratio(4, 2, ...)`.
@@ -802,9 +797,9 @@ class l_poly:  # noqa: N801
     @classmethod
     def freeze(
         cls,
-        lmbda: lnpt.AnyVectorFloat,
+        lmbda: onp.ToFloat1D,
         /,
-        trim: lmt.AnyTrim = 0,
+        trim: lmt.ToTrim = 0,
         **kwds: Any,
     ) -> Self:
         return cls(lmbda, trim, **kwds)

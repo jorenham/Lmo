@@ -5,18 +5,17 @@ from __future__ import annotations
 
 import sys
 from math import comb, lgamma
-from typing import Any, TypeAlias, assert_never, cast
+from typing import TYPE_CHECKING, Any, TypeAlias, assert_never
 
 import numpy as np
-import numpy.typing as npt
-import optype.numpy as onp
-
-import lmo.typing.np as lnpt
 
 if sys.version_info >= (3, 13):
     from typing import TypeVar
 else:
     from typing_extensions import TypeVar
+
+if TYPE_CHECKING:
+    import optype.numpy as onp
 
 
 __all__ = (
@@ -29,15 +28,19 @@ __all__ = (
     "trim_matrix",
 )
 
+
 _T = TypeVar("_T", bound=np.generic)
 _TF = TypeVar("_TF", bound=np.floating[Any], default=np.float64)
-_TI = TypeVar("_TI", bound=lnpt.Real | np.object_, default=np.int64)
-
+_TI = TypeVar(
+    "_TI",
+    bound=np.floating[Any] | np.integer[Any] | np.object_,
+    default=np.int64,
+)
 _K = TypeVar("_K", bound=int)
 _R = TypeVar("_R", bound=int)
 
 _DType: TypeAlias = np.dtype[_T] | type[_T]
-_Square: TypeAlias = onp.Array[tuple[_K, _K], _T]
+_Square: TypeAlias = np.ndarray[tuple[_K, _K], np.dtype[_T]]
 
 
 def sandwich(
@@ -454,4 +457,4 @@ def trim_matrix(
         case _ as wtf:  # pyright: ignore[reportUnnecessaryComparison]
             assert_never(wtf)
 
-    return cast(npt.NDArray[_TF], out)
+    return out  # pyright: ignore[reportReturnType]

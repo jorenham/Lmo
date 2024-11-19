@@ -20,7 +20,7 @@ assert_allclose = functools.partial(_assert_allclose, atol=1e-9)
     "trim",
     [0, 1, (0, 1), (1, 0), (13, 17), (2 / 3, 3 / 4)],
 )
-def test_l_poly_eq_uniform(trim: lmt.AnyTrim):
+def test_l_poly_eq_uniform(trim: lmt.ToTrim):
     p0 = x0 = np.linspace(0, 1)
 
     X = cast(Any, uniform())

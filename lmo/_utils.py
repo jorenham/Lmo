@@ -7,16 +7,16 @@ from typing import TYPE_CHECKING, Any, Final, TypeAlias, cast, overload
 import numpy as np
 import numpy.typing as npt
 
+import lmo.typing as lmt
+
+if TYPE_CHECKING:
+    import optype.numpy as onp
+
 if sys.version_info >= (3, 13):
     from typing import TypeVar
 else:
     from typing_extensions import TypeVar
 
-if TYPE_CHECKING:
-    import optype.numpy as onp
-
-    import lmo.typing as lmt
-    import lmo.typing.np as lnpt
 
 __all__ = (
     "clean_order",
@@ -34,18 +34,16 @@ __all__ = (
 
 
 _SCT = TypeVar("_SCT", bound=np.generic)
-_SCT_uifc = TypeVar("_SCT_uifc", bound="lnpt.Number")
-_SCT_ui = TypeVar("_SCT_ui", bound=np.integer[Any], default=np.intp)
-_SCT_f = TypeVar("_SCT_f", bound=np.floating[Any], default=np.float64)
+_SCT_uifc = TypeVar("_SCT_uifc", bound=np.number[Any])
+_SCT_ui = TypeVar("_SCT_ui", bound=lmt.Integer, default=np.intp)
+_SCT_f = TypeVar("_SCT_f", bound=lmt.Floating, default=np.float64)
 
-_DT_f = TypeVar("_DT_f", bound=np.dtype[np.floating[Any]])
-_AT_f = TypeVar("_AT_f", bound=np.floating[Any] | npt.NDArray[np.floating[Any]])
+_DT_f = TypeVar("_DT_f", bound=np.dtype[lmt.Floating])
+_AT_f = TypeVar("_AT_f", bound=lmt.Floating | npt.NDArray[lmt.Floating])
 
 _SizeT = TypeVar("_SizeT", bound=int)
-
 _ShapeT = TypeVar("_ShapeT", bound=tuple[int, ...])
-_ShapeT1 = TypeVar("_ShapeT1", bound="onp.AtLeast1D")
-_ShapeT2 = TypeVar("_ShapeT2", bound="onp.AtLeast2D")
+
 
 _DType: TypeAlias = np.dtype[_SCT] | type[_SCT]
 
@@ -56,7 +54,7 @@ def ensure_axis_at(
     source: int | None,
     destination: int,
     *,
-    order: lnpt.OrderReshape = "C",
+    order: lmt.OrderReshape = "C",
 ) -> npt.NDArray[_SCT]:
     """
     Moves the from `source` to `destination` if needed, or returns a flattened
@@ -90,15 +88,15 @@ def plotting_positions(
 
 
 @overload
-def round0(a: _AT_f, /, tol: float | None = ...) -> _AT_f: ...
+def round0(a: _AT_f, /, tol: float | None = None) -> _AT_f: ...
 @overload
 def round0(
     a: onp.CanArray[_ShapeT, _DT_f],
     /,
-    tol: float | None = ...,
+    tol: float | None = None,
 ) -> np.ndarray[_ShapeT, _DT_f]: ...
 @overload
-def round0(a: float, /, tol: float | None = ...) -> np.float64: ...
+def round0(a: float, /, tol: float | None = None) -> np.float64: ...
 def round0(
     a: float | onp.CanArray[_ShapeT, np.dtype[_SCT_f]],
     /,
@@ -117,17 +115,17 @@ def round0(
 
 
 def _apply_aweights(
-    x: np.ndarray[_ShapeT1, _DT_f],
-    v: np.ndarray[_ShapeT1 | onp.AtLeast1D, _DT_f | np.dtype[lnpt.Float]],
+    x: np.ndarray[_ShapeT, _DT_f],
+    v: onp.ArrayND[lmt.Floating],
     axis: int,
-) -> np.ndarray[_ShapeT1, _DT_f]:
+) -> np.ndarray[_ShapeT, _DT_f]:
     # interpret the weights as horizontal coordinates using cumsum
     vv = np.cumsum(v, axis=axis)
     assert vv.shape == x.shape, (vv.shape, x.shape)
 
     # ensure that the samples are on the last axis, for easy iterating
     if swap_axes := axis % x.ndim != x.ndim - 1:
-        x = cast(np.ndarray[_ShapeT1, _DT_f], np.swapaxes(x, axis, -1))
+        x = cast(np.ndarray[_ShapeT, _DT_f], np.swapaxes(x, axis, -1))
         vv = np.moveaxis(vv, axis, -1)
 
     # cannot use np.apply_along_axis here, since both x_k and w_k need to be
@@ -147,17 +145,17 @@ def _apply_aweights(
 
     # unswap the axes if previously swapped
     if swap_axes:
-        out = cast(np.ndarray[_ShapeT1, _DT_f], np.swapaxes(out, -1, axis))
+        out = cast(np.ndarray[_ShapeT, _DT_f], np.swapaxes(out, -1, axis))
 
     return out
 
 
 def _sort_like(
-    a: onp.Array[_ShapeT1, _SCT_uifc],
-    i: onp.Array[tuple[int], lnpt.Int],
+    a: onp.Array[_ShapeT, _SCT_uifc],
+    i: onp.Array1D[lmt.Integer],
     /,
     axis: int | None,
-) -> onp.Array[_ShapeT1, _SCT_uifc]:
+) -> onp.Array[_ShapeT, _SCT_uifc]:
     return (
         np.take(a, i, axis=None if a.ndim == i.ndim else axis)
         if min(a.ndim, i.ndim) <= 1
@@ -166,13 +164,13 @@ def _sort_like(
 
 
 def sort_maybe(
-    x: onp.Array[_ShapeT1, _SCT_uifc],
+    x: onp.Array[_ShapeT, _SCT_uifc],
     /,
     axis: int = -1,
     *,
-    sort: bool | lnpt.SortKind = True,
+    sort: bool | lmt.SortKind = True,
     inplace: bool = False,
-) -> onp.Array[_ShapeT1, _SCT_uifc]:
+) -> onp.Array[_ShapeT, _SCT_uifc]:
     if not sort:
         return x
 
@@ -185,16 +183,16 @@ def sort_maybe(
 
 
 def ordered(  # noqa: C901
-    x: lnpt.AnyArrayFloat,
-    y: lnpt.AnyArrayFloat | None = None,
+    x: onp.ToFloatND,
+    y: onp.ToFloatND | None = None,
     /,
     axis: int | None = None,
-    dtype: _DType[lnpt.Float] | None = None,
+    dtype: _DType[lmt.Floating] | None = None,
     *,
-    fweights: lmt.AnyFWeights | None = None,
-    aweights: lmt.AnyAWeights | None = None,
-    sort: lnpt.SortKind | bool = True,
-) -> onp.Array[onp.AtLeast1D, lnpt.Float]:
+    fweights: lmt.ToFWeights | None = None,
+    aweights: lmt.ToAWeights | None = None,
+    sort: lmt.SortKind | bool = True,
+) -> onp.Array[onp.AtLeast1D, lmt.Floating]:
     """
     Calculate `n = len(x)` order stats of `x`, optionally weighted.
     If `y` is provided, the order of `y` is used instead.
@@ -260,16 +258,16 @@ def ordered(  # noqa: C901
 
 
 @overload
-def clean_order(r: lmt.AnyOrder, /, name: str = "r", rmin: int = 0) -> int: ...
+def clean_order(r: lmt.ToOrder0D, /, name: str = "r", rmin: int = 0) -> int: ...
 @overload
 def clean_order(
-    r: lmt.AnyOrderND,
+    r: lmt.ToOrderND,
     /,
     name: str = "r",
     rmin: int = 0,
 ) -> npt.NDArray[np.intp]: ...
 def clean_order(
-    r: lmt.AnyOrder | lmt.AnyOrderND,
+    r: lmt.ToOrder0D | lmt.ToOrderND,
     /,
     name: str = "r",
     rmin: int = 0,
@@ -286,7 +284,7 @@ def clean_order(
 
 
 def clean_orders(
-    r: lmt.AnyOrderND,
+    r: lmt.ToOrderND,
     /,
     name: str = "r",
     rmin: int = 0,
@@ -310,10 +308,10 @@ _COMMON_TRIM2: Final[frozenset[tuple[int, int]]] = frozenset(
 
 
 @overload
-def clean_trim(trim: lmt.AnyTrimInt, /) -> tuple[int, int]: ...
+def clean_trim(trim: lmt.ToIntTrim, /) -> tuple[int, int]: ...
 @overload
-def clean_trim(trim: lmt.AnyTrimFloat, /) -> tuple[float, float]: ...
-def clean_trim(trim: lmt.AnyTrim, /) -> tuple[int, int] | tuple[float, float]:
+def clean_trim(trim: lmt.ToTrim, /) -> tuple[float, float]: ...
+def clean_trim(trim: lmt.ToTrim, /) -> tuple[int, int] | tuple[float, float]:
     """
     Validates and cleans the passed trim; and return a 2-tuple of either ints
     or floats.
@@ -351,8 +349,8 @@ def clean_trim(trim: lmt.AnyTrim, /) -> tuple[int, int] | tuple[float, float]:
 
 
 def moments_to_ratio(
-    rs: onp.Array[tuple[int, ...], lnpt.Int],
-    l_rs: onp.Array[onp.AtLeast1D, _SCT_f],
+    rs: onp.ArrayND[lmt.Integer],
+    l_rs: onp.ArrayND[_SCT_f],
     /,
 ) -> _SCT_f | npt.NDArray[_SCT_f]:
     """
@@ -380,9 +378,9 @@ def moments_to_ratio(
 
 
 def moments_to_stats_cov(
-    t_0r: onp.Array[tuple[int], lnpt.Float],
-    ll_kr: onp.Array[_ShapeT2, _SCT_f],
-) -> onp.Array[_ShapeT2, _SCT_f]:
+    t_0r: onp.ArrayND[lmt.Floating],
+    ll_kr: onp.Array[_ShapeT, _SCT_f],
+) -> onp.Array[_ShapeT, _SCT_f]:
     # t_0r are L-ratio's for r = 0, 1, ..., R (t_0r[0] == 1 / L-scale)
     # t_0r[1] isn't used, and can be set to anything
     # ll_kr is the L-moment cov of size R**2 (orders start at 1 here)

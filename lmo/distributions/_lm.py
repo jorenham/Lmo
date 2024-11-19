@@ -11,24 +11,13 @@ from __future__ import annotations
 import sys
 from collections.abc import Callable
 from math import gamma, log
-from typing import (
-    TYPE_CHECKING,
-    Concatenate,
-    Final,
-    Literal,
-    ParamSpec,
-    Protocol,
-    TypeAlias,
-    TypeVar,
-    cast,
-    overload,
-)
+from typing import Any, Concatenate, Final, Literal, ParamSpec, TypeAlias, cast
 
 import numpy as np
-import numpy.typing as npt
 import optype.numpy as onp
 import scipy.special as sps
 
+import lmo.typing as lmt
 from lmo.special import harmonic
 from lmo.theoretical import l_moment_from_ppf
 
@@ -36,9 +25,6 @@ if sys.version_info >= (3, 13):
     from typing import TypeIs
 else:
     from typing_extensions import TypeIs
-
-if TYPE_CHECKING:
-    import lmo.typing.np as lnpt
 
 
 __all__ = [
@@ -95,56 +81,27 @@ _PPF_REGISTRY: Final[set[str]] = {
     "weibull_max",
 }
 
-_ArrF8: TypeAlias = onp.Array[tuple[int, ...], np.float64]
+_ArrF8: TypeAlias = onp.ArrayND[np.float64]
 
 _Tss = ParamSpec("_Tss")
 # (r, s, t, *params) -> float
-_LmFunc: TypeAlias = Callable[
-    Concatenate[int, float, float, _Tss],
-    float | np.float64,
-]
-
-_ShapeT = TypeVar("_ShapeT", bound=tuple[int, ...])
-
+_LmFunc: TypeAlias = Callable[Concatenate[int, float, float, _Tss], float | np.float64]
 
 _LN2: Final = np.log(2)
 _LN3: Final = np.log(3)
 _LN5: Final = np.log(5)
 
 
-# workaround for partial type annotations (i.e. missing and un-inferrable)
-_binom = cast(
+_LmVFunc: TypeAlias = lmt.Callable2[
     Callable[
-        [npt.NDArray[np.intp] | int, npt.NDArray[np.intp] | int],
-        npt.NDArray[np.intp],
+        Concatenate[onp.ToIntND, float, float, _Tss],
+        onp.ArrayND[np.float64],
     ],
-    sps.comb,
-)
-
-
-class _LmVFunc(Protocol[_Tss]):
-    pyfunc: _LmFunc[_Tss]
-
-    @overload
-    def __call__(
-        self,
-        r: onp.CanArray[_ShapeT, np.dtype[lnpt.Integral]],
-        s: float,
-        t: float,
-        /,
-        *args: _Tss.args,
-        **kwds: _Tss.kwargs,
-    ) -> onp.Array[_ShapeT, np.float64]: ...
-    @overload
-    def __call__(
-        self,
-        r: int | lnpt.Integral,
-        s: float,
-        t: float,
-        /,
-        *args: _Tss.args,
-        **kwds: _Tss.kwargs,
-    ) -> onp.Array[tuple[()], np.float64]: ...
+    Callable[
+        Concatenate[onp.ToInt, float, float, _Tss],
+        onp.Array[tuple[()], np.float64],
+    ],
+]
 
 
 def register_lm_func(
@@ -318,7 +275,7 @@ def lm_gumbel_r(r: int, s: float, t: float, /) -> np.float64 | float:
             return (_LN2 * -107 + _LN3 * 6 + _LN5 * 42) * 5 / 4
 
         case _:
-            return lm_genextreme.pyfunc(r, s, t, 0)
+            return cast(Any, lm_genextreme).pyfunc(r, s, t, 0)
 
 
 @register_lm_func("genextreme")
@@ -350,8 +307,8 @@ def lm_genextreme(r: int, s: float, t: float, /, a: float) -> np.float64 | float
 
         return np.sum(
             (-1) ** k
-            * _binom(kn, k)
-            * _binom(r - 2 + k, r - 2 + k0)
+            * sps.comb(kn, k)
+            * sps.comb(r - 2 + k, r - 2 + k0)
             * pwm,
         ) * (-1) ** (r + s) / r  # fmt: skip
 
@@ -394,9 +351,9 @@ def lm_genpareto(r: int, s: float, t: float, /, a: float) -> np.float64 | float:
     if r == 0:
         return 1
     if a == 0:
-        return lm_expon.pyfunc(r, s, t)
+        return cast(Any, lm_expon).pyfunc(r, s, t)
     if a == 1:
-        return lm_uniform.pyfunc(r, s, t)
+        return cast(Any, lm_uniform).pyfunc(r, s, t)
 
     if not isinstance(t, int):
         msg = "fractional trimming"

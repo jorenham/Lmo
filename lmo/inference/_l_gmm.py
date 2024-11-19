@@ -27,7 +27,6 @@ if TYPE_CHECKING:
     import optype.numpy as onp
 
     import lmo.typing as lmt
-    import lmo.typing.np as lnpt
 
 
 __all__ = "GMMResult", "fit"
@@ -165,7 +164,7 @@ def _loss_step(
     l_fn: Callable[..., _ArrF8],
     r: npt.NDArray[np.intp],
     l_r: _ArrF8,
-    trim: lmt.AnyTrim,
+    trim: lmt.ToTrim,
     w_rr: _ArrF8,
 ) -> np.float64:
     """
@@ -187,8 +186,8 @@ def _loss_step(
     return np.sqrt(g_r.T @ w_rr @ g_r)  # pyright: ignore[reportReturnType]
 
 
-def _get_l_moment_fn(ppf: _Fn1) -> Callable[Concatenate[lmt.AnyOrderND, ...], _ArrF8]:
-    def l_moment_fn(r: lmt.AnyOrderND, /, *args: Any, trim: lmt.AnyTrim = 0) -> _ArrF8:
+def _get_l_moment_fn(ppf: _Fn1) -> Callable[Concatenate[lmt.ToOrderND, ...], _ArrF8]:
+    def l_moment_fn(r: lmt.ToOrderND, /, *args: Any, trim: lmt.ToTrim = 0) -> _ArrF8:
         def _ppf(q: _T_x, /) -> _T_x:
             return ppf(q, *args)
 
@@ -230,9 +229,7 @@ def _get_weights_mc(
         return np.linalg.pinv(l_rr)
 
 
-def _ensure_1d_f8(
-    arr: lnpt.AnyVectorFloat,
-) -> onp.Array[tuple[int], np.float64]:
+def _ensure_1d_f8(arr: onp.ToFloat1D) -> onp.Array1D[np.float64]:
     out = np.asarray_chkfinite(arr)
     if out.ndim != 1:
         err = f"expected 1D array, got {out.shape}"
@@ -242,10 +239,10 @@ def _ensure_1d_f8(
 
 def fit(  # noqa: C901
     ppf: _Fn1,
-    args0: lnpt.AnyVectorFloat,
+    args0: onp.ToFloat1D,
     n_obs: int,
-    l_moments: lnpt.AnyVectorFloat,
-    r: lmt.AnyOrderND | None = None,
+    l_moments: onp.ToFloat1D,
+    r: lmt.ToOrderND | None = None,
     trim: int | tuple[int, int] = 0,
     *,
     k: int | None = None,
@@ -253,7 +250,7 @@ def fit(  # noqa: C901
     l_tol: float = 1e-4,
     l_moment_fn: Callable[..., _ArrF8] | None = None,
     n_mc_samples: int = 9999,
-    random_state: lnpt.Seed | None = None,
+    random_state: lmt.Seed | None = None,
     **kwds: Any,
 ) -> GMMResult:
     r"""

@@ -7,25 +7,22 @@ from __future__ import annotations
 import functools
 import math
 import sys
-from typing import TYPE_CHECKING, Final, TypeAlias, TypeVar
+from typing import Final, TypeAlias, TypeVar
 
 import numpy as np
 import numpy.typing as npt
 import scipy.special as sps
 from scipy.stats.distributions import rv_continuous
 
+import lmo.typing as lmt
 from lmo.special import harmonic
 from lmo.theoretical import entropy_from_qdf, l_moment_from_ppf
 from ._lm import get_lm_func
-from ._utils import ShapeInfo
 
 if sys.version_info >= (3, 13):
     from typing import override
 else:
     from typing_extensions import override
-
-if TYPE_CHECKING:
-    import lmo.typing.scipy as lspt
 
 
 __all__ = ("genlambda_gen",)
@@ -141,10 +138,10 @@ class genlambda_gen(rv_continuous):
         return np.isfinite(b) & np.isfinite(d) & (f >= -1) & (f <= 1)
 
     @override
-    def _shape_info(self, /) -> list[ShapeInfo]:
-        ibeta = ShapeInfo("b", False, (-np.inf, np.inf), (False, False))
-        idelta = ShapeInfo("d", False, (-np.inf, np.inf), (False, False))
-        iphi = ShapeInfo("f", False, (-1, 1), (True, True))
+    def _shape_info(self, /) -> list[lmt.ShapeInfo]:
+        ibeta = lmt.ShapeInfo("b", False, (-np.inf, np.inf), (False, False))
+        idelta = lmt.ShapeInfo("d", False, (-np.inf, np.inf), (False, False))
+        iphi = lmt.ShapeInfo("f", False, (-1, 1), (True, True))
         return [ibeta, idelta, iphi]
 
     @override
@@ -239,7 +236,7 @@ class genlambda_gen(rv_continuous):
         f: float,
         *,
         trim: tuple[int, int] | tuple[float, float],
-        quad_opts: lspt.QuadOptions | None = None,
+        quad_opts: lmt.QuadOptions | None = None,
     ) -> _ArrF8:
         s, t = trim
 

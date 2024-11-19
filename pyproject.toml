@@ -239,18 +239,16 @@ split-on-trailing-comma = false
 
 [tool.ruff.lint.flake8-import-conventions]
 banned-from = [
-    "lmo.typing.np",
-    "lmo.typing.scipy",
     "numpy",
     "numpy.polynomial",
     "numpy.typing",
+    "optype",
     "optype.numpy",
+    "optype.typing",
 ]
 
 [tool.ruff.lint.flake8-import-conventions.extend-aliases]
 "lmo.typing" = "lmt"
-"lmo.typing.np" = "lnpt"
-"lmo.typing.scipy" = "lspt"
 "numpy.polynomial" = "npp"
 "numpy.typing" = "npt"
 "optype" = "op"
