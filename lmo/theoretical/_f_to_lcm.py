@@ -6,7 +6,6 @@ from functools import partial
 from typing import TYPE_CHECKING, Protocol, TypeAlias, TypeVar
 
 import numpy as np
-import numpy.typing as npt
 
 from lmo._poly import eval_sh_jacobi
 from lmo._utils import clean_order, clean_trim, round0
@@ -17,33 +16,33 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
 
     import lmo.typing as lmt
-    import lmo.typing.scipy as lspt
 
 
 __all__ = ["l_comoment_from_pdf", "l_coratio_from_pdf"]
 
+
 _T = TypeVar("_T")
-_T_x = TypeVar("_T_x", float, npt.NDArray[np.float64])
+_Pair: TypeAlias = tuple[_T, _T]
+
+_FloatND: TypeAlias = np.ndarray[tuple[int, ...], np.dtype[np.float64]]
+
+_AnyFloatND = TypeVar("_AnyFloatND", float, _FloatND)
 
 
 class _Fn1(Protocol):
-    def __call__(self, x: _T_x, /) -> _T_x: ...
-
-
-_Pair: TypeAlias = tuple[_T, _T]
-_ArrF8: TypeAlias = npt.NDArray[np.float64]
+    def __call__(self, x: _AnyFloatND, /) -> _AnyFloatND: ...
 
 
 def l_comoment_from_pdf(
-    pdf: Callable[[_ArrF8], float] | Callable[[_ArrF8], np.float64],
+    pdf: Callable[[_FloatND], float] | Callable[[_FloatND], np.float64],
     cdfs: Sequence[_Fn1],
-    r: lmt.AnyOrder,
+    r: lmt.ToOrder0D,
     /,
-    trim: lmt.AnyTrim = 0,
+    trim: lmt.ToTrim = 0,
     *,
     supports: Sequence[_Pair[float]] | None = None,
-    quad_opts: lspt.QuadOptions | None = None,
-) -> _ArrF8:
+    quad_opts: lmt.QuadOptions | None = None,
+) -> _FloatND:
     r"""
     Evaluate the theoretical L-*co*moment matrix of a multivariate probability
     distribution, using the joint PDF
@@ -247,16 +246,16 @@ def l_comoment_from_pdf(
 
 
 def l_coratio_from_pdf(
-    pdf: Callable[[_ArrF8], float] | Callable[[_ArrF8], np.float64],
+    pdf: Callable[[_FloatND], float] | Callable[[_FloatND], np.float64],
     cdfs: Sequence[_Fn1],
-    r: lmt.AnyOrder,
-    r0: lmt.AnyOrder = 2,
+    r: lmt.ToOrder0D,
+    r0: lmt.ToOrder0D = 2,
     /,
-    trim: lmt.AnyTrim = 0,
+    trim: lmt.ToTrim = 0,
     *,
     supports: Sequence[_Pair[float]] | None = None,
-    quad_opts: lspt.QuadOptions | None = None,
-) -> _ArrF8:
+    quad_opts: lmt.QuadOptions | None = None,
+) -> _FloatND:
     r"""
     Evaluate the theoretical L-*co*moment ratio matrix of a multivariate
     probability distribution, using the joint PDF $f_{\vec{X}}(\vec{x})$ and

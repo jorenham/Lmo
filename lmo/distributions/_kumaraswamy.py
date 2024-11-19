@@ -6,13 +6,12 @@ from typing import TypeAlias, TypeVar, final
 
 import numpy as np
 import numpy.typing as npt
-import optype.numpy as onpt
+import optype.numpy as onp
 import scipy.special as sc
-from scipy.stats.distributions import rv_continuous
 
+import lmo.typing as lmt
 from lmo.special import harmonic
 from ._lm import get_lm_func
-from ._utils import ShapeInfo
 
 if sys.version_info >= (3, 13):
     from typing import override
@@ -21,9 +20,10 @@ else:
 
 __all__ = ("kumaraswamy_gen",)
 
-_ArrF8: TypeAlias = onpt.Array[tuple[int, ...], np.float64]
 
-_XT = TypeVar("_XT", float | np.float64, _ArrF8)
+_FloatND: TypeAlias = onp.ArrayND[np.float64]
+
+_XT = TypeVar("_XT", float | np.float64, _FloatND)
 
 
 _lm_kumaraswamy = get_lm_func("kumaraswamy")
@@ -33,15 +33,15 @@ _lm_kumaraswamy = get_lm_func("kumaraswamy")
 
 
 @final
-class kumaraswamy_gen(rv_continuous):
+class kumaraswamy_gen(lmt.rv_continuous):
     @override
     def _argcheck(self, /, a: float, b: float) -> bool | np.bool_:
         return (a > 0) & (b > 0)
 
     @override
-    def _shape_info(self, /) -> list[ShapeInfo]:
-        ia = ShapeInfo("a", False, (0, np.inf), (False, False))
-        ib = ShapeInfo("b", False, (0, np.inf), (False, False))
+    def _shape_info(self, /) -> list[lmt.ShapeInfo]:
+        ia = lmt.ShapeInfo("a", False, (0, np.inf), (False, False))
+        ib = lmt.ShapeInfo("b", False, (0, np.inf), (False, False))
         return [ia, ib]
 
     @override
@@ -81,5 +81,5 @@ class kumaraswamy_gen(rv_continuous):
         return (1 - 1 / b) + (1 - 1 / a) * harmonic(b) - math.log(a * b)
 
     @override
-    def _munp(self, /, n: int | npt.NDArray[np.intp], a: float, b: float) -> _ArrF8:
+    def _munp(self, /, n: int | npt.NDArray[np.intp], a: float, b: float) -> _FloatND:
         return b * sc.beta(1 + n / a, b)

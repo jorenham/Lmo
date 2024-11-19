@@ -13,12 +13,15 @@ from typing import TYPE_CHECKING, TypeAlias, TypeVar, cast, overload
 
 import numpy as np
 import numpy.polynomial as npp
-import optype.numpy as onpt
+import optype as op
+import optype.numpy as onp
 import scipy.special as scs
 from numpy.polynomial._polybase import ABCPolyBase  # noqa: PLC2701
 
 if TYPE_CHECKING:
-    import lmo.typing.np as lnpt
+    from typing import LiteralString
+
+    import lmo.typing as lmt
 
 
 __all__ = (
@@ -33,38 +36,35 @@ __all__ = (
 )
 
 
-if TYPE_CHECKING:
-    from typing import LiteralString
+def __dir__() -> tuple[str, ...]:
+    return __all__
 
+
+if TYPE_CHECKING:
     PolySeries: TypeAlias = ABCPolyBase[LiteralString | None]
 else:
     PolySeries: TypeAlias = ABCPolyBase
 
 
-_T_shape = TypeVar("_T_shape", bound=onpt.AtLeast1D)
+_T_shape = TypeVar("_T_shape", bound=onp.AtLeast1D)
 _T_poly = TypeVar("_T_poly", bound=PolySeries)
 
 
 @overload
-def eval_sh_jacobi(
-    n: int,
-    a: float | lnpt.Float,
-    b: float | lnpt.Float,
-    x: float | lnpt.Float,
-) -> float: ...
+def eval_sh_jacobi(n: int, a: onp.ToFloat, b: onp.ToFloat, x: onp.ToFloat) -> float: ...
 @overload
 def eval_sh_jacobi(
     n: int,
-    a: float | lnpt.Float,
-    b: float | lnpt.Float,
-    x: onpt.Array[_T_shape, lnpt.Float],
-) -> onpt.Array[_T_shape, np.float64]: ...
+    a: onp.ToFloat,
+    b: onp.ToFloat,
+    x: onp.Array[_T_shape, lmt.Floating],
+) -> onp.Array[_T_shape, np.float64]: ...
 def eval_sh_jacobi(
-    n: int | lnpt.Int,
-    a: float | lnpt.Float,
-    b: float | lnpt.Float,
-    x: float | lnpt.Float | onpt.Array[_T_shape, lnpt.Float],
-) -> float | onpt.Array[_T_shape, np.float64]:
+    n: int | lmt.Integer,
+    a: onp.ToFloat,
+    b: onp.ToFloat,
+    x: onp.ToFloat | onp.Array[_T_shape, lmt.Floating],
+) -> float | onp.Array[_T_shape, np.float64]:
     """
     Fast evaluation of the n-th shifted Jacobi polynomial.
     Faster than pre-computing using np.Polynomial, and than
@@ -113,11 +113,7 @@ def eval_sh_jacobi(
     return scs.eval_jacobi(n, a, b, u)
 
 
-def peaks_jacobi(
-    n: int,
-    a: float,
-    b: float,
-) -> onpt.Array[tuple[int], np.float64]:
+def peaks_jacobi(n: int, a: float, b: float) -> onp.Array1D[np.float64]:
     r"""
     Finds the \( x \in [-1, 1] \) s.t.
     \( /frac{\dd{\shjacobi{n}{a}{b}{x}}}{\dd{x}} = 0 \) of a Jacobi polynomial,
@@ -303,81 +299,78 @@ def extrema_jacobi(n: int, a: float, b: float) -> tuple[float, float]:
     return cast(float, np.min(p)), cast(float, np.max(p))
 
 
-def _jacobi_coefs(n: int, a: float, b: float) -> onpt.Array[tuple[int], np.float64]:
-    p_n: np.poly1d
-    p_n = scs.jacobi(n, a, b)
-    return p_n.coef[::-1]
-
-
 def jacobi(
-    n: int,
+    n: onp.ToInt,
     /,
-    a: float,
-    b: float,
-    domain: tuple[float, float] = (-1, 1),
-    window: tuple[float, float] = (-1, 1),
+    a: onp.ToFloat,
+    b: onp.ToFloat,
+    domain: tuple[onp.ToFloat, onp.ToFloat] = (-1, 1),
+    window: tuple[onp.ToFloat, onp.ToFloat] = (-1, 1),
     symbol: str = "x",
 ) -> npp.Polynomial:
-    return npp.Polynomial(_jacobi_coefs(n, a, b), domain, window, symbol)
+    return npp.Polynomial(
+        scs.jacobi(n, a, b).coef[::-1],
+        domain=domain,
+        window=window,
+        symbol=symbol,
+    )
 
 
 @overload
 def jacobi_series(
-    coef: lnpt.AnyArrayFloat,
+    coef: onp.ToFloat1D,
     /,
-    a: float,
-    b: float,
+    a: onp.ToFloat,
+    b: onp.ToFloat,
     *,
     kind: None = ...,
-    domain: tuple[float, float] = ...,
-    window: tuple[float, float] = ...,
+    domain: tuple[onp.ToFloat, onp.ToFloat] = ...,
+    window: tuple[onp.ToFloat, onp.ToFloat] = ...,
     symbol: str = ...,
 ) -> npp.Polynomial: ...
 @overload
 def jacobi_series(
-    coef: lnpt.AnyArrayFloat,
+    coef: onp.ToFloat1D,
     /,
-    a: float,
-    b: float,
+    a: onp.ToFloat,
+    b: onp.ToFloat,
     *,
     kind: type[_T_poly],
-    domain: tuple[float, float] = ...,
-    window: tuple[float, float] = ...,
+    domain: tuple[onp.ToFloat, onp.ToFloat] = ...,
+    window: tuple[onp.ToFloat, onp.ToFloat] = ...,
     symbol: str = ...,
 ) -> _T_poly: ...
 def jacobi_series(
-    coef: lnpt.AnyArrayFloat,
+    coef: onp.ToFloat1D,
     /,
-    a: float,
-    b: float,
+    a: onp.ToFloat,
+    b: onp.ToFloat,
     *,
     kind: type[_T_poly] | None = None,
-    domain: tuple[float, float] = (-1, 1),
-    window: tuple[float, float] = (-1, 1),
+    domain: tuple[onp.ToFloat, onp.ToFloat] = (-1, 1),
+    window: tuple[onp.ToFloat, onp.ToFloat] = (-1, 1),
     symbol: str = "x",
 ) -> _T_poly | npp.Polynomial:
-    r"""
+    """
     Construct a polynomial from the weighted sum of shifted Jacobi
     polynomials.
 
-    Roughly equivalent to
-    `sum(w[n] * sh_jacobi(n, a, b) for n in range(len(w)))`.
+    Roughly equivalent to `sum(wn * sh_jacobi(r, a, b) for r, wn in enumerate(w))`.
 
     Todo:
         - Create a `Jacobi` class, as extension to `numpy.polynomial.`
     """
-    w = cast(onpt.Array[tuple[int], np.float64], np.asarray(coef))
+    w = np.asarray(coef, np.float64)
     if w.ndim != 1:
         msg = "coefs must be 1-D"
         raise ValueError(msg)
 
     p = sum(
-        jacobi(r, a, b, domain, window=window, symbol=symbol) * w_r
-        for r, w_r in enumerate(w.flat)
+        wn * jacobi(n, a, b, domain=domain, window=window, symbol=symbol)
+        for n, wn in enumerate(w.flat)
     )
     assert p
 
-    # see https://github.com/numpy/numpy/pull/27237
     return p.convert(  # pyright: ignore[reportUnknownMemberType]
         domain=domain,
         kind=kind or npp.Polynomial,
@@ -385,24 +378,20 @@ def jacobi_series(
     )
 
 
-def roots(
-    p: PolySeries,
-    /,
-    outside: bool = False,
-) -> onpt.Array[tuple[int], np.float64]:
+def roots(p: PolySeries, /, outside: op.CanBool = False) -> onp.Array1D[np.float64]:
     """
     Return the $x$ in the domain of $p$, where $p(x) = 0$.
 
     If outside=False (default), the values that fall outside of the domain
     interval will be not be included.
     """
-    z = cast(
-        onpt.Array[tuple[int], np.float64],
-        p.roots(),
+    z = p.roots()
+    x = cast(
+        onp.Array1D[np.float64],
+        z[np.isreal(z)].real if np.isrealobj(p.domain) and not np.isrealobj(z) else z,
     )
-    x = z[np.isreal(z)].real if not np.isrealobj(z) and np.isrealobj(p.domain) else z
 
-    if not outside and len(x):
+    if not outside and x.size:
         a, b = np.sort(p.domain)
         return x[(x >= a) & (x <= b)]
 

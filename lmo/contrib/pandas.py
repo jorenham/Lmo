@@ -144,9 +144,9 @@ class Series(_BaseSeries):  # pyright: ignore[reportMissingTypeArgument]
 
     def l_moment(
         self,
-        r: lmt.AnyOrder | lmt.AnyOrderND,
+        r: lmt.ToOrder0D | lmt.ToOrderND,
         /,
-        trim: lmt.AnyTrim = 0,
+        trim: lmt.ToTrim = 0,
         **kwargs: Unpack[lmt.LMomentOptions],
     ) -> float | pd.Series[float]:
         """
@@ -169,10 +169,10 @@ class Series(_BaseSeries):  # pyright: ignore[reportMissingTypeArgument]
 
     def l_ratio(
         self,
-        r: lmt.AnyOrder | lmt.AnyOrderND,
-        k: lmt.AnyOrder | lmt.AnyOrderND,
+        r: lmt.ToOrder0D | lmt.ToOrderND,
+        k: lmt.ToOrder0D | lmt.ToOrderND,
         /,
-        trim: lmt.AnyTrim = 0,
+        trim: lmt.ToTrim = 0,
         **kwargs: Unpack[lmt.LMomentOptions],
     ) -> float | pd.Series[float]:
         """
@@ -196,7 +196,7 @@ class Series(_BaseSeries):  # pyright: ignore[reportMissingTypeArgument]
 
     def l_stats(
         self,
-        trim: lmt.AnyTrim = 0,
+        trim: lmt.ToTrim = 0,
         num: int = 4,
         **kwargs: Unpack[lmt.LMomentOptions],
     ) -> pd.Series[float]:
@@ -215,7 +215,7 @@ class Series(_BaseSeries):  # pyright: ignore[reportMissingTypeArgument]
 
     def l_loc(
         self,
-        trim: lmt.AnyTrim = 0,
+        trim: lmt.ToTrim = 0,
         **kwargs: Unpack[lmt.LMomentOptions],
     ) -> float:
         """
@@ -228,7 +228,7 @@ class Series(_BaseSeries):  # pyright: ignore[reportMissingTypeArgument]
 
     def l_scale(
         self,
-        trim: lmt.AnyTrim = 0,
+        trim: lmt.ToTrim = 0,
         **kwargs: Unpack[lmt.LMomentOptions],
     ) -> float:
         """
@@ -241,7 +241,7 @@ class Series(_BaseSeries):  # pyright: ignore[reportMissingTypeArgument]
 
     def l_variation(
         self,
-        trim: lmt.AnyTrim = 0,
+        trim: lmt.ToTrim = 0,
         **kwargs: Unpack[lmt.LMomentOptions],
     ) -> float:
         """
@@ -254,7 +254,7 @@ class Series(_BaseSeries):  # pyright: ignore[reportMissingTypeArgument]
 
     def l_skew(
         self,
-        trim: lmt.AnyTrim = 0,
+        trim: lmt.ToTrim = 0,
         **kwargs: Unpack[lmt.LMomentOptions],
     ) -> float:
         """
@@ -267,7 +267,7 @@ class Series(_BaseSeries):  # pyright: ignore[reportMissingTypeArgument]
 
     def l_kurtosis(
         self,
-        trim: lmt.AnyTrim = 0,
+        trim: lmt.ToTrim = 0,
         **kwargs: Unpack[lmt.LMomentOptions],
     ) -> float:
         """
@@ -308,9 +308,9 @@ class DataFrame(pd.DataFrame):
 
     def l_moment(
         self,
-        r: lmt.AnyOrder | lmt.AnyOrderND,
+        r: lmt.ToOrder0D | lmt.ToOrderND,
         /,
-        trim: lmt.AnyTrim = 0,
+        trim: lmt.ToTrim = 0,
         axis: _Axis = 0,
         **kwargs: Unpack[lmt.LMomentOptions],
     ) -> pd.Series[float] | pd.DataFrame:
@@ -338,10 +338,10 @@ class DataFrame(pd.DataFrame):
 
     def l_ratio(
         self,
-        r: lmt.AnyOrder | lmt.AnyOrderND,
-        k: lmt.AnyOrder | lmt.AnyOrderND,
+        r: lmt.ToOrder0D | lmt.ToOrderND,
+        k: lmt.ToOrder0D | lmt.ToOrderND,
         /,
-        trim: lmt.AnyTrim = 0,
+        trim: lmt.ToTrim = 0,
         axis: _Axis = 0,
         **kwargs: Unpack[lmt.LMomentOptions],
     ) -> pd.Series[float] | pd.DataFrame:
@@ -374,7 +374,7 @@ class DataFrame(pd.DataFrame):
 
     def l_stats(
         self,
-        trim: lmt.AnyTrim = 0,
+        trim: lmt.ToTrim = 0,
         num: int = 4,
         axis: _Axis = 0,
         **kwargs: Unpack[lmt.LMomentOptions],
@@ -400,7 +400,7 @@ class DataFrame(pd.DataFrame):
 
     def l_loc(
         self,
-        trim: lmt.AnyTrim = 0,
+        trim: lmt.ToTrim = 0,
         axis: _Axis = 0,
         **kwargs: Unpack[lmt.LMomentOptions],
     ) -> pd.Series[float]:
@@ -418,7 +418,7 @@ class DataFrame(pd.DataFrame):
 
     def l_scale(
         self,
-        trim: lmt.AnyTrim = 0,
+        trim: lmt.ToTrim = 0,
         axis: _Axis = 0,
         **kwargs: Unpack[lmt.LMomentOptions],
     ) -> pd.Series[float]:
@@ -436,7 +436,7 @@ class DataFrame(pd.DataFrame):
 
     def l_variation(
         self,
-        trim: lmt.AnyTrim = 0,
+        trim: lmt.ToTrim = 0,
         axis: _Axis = 0,
         **kwargs: Unpack[lmt.LMomentOptions],
     ) -> pd.Series[float]:
@@ -454,7 +454,7 @@ class DataFrame(pd.DataFrame):
 
     def l_skew(
         self,
-        trim: lmt.AnyTrim = 0,
+        trim: lmt.ToTrim = 0,
         axis: _Axis = 0,
         **kwargs: Unpack[lmt.LMomentOptions],
     ) -> pd.Series[float]:
@@ -472,7 +472,7 @@ class DataFrame(pd.DataFrame):
 
     def l_kurtosis(
         self,
-        trim: lmt.AnyTrim = 0,
+        trim: lmt.ToTrim = 0,
         axis: _Axis = 0,
         **kwargs: Unpack[lmt.LMomentOptions],
     ) -> pd.Series[float]:
@@ -490,7 +490,7 @@ class DataFrame(pd.DataFrame):
 
     def l_kurt(
         self,
-        trim: lmt.AnyTrim = 0,
+        trim: lmt.ToTrim = 0,
         axis: _Axis = 0,
         **kwargs: Unpack[lmt.LMomentOptions],
     ) -> pd.Series[float]:
@@ -502,9 +502,9 @@ class DataFrame(pd.DataFrame):
 
     def l_comoment(
         self,
-        r: lmt.AnyOrder,
+        r: lmt.ToOrder0D,
         /,
-        trim: lmt.AnyTrim = 0,
+        trim: lmt.ToTrim = 0,
         **kwargs: Unpack[lmt.LComomentOptions],
     ) -> pd.DataFrame:
         """
@@ -541,10 +541,10 @@ class DataFrame(pd.DataFrame):
 
     def l_coratio(
         self,
-        r: lmt.AnyOrder,
-        k: lmt.AnyOrder = 2,
+        r: lmt.ToOrder0D,
+        k: lmt.ToOrder0D = 2,
         /,
-        trim: lmt.AnyTrim = 0,
+        trim: lmt.ToTrim = 0,
         **kwargs: Unpack[lmt.LComomentOptions],
     ) -> pd.DataFrame:
         """
@@ -584,7 +584,7 @@ class DataFrame(pd.DataFrame):
 
     def l_coloc(
         self,
-        trim: lmt.AnyTrim = 0,
+        trim: lmt.ToTrim = 0,
         **kwargs: Unpack[lmt.LComomentOptions],
     ) -> pd.DataFrame:
         """
@@ -596,7 +596,7 @@ class DataFrame(pd.DataFrame):
 
     def l_coscale(
         self,
-        trim: lmt.AnyTrim = 0,
+        trim: lmt.ToTrim = 0,
         **kwargs: Unpack[lmt.LComomentOptions],
     ) -> pd.DataFrame:
         """
@@ -608,7 +608,7 @@ class DataFrame(pd.DataFrame):
 
     def l_corr(
         self,
-        trim: lmt.AnyTrim = 0,
+        trim: lmt.ToTrim = 0,
         **kwargs: Unpack[lmt.LComomentOptions],
     ) -> pd.DataFrame:
         """
@@ -620,7 +620,7 @@ class DataFrame(pd.DataFrame):
 
     def l_coskew(
         self,
-        trim: lmt.AnyTrim = 0,
+        trim: lmt.ToTrim = 0,
         **kwargs: Unpack[lmt.LComomentOptions],
     ) -> pd.DataFrame:
         """
@@ -632,7 +632,7 @@ class DataFrame(pd.DataFrame):
 
     def l_cokurtosis(
         self,
-        trim: lmt.AnyTrim = 0,
+        trim: lmt.ToTrim = 0,
         **kwargs: Unpack[lmt.LComomentOptions],
     ) -> pd.DataFrame:
         """
@@ -644,7 +644,7 @@ class DataFrame(pd.DataFrame):
 
     def l_cokurt(
         self,
-        trim: lmt.AnyTrim = 0,
+        trim: lmt.ToTrim = 0,
         **kwargs: Unpack[lmt.LComomentOptions],
     ) -> pd.DataFrame:
         """

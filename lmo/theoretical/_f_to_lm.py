@@ -19,7 +19,6 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
     import lmo.typing as lmt
-    import lmo.typing.scipy as lspt
 
 
 __all__ = [
@@ -53,7 +52,7 @@ def _df_quad3(
     c: float | np.float64,
     d: float | np.float64,
     r: int,
-    **kwds: Unpack[lspt.QuadOptions],
+    **kwds: Unpack[lmt.QuadOptions],
 ) -> float:
     import scipy.integrate as spi
 
@@ -69,35 +68,35 @@ def _df_quad3(
 @overload
 def l_moment_from_cdf(
     cdf: _Fn1 | Callable[[float], float],
-    r: lmt.AnyOrderND,
+    r: lmt.ToOrderND,
     /,
-    trim: lmt.AnyTrim = ...,
+    trim: lmt.ToTrim = ...,
     *,
     support: _Pair[float] | None = ...,
-    quad_opts: lspt.QuadOptions | None = ...,
+    quad_opts: lmt.QuadOptions | None = ...,
     alpha: float = ...,
     ppf: _Fn1 | None = ...,
 ) -> _ArrF8: ...
 @overload
 def l_moment_from_cdf(
     cdf: _Fn1 | Callable[[float], float],
-    r: lmt.AnyOrder,
+    r: lmt.ToOrder0D,
     /,
-    trim: lmt.AnyTrim = ...,
+    trim: lmt.ToTrim = ...,
     *,
     support: _Pair[float] | None = ...,
-    quad_opts: lspt.QuadOptions | None = ...,
+    quad_opts: lmt.QuadOptions | None = ...,
     alpha: float = ...,
     ppf: _Fn1 | None = ...,
 ) -> np.float64: ...
 def l_moment_from_cdf(
     cdf: _Fn1 | Callable[[float], float],
-    r: lmt.AnyOrder | lmt.AnyOrderND,
+    r: lmt.ToOrder0D | lmt.ToOrderND,
     /,
-    trim: lmt.AnyTrim = 0,
+    trim: lmt.ToTrim = 0,
     *,
     support: _Pair[float] | None = None,
-    quad_opts: lspt.QuadOptions | None = None,
+    quad_opts: lmt.QuadOptions | None = None,
     alpha: float = ALPHA,
     ppf: _Fn1 | None = None,
 ) -> np.float64 | _ArrF8:
@@ -268,33 +267,33 @@ def l_moment_from_cdf(
 @overload
 def l_moment_from_ppf(
     ppf: _Fn1 | Callable[[float], float],
-    r: lmt.AnyOrderND,
+    r: lmt.ToOrderND,
     /,
-    trim: lmt.AnyTrim = ...,
+    trim: lmt.ToTrim = ...,
     *,
     support: _Pair[float] = ...,
-    quad_opts: lspt.QuadOptions | None = ...,
+    quad_opts: lmt.QuadOptions | None = ...,
     alpha: float = ...,
 ) -> _ArrF8: ...
 @overload
 def l_moment_from_ppf(
     ppf: _Fn1 | Callable[[float], float],
-    r: lmt.AnyOrder,
+    r: lmt.ToOrder0D,
     /,
-    trim: lmt.AnyTrim = ...,
+    trim: lmt.ToTrim = ...,
     *,
     support: _Pair[float] = ...,
-    quad_opts: lspt.QuadOptions | None = ...,
+    quad_opts: lmt.QuadOptions | None = ...,
     alpha: float = ...,
 ) -> np.float64: ...
 def l_moment_from_ppf(
     ppf: _Fn1 | Callable[[float], float],
-    r: lmt.AnyOrder | lmt.AnyOrderND,
+    r: lmt.ToOrder0D | lmt.ToOrderND,
     /,
-    trim: lmt.AnyTrim = 0,
+    trim: lmt.ToTrim = 0,
     *,
     support: _Pair[float] = (0, 1),
-    quad_opts: lspt.QuadOptions | None = None,
+    quad_opts: lmt.QuadOptions | None = None,
     alpha: float = ALPHA,
 ) -> np.float64 | _ArrF8:
     r"""
@@ -420,33 +419,33 @@ def l_moment_from_ppf(
 @overload
 def l_moment_from_qdf(
     qdf: _Fn1 | Callable[[float], float],
-    r: lmt.AnyOrderND,
+    r: lmt.ToOrderND,
     /,
-    trim: lmt.AnyTrim = ...,
+    trim: lmt.ToTrim = ...,
     *,
     support: _Pair[float] = ...,
-    quad_opts: lspt.QuadOptions | None = ...,
+    quad_opts: lmt.QuadOptions | None = ...,
     alpha: float = ...,
 ) -> _ArrF8: ...
 @overload
 def l_moment_from_qdf(
     qdf: _Fn1 | Callable[[float], float],
-    r: lmt.AnyOrder,
+    r: lmt.ToOrder0D,
     /,
-    trim: lmt.AnyTrim = ...,
+    trim: lmt.ToTrim = ...,
     *,
     support: _Pair[float] = ...,
-    quad_opts: lspt.QuadOptions | None = ...,
+    quad_opts: lmt.QuadOptions | None = ...,
     alpha: float = ...,
 ) -> np.float64: ...
 def l_moment_from_qdf(
     qdf: _Fn1 | Callable[[float], float],
-    r: lmt.AnyOrder | lmt.AnyOrderND,
+    r: lmt.ToOrder0D | lmt.ToOrderND,
     /,
-    trim: lmt.AnyTrim = 0,
+    trim: lmt.ToTrim = 0,
     *,
     support: _Pair[float] = (0, 1),
-    quad_opts: lspt.QuadOptions | None = None,
+    quad_opts: lmt.QuadOptions | None = None,
     alpha: float = ALPHA,
 ) -> np.float64 | _ArrF8:
     r"""
@@ -479,50 +478,50 @@ def l_moment_from_qdf(
 @overload
 def l_ratio_from_cdf(
     cdf: _Fn1,
-    r: lmt.AnyOrderND,
-    s: lmt.AnyOrder | lmt.AnyOrderND,
+    r: lmt.ToOrderND,
+    s: lmt.ToOrder0D | lmt.ToOrderND,
     /,
-    trim: lmt.AnyTrim = ...,
+    trim: lmt.ToTrim = ...,
     *,
     support: _Pair[float] | None = ...,
-    quad_opts: lspt.QuadOptions | None = ...,
+    quad_opts: lmt.QuadOptions | None = ...,
     alpha: float = ...,
     ppf: _Fn1 | None = ...,
 ) -> _ArrF8: ...
 @overload
 def l_ratio_from_cdf(
     cdf: _Fn1,
-    r: lmt.AnyOrder | lmt.AnyOrderND,
-    s: lmt.AnyOrderND,
+    r: lmt.ToOrder0D | lmt.ToOrderND,
+    s: lmt.ToOrderND,
     /,
-    trim: lmt.AnyTrim = ...,
+    trim: lmt.ToTrim = ...,
     *,
     support: _Pair[float] | None = ...,
-    quad_opts: lspt.QuadOptions | None = ...,
+    quad_opts: lmt.QuadOptions | None = ...,
     alpha: float = ...,
     ppf: _Fn1 | None = ...,
 ) -> _ArrF8: ...
 @overload
 def l_ratio_from_cdf(
     cdf: _Fn1,
-    r: lmt.AnyOrder,
-    s: lmt.AnyOrder,
+    r: lmt.ToOrder0D,
+    s: lmt.ToOrder0D,
     /,
-    trim: lmt.AnyTrim = ...,
+    trim: lmt.ToTrim = ...,
     *,
     support: _Pair[float] | None = ...,
-    quad_opts: lspt.QuadOptions | None = ...,
+    quad_opts: lmt.QuadOptions | None = ...,
     alpha: float = ...,
 ) -> np.float64: ...
 def l_ratio_from_cdf(
     cdf: _Fn1,
-    r: lmt.AnyOrder | lmt.AnyOrderND,
-    s: lmt.AnyOrder | lmt.AnyOrderND,
+    r: lmt.ToOrder0D | lmt.ToOrderND,
+    s: lmt.ToOrder0D | lmt.ToOrderND,
     /,
-    trim: lmt.AnyTrim = 0,
+    trim: lmt.ToTrim = 0,
     *,
     support: _Pair[float] | None = None,
-    quad_opts: lspt.QuadOptions | None = None,
+    quad_opts: lmt.QuadOptions | None = None,
     alpha: float = ALPHA,
     ppf: _Fn1 | None = None,
 ) -> np.float64 | _ArrF8:
@@ -549,48 +548,48 @@ def l_ratio_from_cdf(
 @overload
 def l_ratio_from_ppf(
     ppf: _Fn1,
-    r: lmt.AnyOrderND,
-    s: lmt.AnyOrder | lmt.AnyOrderND,
+    r: lmt.ToOrderND,
+    s: lmt.ToOrder0D | lmt.ToOrderND,
     /,
-    trim: lmt.AnyTrim = ...,
+    trim: lmt.ToTrim = ...,
     *,
     support: _Pair[float] = ...,
-    quad_opts: lspt.QuadOptions | None = ...,
+    quad_opts: lmt.QuadOptions | None = ...,
     alpha: float = ...,
 ) -> _ArrF8: ...
 @overload
 def l_ratio_from_ppf(
     ppf: _Fn1,
-    r: lmt.AnyOrder | lmt.AnyOrderND,
-    s: lmt.AnyOrderND,
+    r: lmt.ToOrder0D | lmt.ToOrderND,
+    s: lmt.ToOrderND,
     /,
-    trim: lmt.AnyTrim = ...,
+    trim: lmt.ToTrim = ...,
     *,
     support: _Pair[float] = ...,
-    quad_opts: lspt.QuadOptions | None = ...,
+    quad_opts: lmt.QuadOptions | None = ...,
     alpha: float = ...,
 ) -> _ArrF8: ...
 @overload
 def l_ratio_from_ppf(
     ppf: _Fn1,
-    r: lmt.AnyOrder,
-    s: lmt.AnyOrder,
+    r: lmt.ToOrder0D,
+    s: lmt.ToOrder0D,
     /,
-    trim: lmt.AnyTrim = ...,
+    trim: lmt.ToTrim = ...,
     *,
     support: _Pair[float] = ...,
-    quad_opts: lspt.QuadOptions | None = ...,
+    quad_opts: lmt.QuadOptions | None = ...,
     alpha: float = ...,
 ) -> np.float64: ...
 def l_ratio_from_ppf(
     ppf: _Fn1,
-    r: lmt.AnyOrder | lmt.AnyOrderND,
-    s: lmt.AnyOrder | lmt.AnyOrderND,
+    r: lmt.ToOrder0D | lmt.ToOrderND,
+    s: lmt.ToOrder0D | lmt.ToOrderND,
     /,
-    trim: lmt.AnyTrim = 0,
+    trim: lmt.ToTrim = 0,
     *,
     support: _Pair[float] = (0, 1),
-    quad_opts: lspt.QuadOptions | None = None,
+    quad_opts: lmt.QuadOptions | None = None,
     alpha: float = ALPHA,
 ) -> np.float64 | _ArrF8:
     """
@@ -616,10 +615,10 @@ def l_stats_from_cdf(
     cdf: _Fn1,
     num: int = 4,
     /,
-    trim: lmt.AnyTrim = 0,
+    trim: lmt.ToTrim = 0,
     *,
     support: _Pair[float] | None = None,
-    quad_opts: lspt.QuadOptions | None = None,
+    quad_opts: lmt.QuadOptions | None = None,
     alpha: float = ALPHA,
     ppf: _Fn1 | None = None,
 ) -> _ArrF8:
@@ -664,10 +663,10 @@ def l_stats_from_ppf(
     ppf: _Fn1,
     num: int = 4,
     /,
-    trim: lmt.AnyTrim = 0,
+    trim: lmt.ToTrim = 0,
     *,
     support: _Pair[float] = (0, 1),
-    quad_opts: lspt.QuadOptions | None = None,
+    quad_opts: lmt.QuadOptions | None = None,
     alpha: float = ALPHA,
 ) -> _ArrF8:
     r"""

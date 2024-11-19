@@ -14,7 +14,6 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
     import lmo.typing as lmt
-    import lmo.typing.scipy as lspt
 
 
 __all__ = ["l_moment_influence_from_cdf", "l_ratio_influence_from_cdf"]
@@ -33,13 +32,13 @@ _Pair: TypeAlias = tuple[_T, _T]
 
 def l_moment_influence_from_cdf(
     cdf: _Fn1,
-    r: lmt.AnyOrder,
+    r: lmt.ToOrder0D,
     /,
-    trim: lmt.AnyTrim = 0,
+    trim: lmt.ToTrim = 0,
     *,
     support: _Pair[float] | None = None,
     l_moment: float | np.float64 | None = None,
-    quad_opts: lspt.QuadOptions | None = None,
+    quad_opts: lmt.QuadOptions | None = None,
     alpha: float = ALPHA,
     tol: float = 1e-8,
 ) -> Callable[[_T_x], _T_x]:
@@ -157,14 +156,14 @@ def l_moment_influence_from_cdf(
 
 def l_ratio_influence_from_cdf(
     cdf: _Fn1,
-    r: lmt.AnyOrder,
-    k: lmt.AnyOrder = 2,
+    r: lmt.ToOrder0D,
+    k: lmt.ToOrder0D = 2,
     /,
-    trim: lmt.AnyTrim = 0,
+    trim: lmt.ToTrim = 0,
     *,
     support: _Pair[float] | None = None,
     l_moments: _Pair[float] | None = None,
-    quad_opts: lspt.QuadOptions | None = None,
+    quad_opts: lmt.QuadOptions | None = None,
     alpha: float = ALPHA,
     tol: float = 1e-8,
 ) -> Callable[[_T_x], _T_x]:

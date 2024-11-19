@@ -20,25 +20,23 @@ from typing import (
 )
 
 import numpy as np
-import numpy.typing as npt
+import optype.numpy as onp
 
+import lmo.typing as lmt
 from . import constants
 from ._lm import l_ratio
 from ._poly import extrema_jacobi
 from ._utils import clean_orders, clean_trim
 from .special import fpow
-from .typing import AnyOrder, AnyOrderND, AnyTrim
 
 if sys.version_info >= (3, 13):
     from typing import TypeIs
 else:
     from typing_extensions import TypeIs
 
-
 if TYPE_CHECKING:
-    import lmo.typing.np as lnpt
-    import lmo.typing.scipy as lspt
     from .contrib.scipy_stats import l_rv_generic
+
 
 __all__ = (
     "error_sensitivity",
@@ -53,7 +51,7 @@ __all__ = (
 
 
 _T = TypeVar("_T")
-_T_x = TypeVar("_T_x", float, npt.NDArray[np.float64])
+_T_x = TypeVar("_T_x", float, onp.ArrayND[np.float64])
 
 
 class _Fn1(Protocol):
@@ -61,7 +59,7 @@ class _Fn1(Protocol):
 
 
 _Tuple2: TypeAlias = tuple[_T, _T]
-_ArrF8: TypeAlias = npt.NDArray[np.float64]
+_FloatND: TypeAlias = onp.ArrayND[np.float64]
 
 _MIN_RHO: Final[float] = 1e-5
 
@@ -79,19 +77,19 @@ class HypothesisTestResult(NamedTuple):
             hypothesis, $H_0$.
     """
 
-    statistic: float | _ArrF8
-    pvalue: float | _ArrF8
+    statistic: float | _FloatND
+    pvalue: float | _FloatND
 
     @property
-    def is_valid(self) -> np.bool_ | npt.NDArray[np.bool_]:
+    def is_valid(self) -> np.bool_ | onp.ArrayND[np.bool_]:
         """Check if the statistic is finite and not `nan`."""
         return np.isfinite(self.statistic)
 
     def is_significant(
         self,
-        level: float | np.floating[Any] = 0.05,
+        level: float | lmt.Floating = 0.05,
         /,
-    ) -> np.bool_ | npt.NDArray[np.bool_]:
+    ) -> np.bool_ | onp.ArrayND[np.bool_]:
         """
         Whether or not the null hypothesis can be rejected, with a certain
         confidence level (5% by default).
@@ -103,7 +101,7 @@ class HypothesisTestResult(NamedTuple):
 
 
 def normaltest(
-    a: lnpt.AnyArrayFloat,
+    a: onp.ToFloatND,
     /,
     *,
     axis: int | None = None,
@@ -178,7 +176,7 @@ def normaltest(
     return HypothesisTestResult(k2, p_value)
 
 
-def _gof_stat_single(l_obs: _ArrF8, l_exp: _ArrF8, cov: _ArrF8) -> float:
+def _gof_stat_single(l_obs: _FloatND, l_exp: _FloatND, cov: _FloatND) -> float:
     err = l_obs - l_exp
     prec = np.linalg.inv(cov)  # precision matrix
     return float(err.T @ prec @ err)
@@ -192,7 +190,7 @@ _gof_stat = np.vectorize(
 )
 
 
-def _is_rv(x: object) -> TypeIs[lspt.RVFrozen | lspt.RV]:
+def _is_rv(x: object) -> TypeIs[lmt.rv_frozen | lmt.rv_generic]:
     from scipy.stats.distributions import (
         rv_continuous,
         rv_discrete,
@@ -205,11 +203,11 @@ def _is_rv(x: object) -> TypeIs[lspt.RVFrozen | lspt.RV]:
 
 
 def l_moment_gof(
-    rv_or_cdf: lspt.RV | lspt.RVFrozen | _Fn1,
-    l_moments: _ArrF8,
+    rv_or_cdf: lmt.rv_generic | lmt.rv_frozen | _Fn1,
+    l_moments: _FloatND,
     n_obs: int,
     /,
-    trim: AnyTrim = 0,
+    trim: lmt.ToTrim = 0,
     **kwargs: Any,
 ) -> HypothesisTestResult:
     r"""
@@ -303,11 +301,11 @@ def l_moment_gof(
 
 
 def l_stats_gof(
-    rv_or_cdf: lspt.RV | lspt.RVFrozen | _Fn1,
-    l_stats: _ArrF8,
+    rv_or_cdf: lmt.rv_generic | lmt.rv_frozen | _Fn1,
+    l_stats: _FloatND,
     n_obs: int,
     /,
-    trim: AnyTrim = 0,
+    trim: lmt.ToTrim = 0,
     **kwargs: Any,
 ) -> HypothesisTestResult:
     """
@@ -367,7 +365,7 @@ def _lm2_bounds_single(r: int, trim: _Tuple2[float]) -> float:
 
 
 _lm2_bounds = cast(
-    Callable[[AnyOrderND, _Tuple2[float]], _ArrF8],
+    Callable[[lmt.ToOrderND, _Tuple2[float]], _FloatND],
     np.vectorize(
         _lm2_bounds_single,
         otypes=[float],
@@ -379,24 +377,24 @@ _lm2_bounds = cast(
 
 @overload
 def l_moment_bounds(
-    r: AnyOrderND,
+    r: lmt.ToOrderND,
     /,
-    trim: AnyTrim = ...,
+    trim: lmt.ToTrim = ...,
     scale: float = ...,
-) -> _ArrF8: ...
+) -> _FloatND: ...
 @overload
 def l_moment_bounds(
-    r: AnyOrder,
+    r: lmt.ToOrder0D,
     /,
-    trim: AnyTrim = ...,
+    trim: lmt.ToTrim = ...,
     scale: float = ...,
 ) -> float: ...
 def l_moment_bounds(
-    r: AnyOrder | AnyOrderND,
+    r: lmt.ToOrder0D | lmt.ToOrderND,
     /,
-    trim: AnyTrim = 0,
+    trim: lmt.ToTrim = 0,
     scale: float = 1.0,
-) -> float | _ArrF8:
+) -> float | _FloatND:
     r"""
     Returns the absolute upper bounds $L^{(s,t)}_r$ on L-moments
     $\lambda^{(s,t)}_r$, proportional to the scale $\sigma_X$ (standard
@@ -496,27 +494,27 @@ def l_moment_bounds(
 
 @overload
 def l_ratio_bounds(
-    r: AnyOrderND,
+    r: lmt.ToOrderND,
     /,
-    trim: AnyTrim = ...,
+    trim: lmt.ToTrim = ...,
     *,
     legacy: bool = ...,
-) -> _Tuple2[_ArrF8]: ...
+) -> _Tuple2[_FloatND]: ...
 @overload
 def l_ratio_bounds(
-    r: AnyOrder,
+    r: lmt.ToOrder0D,
     /,
-    trim: AnyTrim = ...,
+    trim: lmt.ToTrim = ...,
     *,
     legacy: bool = ...,
 ) -> _Tuple2[float]: ...
 def l_ratio_bounds(
-    r: AnyOrder | AnyOrderND,
+    r: lmt.ToOrder0D | lmt.ToOrderND,
     /,
-    trim: AnyTrim = 0,
+    trim: lmt.ToTrim = 0,
     *,
     legacy: bool = False,
-) -> _Tuple2[float | _ArrF8]:
+) -> _Tuple2[float | _FloatND]:
     r"""
     Unlike the standardized product-moments, the L-moment ratio's with
     \( r \ge 2 \) are bounded above and below.
@@ -748,7 +746,7 @@ def rejection_point(
     def integrand(x: float) -> float:
         return max(abs(influence_fn(-x)), abs(influence_fn(x)))
 
-    def obj(r: _ArrF8) -> float:
+    def obj(r: _FloatND) -> float:
         return quad(integrand, r[0], np.inf)[0]
 
     from scipy.optimize import minimize
@@ -808,7 +806,7 @@ def error_sensitivity(
     if np.isinf(influence_fn(a)) or np.isinf(influence_fn(b)):
         return np.inf
 
-    def obj(xs: _ArrF8) -> float:
+    def obj(xs: _FloatND) -> float:
         return -abs(influence_fn(xs[0]))
 
     bounds = None if np.isneginf(a) and np.isposinf(b) else [(a, b)]
@@ -881,7 +879,7 @@ def shift_sensitivity(
 
     """
 
-    def obj(xs: _ArrF8) -> float:
+    def obj(xs: _FloatND) -> float:
         x, y = xs
         if y == x:
             return 0

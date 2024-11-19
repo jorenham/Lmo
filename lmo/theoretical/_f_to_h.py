@@ -21,10 +21,16 @@ _QDF: TypeAlias = (
 def entropy_from_qdf(qdf: _QDF[[]], /) -> float: ...
 @overload
 def entropy_from_qdf(
-    qdf: _QDF[_Tss], /, *args: _Tss.args, **kwds: _Tss.kwargs
+    qdf: _QDF[_Tss],
+    /,
+    *args: _Tss.args,
+    **kwds: _Tss.kwargs,
 ) -> float: ...
 def entropy_from_qdf(
-    qdf: _QDF[_Tss], /, *args: _Tss.args, **kwds: _Tss.kwargs
+    qdf: _QDF[_Tss],
+    /,
+    *args: _Tss.args,
+    **kwds: _Tss.kwargs,
 ) -> float:
     r"""
     Evaluate the (differential / continuous) entropy \( H(X) \) of a

@@ -10,7 +10,7 @@ import numpy.typing as npt
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
 
-    import lmo.typing.scipy as lspt
+    import lmo.typing as lmt
 
 __all__ = ("ALPHA", "QUAD_LIMIT", "l_coef_factor", "l_const", "tighten_cdf_support")
 
@@ -106,7 +106,7 @@ def tighten_cdf_support(
 def nquad(
     integrand: Callable[Concatenate[float, float, _Tss], float],
     domains: Sequence[tuple[float, float] | Callable[..., tuple[float, float]],],
-    opts: lspt.QuadOptions | None = None,
+    opts: lmt.QuadOptions | None = None,
     *args: _Tss.args,
     **kwds: _Tss.kwargs,
 ) -> float:

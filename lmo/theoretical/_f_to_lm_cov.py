@@ -13,7 +13,6 @@ from ._utils import ALPHA, l_const, nquad, tighten_cdf_support
 
 if TYPE_CHECKING:
     import lmo.typing as lmt
-    import lmo.typing.scipy as lspt
 
 
 __all__ = ["l_moment_cov_from_cdf", "l_stats_cov_from_cdf"]
@@ -33,12 +32,12 @@ _ArrF8: TypeAlias = npt.NDArray[np.float64]
 
 def l_moment_cov_from_cdf(
     cdf: _Fn1,
-    r_max: lmt.AnyOrder,
+    r_max: lmt.ToOrder0D,
     /,
-    trim: lmt.AnyTrim = 0,
+    trim: lmt.ToTrim = 0,
     *,
     support: _Pair[float] | None = None,
-    quad_opts: lspt.QuadOptions | None = None,
+    quad_opts: lmt.QuadOptions | None = None,
 ) -> _ArrF8:
     r"""
     L-moments that are estimated from $n$ samples of a distribution with CDF
@@ -217,11 +216,11 @@ def l_moment_cov_from_cdf(
 def l_stats_cov_from_cdf(
     cdf: _Fn1,
     /,
-    num: lmt.AnyOrder = 4,
-    trim: lmt.AnyTrim = 0,
+    num: lmt.ToOrder0D = 4,
+    trim: lmt.ToTrim = 0,
     *,
     support: _Pair[float] | None = None,
-    quad_opts: lspt.QuadOptions | None = None,
+    quad_opts: lmt.QuadOptions | None = None,
     alpha: float = ALPHA,
     ppf: _Fn1 | None = None,
 ) -> _ArrF8:

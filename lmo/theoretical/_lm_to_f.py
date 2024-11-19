@@ -11,24 +11,24 @@ from lmo.special import fourier_jacobi, fpow
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+    import optype.numpy as onp
+
     import lmo.typing as lmt
-    import lmo.typing.np as lnpt
 
 __all__ = ["ppf_from_l_moments", "qdf_from_l_moments"]
 
 _T = TypeVar("_T")
 _T_x = TypeVar("_T_x", float, npt.NDArray[np.float64])
 
+_Pair: TypeAlias = tuple[_T, _T]
+_FloatND: TypeAlias = npt.NDArray[np.float64]
+
 
 class _Fn1(Protocol):
     def __call__(self, x: _T_x, /) -> _T_x: ...
 
 
-_Pair: TypeAlias = tuple[_T, _T]
-_ArrF8: TypeAlias = npt.NDArray[np.float64]
-
-
-def _validate_l_bounds(l_r: _ArrF8, s: float, t: float) -> None:
+def _validate_l_bounds(l_r: _FloatND, s: float, t: float) -> None:
     if (l2 := l_r[1]) <= 0:
         msg = f"L-scale must be >0, got lmda[1] = {l2}"
         raise ValueError(msg)
@@ -74,7 +74,7 @@ def _validate_l_bounds(l_r: _ArrF8, s: float, t: float) -> None:
 
 
 def _monotonic(
-    f: Callable[[_ArrF8], np.float64 | _ArrF8],
+    f: Callable[[_FloatND], np.float64 | _FloatND],
     a: float,
     b: float,
     n: int = 100,
@@ -90,9 +90,9 @@ def _monotonic(
 
 
 def ppf_from_l_moments(
-    lmbda: lnpt.AnyVectorFloat,
+    lmbda: onp.ToFloat1D,
     /,
-    trim: lmt.AnyTrim = 0,
+    trim: lmt.ToTrim = 0,
     *,
     support: _Pair[float] = (-np.inf, np.inf),
     validate: bool = True,
@@ -205,9 +205,9 @@ def ppf_from_l_moments(
 
 
 def qdf_from_l_moments(
-    lmbda: lnpt.AnyVectorFloat,
+    lmbda: onp.ToFloat1D,
     /,
-    trim: lmt.AnyTrim = 0,
+    trim: lmt.ToTrim = 0,
     *,
     validate: bool = True,
     extrapolate: bool = False,
