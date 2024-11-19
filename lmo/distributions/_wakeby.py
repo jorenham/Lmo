@@ -1,30 +1,22 @@
 from __future__ import annotations
 
-import functools
 import math
 import sys
 import warnings
-from typing import TYPE_CHECKING, Final, TypeAlias, TypeVar, cast
+from typing import Final, TypeAlias, TypeVar
 
 import numpy as np
-import numpy.typing as npt
 import optype.numpy as onpt
-import scipy.special as sc
-from scipy.stats._distn_infrastructure import (
-    _ShapeInfo,  # noqa: PLC2701  # pyright: ignore[reportPrivateUsage]
-)
+import scipy.special as sps
 from scipy.stats.distributions import rv_continuous
 
-from lmo.theoretical import l_moment_from_ppf
 from ._lm import get_lm_func
+from ._utils import ShapeInfo
 
 if sys.version_info >= (3, 13):
     from typing import override
 else:
     from typing_extensions import override
-
-if TYPE_CHECKING:
-    import lmo.typing.scipy as lspt
 
 
 __all__ = ("wakeby_gen",)
@@ -52,7 +44,7 @@ def _wakeby_ub(b: _F8, d: _F8, f: _F8) -> _F8:
     return _INF
 
 
-def _wakeby_isf0(q: _F8, b: _F8, d: _F8, f: _F8) -> _F8:
+def _wakeby_isf0(q: _F8, /, b: _F8, d: _F8, f: _F8) -> _F8:
     """Inverse survival function, does not validate params."""
     if q <= 0:
         return _wakeby_ub(b, d, f)
@@ -79,15 +71,15 @@ def _wakeby_isf0(q: _F8, b: _F8, d: _F8, f: _F8) -> _F8:
 _wakeby_isf = np.vectorize(_wakeby_isf0, [float])
 
 
-def _wakeby_qdf(p: _XT, b: _F8, d: _F8, f: _F8) -> _XT:
+def _wakeby_qdf(p: _XT, /, b: _F8, d: _F8, f: _F8) -> _XT:
     """Quantile density function (QDF), the derivative of the PPF."""
     q = 1 - p
     lhs = f * q ** (b - 1)
     rhs = (1 - f) / q ** (d + 1)
-    return cast(_XT, lhs + rhs)
+    return lhs + rhs  # pyright: ignore[reportReturnType]
 
 
-def _wakeby_sf0(x: _F8, b: _F8, d: _F8, f: _F8) -> _F8:  # noqa: C901
+def _wakeby_sf0(x: _F8, /, b: _F8, d: _F8, f: _F8) -> _F8:  # noqa: C901
     """
     Numerical approximation of Wakeby's survival function.
 
@@ -122,7 +114,7 @@ def _wakeby_sf0(x: _F8, b: _F8, d: _F8, f: _F8) -> _F8:  # noqa: C901
         # https://wikipedia.org/wiki/Lambert_W_function
         # it's easy to show that this is valid for all x, f, and d
         w = (1 - f) / f
-        return float((w / sc.lambertw(w * math.exp((1 + d * x) / f - 1))) ** (1 / d))
+        return float((w / sps.lambertw(w * math.exp((1 + d * x) / f - 1))) ** (1 / d))
 
     z: _F8
     if x < _wakeby_isf0(0.9, b, d, f):
@@ -197,10 +189,10 @@ class wakeby_gen(rv_continuous):
         )
 
     @override
-    def _shape_info(self) -> list[_ShapeInfo]:
-        ibeta = _ShapeInfo("b", False, (-np.inf, np.inf), (False, False))
-        idelta = _ShapeInfo("d", False, (-np.inf, np.inf), (False, False))
-        iphi = _ShapeInfo("f", False, (0, 1), (True, True))
+    def _shape_info(self) -> list[ShapeInfo]:
+        ibeta = ShapeInfo("b", False, (-np.inf, np.inf), (False, False))
+        idelta = ShapeInfo("d", False, (-np.inf, np.inf), (False, False))
+        iphi = ShapeInfo("f", False, (0, 1), (True, True))
         return [ibeta, idelta, iphi]
 
     @override
@@ -218,10 +210,7 @@ class wakeby_gen(rv_continuous):
         args: tuple[float, float, float] | None = None,
     ) -> tuple[float, float, float, float, float]:
         #  Arbitrary, but the default f=1 is a bad start
-        return cast(
-            tuple[float, float, float, float, float],
-            super()._fitstart(data, args or (1.0, 1.0, 0.5)),
-        )
+        return super()._fitstart(data, args or (1.0, 1.0, 0.5))  # pyright: ignore[reportReturnType]
 
     @override
     def _pdf(self, /, x: _XT, b: float, d: float, f: float) -> _XT:  # pyright: ignore[reportIncompatibleMethodOverride]
@@ -246,6 +235,7 @@ class wakeby_gen(rv_continuous):
     @override
     def _stats(
         self,
+        /,
         b: float,
         d: float,
         f: float,
@@ -275,7 +265,7 @@ class wakeby_gen(rv_continuous):
 
         return m1, m2, m3, m4
 
-    def _entropy(self, b: float, d: float, f: float) -> float:
+    def _entropy(self, /, b: float, d: float, f: float) -> float:
         """
         Entropy can be calculated from the QDF (PPF derivative) as the
         Integrate[Log[QDF[u]], {u, 0, 1}]. This is the (semi) closed-form
@@ -294,30 +284,4 @@ class wakeby_gen(rv_continuous):
         assert bd > 0
 
         ibd = 1 / bd
-        return 1 - b + bd * float(sc.hyp2f1(1, ibd, 1 + ibd, f / (f - 1)))
-
-    def _l_moment(
-        self,
-        r: npt.NDArray[np.int64],
-        b: float,
-        d: float,
-        f: float,
-        *,
-        trim: tuple[int, int] | tuple[float, float],
-        quad_opts: lspt.QuadOptions | None = None,
-    ) -> _ArrF8:
-        s, t = trim
-
-        if quad_opts is not None:
-            # only do numerical integration when quad_opts is passed
-            lmbda_r = l_moment_from_ppf(
-                functools.partial(self._ppf, b=b, d=d, f=f),
-                r,
-                trim=trim,
-                quad_opts=quad_opts,
-            )
-            out = lmbda_r
-        else:
-            out = _wakeby_lm(r, s, t, b, d, f)
-
-        return np.atleast_1d(out)
+        return 1 - b + bd * float(sps.hyp2f1(1, ibd, 1 + ibd, f / (f - 1)))

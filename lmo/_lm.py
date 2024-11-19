@@ -12,7 +12,6 @@ import optype.numpy as onpt
 from . import ostats, pwm_beta
 from ._utils import (
     clean_order,
-    clean_orders,
     clean_trim,
     ensure_axis_at,
     l_stats_orders,
@@ -22,7 +21,6 @@ from ._utils import (
     sort_maybe,
 )
 from .linalg import ir_pascal, sandwich, sh_legendre, trim_matrix
-from .typing import AnyOrder, AnyOrderND
 
 if sys.version_info >= (3, 13):
     from typing import TypeVar
@@ -34,6 +32,7 @@ if TYPE_CHECKING:
 
     import lmo.typing as lmt
     import lmo.typing.np as lnpt
+    from .typing import AnyOrder, AnyOrderND
 
 
 __all__ = (
@@ -248,9 +247,9 @@ def l_moment(
     a: lnpt.AnyArrayFloat,
     r: AnyOrder,
     /,
-    trim: lmt.AnyTrim = ...,
+    trim: lmt.AnyTrim = 0,
     *,
-    axis: None = ...,
+    axis: None = None,
     dtype: _DType[_SCT_f] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
 ) -> _SCT_f: ...
@@ -259,7 +258,7 @@ def l_moment(
     a: lnpt.AnyMatrixFloat | lnpt.AnyTensorFloat,
     r: AnyOrder | AnyOrderND,
     /,
-    trim: lmt.AnyTrim = ...,
+    trim: lmt.AnyTrim = 0,
     *,
     axis: int,
     dtype: _DType[_SCT_f] = np.float64,
@@ -270,7 +269,7 @@ def l_moment(
     a: lnpt.AnyVectorFloat,
     r: AnyOrder,
     /,
-    trim: lmt.AnyTrim = ...,
+    trim: lmt.AnyTrim = 0,
     *,
     axis: int,
     dtype: _DType[_SCT_f] = np.float64,
@@ -281,9 +280,9 @@ def l_moment(
     a: lnpt.AnyArrayFloat,
     r: AnyOrderND,
     /,
-    trim: lmt.AnyTrim = ...,
+    trim: lmt.AnyTrim = 0,
     *,
-    axis: int | None = ...,
+    axis: int | None = None,
     dtype: _DType[_SCT_f] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
 ) -> onpt.Array[Any, _SCT_f]: ...
@@ -410,11 +409,8 @@ def l_moment(
     x_k = ensure_axis_at(x_k, axis, -1)
     n = x_k.shape[-1]
 
-    if np.isscalar(r):
-        _r = np.array(clean_order(cast(AnyOrder, r)))
-    else:
-        _r = clean_orders(cast(AnyOrderND, r))
-    r_min, r_max = np.min(_r), int(np.max(_r))
+    _r = clean_order(r)
+    r_min, r_max = np.min(_r), np.max(_r)
 
     # TODO @jorenham: nan handling, see:
     # https://github.com/jorenham/Lmo/issues/70
@@ -422,7 +418,7 @@ def l_moment(
     (s, t) = st = clean_trim(trim)
 
     # ensure that any inf's (not nan's) are properly trimmed
-    if (s or t) and isinstance(s, int):
+    if isinstance(s, int):
         if s:
             x_k[..., :s] = np.nan_to_num(x_k[..., :s], nan=np.nan)
         if t:

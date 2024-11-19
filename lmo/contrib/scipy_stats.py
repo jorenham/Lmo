@@ -38,10 +38,11 @@ from lmo._utils import (
     moments_to_ratio,
     round0,
 )
-from lmo.distributions._lm import get_lm_func, has_lm_func
+from lmo.distributions._lm import get_lm_func, has_lm_func, prefers_ppf
 from lmo.theoretical import (
     l_moment_cov_from_cdf,
     l_moment_from_cdf,
+    l_moment_from_ppf,
     l_moment_influence_from_cdf,
     l_ratio_influence_from_cdf,
     l_stats_cov_from_cdf,
@@ -149,61 +150,6 @@ class l_rv_generic(PatchClass):
     mean: Callable[..., float]
     ppf: _Fn1
     std: Callable[..., float]
-
-    def _get_xxf(
-        self,
-        *args: Any,
-        loc: float = 0,
-        scale: float = 1,
-    ) -> _Tuple2[_Fn1]:
-        assert scale > 0
-
-        _cdf, _ppf = self._cdf, self._ppf
-
-        def cdf(x: _T_x, /) -> _T_x:
-            return _cdf(np.array([(x - loc) / scale], dtype=float), *args)[0]
-
-        def ppf(q: _T_x, /) -> _T_x:
-            return _ppf(np.array([q], dtype=float), *args)[0] * scale + loc
-
-        return cdf, ppf
-
-    def _l_moment(
-        self,
-        r: npt.NDArray[np.intp],
-        *args: Any,
-        trim: _Tuple2[int] | _Tuple2[float] = (0, 0),
-        quad_opts: lspt.QuadOptions | None = None,
-    ) -> _ArrF8:
-        """
-        Population L-moments of the standard distribution (i.e. assuming
-        `loc=0` and `scale=1`).
-
-        Todo:
-            - Sparse caching; key as `(self, args, r, trim)`, using a
-            priority queue. Prefer small `r` and `sum(trim)`, skip fractional
-            trim.
-        """
-        name = self.name
-        if quad_opts is None and has_lm_func(name):
-            with contextlib.suppress(NotImplementedError):
-                return get_lm_func(name)(r, trim[0], trim[1], *args)
-
-        cdf, ppf = self._get_xxf(*args)
-
-        # TODO: use ppf when appropriate (e.g. genextreme, tukeylambda, kappa4)
-        with np.errstate(over="ignore", under="ignore"):
-            lmbda_r = l_moment_from_cdf(
-                cdf,
-                r,
-                trim=trim,
-                support=self._get_support(*args),
-                ppf=ppf,
-                quad_opts=quad_opts,
-            )
-
-        # re-wrap scalars in 0-d arrays (lmo.theoretical unpacks them)
-        return np.asarray(lmbda_r)
 
     @np.errstate(divide="ignore")
     def _logqdf(self, u: _ArrF8, *args: Any) -> _ArrF8:
@@ -337,7 +283,7 @@ class l_rv_generic(PatchClass):
             return np.full(_r.shape, np.nan)[()]
 
         # L-moments of the standard distribution (loc=0, scale=scale0)
-        l0_r = self._l_moment(_r, *shapes, trim=_trim, quad_opts=quad_opts)
+        l0_r = _l_moment(self, _r, *shapes, trim=_trim, quad_opts=quad_opts)
 
         # shift (by loc) and scale
         shift_r = loc * (_r == 1)
@@ -688,7 +634,7 @@ class l_rv_generic(PatchClass):
             self._parse_args(*args, **kwds),
         )
         support = self._get_support(*args)
-        cdf, _ = self._get_xxf(*args)
+        cdf, _ = _get_xxf(self, *args)
 
         cov = l_moment_cov_from_cdf(
             cdf,
@@ -799,7 +745,7 @@ class l_rv_generic(PatchClass):
         """
         args, _, scale = self._parse_args(*args, **kwds)
         support = self._get_support(*args)
-        cdf, ppf = self._get_xxf(*args)
+        cdf, ppf = _get_xxf(self, *args)
 
         cov = l_stats_cov_from_cdf(
             cdf,
@@ -889,7 +835,7 @@ class l_rv_generic(PatchClass):
         lm = self.l_moment(r, *args, trim=trim, quad_opts=quad_opts, **kwds)
 
         args, loc, scale = self._parse_args(*args, **kwds)
-        cdf = self._get_xxf(*args, loc=loc, scale=scale)[0]
+        cdf, _ = _get_xxf(self, *args, loc=loc, scale=scale)
 
         return l_moment_influence_from_cdf(
             cdf,
@@ -983,7 +929,7 @@ class l_rv_generic(PatchClass):
         )
 
         args, loc, scale = self._parse_args(*args, **kwds)
-        cdf = self._get_xxf(*args, loc=loc, scale=scale)[0]
+        cdf = _get_xxf(self, *args, loc=loc, scale=scale)[0]
 
         return l_ratio_influence_from_cdf(
             cdf,
@@ -1219,7 +1165,7 @@ class l_rv_generic(PatchClass):
         r = np.arange(1, len(args0) + n_extra + 1)
 
         _lmo_cache: dict[tuple[float, ...], _ArrF8] = {}
-        _lmo_fn = self._l_moment
+        _lmo_fn = _l_moment
 
         # temporary cache to speed up L-moment calculations with the same
         # shape args
@@ -1234,7 +1180,7 @@ class l_rv_generic(PatchClass):
             if shapes in _lmo_cache:
                 lmbda_r = _lmo_cache[shapes]
             else:
-                lmbda_r = _lmo_fn(_r, *shapes, **kwds)
+                lmbda_r = _lmo_fn(self, _r, *shapes, **kwds)
                 lmbda_r.setflags(write=False)  # prevent cache corruption
                 _lmo_cache[shapes] = lmbda_r
 
@@ -1478,6 +1424,66 @@ class l_rv_frozen(PatchClass):  # noqa: D101
             tol=tol,
             **self.kwds,
         )
+
+
+def _l_moment(
+    self: l_rv_generic | rv_continuous,
+    r: npt.NDArray[np.intp],
+    /,
+    *args: Any,
+    trim: _Tuple2[int] | _Tuple2[float] = (0, 0),
+    quad_opts: lspt.QuadOptions | None = None,
+) -> _ArrF8:
+    """
+    Population L-moments of the standard distribution (i.e. `loc, scale = 0, 1`).
+
+    Todo:
+        Sparse caching: Use a priority queue with key `(self, args, r, trim)`.
+        Prefer small `r` and small `sum(trim)`, skip fractional trim.
+    """
+    name = self.name
+    if quad_opts is None and has_lm_func(name):
+        with contextlib.suppress(NotImplementedError):
+            return get_lm_func(name)(r, *trim, *args)
+
+    cdf, ppf = _get_xxf(self, *args)
+
+    if prefers_ppf(name):
+        lmbda_r = l_moment_from_ppf(ppf, r, trim=trim, quad_opts=quad_opts)
+    else:
+        a, b = self._get_support(*args)
+        with np.errstate(over="ignore", under="ignore"):
+            lmbda_r = l_moment_from_cdf(
+                cdf,
+                r,
+                trim=trim,
+                support=(float(a), float(b)),
+                ppf=ppf,
+                quad_opts=quad_opts,
+            )
+
+    # re-wrap scalars in 0-d arrays (lmo.theoretical unpacks them)
+    return np.asarray(lmbda_r)
+
+
+def _get_xxf(
+    self: l_rv_generic | rv_continuous,
+    /,
+    *shape: float,
+    loc: float = 0,
+    scale: float = 1,
+) -> _Tuple2[_Fn1]:
+    assert scale > 0
+
+    _cdf, _ppf = self._cdf, self._ppf
+
+    def cdf(x: _T_x, /) -> _T_x:
+        return _cdf(np.array([(x - loc) / scale], dtype=np.float64), *shape)[0]
+
+    def ppf(q: _T_x, /) -> _T_x:
+        return _ppf(np.array([q], dtype=np.float64), *shape)[0] * scale + loc
+
+    return cdf, ppf
 
 
 def install() -> None:

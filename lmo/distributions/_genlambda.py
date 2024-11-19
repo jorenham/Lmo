@@ -7,19 +7,17 @@ from __future__ import annotations
 import functools
 import math
 import sys
-from typing import TYPE_CHECKING, Final, TypeAlias, TypeVar, cast
+from typing import TYPE_CHECKING, Final, TypeAlias, TypeVar
 
 import numpy as np
 import numpy.typing as npt
 import scipy.special as sps
-from scipy.stats._distn_infrastructure import (
-    _ShapeInfo,  # noqa: PLC2701  # pyright: ignore[reportPrivateUsage]
-)
 from scipy.stats.distributions import rv_continuous
 
 from lmo.special import harmonic
 from lmo.theoretical import entropy_from_qdf, l_moment_from_ppf
 from ._lm import get_lm_func
+from ._utils import ShapeInfo
 
 if sys.version_info >= (3, 13):
     from typing import override
@@ -64,7 +62,7 @@ _genlambda_ppf: Final = np.vectorize(_genlambda_ppf0, [float])
 
 @np.errstate(divide="ignore")
 def _genlambda_qdf(q: _XT, b: float, d: float, f: float) -> _XT:
-    return cast(_XT, (1 + f) * q ** (b - 1) + (1 - f) * (1 - q) ** (d - 1))
+    return (1 + f) * q ** (b - 1) + (1 - f) * (1 - q) ** (d - 1)  # pyright: ignore[reportReturnType]
 
 
 def _genlambda_cdf0(  # noqa: C901
@@ -73,7 +71,7 @@ def _genlambda_cdf0(  # noqa: C901
     d: float,
     f: float,
     *,
-    ptol: float = 1e-4,
+    ptol: float = 1e-04,
     xtol: float = 1e-14,
     maxiter: int = 60,
 ) -> float:
@@ -143,20 +141,14 @@ class genlambda_gen(rv_continuous):
         return np.isfinite(b) & np.isfinite(d) & (f >= -1) & (f <= 1)
 
     @override
-    def _shape_info(self, /) -> list[_ShapeInfo]:
-        ibeta = _ShapeInfo("b", False, (-np.inf, np.inf), (False, False))
-        idelta = _ShapeInfo("d", False, (-np.inf, np.inf), (False, False))
-        iphi = _ShapeInfo("f", False, (-1, 1), (True, True))
+    def _shape_info(self, /) -> list[ShapeInfo]:
+        ibeta = ShapeInfo("b", False, (-np.inf, np.inf), (False, False))
+        idelta = ShapeInfo("d", False, (-np.inf, np.inf), (False, False))
+        iphi = ShapeInfo("f", False, (-1, 1), (True, True))
         return [ibeta, idelta, iphi]
 
     @override
-    def _get_support(
-        self,
-        /,
-        b: float,
-        d: float,
-        f: float,
-    ) -> tuple[float, float]:
+    def _get_support(self, /, b: float, d: float, f: float) -> tuple[float, float]:
         return _genlambda_support(b, d, f)
 
     @override
@@ -167,14 +159,11 @@ class genlambda_gen(rv_continuous):
         args: tuple[float, float, float] | None = None,
     ) -> tuple[float, float, float, float, float]:
         #  Arbitrary, but the default f=1 is a bad start
-        return cast(
-            tuple[float, float, float, float, float],
-            super()._fitstart(data, args or (1.0, 1.0, 0.0)),
-        )
+        return super()._fitstart(data, args or (1.0, 1.0, 0.0))  # pyright: ignore[reportReturnType]
 
     @override
     def _pdf(self, /, x: _XT, b: float, d: float, f: float) -> _XT:  # pyright: ignore[reportIncompatibleMethodOverride]
-        return cast(_XT, 1 / self._qdf(self._cdf(x, b, d, f), b, d, f))
+        return 1 / self._qdf(self._cdf(x, b, d, f), b, d, f)  # pyright: ignore[reportReturnType]
 
     @override
     def _cdf(self, /, x: _XT, b: float, d: float, f: float) -> _XT:  # pyright: ignore[reportIncompatibleMethodOverride]
@@ -201,7 +190,7 @@ class genlambda_gen(rv_continuous):
         a, c = 1 + f, 1 - f
         b1, d1 = 1 + b, 1 + d
 
-        m1 = 0 if b == d and f == 0 else cast(float, _genlambda_lm(1, 0, 0, b, d, f))
+        m1: float = 0 if b == d and f == 0 else _genlambda_lm(1, 0, 0, b, d, f).item()
 
         if b <= -1 / 2 or d <= -1 / 2:
             return m1, math.nan, math.nan, math.nan
@@ -256,14 +245,11 @@ class genlambda_gen(rv_continuous):
 
         if quad_opts is not None:
             # only do numerical integration when quad_opts is passed
-            lmbda_r = cast(
-                float | _ArrF8,
-                l_moment_from_ppf(
-                    functools.partial(self._ppf, b=b, d=d, f=f),
-                    r,
-                    trim=trim,
-                    quad_opts=quad_opts,
-                ),
+            lmbda_r = l_moment_from_ppf(
+                functools.partial(self._ppf, b=b, d=d, f=f),
+                r,
+                trim=trim,
+                quad_opts=quad_opts,
             )
             return np.asarray(lmbda_r)
 
