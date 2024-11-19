@@ -22,7 +22,7 @@ else:
 
 
 if TYPE_CHECKING:
-    import optype.numpy as onpt
+    import optype.numpy as onp
 
     import lmo.typing.np as lnpt
 
@@ -42,7 +42,7 @@ def weights(
     n: _N,
     /,
     dtype: _DType[_F] = np.float64,
-) -> onpt.Array[tuple[_R, _N], _F]:
+) -> onp.Array[tuple[_R, _N], _F]:
     r"""
     Probability Weighted moment (PWM) projection matrix $B$ of the
     unbiased estimator for $\beta_k = M_{1,k,0}$ for $k = 0, \dots, r - 1$.
@@ -94,7 +94,7 @@ def cov(
     axis: None = ...,
     dtype: _DType[_F] = np.float64,
     **kwds: Any,
-) -> onpt.Array[tuple[_R, _R], _F]: ...
+) -> onp.Array[tuple[_R, _R], _F]: ...
 @overload
 def cov(
     a: lnpt.AnyArrayFloat,
@@ -103,7 +103,7 @@ def cov(
     axis: int,
     dtype: _DType[_F] = np.float64,
     **kwds: Any,
-) -> onpt.Array[tuple[_R, _R, *tuple[int, ...]], _F]: ...
+) -> onp.Array[tuple[_R, _R, *tuple[int, ...]], _F]: ...
 def cov(
     a: lnpt.AnyArrayFloat,
     r: int,
@@ -111,7 +111,7 @@ def cov(
     axis: int | None = None,
     dtype: _DType[_F] = np.float64,
     **kwds: Any,
-) -> onpt.Array[Any, _F]:
+) -> onp.Array[Any, _F]:
     r"""
     Distribution-free variance-covariance matrix of the probability weighted
     moment (PWM) point estimates $\beta_k = M_{1,k,0}$, with orders

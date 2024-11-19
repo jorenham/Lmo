@@ -17,7 +17,7 @@ else:
     from typing_extensions import ParamSpec, Protocol
 
 if TYPE_CHECKING:
-    import optype.numpy as onpt
+    import optype.numpy as onp
     from numpy._typing import _ArrayLikeFloat_co  # pyright: ignore[reportPrivateUsage]
 
     import lmo.typing.np as lnpt
@@ -71,7 +71,7 @@ class RVFunction(Protocol[_Tss]):
         /,
         *args: _Tss.args,
         **kwds: _Tss.kwargs,
-    ) -> onpt.Array[Any, np.float64]: ...
+    ) -> onp.Array[Any, np.float64]: ...
     @overload
     def __call__(
         self,

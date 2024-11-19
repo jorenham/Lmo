@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, Final, TypeAlias, Unpack, cast, overload
 
 import numpy as np
 import numpy.typing as npt
-import optype.numpy as onpt
+import optype.numpy as onp
 
 from . import ostats, pwm_beta
 from ._utils import (
@@ -65,7 +65,7 @@ _Floating: TypeAlias = np.floating[Any]
 # (dtype.char, n, s, t)
 _CacheKey: TypeAlias = tuple[str, int, int, int] | tuple[str, int, float, float]
 # `r: _T_order >= 4`
-_CacheArray: TypeAlias = onpt.Array[tuple[_OrderT, _SizeT], np.longdouble]
+_CacheArray: TypeAlias = onp.Array[tuple[_OrderT, _SizeT], np.longdouble]
 _Cache: TypeAlias = dict[_CacheKey, _CacheArray[Any, Any]]
 
 # depends on `dtype`, `n`, and `trim`
@@ -79,7 +79,7 @@ def _l_weights_pwm(
     trim: tuple[int, int],
     *,
     dtype: _DType[_SCT_f],
-) -> onpt.Array[tuple[_OrderT, _SizeT], _SCT_f]:
+) -> onp.Array[tuple[_OrderT, _SizeT], _SCT_f]:
     s, t = trim
     r0 = r + s + t
 
@@ -108,7 +108,7 @@ def _l_weights_ostat(
     trim: tuple[int, int] | tuple[float, float],
     *,
     dtype: _DType[_SCT_f],
-) -> onpt.Array[tuple[_OrderT, _SizeT], _SCT_f]:
+) -> onp.Array[tuple[_OrderT, _SizeT], _SCT_f]:
     assert r >= 1, r
 
     s, t = trim
@@ -139,7 +139,7 @@ def l_weights(
     *,
     dtype: _DType[_SCT_f] = np.float64,
     cache: bool | None = None,
-) -> onpt.Array[tuple[_OrderT, _SizeT], _SCT_f]:
+) -> onp.Array[tuple[_OrderT, _SizeT], _SCT_f]:
     r"""
     Projection matrix of the first $r$ (T)L-moments for $n$ samples.
 
@@ -219,7 +219,7 @@ def l_weights(
 
     key = dtype.char, n, s, t
     if (_w := _CACHE.get(key)) is not None and _w.shape[0] >= r_max:
-        w = cast(onpt.Array[tuple[_OrderT, _SizeT], _SCT_f], _w)
+        w = cast(onp.Array[tuple[_OrderT, _SizeT], _SCT_f], _w)
     else:
         # when caching, use at least 4 orders, to avoid cache misses
         _r_max = 4 if cache and r_max < 4 else r_max
@@ -263,7 +263,7 @@ def l_moment(
     axis: int,
     dtype: _DType[_SCT_f] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
-) -> onpt.Array[Any, _SCT_f]: ...
+) -> onp.Array[Any, _SCT_f]: ...
 @overload
 def l_moment(
     a: lnpt.AnyVectorFloat,
@@ -285,7 +285,7 @@ def l_moment(
     axis: int | None = None,
     dtype: _DType[_SCT_f] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
-) -> onpt.Array[Any, _SCT_f]: ...
+) -> onp.Array[Any, _SCT_f]: ...
 def l_moment(
     a: lnpt.AnyArrayFloat,
     r: AnyOrder | AnyOrderND,
@@ -455,7 +455,7 @@ def l_ratio(
     axis: int,
     dtype: _DType[_SCT_f] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
-) -> onpt.Array[Any, _SCT_f]: ...
+) -> onp.Array[Any, _SCT_f]: ...
 @overload
 def l_ratio(
     a: lnpt.AnyArrayFloat,
@@ -479,7 +479,7 @@ def l_ratio(
     axis: int | None = ...,
     dtype: _DType[_SCT_f] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
-) -> onpt.Array[Any, _SCT_f]: ...
+) -> onp.Array[Any, _SCT_f]: ...
 @overload
 def l_ratio(
     a: lnpt.AnyArrayFloat,
@@ -491,7 +491,7 @@ def l_ratio(
     axis: int | None = ...,
     dtype: _DType[_SCT_f] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
-) -> onpt.Array[Any, _SCT_f]: ...
+) -> onp.Array[Any, _SCT_f]: ...
 def l_ratio(
     a: lnpt.AnyArrayFloat,
     r: AnyOrder | AnyOrderND,
@@ -559,7 +559,7 @@ def l_stats(
     axis: int | None = None,
     dtype: _DType[_SCT_f] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
-) -> onpt.Array[Any, _SCT_f]:
+) -> onp.Array[Any, _SCT_f]:
     """
     Calculates the L-loc(ation), L-scale, L-skew(ness) and L-kurtosis.
 
@@ -593,7 +593,7 @@ def l_loc(
     axis: int,
     dtype: _DType[_SCT_f] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
-) -> onpt.Array[Any, _SCT_f]: ...
+) -> onp.Array[Any, _SCT_f]: ...
 @overload
 def l_loc(
     a: lnpt.AnyVectorFloat,
@@ -707,7 +707,7 @@ def l_scale(
     axis: int,
     dtype: _DType[_SCT_f] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
-) -> onpt.Array[Any, _SCT_f]: ...
+) -> onp.Array[Any, _SCT_f]: ...
 @overload
 def l_scale(
     a: lnpt.AnyVectorFloat,
@@ -774,7 +774,7 @@ def l_variation(
     axis: int,
     dtype: _DType[_SCT_f] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
-) -> onpt.Array[Any, _SCT_f]: ...
+) -> onp.Array[Any, _SCT_f]: ...
 @overload
 def l_variation(
     a: lnpt.AnyVectorFloat,
@@ -1156,7 +1156,7 @@ def l_moment_influence(
 
     n = len(x_k)
 
-    w_k: onpt.Array[tuple[int], np.float64] = l_weights(_r, n, (s, t))[-1]
+    w_k: onp.Array[tuple[int], np.float64] = l_weights(_r, n, (s, t))[-1]
     l_r = cast(np.float64, w_k @ x_k)
 
     def influence_function(x: _T_x, /) -> _T_x:

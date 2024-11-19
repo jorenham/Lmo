@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, Final, TypeAlias, cast, overload
 
 import numpy as np
 import numpy.typing as npt
-import optype.numpy as onpt
+import optype.numpy as onp
 import scipy.special as sc
 
 from ._utils import clean_orders
@@ -26,19 +26,19 @@ __all__ = "fourier_jacobi", "fpow", "gamma2", "harmonic", "norm_sh_jacobi"
 
 _DTYPE_CHARS: Final[str] = "?bBhHiIlLqQpP"
 
-_ArrayT = TypeVar("_ArrayT", bound=onpt.Array)
+_ArrayT = TypeVar("_ArrayT", bound=onp.Array)
 _ShapeT = TypeVar("_ShapeT", infer_variance=True, bound=tuple[int, ...])
 _SCT = TypeVar("_SCT", infer_variance=True, bound=np.number[Any] | np.bool_)
 
 
 # this includes `np.ndarray` but excludes `np.generic`
 @runtime_checkable
-class _CanLenArray(onpt.CanArray[_ShapeT, np.dtype[_SCT]], Protocol[_ShapeT, _SCT]):
+class _CanLenArray(onp.CanArray[_ShapeT, np.dtype[_SCT]], Protocol[_ShapeT, _SCT]):
     def __len__(self, /) -> int: ...
 
 
 _F8: TypeAlias = np.float64
-_F8ND: TypeAlias = onpt.Array[onpt.AtLeast1D, np.float64]
+_F8ND: TypeAlias = onp.Array[onp.AtLeast1D, np.float64]
 
 _Real: TypeAlias = np.floating[Any] | np.integer[Any] | np.bool_
 _Real_in: TypeAlias = float | _Real

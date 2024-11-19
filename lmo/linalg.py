@@ -9,7 +9,7 @@ from typing import Any, TypeAlias, assert_never, cast
 
 import numpy as np
 import numpy.typing as npt
-import optype.numpy as onpt
+import optype.numpy as onp
 
 import lmo.typing.np as lnpt
 
@@ -37,15 +37,15 @@ _K = TypeVar("_K", bound=int)
 _R = TypeVar("_R", bound=int)
 
 _DType: TypeAlias = np.dtype[_T] | type[_T]
-_Square: TypeAlias = onpt.Array[tuple[_K, _K], _T]
+_Square: TypeAlias = onp.Array[tuple[_K, _K], _T]
 
 
 def sandwich(
-    A: onpt.Array[tuple[_K, _R], np.floating[Any]],
-    X: onpt.Array[tuple[_R, *tuple[_R, ...]], np.floating[Any]],
+    A: onp.Array[tuple[_K, _R], np.floating[Any]],
+    X: onp.Array[tuple[_R, *tuple[_R, ...]], np.floating[Any]],
     /,
     dtype: _DType[_TF] = np.float64,
-) -> onpt.Array[tuple[_K, *tuple[_K, ...]], _TF]:
+) -> onp.Array[tuple[_K, *tuple[_K, ...]], _TF]:
     """
     Calculates the "sandwich" matrix product (`A @ X @ A.T`) along the
     specified `X` axis.
@@ -318,9 +318,9 @@ def sh_jacobi(
 
 
 def succession_matrix(
-    c: onpt.Array[tuple[_K, int], _T] | onpt.Array[tuple[_K], _T],
+    c: onp.Array[tuple[_K, int], _T] | onp.Array[tuple[_K], _T],
     /,
-) -> onpt.Array[tuple[_K, int], _T]:
+) -> onp.Array[tuple[_K, int], _T]:
     r"""
     A toeplitz-like transformation matrix construction, that prepends $i$
     zeroes to $i$-th row, so that the input shape is mapped from `(n, k)`
@@ -348,7 +348,7 @@ def succession_matrix(
                [0, 0, 5, 6, 0],
                [0, 0, 0, 7, 8]])
     """
-    _c: onpt.Array[tuple[_K, int], _T] = np.atleast_2d(c)
+    _c: onp.Array[tuple[_K, int], _T] = np.atleast_2d(c)
 
     n, k = _c.shape
     i = np.arange(n)
@@ -364,7 +364,7 @@ def trim_matrix(
     /,
     trim: tuple[int, int],
     dtype: _DType[_TF] = np.float64,
-) -> onpt.Array[tuple[_R, int], _TF]:
+) -> onp.Array[tuple[_R, int], _TF]:
     r"""
     Linearization of the trimmed L-moment recurrence relations, following
     the (corrected) derivation by Hosking (2007) from the (shifted) Jacobi

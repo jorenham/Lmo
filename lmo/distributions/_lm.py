@@ -26,7 +26,7 @@ from typing import (
 
 import numpy as np
 import numpy.typing as npt
-import optype.numpy as onpt
+import optype.numpy as onp
 import scipy.special as sps
 
 from lmo.special import harmonic
@@ -95,7 +95,7 @@ _PPF_REGISTRY: Final[set[str]] = {
     "weibull_max",
 }
 
-_ArrF8: TypeAlias = onpt.Array[tuple[int, ...], np.float64]
+_ArrF8: TypeAlias = onp.Array[tuple[int, ...], np.float64]
 
 _Tss = ParamSpec("_Tss")
 # (r, s, t, *params) -> float
@@ -128,13 +128,13 @@ class _LmVFunc(Protocol[_Tss]):
     @overload
     def __call__(
         self,
-        r: onpt.CanArray[_ShapeT, np.dtype[lnpt.Integral]],
+        r: onp.CanArray[_ShapeT, np.dtype[lnpt.Integral]],
         s: float,
         t: float,
         /,
         *args: _Tss.args,
         **kwds: _Tss.kwargs,
-    ) -> onpt.Array[_ShapeT, np.float64]: ...
+    ) -> onp.Array[_ShapeT, np.float64]: ...
     @overload
     def __call__(
         self,
@@ -144,7 +144,7 @@ class _LmVFunc(Protocol[_Tss]):
         /,
         *args: _Tss.args,
         **kwds: _Tss.kwargs,
-    ) -> onpt.Array[tuple[()], np.float64]: ...
+    ) -> onp.Array[tuple[()], np.float64]: ...
 
 
 def register_lm_func(

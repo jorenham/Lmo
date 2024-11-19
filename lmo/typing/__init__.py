@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, Protocol, TypeAlias
 # pyright: reportPrivateUsage=false
 import numpy as np
 import numpy.typing as npt
-import optype.numpy as onpt
+import optype.numpy as onp
 from numpy._typing import _NestedSequence  # noqa: PLC2701
 
 if sys.version_info >= (3, 13):
@@ -50,8 +50,8 @@ class _CanIntegerArray(Protocol):
 AnyOrder: TypeAlias = int | np.integer[Any]
 AnyOrderND: TypeAlias = _CanIntegerArray | _NestedSequence[int | np.integer[Any]]
 
-AnyFWeights: TypeAlias = onpt.Array[tuple[int], np.integer[Any]]
-AnyAWeights: TypeAlias = onpt.Array[onpt.AtLeast1D, np.floating[Any]]
+AnyFWeights: TypeAlias = onp.Array[tuple[int], np.integer[Any]]
+AnyAWeights: TypeAlias = onp.Array[onp.AtLeast1D, np.floating[Any]]
 
 
 class LMomentOptions(TypedDict, total=False):

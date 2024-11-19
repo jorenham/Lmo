@@ -24,7 +24,7 @@ from lmo.theoretical._utils import l_coef_factor
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    import optype.numpy as onpt
+    import optype.numpy as onp
 
     import lmo.typing as lmt
     import lmo.typing.np as lnpt
@@ -232,7 +232,7 @@ def _get_weights_mc(
 
 def _ensure_1d_f8(
     arr: lnpt.AnyVectorFloat,
-) -> onpt.Array[tuple[int], np.float64]:
+) -> onp.Array[tuple[int], np.float64]:
     out = np.asarray_chkfinite(arr)
     if out.ndim != 1:
         err = f"expected 1D array, got {out.shape}"

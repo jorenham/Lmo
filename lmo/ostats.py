@@ -19,7 +19,7 @@ import numpy as np
 from scipy.special import betainc, betaln
 
 if TYPE_CHECKING:
-    import optype.numpy as onpt
+    import optype.numpy as onp
 
     import lmo.typing.np as lnpt
 
@@ -35,7 +35,7 @@ def _weights(
     n: float | lnpt.Float,
     N: _T_size,
     /,
-) -> onpt.Array[tuple[_T_size], np.float64]:
+) -> onp.Array[tuple[_T_size], np.float64]:
     assert 0 <= i < n <= N
 
     j = np.arange(floor(i), N)
@@ -60,7 +60,7 @@ def weights(
     /,
     *,
     cached: bool = False,
-) -> onpt.Array[tuple[_T_size], np.float64]:
+) -> onp.Array[tuple[_T_size], np.float64]:
     r"""
     Compute the linear weights $w_{i:n|j:N}$ for $j = 0, \dots, N-1$.
 
@@ -129,14 +129,14 @@ def from_cdf(
     F: lnpt.AnyArrayFloat,
     i: float,
     n: float,
-) -> onpt.Array[onpt.AtLeast1D, np.float64]: ...
+) -> onp.Array[onp.AtLeast1D, np.float64]: ...
 
 
 def from_cdf(
     F: lnpt.AnyScalarFloat | lnpt.AnyArrayFloat,
     i: float,
     n: float,
-) -> np.float64 | onpt.Array[onpt.AtLeast1D, np.float64]:
+) -> np.float64 | onp.Array[onp.AtLeast1D, np.float64]:
     r"""
     Transform $F(X)$ to $F_{i:n}(X)$, of the $i$th variate within subsamples
     of size, i.e. $0 \le i \le n - 1$.

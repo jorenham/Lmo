@@ -15,7 +15,7 @@ else:
     from typing_extensions import TypeVar
 
 if TYPE_CHECKING:
-    import optype.numpy as onpt
+    import optype.numpy as onp
 
     import lmo.typing.np as lnpt
 
@@ -54,7 +54,7 @@ def l_comoment(
     rowvar: bool | None = None,
     sort: lnpt.SortKind | None = None,
     cache: bool | None = None,
-) -> onpt.Array[Any, _T_float]:
+) -> onp.Array[Any, _T_float]:
     r"""
     Multivariate extension of [`lmo.l_moment`][lmo.l_moment].
 
@@ -202,7 +202,7 @@ def l_coratio(
     *,
     dtype: _DType[_T_float] = np.float64,
     **kwds: Unpack[lmt.LComomentOptions],
-) -> onpt.Array[Any, _T_float]:
+) -> onp.Array[Any, _T_float]:
     r"""
     Estimate the generalized matrix of L-comoment ratio's.
 

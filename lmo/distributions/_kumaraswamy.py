@@ -6,7 +6,7 @@ from typing import TypeAlias, TypeVar, final
 
 import numpy as np
 import numpy.typing as npt
-import optype.numpy as onpt
+import optype.numpy as onp
 import scipy.special as sc
 from scipy.stats.distributions import rv_continuous
 
@@ -21,7 +21,7 @@ else:
 
 __all__ = ("kumaraswamy_gen",)
 
-_ArrF8: TypeAlias = onpt.Array[tuple[int, ...], np.float64]
+_ArrF8: TypeAlias = onp.Array[tuple[int, ...], np.float64]
 
 _XT = TypeVar("_XT", float | np.float64, _ArrF8)
 

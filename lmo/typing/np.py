@@ -6,7 +6,7 @@ from collections.abc import Sequence
 from typing import Any, Literal, TypeAlias, TypeVar
 
 import numpy as np
-import optype.numpy as onpt
+import optype.numpy as onp
 
 __all__ = (
     "AnyArrayFloat",
@@ -56,13 +56,13 @@ _T = TypeVar("_T")
 _PyVector: TypeAlias = Sequence[_T]
 
 
-_AnyScalar: TypeAlias = _ST | _ST_py | onpt.CanArray[tuple[()], np.dtype[_ST]]
+_AnyScalar: TypeAlias = _ST | _ST_py | onp.CanArray[tuple[()], np.dtype[_ST]]
 _AnyVector: TypeAlias = (
-    onpt.CanArray[tuple[int], np.dtype[_ST]]
+    onp.CanArray[tuple[int], np.dtype[_ST]]
     | _PyVector[_AnyScalar[_ST, _ST_py]]
 )  # fmt: skip
 _AnyMatrix: TypeAlias = (
-    onpt.CanArray[tuple[int, int], np.dtype[_ST]]
+    onp.CanArray[tuple[int, int], np.dtype[_ST]]
     | _PyVector[_AnyVector[_ST, _ST_py]]
 )  # fmt: skip
 
@@ -75,7 +75,7 @@ AnyScalarInt: TypeAlias = _AnyScalar[Integral, int]
 AnyVectorInt: TypeAlias = _AnyVector[Integral, int]
 AnyMatrixInt: TypeAlias = _AnyMatrix[Integral, int]
 AnyTensorInt: TypeAlias = (
-    onpt.CanArray[onpt.AtLeast3D, np.dtype[Integral]]
+    onp.CanArray[onp.AtLeast3D, np.dtype[Integral]]
     | _PyVector[AnyMatrixInt]
     | _PyVector["AnyTensorInt"]
 )
@@ -85,7 +85,7 @@ AnyScalarFloat: TypeAlias = _AnyScalar[Real, float]
 AnyVectorFloat: TypeAlias = _AnyVector[Real, float]
 AnyMatrixFloat: TypeAlias = _AnyMatrix[Real, float]
 AnyTensorFloat: TypeAlias = (
-    onpt.CanArray[onpt.AtLeast1D, np.dtype[Real]]
+    onp.CanArray[onp.AtLeast1D, np.dtype[Real]]
     | _PyVector[AnyMatrixFloat]
     | _PyVector["AnyTensorFloat"]
 )

@@ -13,7 +13,7 @@ else:
     from typing_extensions import TypeVar
 
 if TYPE_CHECKING:
-    import optype.numpy as onpt
+    import optype.numpy as onp
 
     import lmo.typing as lmt
     import lmo.typing.np as lnpt
@@ -44,8 +44,8 @@ _AT_f = TypeVar("_AT_f", bound=np.floating[Any] | npt.NDArray[np.floating[Any]])
 _SizeT = TypeVar("_SizeT", bound=int)
 
 _ShapeT = TypeVar("_ShapeT", bound=tuple[int, ...])
-_ShapeT1 = TypeVar("_ShapeT1", bound="onpt.AtLeast1D")
-_ShapeT2 = TypeVar("_ShapeT2", bound="onpt.AtLeast2D")
+_ShapeT1 = TypeVar("_ShapeT1", bound="onp.AtLeast1D")
+_ShapeT2 = TypeVar("_ShapeT2", bound="onp.AtLeast2D")
 
 _DType: TypeAlias = np.dtype[_SCT] | type[_SCT]
 
@@ -78,7 +78,7 @@ def plotting_positions(
     /,
     alpha: float = 0.4,
     beta: float | None = None,
-) -> onpt.Array[tuple[_SizeT], np.float64]:
+) -> onp.Array[tuple[_SizeT], np.float64]:
     """
     A re-implementation of [`scipy.stats.mstats.plotting_positions`
     ](scipy.stats.mstats.plotting_positions), but without the ridiculous
@@ -93,17 +93,17 @@ def plotting_positions(
 def round0(a: _AT_f, /, tol: float | None = ...) -> _AT_f: ...
 @overload
 def round0(
-    a: onpt.CanArray[_ShapeT, _DT_f],
+    a: onp.CanArray[_ShapeT, _DT_f],
     /,
     tol: float | None = ...,
 ) -> np.ndarray[_ShapeT, _DT_f]: ...
 @overload
 def round0(a: float, /, tol: float | None = ...) -> np.float64: ...
 def round0(
-    a: float | onpt.CanArray[_ShapeT, np.dtype[_SCT_f]],
+    a: float | onp.CanArray[_ShapeT, np.dtype[_SCT_f]],
     /,
     tol: float | None = None,
-) -> onpt.Array[_ShapeT, _SCT_f] | _SCT_f:
+) -> onp.Array[_ShapeT, _SCT_f] | _SCT_f:
     """
     Replace all values `<= tol` with `0`.
 
@@ -118,7 +118,7 @@ def round0(
 
 def _apply_aweights(
     x: np.ndarray[_ShapeT1, _DT_f],
-    v: np.ndarray[_ShapeT1 | onpt.AtLeast1D, _DT_f | np.dtype[lnpt.Float]],
+    v: np.ndarray[_ShapeT1 | onp.AtLeast1D, _DT_f | np.dtype[lnpt.Float]],
     axis: int,
 ) -> np.ndarray[_ShapeT1, _DT_f]:
     # interpret the weights as horizontal coordinates using cumsum
@@ -153,11 +153,11 @@ def _apply_aweights(
 
 
 def _sort_like(
-    a: onpt.Array[_ShapeT1, _SCT_uifc],
-    i: onpt.Array[tuple[int], lnpt.Int],
+    a: onp.Array[_ShapeT1, _SCT_uifc],
+    i: onp.Array[tuple[int], lnpt.Int],
     /,
     axis: int | None,
-) -> onpt.Array[_ShapeT1, _SCT_uifc]:
+) -> onp.Array[_ShapeT1, _SCT_uifc]:
     return (
         np.take(a, i, axis=None if a.ndim == i.ndim else axis)
         if min(a.ndim, i.ndim) <= 1
@@ -166,13 +166,13 @@ def _sort_like(
 
 
 def sort_maybe(
-    x: onpt.Array[_ShapeT1, _SCT_uifc],
+    x: onp.Array[_ShapeT1, _SCT_uifc],
     /,
     axis: int = -1,
     *,
     sort: bool | lnpt.SortKind = True,
     inplace: bool = False,
-) -> onpt.Array[_ShapeT1, _SCT_uifc]:
+) -> onp.Array[_ShapeT1, _SCT_uifc]:
     if not sort:
         return x
 
@@ -194,7 +194,7 @@ def ordered(  # noqa: C901
     fweights: lmt.AnyFWeights | None = None,
     aweights: lmt.AnyAWeights | None = None,
     sort: lnpt.SortKind | bool = True,
-) -> onpt.Array[onpt.AtLeast1D, lnpt.Float]:
+) -> onp.Array[onp.AtLeast1D, lnpt.Float]:
     """
     Calculate `n = len(x)` order stats of `x`, optionally weighted.
     If `y` is provided, the order of `y` is used instead.
@@ -351,8 +351,8 @@ def clean_trim(trim: lmt.AnyTrim, /) -> tuple[int, int] | tuple[float, float]:
 
 
 def moments_to_ratio(
-    rs: onpt.Array[tuple[int, ...], lnpt.Int],
-    l_rs: onpt.Array[onpt.AtLeast1D, _SCT_f],
+    rs: onp.Array[tuple[int, ...], lnpt.Int],
+    l_rs: onp.Array[onp.AtLeast1D, _SCT_f],
     /,
 ) -> _SCT_f | npt.NDArray[_SCT_f]:
     """
@@ -380,9 +380,9 @@ def moments_to_ratio(
 
 
 def moments_to_stats_cov(
-    t_0r: onpt.Array[tuple[int], lnpt.Float],
-    ll_kr: onpt.Array[_ShapeT2, _SCT_f],
-) -> onpt.Array[_ShapeT2, _SCT_f]:
+    t_0r: onp.Array[tuple[int], lnpt.Float],
+    ll_kr: onp.Array[_ShapeT2, _SCT_f],
+) -> onp.Array[_ShapeT2, _SCT_f]:
     # t_0r are L-ratio's for r = 0, 1, ..., R (t_0r[0] == 1 / L-scale)
     # t_0r[1] isn't used, and can be set to anything
     # ll_kr is the L-moment cov of size R**2 (orders start at 1 here)
@@ -414,8 +414,8 @@ def l_stats_orders(
     /,
     dtype: _DType[_SCT_ui] = np.int_,
 ) -> tuple[
-    onpt.Array[tuple[_SizeT], _SCT_ui],
-    onpt.Array[tuple[_SizeT], _SCT_ui],
+    onp.Array[tuple[_SizeT], _SCT_ui],
+    onp.Array[tuple[_SizeT], _SCT_ui],
 ]:
     """
     Create the L-moment order array `[1, 2, ..., r]` and corresponding

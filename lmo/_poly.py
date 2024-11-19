@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, TypeAlias, TypeVar, cast, overload
 
 import numpy as np
 import numpy.polynomial as npp
-import optype.numpy as onpt
+import optype.numpy as onp
 import scipy.special as scs
 from numpy.polynomial._polybase import ABCPolyBase  # noqa: PLC2701
 
@@ -41,7 +41,7 @@ else:
     PolySeries: TypeAlias = ABCPolyBase
 
 
-_T_shape = TypeVar("_T_shape", bound=onpt.AtLeast1D)
+_T_shape = TypeVar("_T_shape", bound=onp.AtLeast1D)
 _T_poly = TypeVar("_T_poly", bound=PolySeries)
 
 
@@ -57,14 +57,14 @@ def eval_sh_jacobi(
     n: int,
     a: float | lnpt.Float,
     b: float | lnpt.Float,
-    x: onpt.Array[_T_shape, lnpt.Float],
-) -> onpt.Array[_T_shape, np.float64]: ...
+    x: onp.Array[_T_shape, lnpt.Float],
+) -> onp.Array[_T_shape, np.float64]: ...
 def eval_sh_jacobi(
     n: int | lnpt.Int,
     a: float | lnpt.Float,
     b: float | lnpt.Float,
-    x: float | lnpt.Float | onpt.Array[_T_shape, lnpt.Float],
-) -> float | onpt.Array[_T_shape, np.float64]:
+    x: float | lnpt.Float | onp.Array[_T_shape, lnpt.Float],
+) -> float | onp.Array[_T_shape, np.float64]:
     """
     Fast evaluation of the n-th shifted Jacobi polynomial.
     Faster than pre-computing using np.Polynomial, and than
@@ -117,7 +117,7 @@ def peaks_jacobi(
     n: int,
     a: float,
     b: float,
-) -> onpt.Array[tuple[int], np.float64]:
+) -> onp.Array[tuple[int], np.float64]:
     r"""
     Finds the \( x \in [-1, 1] \) s.t.
     \( /frac{\dd{\shjacobi{n}{a}{b}{x}}}{\dd{x}} = 0 \) of a Jacobi polynomial,
@@ -303,7 +303,7 @@ def extrema_jacobi(n: int, a: float, b: float) -> tuple[float, float]:
     return cast(float, np.min(p)), cast(float, np.max(p))
 
 
-def _jacobi_coefs(n: int, a: float, b: float) -> onpt.Array[tuple[int], np.float64]:
+def _jacobi_coefs(n: int, a: float, b: float) -> onp.Array[tuple[int], np.float64]:
     p_n: np.poly1d
     p_n = scs.jacobi(n, a, b)
     return p_n.coef[::-1]
@@ -366,7 +366,7 @@ def jacobi_series(
     Todo:
         - Create a `Jacobi` class, as extension to `numpy.polynomial.`
     """
-    w = cast(onpt.Array[tuple[int], np.float64], np.asarray(coef))
+    w = cast(onp.Array[tuple[int], np.float64], np.asarray(coef))
     if w.ndim != 1:
         msg = "coefs must be 1-D"
         raise ValueError(msg)
@@ -389,7 +389,7 @@ def roots(
     p: PolySeries,
     /,
     outside: bool = False,
-) -> onpt.Array[tuple[int], np.float64]:
+) -> onp.Array[tuple[int], np.float64]:
     """
     Return the $x$ in the domain of $p$, where $p(x) = 0$.
 
@@ -397,7 +397,7 @@ def roots(
     interval will be not be included.
     """
     z = cast(
-        onpt.Array[tuple[int], np.float64],
+        onp.Array[tuple[int], np.float64],
         p.roots(),
     )
     x = z[np.isreal(z)].real if not np.isrealobj(z) and np.isrealobj(p.domain) else z

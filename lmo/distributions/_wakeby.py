@@ -6,7 +6,7 @@ import warnings
 from typing import Final, TypeAlias, TypeVar
 
 import numpy as np
-import optype.numpy as onpt
+import optype.numpy as onp
 import scipy.special as sps
 from scipy.stats.distributions import rv_continuous
 
@@ -25,7 +25,7 @@ __all__ = ("wakeby_gen",)
 # NOTE: this is equivalent to `float` IFF `numpy >= 2.2`, see:
 # https://github.com/numpy/numpy/pull/27334
 _F8: TypeAlias = float | np.float64
-_ArrF8: TypeAlias = onpt.Array[tuple[int, ...], np.float64]
+_ArrF8: TypeAlias = onp.Array[tuple[int, ...], np.float64]
 
 _XT = TypeVar("_XT", _F8, _ArrF8)
 

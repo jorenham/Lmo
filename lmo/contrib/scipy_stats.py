@@ -51,9 +51,11 @@ from lmo.theoretical import (
 if TYPE_CHECKING:
     from collections.abc import Callable, Mapping, Sequence
 
+    import optype.numpy as onp
     from scipy.stats import rv_discrete
 
-__all__ = "install", "l_rv_frozen", "l_rv_generic"
+
+__all__ = ["install", "l_rv_frozen", "l_rv_generic"]
 
 
 _T = TypeVar("_T")
@@ -142,7 +144,7 @@ class l_rv_generic(PatchClass):
     _shape_info: Callable[[], list[_ShapeInfo]]
     _stats: Callable[..., _Tuple4[float | None]]
     _unpack_loc_scale: Callable[
-        [lnpt.AnyVector],
+        [onp.ToFloat1D],
         tuple[float, float, tuple[float, ...]],
     ]
     cdf: lspt.RVFunction[...]

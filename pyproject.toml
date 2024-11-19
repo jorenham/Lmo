@@ -253,7 +253,9 @@ banned-from = [
 "lmo.typing.scipy" = "lspt"
 "numpy.polynomial" = "npp"
 "numpy.typing" = "npt"
-"optype.numpy" = "onpt"
+"optype" = "op"
+"optype.numpy" = "onp"
+"optype.typing" = "opt"
 
 [tool.ruff.lint.flake8-type-checking]
 exempt-modules = ["typing", "typing_extensions"]
