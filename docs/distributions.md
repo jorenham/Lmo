@@ -719,8 +719,8 @@ Note that the GEV is effectively a reparametrized
 
 ### GLO
 
-The GLO [@hosking1986], also known as the [shifted log-logistic distribution
-](https://wikipedia.org/wiki/Shifted_log-logistic_distribution), with shape
+The GLO [@hosking1986], also known as the
+[shifted log-logistic distribution](https://w.wiki/C828), with shape
 parameter \( \alpha \in \mathbb{R} \), is characterized by the following
 distribution functions:
 
@@ -942,8 +942,7 @@ location \( \mu = 0 \), and scale \( \sigma = 1 \).
 ### Kumaraswamy
 
 <!-- markdownlint-disable MD049 -->
-For [Kumaraswamy's distribution
-](https://wikipedia.org/wiki/Kumaraswamy_distribution) [@kumaraswamy1980]
+For [Kumaraswamy's distribution](https://w.wiki/C82C) [@kumaraswamy1980]
 with parameters \( \alpha \in \mathbb{R}_{>0} \) and
 \( \beta \in \mathbb{R}_{>0} \), the general solution for the \( r \)th
 untrimmed L-moment has been derived by M.C. Jones in 2009 [@jones2009].

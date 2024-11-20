@@ -270,20 +270,20 @@ env_list = ["repo-review", "pre-commit", "3.11", "3.12", "3.13"]
 [tool.tox.env_run_base]
 description = "test with {base_python}"
 skip_install = true
-allowlist_externals = ["poetry"]
-commands_pre = [["poetry", "install", "--without=debug,docs"]]
-commands = [["poetry", "run", "pytest"]]
+allowlist_externals = ["uv"]
+commands_pre = [["uv", "sync", "--frozen", "--dev"]]
+commands = [["uv", "run", "pytest"]]
 
 [tool.tox.env.pre-commit]
 description = "pre-commit"
 skip_install = true
-allowlist_externals = ["poetry"]
-commands_pre = [["poetry", "install", "--without=debug,docs", "--extras=typing"]]
-commands = [["poetry", "run", "pre-commit", "run", "--all-files"]]
+allowlist_externals = ["uv"]
+commands_pre = [["uv", "sync", "--frozen", "--dev"]]
+commands = [["uv", "run", "pre-commit", "run", "--all-files"]]
 
 [tool.tox.env.repo-review]
 description = "repo-review"
 skip_install = true
-allowlist_externals = ["poetry"]
-commands_pre = [["poetry", "install", "--without=debug,docs"]]
-commands = [["poetry", "run", "repo-review", "."]]
+allowlist_externals = ["uv"]
+commands_pre = [["uv", "sync", "--frozen", "--dev"]]
+commands = [["uv", "run", "repo-review", "."]]
