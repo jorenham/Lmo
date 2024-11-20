@@ -11,21 +11,31 @@ from __future__ import annotations
 import sys
 from collections.abc import Callable
 from math import gamma, log
-from typing import Any, Concatenate, Final, Literal, ParamSpec, TypeAlias, cast
-
-import numpy as np
-import optype.numpy as onp
-import scipy.special as sps
-
-import lmo.typing as lmt
-from lmo.special import harmonic
-from lmo.theoretical import l_moment_from_ppf
+from typing import (
+    TYPE_CHECKING,
+    Concatenate,
+    Final,
+    Literal,
+    ParamSpec,
+    Protocol,
+    TypeAlias,
+    TypeVar,
+    overload,
+)
 
 if sys.version_info >= (3, 13):
     from typing import TypeIs
 else:
     from typing_extensions import TypeIs
 
+import numpy as np
+import scipy.special as sps
+
+if TYPE_CHECKING:
+    import optype.numpy as onp
+
+from lmo.special import harmonic
+from lmo.theoretical import l_moment_from_ppf
 
 __all__ = [
     "lm_expon",
@@ -41,10 +51,11 @@ __all__ = [
 
 DistributionName: TypeAlias = Literal[
     # 0 params
-    "uniform",
-    "logistic",
     "expon",
+    "gumbel_l",
     "gumbel_r",
+    "logistic",
+    "uniform",
     # 1 param
     "genextreme",
     "genpareto",
@@ -81,27 +92,47 @@ _PPF_REGISTRY: Final[set[str]] = {
     "weibull_max",
 }
 
-_ArrF8: TypeAlias = onp.ArrayND[np.float64]
 
 _Tss = ParamSpec("_Tss")
+
 # (r, s, t, *params) -> float
 _LmFunc: TypeAlias = Callable[Concatenate[int, float, float, _Tss], float | np.float64]
 
-_LN2: Final = np.log(2)
-_LN3: Final = np.log(3)
-_LN5: Final = np.log(5)
+_F1_co = TypeVar("_F1_co", bound=_LmFunc[...], covariant=True)
 
 
-_LmVFunc: TypeAlias = lmt.Callable2[
-    Callable[
-        Concatenate[onp.ToIntND, float, float, _Tss],
-        onp.ArrayND[np.float64],
-    ],
-    Callable[
-        Concatenate[onp.ToInt, float, float, _Tss],
-        onp.Array[tuple[()], np.float64],
-    ],
-]
+class _LmVFuncWrapper(Protocol[_F1_co]):
+    @property
+    def pyfunc(self, /) -> _F1_co: ...
+
+    @overload
+    def __call__(
+        self: _LmVFuncWrapper[_LmFunc[_Tss]],
+        x: onp.ToInt,
+        s: float,
+        t: float,
+        /,
+        *args: _Tss.args,
+        **kwds: _Tss.kwargs,
+    ) -> onp.Array[tuple[()], np.float64]: ...
+    @overload
+    def __call__(
+        self: _LmVFuncWrapper[_LmFunc[_Tss]],
+        x: onp.ToIntND,
+        s: float,
+        t: float,
+        /,
+        *args: _Tss.args,
+        **kwds: _Tss.kwargs,
+    ) -> onp.ArrayND[np.float64]: ...
+
+
+_LmVFunc: TypeAlias = _LmVFuncWrapper[_LmFunc[_Tss]]
+
+
+_LN2: Final = log(2)
+_LN3: Final = log(3)
+_LN5: Final = log(5)
 
 
 def register_lm_func(
@@ -275,7 +306,14 @@ def lm_gumbel_r(r: int, s: float, t: float, /) -> np.float64 | float:
             return (_LN2 * -107 + _LN3 * 6 + _LN5 * 42) * 5 / 4
 
         case _:
-            return cast(Any, lm_genextreme).pyfunc(r, s, t, 0)
+            return lm_genextreme.pyfunc(r, s, t, 0)
+
+
+@register_lm_func("gumbel_l")
+def lm_gumbel_l(r: int, s: float, t: float, /) -> np.float64 | float:
+    """The reflected version of `lm_gumbel_r`."""
+    sign = -1 if r % 2 else 1
+    return sign * lm_gumbel_r.pyfunc(r, t, s)
 
 
 @register_lm_func("genextreme")
@@ -351,9 +389,9 @@ def lm_genpareto(r: int, s: float, t: float, /, a: float) -> np.float64 | float:
     if r == 0:
         return 1
     if a == 0:
-        return cast(Any, lm_expon).pyfunc(r, s, t)
+        return lm_expon.pyfunc(r, s, t)
     if a == 1:
-        return cast(Any, lm_uniform).pyfunc(r, s, t)
+        return lm_uniform.pyfunc(r, s, t)
 
     if not isinstance(t, int):
         msg = "fractional trimming"
@@ -399,9 +437,9 @@ def lm_kumaraswamy(
     return (
         np.sum(
             (-1) ** (k - t - 1)
-            * cast(_ArrF8, sps.comb(r + k - 2, r + t - 1))
-            * cast(_ArrF8, sps.comb(r + s + t, k))
-            * cast(_ArrF8, sps.beta(1 / a, 1 + k * b))
+            * sps.comb(r + k - 2, r + t - 1)
+            * sps.comb(r + s + t, k)
+            * sps.beta(1 / a, 1 + k * b)
             / a,
         )
         / r

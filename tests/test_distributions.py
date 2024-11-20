@@ -192,10 +192,11 @@ def test_genlambda(b: float, d: float, f: float):
 @pytest.mark.parametrize(
     "rv",
     [
-        distributions.uniform(),
-        distributions.logistic(),
-        distributions.expon(),
-        distributions.gumbel_r(),
+        distributions.uniform,
+        distributions.logistic,
+        distributions.expon,
+        distributions.gumbel_r,
+        distributions.gumbel_l,
         distributions.genextreme(-0.1),
         distributions.genpareto(0.1),
         kumaraswamy(2, 5),
