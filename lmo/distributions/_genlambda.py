@@ -17,7 +17,7 @@ from scipy.stats.distributions import rv_continuous
 import lmo.typing as lmt
 from lmo.special import harmonic
 from lmo.theoretical import entropy_from_qdf, l_moment_from_ppf
-from ._lm import get_lm_func
+from ._lm import lm_genlambda
 
 if sys.version_info >= (3, 13):
     from typing import override
@@ -129,7 +129,6 @@ _genlambda_cdf: Final = np.vectorize(
     [float],
     excluded={"ptol", "xtol", "maxiter"},
 )
-_genlambda_lm: Final = get_lm_func("genlambda")
 
 
 class genlambda_gen(rv_continuous):
@@ -187,7 +186,7 @@ class genlambda_gen(rv_continuous):
         a, c = 1 + f, 1 - f
         b1, d1 = 1 + b, 1 + d
 
-        m1: float = 0 if b == d and f == 0 else _genlambda_lm(1, 0, 0, b, d, f).item()
+        m1 = 0 if b == d and f == 0 else float(lm_genlambda(1, 0, 0, b, d, f).item())
 
         if b <= -1 / 2 or d <= -1 / 2:
             return m1, math.nan, math.nan, math.nan
@@ -250,4 +249,4 @@ class genlambda_gen(rv_continuous):
             )
             return np.asarray(lmbda_r)
 
-        return _genlambda_lm(r, s, t, b, d, f)
+        return lm_genlambda(r, s, t, b, d, f)
