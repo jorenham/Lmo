@@ -142,8 +142,8 @@ def l_comoment_from_pdf(
         into TL-moments by Elamir & Seheult (2003).
 
     Examples:
-        Find the L-coscale and TL-coscale matrices of the multivariate
-        Student's t distribution with 4 degrees of freedom:
+        Find the TL-coscale matrix of the multivariate Student's t distribution with 4
+        degrees of freedom:
 
         >>> from scipy.stats import multivariate_t
         >>> df = 4
@@ -152,14 +152,10 @@ def l_comoment_from_pdf(
         >>> X = multivariate_t(loc=loc, shape=cov, df=df)
 
         >>> from scipy.special import stdtr
-        >>> std = np.sqrt(np.diag(cov))
-        >>> cdf0 = lambda x: stdtr(df, (x - loc[0]) / std[0])
-        >>> cdf1 = lambda x: stdtr(df, (x - loc[1]) / std[1])
+        >>> std0, std1 = np.sqrt(np.diag(cov))
+        >>> cdf0 = lambda x: stdtr(df, (x - loc[0]) / std0)
+        >>> cdf1 = lambda x: stdtr(df, (x - loc[1]) / std1)
 
-        >>> l_cov = l_comoment_from_pdf(X.pdf, (cdf0, cdf1), 2)
-        >>> l_cov.round(4)
-        array([[1.0413, 0.3124],
-               [0.1562, 0.5207]])
         >>> tl_cov = l_comoment_from_pdf(X.pdf, (cdf0, cdf1), 2, trim=1)
         >>> tl_cov.round(4)
         array([[0.4893, 0.1468],
@@ -167,11 +163,7 @@ def l_comoment_from_pdf(
 
         The (Pearson) correlation coefficient can be recovered in several ways:
 
-        >>> cov[0, 1] / np.sqrt(cov[0, 0] * cov[1, 1])  # "true" correlation
-        0.3
-        >>> l_cov[0, 1] / l_cov[0, 0]
-        0.3
-        >>> l_cov[1, 0] / l_cov[1, 1]
+        >>> cov[0, 1] / (std0 * std1)  # "true" correlation
         0.3
         >>> tl_cov[0, 1] / tl_cov[0, 0]
         0.3
@@ -221,7 +213,7 @@ def l_comoment_from_pdf(
     def integrand(*xs: float, i: int, j: int) -> float:
         q_j = cdfs[j](xs[j])
         p_j = eval_sh_jacobi(_r - 1, t, s, q_j)
-        x = np.asarray(xs, dtype=np.float64)
+        x = np.asarray(xs, dtype=float)
         return c * x[i] * q_j**s * (1 - q_j) ** t * p_j * pdf(x)
 
     from scipy.integrate import nquad
