@@ -91,7 +91,7 @@ def l_moment_from_cdf(
 ) -> np.float64: ...
 def l_moment_from_cdf(
     cdf: _Fn1 | Callable[[float], float],
-    r: lmt.ToOrder0D | lmt.ToOrderND,
+    r: lmt.ToOrder,
     /,
     trim: lmt.ToTrim = 0,
     *,
@@ -288,7 +288,7 @@ def l_moment_from_ppf(
 ) -> np.float64: ...
 def l_moment_from_ppf(
     ppf: _Fn1 | Callable[[float], float],
-    r: lmt.ToOrder0D | lmt.ToOrderND,
+    r: lmt.ToOrder,
     /,
     trim: lmt.ToTrim = 0,
     *,
@@ -440,7 +440,7 @@ def l_moment_from_qdf(
 ) -> np.float64: ...
 def l_moment_from_qdf(
     qdf: _Fn1 | Callable[[float], float],
-    r: lmt.ToOrder0D | lmt.ToOrderND,
+    r: lmt.ToOrder,
     /,
     trim: lmt.ToTrim = 0,
     *,
@@ -479,7 +479,7 @@ def l_moment_from_qdf(
 def l_ratio_from_cdf(
     cdf: _Fn1,
     r: lmt.ToOrderND,
-    s: lmt.ToOrder0D | lmt.ToOrderND,
+    s: lmt.ToOrder,
     /,
     trim: lmt.ToTrim = ...,
     *,
@@ -491,7 +491,7 @@ def l_ratio_from_cdf(
 @overload
 def l_ratio_from_cdf(
     cdf: _Fn1,
-    r: lmt.ToOrder0D | lmt.ToOrderND,
+    r: lmt.ToOrder,
     s: lmt.ToOrderND,
     /,
     trim: lmt.ToTrim = ...,
@@ -515,8 +515,8 @@ def l_ratio_from_cdf(
 ) -> np.float64: ...
 def l_ratio_from_cdf(
     cdf: _Fn1,
-    r: lmt.ToOrder0D | lmt.ToOrderND,
-    s: lmt.ToOrder0D | lmt.ToOrderND,
+    r: lmt.ToOrder,
+    s: lmt.ToOrder,
     /,
     trim: lmt.ToTrim = 0,
     *,
@@ -549,7 +549,7 @@ def l_ratio_from_cdf(
 def l_ratio_from_ppf(
     ppf: _Fn1,
     r: lmt.ToOrderND,
-    s: lmt.ToOrder0D | lmt.ToOrderND,
+    s: lmt.ToOrder,
     /,
     trim: lmt.ToTrim = ...,
     *,
@@ -560,7 +560,7 @@ def l_ratio_from_ppf(
 @overload
 def l_ratio_from_ppf(
     ppf: _Fn1,
-    r: lmt.ToOrder0D | lmt.ToOrderND,
+    r: lmt.ToOrder,
     s: lmt.ToOrderND,
     /,
     trim: lmt.ToTrim = ...,
@@ -583,8 +583,8 @@ def l_ratio_from_ppf(
 ) -> np.float64: ...
 def l_ratio_from_ppf(
     ppf: _Fn1,
-    r: lmt.ToOrder0D | lmt.ToOrderND,
-    s: lmt.ToOrder0D | lmt.ToOrderND,
+    r: lmt.ToOrder,
+    s: lmt.ToOrder,
     /,
     trim: lmt.ToTrim = 0,
     *,

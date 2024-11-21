@@ -144,7 +144,7 @@ class Series(_BaseSeries):  # pyright: ignore[reportMissingTypeArgument]
 
     def l_moment(
         self,
-        r: lmt.ToOrder0D | lmt.ToOrderND,
+        r: lmt.ToOrder,
         /,
         trim: lmt.ToTrim = 0,
         **kwargs: Unpack[lmt.LMomentOptions],
@@ -169,8 +169,8 @@ class Series(_BaseSeries):  # pyright: ignore[reportMissingTypeArgument]
 
     def l_ratio(
         self,
-        r: lmt.ToOrder0D | lmt.ToOrderND,
-        k: lmt.ToOrder0D | lmt.ToOrderND,
+        r: lmt.ToOrder,
+        k: lmt.ToOrder,
         /,
         trim: lmt.ToTrim = 0,
         **kwargs: Unpack[lmt.LMomentOptions],
@@ -308,7 +308,7 @@ class DataFrame(pd.DataFrame):
 
     def l_moment(
         self,
-        r: lmt.ToOrder0D | lmt.ToOrderND,
+        r: lmt.ToOrder,
         /,
         trim: lmt.ToTrim = 0,
         axis: _Axis = 0,
@@ -338,8 +338,8 @@ class DataFrame(pd.DataFrame):
 
     def l_ratio(
         self,
-        r: lmt.ToOrder0D | lmt.ToOrderND,
-        k: lmt.ToOrder0D | lmt.ToOrderND,
+        r: lmt.ToOrder,
+        k: lmt.ToOrder,
         /,
         trim: lmt.ToTrim = 0,
         axis: _Axis = 0,

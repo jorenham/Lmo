@@ -7,7 +7,7 @@ from typing import TypeAlias, TypeVar, final
 import numpy as np
 import numpy.typing as npt
 import optype.numpy as onp
-import scipy.special as sc
+import scipy.special as sps
 
 import lmo.typing as lmt
 from lmo.special import harmonic
@@ -82,4 +82,4 @@ class kumaraswamy_gen(lmt.rv_continuous):
 
     @override
     def _munp(self, /, n: int | npt.NDArray[np.intp], a: float, b: float) -> _FloatND:
-        return b * sc.beta(1 + n / a, b)
+        return b * sps.beta(1 + n / a, b)

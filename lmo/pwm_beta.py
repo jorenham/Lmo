@@ -7,18 +7,13 @@ Primarily used as an intermediate step for L-moment estimation.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, TypeAlias, TypeVar, Unpack, cast, overload
+from typing import Any, TypeAlias, TypeVar, Unpack, overload
 
 import numpy as np
-import numpy.typing as npt
+import optype.numpy as onp
 
+import lmo.typing as lmt
 from ._utils import ordered
-
-if TYPE_CHECKING:
-    import optype.numpy as onp
-
-    import lmo.typing as lmt
-
 
 __all__ = "cov", "weights"
 
@@ -28,6 +23,15 @@ _F = TypeVar("_F", bound=np.floating[Any])
 _DType: TypeAlias = np.dtype[_F] | type[_F]
 
 
+@overload
+def weights(
+    r: int,
+    n: int,
+    /,
+    dtype: _DType[np.float64] = np.float64,
+) -> onp.Array2D[np.float64]: ...
+@overload
+def weights(r: int, n: int, /, dtype: _DType[_F]) -> onp.Array2D[_F]: ...
 def weights(r: int, n: int, /, dtype: _DType[_F] = np.float64) -> onp.Array2D[_F]:
     r"""
     Probability Weighted moment (PWM) projection matrix $B$ of the
@@ -68,8 +72,10 @@ def weights(r: int, n: int, /, dtype: _DType[_F] = np.float64) -> onp.Array2D[_F
     for k in range(1, r):
         w_r[k, k:] = w_r[k - 1, k:] * i1[:-k] / (n - k)
 
-    # the + 0. eliminates negative zeros
-    return cast(npt.NDArray[_F], w_r + 0.0)
+    # eliminates negative zeros
+    w_r[:] += 0.0
+
+    return w_r
 
 
 @overload

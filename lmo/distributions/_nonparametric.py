@@ -656,7 +656,7 @@ class l_poly:  # noqa: N801
     ) -> _ArrF8: ...
     def l_moment(
         self,
-        r: lmt.ToOrder0D | lmt.ToOrderND,
+        r: lmt.ToOrder,
         /,
         trim: lmt.ToTrim | None = None,
     ) -> _F8 | _ArrF8:
@@ -686,22 +686,22 @@ class l_poly:  # noqa: N801
     def l_ratio(
         self,
         r: lmt.ToOrderND,
-        k: lmt.ToOrder0D | lmt.ToOrderND,
+        k: lmt.ToOrder,
         /,
         trim: lmt.ToTrim | None = None,
     ) -> _ArrF8: ...
     @overload
     def l_ratio(
         self,
-        r: lmt.ToOrder0D | lmt.ToOrderND,
+        r: lmt.ToOrder,
         k: lmt.ToOrderND,
         /,
         trim: lmt.ToTrim | None = None,
     ) -> _ArrF8: ...
     def l_ratio(
         self,
-        r: lmt.ToOrder0D | lmt.ToOrderND,
-        k: lmt.ToOrder0D | lmt.ToOrderND,
+        r: lmt.ToOrder,
+        k: lmt.ToOrder,
         /,
         trim: lmt.ToTrim | None = None,
     ) -> _F8 | _ArrF8:

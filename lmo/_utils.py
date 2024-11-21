@@ -1,22 +1,13 @@
 from __future__ import annotations
 
 import math
-import sys
-from typing import TYPE_CHECKING, Any, Final, TypeAlias, cast, overload
+from typing import Any, Final, TypeAlias, TypeVar, overload
 
 import numpy as np
-import numpy.typing as npt
+import optype as op
+import optype.numpy as onp
 
 import lmo.typing as lmt
-
-if TYPE_CHECKING:
-    import optype.numpy as onp
-
-if sys.version_info >= (3, 13):
-    from typing import TypeVar
-else:
-    from typing_extensions import TypeVar
-
 
 __all__ = (
     "clean_order",
@@ -32,51 +23,57 @@ __all__ = (
     "sort_maybe",
 )
 
-
+_T = TypeVar("_T")
 _SCT = TypeVar("_SCT", bound=np.generic)
+_SCT_f = TypeVar("_SCT_f", bound=np.floating[Any])
 _SCT_uifc = TypeVar("_SCT_uifc", bound=np.number[Any])
-_SCT_ui = TypeVar("_SCT_ui", bound=lmt.Integer, default=np.intp)
-_SCT_f = TypeVar("_SCT_f", bound=lmt.Floating, default=np.float64)
-
-_DT_f = TypeVar("_DT_f", bound=np.dtype[lmt.Floating])
-_AT_f = TypeVar("_AT_f", bound=lmt.Floating | npt.NDArray[lmt.Floating])
-
-_SizeT = TypeVar("_SizeT", bound=int)
+_DT_f = TypeVar("_DT_f", bound=np.dtype[np.floating[Any]])
+_AT_f = TypeVar("_AT_f", bound=onp.ArrayND[np.floating[Any]])
+_AST_f = TypeVar("_AST_f", bound=np.floating[Any] | onp.ArrayND[np.floating[Any]])
 _ShapeT = TypeVar("_ShapeT", bound=tuple[int, ...])
 
-
+_Tuple2: TypeAlias = tuple[_T, _T]
 _DType: TypeAlias = np.dtype[_SCT] | type[_SCT]
 
 
 def ensure_axis_at(
-    a: npt.NDArray[_SCT],
+    a: onp.ArrayND[_SCT],
     /,
-    source: int | None,
-    destination: int,
+    source: op.CanIndex | None,
+    destination: op.CanIndex,
     *,
     order: lmt.OrderReshape = "C",
-) -> npt.NDArray[_SCT]:
+    copy: bool | None = None,
+) -> onp.ArrayND[_SCT]:
     """
     Moves the from `source` to `destination` if needed, or returns a flattened
     array is `source` is set to `None`.
     """
-    if a.ndim <= 1 or source == destination:
-        return a
+    if a.ndim <= 1:
+        return a.copy() if copy else a
+
     if source is None:
-        return a.reshape(-1, order=order)
+        # numpy typing issue workaround
+        _copy = None if copy is None else np.bool_(copy)
+        return a.reshape(-1, order=order, copy=_copy)
 
-    source = source + a.ndim if source < 0 else source
-    destination = destination + a.ndim if destination < 0 else destination
+    if (src := int(source)) == (dst := int(destination)):
+        return a.copy() if copy else a
 
-    return a if source == destination else np.moveaxis(a, source, destination)
+    if src < 0:
+        src += a.ndim
+    if dst < 0:
+        dst += a.ndim
+
+    return np.moveaxis(a, src, dst)
 
 
 def plotting_positions(
-    n: _SizeT,
+    n: int | np.integer[Any],
     /,
-    alpha: float = 0.4,
-    beta: float | None = None,
-) -> onp.Array[tuple[_SizeT], np.float64]:
+    alpha: float | np.floating[Any] = 0.4,
+    beta: float | np.floating[Any] | None = None,
+) -> onp.Array1D[np.float64]:
     """
     A re-implementation of [`scipy.stats.mstats.plotting_positions`
     ](scipy.stats.mstats.plotting_positions), but without the ridiculous
@@ -88,20 +85,20 @@ def plotting_positions(
 
 
 @overload
-def round0(a: _AT_f, /, tol: float | None = None) -> _AT_f: ...
+def round0(a: float | np.float64, /, tol: float | None = None) -> np.float64: ...
+@overload
+def round0(a: _AST_f, /, tol: float | None = None) -> _AST_f: ...
 @overload
 def round0(
     a: onp.CanArray[_ShapeT, _DT_f],
     /,
     tol: float | None = None,
 ) -> np.ndarray[_ShapeT, _DT_f]: ...
-@overload
-def round0(a: float, /, tol: float | None = None) -> np.float64: ...
 def round0(
-    a: float | onp.CanArray[_ShapeT, np.dtype[_SCT_f]],
+    a: float | np.float64 | onp.CanArray[_ShapeT, np.dtype[_SCT_f]],
     /,
     tol: float | None = None,
-) -> onp.Array[_ShapeT, _SCT_f] | _SCT_f:
+) -> _SCT_f | onp.Array[_ShapeT, _SCT_f]:
     """
     Replace all values `<= tol` with `0`.
 
@@ -115,25 +112,28 @@ def round0(
 
 
 def _apply_aweights(
-    x: np.ndarray[_ShapeT, _DT_f],
-    v: onp.ArrayND[lmt.Floating],
-    axis: int,
-) -> np.ndarray[_ShapeT, _DT_f]:
+    x: _AT_f,
+    v: onp.ArrayND[np.floating[Any]],
+    axis: op.CanIndex,
+) -> _AT_f:
     # interpret the weights as horizontal coordinates using cumsum
     vv = np.cumsum(v, axis=axis)
     assert vv.shape == x.shape, (vv.shape, x.shape)
 
     # ensure that the samples are on the last axis, for easy iterating
+    axis = int(axis)
     if swap_axes := axis % x.ndim != x.ndim - 1:
-        x = cast(np.ndarray[_ShapeT, _DT_f], np.swapaxes(x, axis, -1))
-        vv = np.moveaxis(vv, axis, -1)
+        _x = np.swapaxes(x, axis, -1)
+        _vv = np.moveaxis(vv, axis, -1)
+    else:
+        _x, _vv = x, vv
 
     # cannot use np.apply_along_axis here, since both x_k and w_k need to be
     # applied simultaneously
-    out = np.empty_like(x)
+    out: _AT_f = np.empty_like(x)
 
     for j in np.ndindex(out.shape[:-1]):
-        x_jk, w_jk = x[j], vv[j]
+        x_jk, w_jk = _x[j], _vv[j]
         if w_jk[-1] <= 0:
             msg = "weight sum must be positive"
             raise ValueError(msg)
@@ -145,28 +145,28 @@ def _apply_aweights(
 
     # unswap the axes if previously swapped
     if swap_axes:
-        out = cast(np.ndarray[_ShapeT, _DT_f], np.swapaxes(out, -1, axis))
+        out = np.swapaxes(out, -1, axis)  # pyright: ignore[reportAssignmentType]
 
     return out
 
 
 def _sort_like(
     a: onp.Array[_ShapeT, _SCT_uifc],
-    i: onp.Array1D[lmt.Integer],
+    i: onp.Array1D[np.integer[Any]],
     /,
-    axis: int | None,
+    axis: op.CanIndex | None,
 ) -> onp.Array[_ShapeT, _SCT_uifc]:
     return (
         np.take(a, i, axis=None if a.ndim == i.ndim else axis)
-        if min(a.ndim, i.ndim) <= 1
-        else np.take_along_axis(a, i, axis)
+        if a.ndim <= 1 or i.ndim <= 1
+        else np.take_along_axis(a, i, None if axis is None else int(axis))
     )
 
 
 def sort_maybe(
     x: onp.Array[_ShapeT, _SCT_uifc],
     /,
-    axis: int = -1,
+    axis: op.CanIndex = -1,
     *,
     sort: bool | lmt.SortKind = True,
     inplace: bool = False,
@@ -182,17 +182,53 @@ def sort_maybe(
     return np.sort(x, axis=axis, kind=kind)
 
 
-def ordered(  # noqa: C901
+@overload
+def ordered(
     x: onp.ToFloatND,
     y: onp.ToFloatND | None = None,
     /,
-    axis: int | None = None,
-    dtype: _DType[lmt.Floating] | None = None,
+    axis: op.CanIndex | None = None,
+    dtype: None = None,
     *,
     fweights: lmt.ToFWeights | None = None,
     aweights: lmt.ToAWeights | None = None,
     sort: lmt.SortKind | bool = True,
-) -> onp.Array[onp.AtLeast1D, lmt.Floating]:
+) -> onp.Array[onp.AtLeast1D, np.floating[Any]]: ...
+@overload
+def ordered(
+    x: onp.ToFloatND,
+    y: onp.ToFloatND | None,
+    /,
+    axis: op.CanIndex | None,
+    dtype: _DType[_SCT_f],
+    *,
+    fweights: lmt.ToFWeights | None = None,
+    aweights: lmt.ToAWeights | None = None,
+    sort: lmt.SortKind | bool = True,
+) -> onp.Array[onp.AtLeast1D, _SCT_f]: ...
+@overload
+def ordered(
+    x: onp.ToFloatND,
+    y: onp.ToFloatND | None = None,
+    /,
+    axis: op.CanIndex | None = None,
+    *,
+    dtype: _DType[_SCT_f],
+    fweights: lmt.ToFWeights | None = None,
+    aweights: lmt.ToAWeights | None = None,
+    sort: lmt.SortKind | bool = True,
+) -> onp.Array[onp.AtLeast1D, _SCT_f]: ...
+def ordered(  # noqa: C901
+    x: onp.ToFloatND,
+    y: onp.ToFloatND | None = None,
+    /,
+    axis: op.CanIndex | None = None,
+    dtype: _DType[np.floating[Any]] | None = None,
+    *,
+    fweights: lmt.ToFWeights | None = None,
+    aweights: lmt.ToAWeights | None = None,
+    sort: lmt.SortKind | bool = True,
+) -> onp.Array[onp.AtLeast1D, np.floating[Any]]:
     """
     Calculate `n = len(x)` order stats of `x`, optionally weighted.
     If `y` is provided, the order of `y` is used instead.
@@ -258,20 +294,20 @@ def ordered(  # noqa: C901
 
 
 @overload
-def clean_order(r: lmt.ToOrder0D, /, name: str = "r", rmin: int = 0) -> int: ...
+def clean_order(r: lmt.ToOrder0D, /, name: str = "r", rmin: onp.ToInt = 0) -> int: ...
 @overload
 def clean_order(
     r: lmt.ToOrderND,
     /,
     name: str = "r",
-    rmin: int = 0,
-) -> npt.NDArray[np.intp]: ...
+    rmin: onp.ToInt = 0,
+) -> onp.ArrayND[np.intp]: ...
 def clean_order(
-    r: lmt.ToOrder0D | lmt.ToOrderND,
+    r: lmt.ToOrder,
     /,
     name: str = "r",
-    rmin: int = 0,
-) -> int | npt.NDArray[np.intp]:
+    rmin: onp.ToInt = 0,
+) -> int | onp.ArrayND[np.intp]:
     """Validates and cleans an single (L-)moment order."""
     if not isinstance(r, int | np.integer):
         return clean_orders(r, name=name, rmin=rmin)
@@ -280,18 +316,33 @@ def clean_order(
         msg = f"expected {name} >= {rmin}, got {r}"
         raise TypeError(msg)
 
-    return int(r)
+    # Pyright doesn't seem to realize that its internal `Unknown` "type" is literally
+    # defined as `Any` within gradual type-systems like Python typing...
+    return int(r)  # pyright: ignore[reportUnknownArgumentType]
 
 
+@overload
+def clean_orders(
+    r: lmt.ToOrder1D,
+    /,
+    name: str = "r",
+    rmin: onp.ToInt = 0,
+) -> onp.Array1D[np.intp]: ...
+@overload
 def clean_orders(
     r: lmt.ToOrderND,
     /,
     name: str = "r",
-    rmin: int = 0,
-    dtype: _DType[_SCT_ui] = np.intp,
-) -> npt.NDArray[_SCT_ui]:
+    rmin: onp.ToInt = 0,
+) -> onp.ArrayND[np.intp]: ...
+def clean_orders(
+    r: lmt.ToOrderND,
+    /,
+    name: str = "r",
+    rmin: onp.ToInt = 0,
+) -> onp.ArrayND[np.intp]:
     """Validates and cleans an array-like of (L-)moment orders."""
-    _r = np.asarray_chkfinite(r, dtype=dtype)
+    _r = np.asarray_chkfinite(r, dtype=np.intp)
 
     if np.any(invalid := _r < rmin):
         i = np.argmax(invalid)
@@ -311,7 +362,7 @@ _COMMON_TRIM2: Final[frozenset[tuple[int, int]]] = frozenset(
 def clean_trim(trim: lmt.ToIntTrim, /) -> tuple[int, int]: ...
 @overload
 def clean_trim(trim: lmt.ToTrim, /) -> tuple[float, float]: ...
-def clean_trim(trim: lmt.ToTrim, /) -> tuple[int, int] | tuple[float, float]:
+def clean_trim(trim: lmt.ToTrim, /) -> tuple[float, float]:
     """
     Validates and cleans the passed trim; and return a 2-tuple of either ints
     or floats.
@@ -349,10 +400,10 @@ def clean_trim(trim: lmt.ToTrim, /) -> tuple[int, int] | tuple[float, float]:
 
 
 def moments_to_ratio(
-    rs: onp.ArrayND[lmt.Integer],
+    rs: onp.ArrayND[np.integer[Any]],
     l_rs: onp.ArrayND[_SCT_f],
     /,
-) -> _SCT_f | npt.NDArray[_SCT_f]:
+) -> _SCT_f | onp.ArrayND[_SCT_f]:
     """
     Using stacked order of shape (2, ...), and an L-moments array, returns
     the L-moment ratio's.
@@ -378,13 +429,13 @@ def moments_to_ratio(
 
 
 def moments_to_stats_cov(
-    t_0r: onp.ArrayND[lmt.Floating],
+    t_0r: onp.ArrayND[np.floating[Any]],
     ll_kr: onp.Array[_ShapeT, _SCT_f],
 ) -> onp.Array[_ShapeT, _SCT_f]:
     # t_0r are L-ratio's for r = 0, 1, ..., R (t_0r[0] == 1 / L-scale)
     # t_0r[1] isn't used, and can be set to anything
     # ll_kr is the L-moment cov of size R**2 (orders start at 1 here)
-    assert len(t_0r) > 0
+    assert t_0r.size
     assert (len(t_0r) - 1) ** 2 == ll_kr.size
 
     t_0, t_r = t_0r[0], t_0r[1:]
@@ -407,18 +458,13 @@ def moments_to_stats_cov(
     return tt_kr
 
 
-def l_stats_orders(
-    num: _SizeT,
-    /,
-    dtype: _DType[_SCT_ui] = np.int_,
-) -> tuple[
-    onp.Array[tuple[_SizeT], _SCT_ui],
-    onp.Array[tuple[_SizeT], _SCT_ui],
-]:
+def l_stats_orders(num: op.CanIndex, /) -> _Tuple2[onp.Array1D[np.intp]]:
     """
     Create the L-moment order array `[1, 2, ..., r]` and corresponding
     ratio array `[0, 0, 2, ...]` of same size.
     """
-    r = np.arange(1, num + 1, dtype=dtype)
-    s = np.array([0] * min(2, num) + [2] * (num - 2), dtype=dtype)
-    return r, s
+    n = int(num)
+    return (
+        np.arange(1, n + 1, dtype=np.intp),
+        np.array([0] * min(2, n) + [2] * (n - 2), dtype=np.intp),
+    )

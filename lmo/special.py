@@ -2,66 +2,58 @@
 
 from __future__ import annotations
 
-import sys
-from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any, Final, TypeAlias, cast, overload
+from typing import TYPE_CHECKING, Final, TypeAlias, TypeVar, overload
 
 import numpy as np
-import numpy.typing as npt
 import optype.numpy as onp
-import scipy.special as sc
+import scipy.special as sps
 
 from ._utils import clean_orders
 
 if TYPE_CHECKING:
-    from lmo.typing import ToOrder0D, ToOrderND
-
-if sys.version_info >= (3, 13):
-    from typing import Protocol, TypeVar, runtime_checkable
-else:
-    from typing_extensions import Protocol, TypeVar, runtime_checkable
+    import lmo.typing as lmt
 
 __all__ = "fourier_jacobi", "fpow", "gamma2", "harmonic", "norm_sh_jacobi"
 
 
+def __dir__() -> tuple[str, ...]:
+    return __all__
+
+
+_OutT = TypeVar("_OutT", bound=onp.Array)
+_Float: TypeAlias = np.float64
+_FloatND: TypeAlias = onp.ArrayND[np.float64]
+
+
 _DTYPE_CHARS: Final[str] = "?bBhHiIlLqQpP"
 
-_ArrayT = TypeVar("_ArrayT", bound=onp.Array)
-_ShapeT = TypeVar("_ShapeT", infer_variance=True, bound=tuple[int, ...])
-_SCT = TypeVar("_SCT", infer_variance=True, bound=np.number[Any] | np.bool_)
-
-
-# this includes `np.ndarray` but excludes `np.generic`
-@runtime_checkable
-class _CanLenArray(onp.CanArray[_ShapeT, np.dtype[_SCT]], Protocol[_ShapeT, _SCT]):
-    def __len__(self, /) -> int: ...
-
-
-_F8: TypeAlias = np.float64
-_F8ND: TypeAlias = onp.Array[onp.AtLeast1D, np.float64]
-
-_Real: TypeAlias = np.floating[Any] | np.integer[Any] | np.bool_
-_Real_in: TypeAlias = float | _Real
-_RealND: TypeAlias = _CanLenArray[_ShapeT, _SCT]
-_RealND_in: TypeAlias = _RealND[Any, _Real] | Sequence["_Real_in | _RealND_in"]
-
 
 @overload
-def fpow(x: _Real_in, n: _Real_in, /, out: None = None) -> _F8: ...
+def fpow(x: onp.ToFloat, n: onp.ToFloat, /, out: None = None) -> _Float: ...
 @overload
-def fpow(x: _RealND_in, n: _Real_in | _RealND_in, /, out: None = None) -> _F8ND: ...
+def fpow(x: onp.ToFloat, n: onp.ToFloatND, /, out: None = None) -> _FloatND: ...
 @overload
-def fpow(x: _Real_in, n: _RealND_in, /, out: None = None) -> _F8ND: ...
+def fpow(x: onp.ToFloat, n: onp.ToFloatND, /, out: _OutT) -> _OutT: ...
 @overload
-def fpow(x: _RealND_in, n: _Real_in | _RealND_in, /, out: _ArrayT) -> _ArrayT: ...
-@overload
-def fpow(x: _Real_in, n: _RealND_in, /, out: _ArrayT) -> _ArrayT: ...
 def fpow(
-    x: _Real_in | _RealND_in,
-    n: _Real_in | _RealND_in,
+    x: onp.ToFloatND,
+    n: onp.ToFloat | onp.ToFloatND,
     /,
-    out: _ArrayT | None = None,
-) -> _ArrayT | _F8 | _F8ND:
+    out: None = None,
+) -> _FloatND: ...
+@overload
+def fpow(
+    x: onp.ToFloatND,
+    n: onp.ToFloat | onp.ToFloatND,
+    /,
+    out: _OutT,
+) -> _OutT: ...
+def fpow(
+    x: onp.ToFloat | onp.ToFloatND,
+    n: onp.ToFloat | onp.ToFloatND,
+    /,
+    out: _OutT | None = None,
+) -> _OutT | _Float | _FloatND:
     r"""
     Factorial power, or falling factorial.
 
@@ -83,24 +75,24 @@ def fpow(
         - [`scipy.special.poch`][scipy.special.poch] -- the rising factorial
     """
     _x, _n = np.asanyarray(x), np.asanyarray(n)
-    res = cast(npt.NDArray[np.float64], sc.poch(_x - _n + 1, _n, out=out))
+    res = sps.poch(_x - _n + 1, _n, out=out)
     if res.ndim == 0 and np.isscalar(x) and np.isscalar(n):
         return res[()]
     return res
 
 
 @overload
-def gamma2(a: _Real_in, x: _Real_in, /, out: None = None) -> _F8: ...
+def gamma2(a: onp.ToFloat, x: onp.ToFloat, /, out: None = None) -> _Float: ...
 @overload
-def gamma2(a: _Real_in, x: _RealND_in, /, out: None = None) -> _F8ND: ...
+def gamma2(a: onp.ToFloat, x: onp.ToFloatND, /, out: None = None) -> _FloatND: ...
 @overload
-def gamma2(a: _Real_in, x: _RealND_in, /, out: _ArrayT) -> _ArrayT: ...
+def gamma2(a: onp.ToFloat, x: onp.ToFloatND, /, out: _OutT) -> _OutT: ...
 def gamma2(
-    a: _Real_in,
-    x: _Real_in | _RealND_in,
+    a: onp.ToFloat,
+    x: onp.ToFloat | onp.ToFloatND,
     /,
-    out: _ArrayT | None = None,
-) -> _ArrayT | _F8 | _F8ND:
+    out: _OutT | None = None,
+) -> _OutT | _Float | _FloatND:
     r"""
     Incomplete (upper) gamma function.
 
@@ -125,21 +117,21 @@ def gamma2(
           regularized gamma function \( Q(a,\ x) \).
     """
     if a == 0:
-        return sc.exp1(x, out=out)
-    return sc.gammaincc(a, x, out=out) * sc.gamma(a)
+        return sps.exp1(x, out=out)
+    return sps.gammaincc(a, x, out=out) * sps.gamma(a)
 
 
 @overload
-def harmonic(n: _Real_in, /, out: None = None) -> float: ...
+def harmonic(n: onp.ToFloat, /, out: None = None) -> float: ...
 @overload
-def harmonic(n: _RealND_in, /, out: None = None) -> _F8ND: ...
+def harmonic(n: onp.ToFloatND, /, out: None = None) -> _FloatND: ...
 @overload
-def harmonic(n: _RealND_in, /, out: _ArrayT) -> _ArrayT: ...
+def harmonic(n: onp.ToFloatND, /, out: _OutT) -> _OutT: ...
 def harmonic(
-    n: _Real_in | _RealND_in,
+    n: onp.ToFloat | onp.ToFloatND,
     /,
-    out: _ArrayT | None = None,
-) -> _ArrayT | float | _F8ND:
+    out: _OutT | None = None,
+) -> _OutT | float | _FloatND:
     r"""
     Harmonic number \( H_n = \sum_{k=1}^{n} 1 / k \), extended for real and
     complex argument via analytic contunuation.
@@ -169,15 +161,15 @@ def harmonic(
         - [Harmonic number - Wikipedia](https://w.wiki/A63b)
     """
     _n = np.asanyarray(n)
-    _out = sc.digamma(_n + 1, out) + np.euler_gamma
+    _out = sps.digamma(_n + 1, out) + np.euler_gamma
     return _out.item() if np.isscalar(n) and out is None else _out
 
 
 @overload
-def norm_sh_jacobi(n: ToOrder0D, alpha: float, beta: float) -> _F8: ...
+def norm_sh_jacobi(n: lmt.ToOrder0D, alpha: float, beta: float) -> _Float: ...
 @overload
-def norm_sh_jacobi(n: ToOrderND, alpha: float, beta: float) -> _F8ND: ...
-def norm_sh_jacobi(n: ToOrder0D | ToOrderND, alpha: float, beta: float) -> _F8 | _F8ND:
+def norm_sh_jacobi(n: lmt.ToOrderND, alpha: float, beta: float) -> _FloatND: ...
+def norm_sh_jacobi(n: lmt.ToOrder, alpha: float, beta: float) -> _Float | _FloatND:
     r"""
     Evaluate the (weighted) \( L^2 \)-norm of a shifted Jacobi polynomial.
 
@@ -217,27 +209,32 @@ def norm_sh_jacobi(n: ToOrder0D | ToOrderND, alpha: float, beta: float) -> _F8 |
         c = np.ones(r.shape)
     elif alpha == beta == -1 / 2:
         # shifted Chebychev of the first kind
-        c = np.exp(2 * (sc.gammaln(r - 1 / 2) - sc.gammaln(r))) / 2
+        c = np.exp(2 * (sps.gammaln(r - 1 / 2) - sps.gammaln(r))) / 2
     elif alpha == beta == 1 / 2:
         # shifted Chebychev of the second kind
-        c = np.exp(2 * (sc.gammaln(r + 1 / 2) - sc.gammaln(r + 1))) / 2
+        c = np.exp(2 * (sps.gammaln(r + 1 / 2) - sps.gammaln(r + 1))) / 2
     else:
         p, q = r + alpha, r + beta
-        c = np.exp(sc.betaln(p, q) - sc.betaln(r, p + beta)) / (p + q - 1)
+        c = np.exp(sps.betaln(p, q) - sps.betaln(r, p + beta)) / (p + q - 1)
 
     return c[()] if r.ndim == 0 and np.isscalar(n) else c
 
 
 @overload
-def fourier_jacobi(x: _Real_in, c: _RealND_in, a: float, b: float) -> _F8: ...
+def fourier_jacobi(x: onp.ToFloat, c: onp.ToFloatND, a: float, b: float) -> _Float: ...
 @overload
-def fourier_jacobi(x: _RealND_in, c: _RealND_in, a: float, b: float) -> _F8ND: ...
 def fourier_jacobi(
-    x: _Real_in | _RealND_in,
-    c: _RealND_in,
+    x: onp.ToFloatND,
+    c: onp.ToFloatND,
     a: float,
     b: float,
-) -> _F8 | _F8ND:
+) -> _FloatND: ...
+def fourier_jacobi(
+    x: onp.ToFloat | onp.ToFloatND,
+    c: onp.ToFloatND,
+    a: float,
+    b: float,
+) -> _Float | _FloatND:
     r"""
     Evaluate the Fourier-Jacobi series, using the Clenshaw summation
     algorithm.
@@ -281,10 +278,7 @@ def fourier_jacobi(
         - [Jacobi Polynomial - Worlfram Mathworld](
         https://mathworld.wolfram.com/JacobiPolynomial.html)
     """
-    _c = cast(
-        npt.NDArray[np.integer[Any] | np.floating[Any]],
-        np.array(c, ndmin=1, copy=2),  # pyright: ignore[reportCallIssue,reportArgumentType]
-    )
+    _c = np.array(c, ndmin=1)
     if _c.dtype.char in _DTYPE_CHARS:
         _c = _c.astype(np.float64)
 
@@ -325,7 +319,7 @@ def fourier_jacobi(
     q1 = -((a + 1) * (b + 1) * (a + b + 4) / (2 * (a + b + 2) ** 2))
 
     # Behold! The magic of Clenshaw's algorithm:
-    out: npt.NDArray[np.float64] = _c[0] * f0 + y1 * f1 + y2 * q1 * f0
+    out = _c[0] * f0 + y1 * f1 + y2 * q1 * f0
 
     # propagation of 'inf' values, ensuring correct sign
     if hasinfs:

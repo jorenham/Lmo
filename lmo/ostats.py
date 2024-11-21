@@ -13,19 +13,17 @@ from __future__ import annotations
 
 import functools
 from math import floor, log1p
-from typing import TYPE_CHECKING, Any, TypeAlias, overload
+from typing import Any, TypeAlias, overload
 
 import numpy as np
+import optype as op
+import optype.numpy as onp
 from scipy.special import betainc, betaln
-
-if TYPE_CHECKING:
-    import optype as op
-    import optype.numpy as onp
-
 
 __all__ = "from_cdf", "weights"
 
 
+# doesn't include `np.bool_` like in `onp.ToFloat`
 _ToReal: TypeAlias = float | np.floating[Any] | np.integer[Any]
 
 
