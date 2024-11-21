@@ -9,7 +9,7 @@ See Also:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, TypeAlias, TypeVar, cast, overload
+from typing import TYPE_CHECKING, Any, TypeAlias, TypeVar, cast, overload
 
 import numpy as np
 import numpy.polynomial as npp
@@ -51,19 +51,24 @@ _T_poly = TypeVar("_T_poly", bound=PolySeries)
 
 
 @overload
-def eval_sh_jacobi(n: int, a: onp.ToFloat, b: onp.ToFloat, x: onp.ToFloat) -> float: ...
-@overload
-def eval_sh_jacobi(
-    n: int,
-    a: onp.ToFloat,
-    b: onp.ToFloat,
-    x: onp.Array[_T_shape, lmt.Floating],
-) -> onp.Array[_T_shape, np.float64]: ...
 def eval_sh_jacobi(
     n: int | lmt.Integer,
-    a: onp.ToFloat,
-    b: onp.ToFloat,
-    x: onp.ToFloat | onp.Array[_T_shape, lmt.Floating],
+    a: float,
+    b: float,
+    x: float | np.floating[Any],
+) -> float: ...
+@overload
+def eval_sh_jacobi(
+    n: int | lmt.Integer,
+    a: float,
+    b: float,
+    x: onp.Array[_T_shape, lmt.Floating],
+) -> onp.Array[_T_shape, np.float64]: ...
+def eval_sh_jacobi(  # noqa: C901
+    n: int | lmt.Integer,
+    a: float,
+    b: float,
+    x: float | np.floating[Any] | onp.Array[_T_shape, lmt.Floating],
 ) -> float | onp.Array[_T_shape, np.float64]:
     """
     Fast evaluation of the n-th shifted Jacobi polynomial.
@@ -73,26 +78,22 @@ def eval_sh_jacobi(
     if n == 0:
         return 1
 
-    x = np.asarray(x)[()]
-    u = 2 * x - 1
-
-    a = float(a)
-    b = float(b)
+    x = x if isinstance(x, np.ndarray) else float(x)
 
     if a == b == 0:
         if n == 1:
-            return u
+            return 2 * x - 1
+        if n > 4:
+            return sps.eval_sh_legendre(n, x)
 
         v = x * (x - 1)
 
         if n == 2:
             return 1 + 6 * v
         if n == 3:
-            return (1 + 10 * v) * u
+            return (1 + 10 * v) * (2 * x - 1)
         if n == 4:
             return 1 + 10 * v * (2 + 7 * v)
-
-        return sps.eval_sh_legendre(n, x)
 
     if n == 1:
         return (a + b + 2) * x - b - 1
@@ -110,7 +111,7 @@ def eval_sh_jacobi(
         ) / 6
 
     # don't use `eval_sh_jacobi`: https://github.com/scipy/scipy/issues/18988
-    return sps.eval_jacobi(n, a, b, u)
+    return sps.eval_jacobi(n, a, b, 2 * x - 1)
 
 
 def peaks_jacobi(n: int, a: float, b: float) -> onp.Array1D[np.float64]:

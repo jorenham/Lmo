@@ -250,22 +250,23 @@ def l_moment_gof(
         >>> import lmo
         >>> import numpy as np
         >>> from lmo.diagnostic import l_moment_gof
-        >>> from scipy.stats import norm
+        >>> from scipy.special import ndtr as norm_cdf
         >>> rng = np.random.default_rng(12345)
-        >>> X = norm(13.12, 1.66)
         >>> n = 1_000
-        >>> x = X.rvs(n, random_state=rng)
+        >>> x = rng.standard_normal(n)
         >>> x_lm = lmo.l_moment(x, [1, 2, 3, 4])
-        >>> l_moment_gof(X, x_lm, n).pvalue
+        >>> x_lm.round(4)
+        array([ 0.0083,  0.573 , -0.0067,  0.0722])
+        >>> l_moment_gof(norm_cdf, x_lm, n).pvalue
         0.82597
 
-        Contaminated samples:
+        Contaminate 4% of the samples with Cauchy noise:
 
-        >>> y = 0.9 * x + 0.1 * rng.normal(X.mean(), X.std() * 10, n)
+        >>> y = np.r_[x[: n - n // 25], rng.standard_cauchy(n // 25)]
         >>> y_lm = lmo.l_moment(y, [1, 2, 3, 4])
-        >>> y_lm.round(3)
-        array([13.193, 1.286, 0.006, 0.168])
-        >>> l_moment_gof(X, y_lm, n).pvalue
+        >>> y_lm.round(4)
+        array([-0.0731,  0.6923, -0.0876,  0.1932])
+        >>> l_moment_gof(norm_cdf, y_lm, n).pvalue
         0.0
 
 
@@ -656,6 +657,7 @@ def l_ratio_bounds(
     return t_min.round(12)[()], t_max.round(12)[()]
 
 
+# TODO: faster doctest
 def rejection_point(
     influence_fn: Callable[[float], float],
     /,
@@ -691,16 +693,14 @@ def rejection_point(
         >>> rejection_point(if_l_loc_norm)
         nan
 
-        For the TL-location of the Gaussian distribution, and even for the
-        Student's t distribution with 4 degrees of freedom (3 also works, but
-        is very slow), they exist.
+        For the TL-location of the Gaussian and Logistic distributions, they exist.
 
         >>> influence_norm = dists.norm.l_moment_influence(1, trim=1)
-        >>> influence_t4 = dists.t(4).l_moment_influence(1, trim=1)
-        >>> influence_norm(np.inf), influence_t4(np.inf)
+        >>> influence_logi = dists.logistic.l_moment_influence(1, trim=1)
+        >>> influence_norm(np.inf), influence_logi(np.inf)
         (0.0, 0.0)
-        >>> rejection_point(influence_norm), rejection_point(influence_t4)
-        (6.0, 206.0)
+        >>> rejection_point(influence_norm), rejection_point(influence_logi)
+        (6.0, 21.0)
 
     Notes:
         Large rejection points (e.g. >1000) are unlikely to be found.
