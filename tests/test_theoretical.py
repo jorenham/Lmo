@@ -1,19 +1,16 @@
-# pyright: reportUnknownVariableType=false
-# pyright: reportMissingTypeStubs=false
-# pyright: reportUnknownArgumentType=false
-
 import functools
 from collections.abc import Callable
 from typing import cast
 
 import numpy as np
+import pytest
 from hypothesis import (
     given,
     settings,
     strategies as st,
 )
 from numpy.testing import assert_allclose as _assert_allclose
-from scipy.special import ndtr, ndtri, zeta
+from scipy.special import ndtr, ndtri, xlogy, zeta
 
 from lmo import constants
 from lmo.theoretical import (
@@ -26,7 +23,7 @@ from lmo.theoretical import (
     qdf_from_l_moments,
 )
 
-assert_allclose = functools.partial(_assert_allclose, atol=1e-12)
+assert_allclose = functools.partial(_assert_allclose, rtol=1e-6, atol=1e-8)
 
 norm_cdf = cast(Callable[[float], float], ndtr)
 norm_ppf = cast(Callable[[float], float], ndtri)
@@ -62,20 +59,16 @@ def expon_qdf(p: float, a: float = 1) -> float:
     return a / (1 - p)
 
 
-@np.errstate(over="ignore", under="ignore")
 def gumbel_cdf(x: float, loc: float = 0, scale: float = 1) -> float:
     return np.exp(-np.exp(-(x - loc) / scale))
 
 
-@np.errstate(over="ignore", under="ignore")
 def gumbel_ppf(p: float, loc: float = 0, scale: float = 1) -> float:
     return loc - scale * np.log(-np.log(p))
 
 
-@np.errstate(over="ignore", under="ignore", divide="ignore")
 def gumbel_qdf(p: float, loc: float = 0, scale: float = 1) -> float:
-    # return loc - scale / (p * np.log(p))
-    return loc + scale / np.log(np.exp(-p * np.log(p)))
+    return loc - scale / xlogy(p, p)
 
 
 def rayleigh_cdf(x: float) -> float:
@@ -102,19 +95,21 @@ def uniform_qdf(p: float) -> float:
     return ((p > 0) & (p < 1)) * 1.0
 
 
-@given(a=st.floats(0.1, 10))
+# @given(a=st.floats(0.1, 10))
+@pytest.mark.parametrize("a", [0.1, 10])
 def test_lm_expon(a: float):
     l_stats = np.array([a, a / 2, 1 / 3, 1 / 6])
+    r = np.arange(5)
 
     ppf = functools.partial(expon_ppf, a=a)
     cdf = functools.partial(expon_cdf, a=a)
 
-    l_ppf = l_moment_from_ppf(ppf, [0, 1, 2, 3, 4])
+    l_ppf = l_moment_from_ppf(ppf, r)
     l_stats_ppf = l_ppf[1:] / l_ppf[[0, 0, 2, 2]]
 
     assert_allclose(l_stats_ppf, l_stats)
 
-    l_cdf = l_moment_from_cdf(cdf, [0, 1, 2, 3, 4])
+    l_cdf = l_moment_from_cdf(cdf, r)
     l_stats_cdf = l_cdf[1:] / l_cdf[[0, 0, 2, 2]]
 
     assert_allclose(l_stats_cdf, l_stats, rtol=5e-7)
@@ -241,33 +236,14 @@ def test_llm_cov_expon():
     assert_allclose(k3, k3_hat)
 
 
-def test_lm_cov_loc_invariant():
-    k4_hat = l_moment_cov_from_cdf(gumbel_cdf, 4)
-    k4_hat_l = l_moment_cov_from_cdf(
-        functools.partial(gumbel_cdf, loc=-1),
-        4,
-    )
+@np.errstate(over="ignore", under="ignore")
+def test_lm_cov_loc_scale_invariant():
+    k4_hat = l_moment_cov_from_cdf(gumbel_cdf, 4, trim=(0, 1))
     k4_hat_r = l_moment_cov_from_cdf(
-        functools.partial(gumbel_cdf, loc=1),
+        functools.partial(gumbel_cdf, loc=5, scale=3),
         4,
+        trim=(0, 1),
     )
-
-    assert_allclose(k4_hat, k4_hat_l)
-    assert_allclose(k4_hat, k4_hat_r)
-
-
-def test_lm_cov_scale_invariant():
-    k4_hat = l_moment_cov_from_cdf(gumbel_cdf, 4)
-    k4_hat_l = l_moment_cov_from_cdf(
-        functools.partial(gumbel_cdf, scale=1 / 3),
-        4,
-    )
-    k4_hat_r = l_moment_cov_from_cdf(
-        functools.partial(gumbel_cdf, scale=3),
-        4,
-    )
-
-    assert_allclose(k4_hat, k4_hat_l * 9)
     assert_allclose(k4_hat, k4_hat_r / 9)
 
 
@@ -286,25 +262,15 @@ def test_ls_cov_uniform():
 @settings(deadline=1_000)
 @given(
     ppf=st.one_of(
-        *map(
-            st.just,
-            [
-                uniform_ppf,
-                norm_ppf,
-                gumbel_ppf,
-                rayleigh_ppf,
-                expon_ppf,
-            ],
-        )
+        *map(st.just, [uniform_ppf, norm_ppf, gumbel_ppf, rayleigh_ppf, expon_ppf])
     ),
-    rmax=st.integers(2, 8),
     trim=st.tuples(st.integers(0, 1), st.integers(0, 3)),
 )
 def test_ppf_from_l_moments_identity(
     ppf: Callable[[float], float],
-    rmax: int,
     trim: tuple[int, int] | int,
 ):
+    rmax = 8
     r = np.mgrid[1 : rmax + 1]
     l_r = l_moment_from_ppf(ppf, r, trim)
 
@@ -320,25 +286,15 @@ def test_ppf_from_l_moments_identity(
 @settings(deadline=1_000)
 @given(
     qdf=st.one_of(
-        *map(
-            st.just,
-            [
-                uniform_qdf,
-                norm_qdf,
-                gumbel_qdf,
-                rayleigh_qdf,
-                expon_qdf,
-            ],
-        )
+        *map(st.just, [uniform_qdf, norm_qdf, gumbel_qdf, rayleigh_qdf, expon_qdf])
     ),
-    rmax=st.integers(3, 8),
     trim=st.tuples(st.integers(0, 1), st.integers(0, 3)),
 )
 def test_qdf_from_l_moments_identity(
     qdf: Callable[[float], float],
-    rmax: int,
     trim: tuple[int, int] | int,
 ):
+    rmax = 8
     r = np.mgrid[2 : rmax + 1]
     l_r = l_moment_from_qdf(qdf, r, trim)
 

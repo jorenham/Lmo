@@ -110,8 +110,8 @@ testpaths = ["lmo", "tests"]
 xfail_strict = true
 
 [tool.pyright]
-include = ["lmo", "typetests"]
-exclude = ["docs", "tests"]
+include = ["lmo", "tests", "typetests"]
+exclude = ["docs"]
 ignore = ["lmo/contrib/pandas.py"]
 stubPath = "."
 venvPath = "."

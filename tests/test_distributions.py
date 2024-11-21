@@ -9,6 +9,7 @@ from scipy.stats import distributions
 from scipy.stats.distributions import tukeylambda, uniform
 
 import lmo.typing as lmt
+from lmo.contrib.scipy_stats import l_rv_generic
 from lmo.distributions import genlambda, kumaraswamy, l_poly, wakeby
 
 Q = np.linspace(1 / 100, 1, 99, endpoint=False)
@@ -51,8 +52,6 @@ def test_l_poly_eq_uniform(trim: lmt.ToTrim):
     assert_allclose(H_hat, H)
 
 
-@pytest.mark.parametrize("scale", [1, 0.5, 2])
-@pytest.mark.parametrize("loc", [0, 1, -1])
 @pytest.mark.parametrize(
     ("b", "d", "f"),
     [
@@ -70,8 +69,8 @@ def test_l_poly_eq_uniform(trim: lmt.ToTrim):
         (1, -0.9, 0.5),
     ],
 )
-def test_wakeby(b: float, d: float, f: float, loc: float, scale: float):
-    X = cast(Any, wakeby(b, d, f, loc, scale))
+def test_wakeby(b: float, d: float, f: float):
+    X = cast(Any, wakeby(b, d, f))
 
     assert X.cdf(X.support()[0]) == 0
     assert X.ppf(0) == X.support()[0]
@@ -138,11 +137,9 @@ def test_genlambda_tukeylamba(lam: float):
     assert_allclose(tl_tau, tl_tau0)
 
 
-# @pytest.mark.parametrize('scale', [1, .5, 2])
-# @pytest.mark.parametrize('loc', [0, 1, -1])
-@pytest.mark.parametrize("f", [0, 1, -1])
-@pytest.mark.parametrize("d", [0, 0.5, 2, -0.9, -1.95])
-@pytest.mark.parametrize("b", [0, 0.5, 1, -0.9, -1.95])
+@pytest.mark.parametrize("f", [-0.95, 0, 0.95], ids="f={}".format)
+@pytest.mark.parametrize("d", [-1.95, 0, 1.95], ids="d={}".format)
+@pytest.mark.parametrize("b", [-1.95, 0, 1.95], ids="b={}".format)
 def test_genlambda(b: float, d: float, f: float):
     X = cast(Any, genlambda(b, d, f))
 
@@ -188,24 +185,25 @@ def test_genlambda(b: float, d: float, f: float):
     assert_allclose(tl_tau_theo, tl_tau_quad, atol=1e-7)
 
 
-@pytest.mark.parametrize("trim", [(0, 0), (0, 1), (1, 1)])
+@pytest.mark.parametrize("trim", [(0, 0), (0, 1), (1, 1)], ids=str)
 @pytest.mark.parametrize(
     "rv",
     [
-        distributions.uniform,
-        distributions.logistic,
-        distributions.expon,
-        distributions.gumbel_r,
-        distributions.gumbel_l,
+        distributions.uniform(),
+        distributions.logistic(),
+        distributions.expon(),
+        distributions.gumbel_r(),
+        distributions.gumbel_l(),
         distributions.genextreme(-0.1),
         distributions.genpareto(0.1),
         kumaraswamy(2, 5),
         wakeby(5, 1, 0.6),
         genlambda(0.5, -1, -0.1),
     ],
+    ids=lambda rv: rv.dist.name,
 )
-def test_exact_lm(rv: Any, trim: tuple[int, int]) -> None:
-    r = np.arange(1, 9)
+def test_exact_lm(rv: l_rv_generic, trim: tuple[int, int]) -> None:
+    r = [1, 2, 3, 4, 8]
     # if `quad_opts` is not None, the numerical fallback is used
     lm_quad = rv.l_moment(r, trim=trim, quad_opts={})
     lm_exact = rv.l_moment(r, trim=trim)

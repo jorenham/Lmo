@@ -1,6 +1,3 @@
-# pyright: reportUnknownVariableType=false
-# pyright: reportMissingTypeStubs=false
-# pyright: reportUnknownArgumentType=false
 import numpy as np
 import pytest
 from numpy.polynomial.legendre import legval

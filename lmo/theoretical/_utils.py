@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import functools
 from math import exp, factorial, gamma, lgamma, log
-from typing import TYPE_CHECKING, Concatenate, Final, ParamSpec, Protocol, TypeVar
+from typing import TYPE_CHECKING, Concatenate, Final, ParamSpec
 
 import numpy as np
 import numpy.typing as npt
@@ -16,11 +16,6 @@ __all__ = ("ALPHA", "QUAD_LIMIT", "l_coef_factor", "l_const", "tighten_cdf_suppo
 
 
 _Tss = ParamSpec("_Tss")
-_T_x = TypeVar("_T_x", float, npt.NDArray[np.float64])
-
-
-class _Fn1(Protocol):
-    def __call__(self, x: _T_x, /) -> _T_x: ...
 
 
 ALPHA: Final = 0.1
@@ -82,7 +77,7 @@ def l_coef_factor(
 
 
 def tighten_cdf_support(
-    cdf: _Fn1 | Callable[[float], float],
+    cdf: Callable[[float], float],
     support: tuple[float, float] | None = None,
 ) -> tuple[float, float]:
     """Attempt to tighten the support by checking some common bounds."""

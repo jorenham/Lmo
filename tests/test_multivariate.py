@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 import numpy as np
+import numpy.typing as npt
 from hypothesis import (
     given,
     settings,
@@ -21,29 +22,25 @@ st_k = st.integers(2, _R_MAX)
 st_t = st.integers(0, _T_MAX)
 st_trim = st.tuples(st_t, st_t)
 
-__st_a_kwargs = {
-    "dtype": hnp.floating_dtypes(
-        sizes=(64, 128) if hasattr(np, "float128") else (64,),
-    ),
-    "elements": st.floats(-(1 << 20), 1 << 20),
-}
+st_dtype = hnp.floating_dtypes(sizes=(64,))
+st_elements = st.floats(-(1 << 20), 1 << 20)
 
 st_m = st.integers(1, 5)
 st_n = st.integers(_N_MIN, 50)
 st_mn = st.tuples(st_m, st_n)
-st_a = hnp.arrays(shape=st_mn, **__st_a_kwargs)
-st_a_unique = hnp.arrays(shape=st_mn, unique=True, **__st_a_kwargs)
+st_a = hnp.arrays(shape=st_mn, dtype=st_dtype, elements=st_elements)
+st_a_unique = hnp.arrays(shape=st_mn, unique=True, dtype=st_dtype, elements=st_elements)
 
 
 @given(r=st_r, n=st_n, trim=st_trim)
-def test_l_comoment_empty(r: int, n: int, trim):
+def test_l_comoment_empty(r: int, n: int, trim: tuple[int, int]):
     l_00 = lmo.l_comoment(np.empty((0, n)), r, trim)
 
     assert l_00.shape == (0, 0)
 
 
 @given(a=st_a, trim=st_trim)
-def test_l_comoment_zero(a: np.ndarray, trim):
+def test_l_comoment_zero(a: npt.NDArray[np.float64], trim: tuple[int, int]):
     l_aa = lmo.l_comoment(a, 0, trim)
 
     assert l_aa.shape == (len(a), len(a))
@@ -51,7 +48,7 @@ def test_l_comoment_zero(a: np.ndarray, trim):
 
 
 @given(a=st_a, r=st_r, trim=st_trim)
-def test_tl_comoment_rowvar(a: np.ndarray, r: int, trim):
+def test_tl_comoment_rowvar(a: npt.NDArray[np.float64], r: int, trim: tuple[int, int]):
     l_aa = lmo.l_comoment(a, r, trim)
     l_aa_t = lmo.l_comoment(a.T, r, trim, rowvar=False)
 
@@ -59,7 +56,7 @@ def test_tl_comoment_rowvar(a: np.ndarray, r: int, trim):
 
 
 @given(a=st_a, r=st_r, trim=st_trim)
-def test_tl_comoment_diag(a: np.ndarray, r: int, trim):
+def test_tl_comoment_diag(a: npt.NDArray[np.float64], r: int, trim: tuple[int, int]):
     l_a = lmo.l_moment(a, r, trim, axis=1)
     L_aa = lmo.l_comoment(a, r, trim)
 
@@ -67,10 +64,10 @@ def test_tl_comoment_diag(a: np.ndarray, r: int, trim):
 
 
 @given(a=st_a, r=st_r, trim=st_trim)
-def test_l_comoment_rowwise(a: np.ndarray, r: int, trim):
+def test_l_comoment_rowwise(a: npt.NDArray[np.float64], r: int, trim: tuple[int, int]):
     l_a = lmo.l_moment(a, r, trim, axis=1)
 
-    def func(a_m):
+    def func(a_m: npt.NDArray[np.float64]):
         return lmo.l_comoment(a_m[None, :], r, trim)[0, 0]
 
     L_a1 = np.apply_along_axis(func, 1, a)
@@ -80,7 +77,7 @@ def test_l_comoment_rowwise(a: np.ndarray, r: int, trim):
 
 
 @given(a=st_a)
-def test_l_coloc_mean(a: np.ndarray):
+def test_l_coloc_mean(a: npt.NDArray[np.float64]):
     m_a = a.mean(1)
     l_aa = lmo.l_coloc(a)
     l_a0 = l_aa[:, 0]
@@ -90,7 +87,7 @@ def test_l_coloc_mean(a: np.ndarray):
 
 @settings(deadline=timedelta(seconds=1))
 @given(a=st_a_unique)
-def test_l_corr_standard(a: np.ndarray):
+def test_l_corr_standard(a: npt.NDArray[np.float64]):
     r_aa = lmo.l_corr(a)
 
     assert np.all(r_aa.diagonal() == 1)

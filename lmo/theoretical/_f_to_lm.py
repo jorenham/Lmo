@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Final, Protocol, TypeAlias, TypeVar, Unpack, overload
+from typing import TYPE_CHECKING, Final, TypeAlias, TypeVar, Unpack, overload
 
 import numpy as np
 import numpy.typing as npt
@@ -29,11 +29,6 @@ __all__ = [
 
 
 _T = TypeVar("_T")
-_T_x = TypeVar("_T_x", float, npt.NDArray[np.float64])
-
-
-class _Fn1(Protocol):
-    def __call__(self, x: _T_x, /) -> _T_x: ...
 
 
 _Pair: TypeAlias = tuple[_T, _T]
@@ -67,7 +62,7 @@ def _df_quad3(
 
 @overload
 def l_moment_from_cdf(
-    cdf: _Fn1 | Callable[[float], float],
+    cdf: Callable[[float], float],
     r: lmt.ToOrderND,
     /,
     trim: lmt.ToTrim = ...,
@@ -75,11 +70,11 @@ def l_moment_from_cdf(
     support: _Pair[float] | None = ...,
     quad_opts: lmt.QuadOptions | None = ...,
     alpha: float = ...,
-    ppf: _Fn1 | None = ...,
+    ppf: Callable[[float], float] | None = ...,
 ) -> _ArrF8: ...
 @overload
 def l_moment_from_cdf(
-    cdf: _Fn1 | Callable[[float], float],
+    cdf: Callable[[float], float],
     r: lmt.ToOrder0D,
     /,
     trim: lmt.ToTrim = ...,
@@ -87,10 +82,10 @@ def l_moment_from_cdf(
     support: _Pair[float] | None = ...,
     quad_opts: lmt.QuadOptions | None = ...,
     alpha: float = ...,
-    ppf: _Fn1 | None = ...,
+    ppf: Callable[[float], float] | None = ...,
 ) -> np.float64: ...
 def l_moment_from_cdf(
-    cdf: _Fn1 | Callable[[float], float],
+    cdf: Callable[[float], float],
     r: lmt.ToOrder,
     /,
     trim: lmt.ToTrim = 0,
@@ -98,7 +93,7 @@ def l_moment_from_cdf(
     support: _Pair[float] | None = None,
     quad_opts: lmt.QuadOptions | None = None,
     alpha: float = ALPHA,
-    ppf: _Fn1 | None = None,
+    ppf: Callable[[float], float] | None = None,
 ) -> np.float64 | _ArrF8:
     r"""
     Evaluate the population L-moment of a continuous probability distribution,
@@ -266,7 +261,7 @@ def l_moment_from_cdf(
 
 @overload
 def l_moment_from_ppf(
-    ppf: _Fn1 | Callable[[float], float],
+    ppf: Callable[[float], float],
     r: lmt.ToOrderND,
     /,
     trim: lmt.ToTrim = ...,
@@ -277,7 +272,7 @@ def l_moment_from_ppf(
 ) -> _ArrF8: ...
 @overload
 def l_moment_from_ppf(
-    ppf: _Fn1 | Callable[[float], float],
+    ppf: Callable[[float], float],
     r: lmt.ToOrder0D,
     /,
     trim: lmt.ToTrim = ...,
@@ -287,7 +282,7 @@ def l_moment_from_ppf(
     alpha: float = ...,
 ) -> np.float64: ...
 def l_moment_from_ppf(
-    ppf: _Fn1 | Callable[[float], float],
+    ppf: Callable[[float], float],
     r: lmt.ToOrder,
     /,
     trim: lmt.ToTrim = 0,
@@ -418,7 +413,7 @@ def l_moment_from_ppf(
 
 @overload
 def l_moment_from_qdf(
-    qdf: _Fn1 | Callable[[float], float],
+    qdf: Callable[[float], float],
     r: lmt.ToOrderND,
     /,
     trim: lmt.ToTrim = ...,
@@ -429,7 +424,7 @@ def l_moment_from_qdf(
 ) -> _ArrF8: ...
 @overload
 def l_moment_from_qdf(
-    qdf: _Fn1 | Callable[[float], float],
+    qdf: Callable[[float], float],
     r: lmt.ToOrder0D,
     /,
     trim: lmt.ToTrim = ...,
@@ -439,7 +434,7 @@ def l_moment_from_qdf(
     alpha: float = ...,
 ) -> np.float64: ...
 def l_moment_from_qdf(
-    qdf: _Fn1 | Callable[[float], float],
+    qdf: Callable[[float], float],
     r: lmt.ToOrder,
     /,
     trim: lmt.ToTrim = 0,
@@ -477,7 +472,7 @@ def l_moment_from_qdf(
 
 @overload
 def l_ratio_from_cdf(
-    cdf: _Fn1,
+    cdf: Callable[[float], float],
     r: lmt.ToOrderND,
     s: lmt.ToOrder,
     /,
@@ -486,11 +481,11 @@ def l_ratio_from_cdf(
     support: _Pair[float] | None = ...,
     quad_opts: lmt.QuadOptions | None = ...,
     alpha: float = ...,
-    ppf: _Fn1 | None = ...,
+    ppf: Callable[[float], float] | None = ...,
 ) -> _ArrF8: ...
 @overload
 def l_ratio_from_cdf(
-    cdf: _Fn1,
+    cdf: Callable[[float], float],
     r: lmt.ToOrder,
     s: lmt.ToOrderND,
     /,
@@ -499,11 +494,11 @@ def l_ratio_from_cdf(
     support: _Pair[float] | None = ...,
     quad_opts: lmt.QuadOptions | None = ...,
     alpha: float = ...,
-    ppf: _Fn1 | None = ...,
+    ppf: Callable[[float], float] | None = ...,
 ) -> _ArrF8: ...
 @overload
 def l_ratio_from_cdf(
-    cdf: _Fn1,
+    cdf: Callable[[float], float],
     r: lmt.ToOrder0D,
     s: lmt.ToOrder0D,
     /,
@@ -512,9 +507,10 @@ def l_ratio_from_cdf(
     support: _Pair[float] | None = ...,
     quad_opts: lmt.QuadOptions | None = ...,
     alpha: float = ...,
+    ppf: Callable[[float], float] | None = None,
 ) -> np.float64: ...
 def l_ratio_from_cdf(
-    cdf: _Fn1,
+    cdf: Callable[[float], float],
     r: lmt.ToOrder,
     s: lmt.ToOrder,
     /,
@@ -523,7 +519,7 @@ def l_ratio_from_cdf(
     support: _Pair[float] | None = None,
     quad_opts: lmt.QuadOptions | None = None,
     alpha: float = ALPHA,
-    ppf: _Fn1 | None = None,
+    ppf: Callable[[float], float] | None = None,
 ) -> np.float64 | _ArrF8:
     """
     Population L-ratio's from a CDF.
@@ -547,7 +543,7 @@ def l_ratio_from_cdf(
 
 @overload
 def l_ratio_from_ppf(
-    ppf: _Fn1,
+    ppf: Callable[[float], float],
     r: lmt.ToOrderND,
     s: lmt.ToOrder,
     /,
@@ -559,7 +555,7 @@ def l_ratio_from_ppf(
 ) -> _ArrF8: ...
 @overload
 def l_ratio_from_ppf(
-    ppf: _Fn1,
+    ppf: Callable[[float], float],
     r: lmt.ToOrder,
     s: lmt.ToOrderND,
     /,
@@ -571,7 +567,7 @@ def l_ratio_from_ppf(
 ) -> _ArrF8: ...
 @overload
 def l_ratio_from_ppf(
-    ppf: _Fn1,
+    ppf: Callable[[float], float],
     r: lmt.ToOrder0D,
     s: lmt.ToOrder0D,
     /,
@@ -582,7 +578,7 @@ def l_ratio_from_ppf(
     alpha: float = ...,
 ) -> np.float64: ...
 def l_ratio_from_ppf(
-    ppf: _Fn1,
+    ppf: Callable[[float], float],
     r: lmt.ToOrder,
     s: lmt.ToOrder,
     /,
@@ -612,7 +608,7 @@ def l_ratio_from_ppf(
 
 
 def l_stats_from_cdf(
-    cdf: _Fn1,
+    cdf: Callable[[float], float],
     num: int = 4,
     /,
     trim: lmt.ToTrim = 0,
@@ -620,7 +616,7 @@ def l_stats_from_cdf(
     support: _Pair[float] | None = None,
     quad_opts: lmt.QuadOptions | None = None,
     alpha: float = ALPHA,
-    ppf: _Fn1 | None = None,
+    ppf: Callable[[float], float] | None = None,
 ) -> _ArrF8:
     r"""
     Calculates the theoretical- / population- L-moments (for $r \le 2$)
@@ -660,7 +656,7 @@ def l_stats_from_cdf(
 
 
 def l_stats_from_ppf(
-    ppf: _Fn1,
+    ppf: Callable[[float], float],
     num: int = 4,
     /,
     trim: lmt.ToTrim = 0,
