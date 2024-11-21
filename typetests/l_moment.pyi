@@ -44,9 +44,6 @@ assert_type(lmo.l_moment(X, 2, dtype=np.dtype(np.float16)), np.float16)
 assert_type(lmo.l_moment(X, [1, 2, 3, 4], dtype=np.float16), onp.Array1D[np.float16])
 
 # axis
-assert_type(lmo.l_moment(XX, 2, axis=0), np.float64 | _FloatND)
-assert_type(lmo.l_moment(XX_np, 2, axis=0), np.float64 | _FloatND)
-assert_type(
-    lmo.l_moment(XX, 2, axis=0, dtype=np.float16),
-    np.float16 | onp.ArrayND[np.float16],
-)
+assert_type(lmo.l_moment(XX, 2, axis=0), _FloatND)
+assert_type(lmo.l_moment(XX_np, 2, axis=0), _FloatND)
+assert_type(lmo.l_moment(XX, 2, axis=0, dtype=np.float16), onp.ArrayND[np.float16])

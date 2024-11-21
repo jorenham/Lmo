@@ -1,4 +1,5 @@
 import numpy as np
+import numpy.typing as npt
 from hypothesis import (
     given,
     strategies as st,
@@ -12,7 +13,7 @@ st_x1 = hnp.arrays(shape=st_n, dtype=np.float64, elements=st.floats(-10, 10))
 
 
 @given(x=st_x1)
-def test_order_stats_sorted(x):
+def test_order_stats_sorted(x: npt.NDArray[np.float64]):
     x_k = ordered(x)
 
     assert x_k.shape == x.shape
@@ -20,7 +21,7 @@ def test_order_stats_sorted(x):
 
 
 @given(x=st_x1)
-def test_order_stats_sorted_xx(x):
+def test_order_stats_sorted_xx(x: npt.NDArray[np.float64]):
     x_k = ordered(x, x)
 
     assert x_k.shape == x.shape
@@ -28,7 +29,7 @@ def test_order_stats_sorted_xx(x):
 
 
 @given(x=st_x1)
-def test_order_stats_sorted_concomitant(x):
+def test_order_stats_sorted_concomitant(x: npt.NDArray[np.float64]):
     x_k = ordered(x, -x)
 
     assert x_k.shape == x.shape
@@ -36,7 +37,7 @@ def test_order_stats_sorted_concomitant(x):
 
 
 @given(x=st_x1)
-def test_order_stats_sorted_concomitant_2d(x):
+def test_order_stats_sorted_concomitant_2d(x: npt.NDArray[np.float64]):
     x_mn = np.stack((x, x + 1))
     x_mk = ordered(x_mn, -x, axis=-1)
 
@@ -52,7 +53,7 @@ def test_order_stats_sorted_concomitant_2d(x):
 
 
 @given(x=st_x1, f=st.integers(1, 100))
-def test_order_stats_fweights_const(x, f):
+def test_order_stats_fweights_const(x: npt.NDArray[np.float64], f: int):
     fweights = np.full(x.shape, f, dtype=np.int_)
 
     x_k = ordered(x)
@@ -63,7 +64,7 @@ def test_order_stats_fweights_const(x, f):
 
 
 @given(x=st_x1, a=st.floats(0.01, 100))
-def test_order_stats_aweights_const(x, a):
+def test_order_stats_aweights_const(x: npt.NDArray[np.float64], a: float):
     aweights = np.full(x.shape, a)
 
     x_k = ordered(x)
@@ -74,7 +75,7 @@ def test_order_stats_aweights_const(x, a):
 
 
 @given(x=st_x1)
-def test_order_stats_fweights_remove(x):
+def test_order_stats_fweights_remove(x: npt.NDArray[np.float64]):
     fweights = np.ones(x.shape, dtype=np.int_)
     fweights[0] = 0
 
@@ -86,7 +87,7 @@ def test_order_stats_fweights_remove(x):
 
 
 @given(x=st_x1)
-def test_order_stats_fweights_double(x):
+def test_order_stats_fweights_double(x: npt.NDArray[np.float64]):
     fweights = np.ones(x.shape, dtype=np.int_)
     fweights[0] = 2
 

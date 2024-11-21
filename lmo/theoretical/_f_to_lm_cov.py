@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import functools
-from typing import TYPE_CHECKING, Protocol, TypeAlias, TypeVar, cast
+from typing import TYPE_CHECKING, TypeAlias, TypeVar
 
 import numpy as np
 import numpy.typing as npt
@@ -12,6 +12,8 @@ from ._f_to_lm import l_moment_from_cdf
 from ._utils import ALPHA, l_const, nquad, tighten_cdf_support
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     import lmo.typing as lmt
 
 
@@ -19,11 +21,6 @@ __all__ = ["l_moment_cov_from_cdf", "l_stats_cov_from_cdf"]
 
 
 _T = TypeVar("_T")
-_T_x = TypeVar("_T_x", float, npt.NDArray[np.float64])
-
-
-class _Fn1(Protocol):
-    def __call__(self, x: _T_x, /) -> _T_x: ...
 
 
 _Pair: TypeAlias = tuple[_T, _T]
@@ -31,7 +28,7 @@ _ArrF8: TypeAlias = npt.NDArray[np.float64]
 
 
 def l_moment_cov_from_cdf(
-    cdf: _Fn1,
+    cdf: Callable[[float], float],
     r_max: lmt.ToOrder0D,
     /,
     trim: lmt.ToTrim = 0,
@@ -155,7 +152,7 @@ def l_moment_cov_from_cdf(
 
     s, t = clean_trim(trim)
 
-    _cdf = cast(_Fn1, functools.cache(cdf))
+    _cdf = functools.cache(cdf)
 
     if support is None:
         a, b = tighten_cdf_support(_cdf, (-np.inf, np.inf))
@@ -214,7 +211,7 @@ def l_moment_cov_from_cdf(
 
 
 def l_stats_cov_from_cdf(
-    cdf: _Fn1,
+    cdf: Callable[[float], float],
     /,
     num: lmt.ToOrder0D = 4,
     trim: lmt.ToTrim = 0,
@@ -222,7 +219,7 @@ def l_stats_cov_from_cdf(
     support: _Pair[float] | None = None,
     quad_opts: lmt.QuadOptions | None = None,
     alpha: float = ALPHA,
-    ppf: _Fn1 | None = None,
+    ppf: Callable[[float], float] | None = None,
 ) -> _ArrF8:
     r"""
     Similar to [`l_moment_from_cdf`][lmo.theoretical.l_moment_from_cdf], but

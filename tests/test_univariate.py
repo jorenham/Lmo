@@ -1,7 +1,6 @@
-# pyright: reportUnknownMemberType=false, reportUnknownVariableType=false
+# pyright: reportUnknownMemberType=false
 
 import functools
-from typing import Any
 
 import numpy as np
 import numpy.typing as npt
@@ -31,19 +30,16 @@ st_t = st.integers(0, _T_MAX)
 st_n = st.integers(_N_MIN, 50)
 st_n2 = st.tuples(st_n, st.integers(1, 10))
 st_trim = st.tuples(st_t, st_t)
-st_dtype: SearchStrategy[np.dtype[Any]] = hnp.floating_dtypes(sizes=(64,))
+st_dtype: SearchStrategy[np.dtype[np.float64]] = hnp.floating_dtypes(sizes=(64,))
+st_elements = st.floats(-1e4, -1e-2) | st.floats(1e-2, 1e4)
 
-__st_a_kwargs: dict[str, SearchStrategy[Any]] = {
-    "dtype": st_dtype,
-    "elements": st.floats(-1e4, -1e-2) | st.floats(1e-2, 1e4),
-}
-st_a1 = hnp.arrays(shape=st_n, unique=False, **__st_a_kwargs)
-st_a1_unique = hnp.arrays(shape=st_n, unique=True, **__st_a_kwargs)
-st_a2 = hnp.arrays(shape=st_n2, unique=False, **__st_a_kwargs)
+st_a1 = hnp.arrays(shape=st_n, unique=False, dtype=st_dtype, elements=st_elements)
+st_a1_unique = hnp.arrays(shape=st_n, unique=True, dtype=st_dtype, elements=st_elements)
+st_a2 = hnp.arrays(shape=st_n2, unique=False, dtype=st_dtype, elements=st_elements)
 
 
 @given(a=st_a1, trim=st_trim)
-def test_l_moment_zero(a: npt.NDArray[Any], trim: tuple[int, int]):
+def test_l_moment_zero(a: npt.NDArray[np.float64], trim: tuple[int, int]):
     l0 = lmo.l_moment(a, 0, trim)
 
     assert np.isscalar(l0)
@@ -52,7 +48,7 @@ def test_l_moment_zero(a: npt.NDArray[Any], trim: tuple[int, int]):
 
 @given(a=st_a1, r=st_r, trim=st_trim, w_const=st.floats(0.1, 10))
 def test_l_moment_aweights_const(
-    a: npt.NDArray[Any],
+    a: npt.NDArray[np.float64],
     r: int,
     trim: tuple[int, int],
     w_const: float,
@@ -66,18 +62,14 @@ def test_l_moment_aweights_const(
 
 
 @given(a=st_a1, r=st_r, trim=st_trim)
-def test_l_ratio_unit(
-    a: npt.NDArray[Any],
-    r: int,
-    trim: tuple[int, int],
-):
+def test_l_ratio_unit(a: npt.NDArray[np.float64], r: int, trim: tuple[int, int]):
     tau = lmo.l_ratio(a, r, r, trim)
 
     assert tau == pytest.approx(1)
 
 
 @given(a=st_a1 | st_a2)
-def test_l_loc_mean(a: npt.NDArray[Any]):
+def test_l_loc_mean(a: npt.NDArray[np.float64]):
     loc = a.mean(dtype=np.float64)
     l_loc = lmo.l_loc(a)
 
@@ -86,7 +78,7 @@ def test_l_loc_mean(a: npt.NDArray[Any]):
 
 
 @given(a=st_a2)
-def test_l_loc_mean_2d(a: npt.NDArray[Any]):
+def test_l_loc_mean_2d(a: npt.NDArray[np.float64]):
     locs = a.mean(axis=0, dtype=np.float64)
     l_locs = lmo.l_loc(a, axis=0)
 
@@ -104,7 +96,7 @@ def test_l_loc_mean_2d(a: npt.NDArray[Any]):
 def test_l_loc_const(
     x0: float,
     n: int,
-    dtype: np.dtype[Any],
+    dtype: np.dtype[np.float64],
     trim: tuple[int, int],
 ):
     x = np.full(n, x0, dtype=dtype)
@@ -120,14 +112,15 @@ def test_l_loc_const(
     dscale=st.floats(1e-3, 1e3),
 )
 def test_l_loc_linearity(
-    x: npt.NDArray[Any],
+    x: npt.NDArray[np.float64],
     trim: tuple[int, int],
     dloc: float,
     dscale: float,
 ):
-    l1 = lmo.l_loc(x, trim)
-    assert np.isfinite(l1)
-    assert np.isscalar(l1)
+    l1: np.float64 = lmo.l_loc(x, trim)
+    _l1 = l1  # weird pyright bug workaround
+    assert np.isfinite(_l1)
+    assert np.isscalar(_l1)
 
     l1_add = lmo.l_loc(x + dloc, trim)
     assert l1_add == pytest.approx(l1 + dloc, rel=1e-5, abs=1e-8)
@@ -137,7 +130,7 @@ def test_l_loc_linearity(
 
 
 @given(a=st_a1)
-def test_l_scale_equiv_md(a: npt.NDArray[Any]):
+def test_l_scale_equiv_md(a: npt.NDArray[np.float64]):
     # half gini/abs mean difference (MD)
     n = len(a)
     scale = abs(a - a[:, None]).mean() / (2 - 2 / n)
@@ -152,7 +145,7 @@ def test_l_scale_equiv_md(a: npt.NDArray[Any]):
 def test_l_scale_const(
     x0: float,
     n: int,
-    dtype: np.dtype[Any],
+    dtype: np.dtype[np.float64],
     trim: tuple[int, int],
 ):
     x = np.full(n, x0, dtype=dtype)
@@ -162,13 +155,14 @@ def test_l_scale_const(
 
 @given(x=st_a1 | st_a2, trim=st_trim, dloc=st.floats(-1e3, 1e3))
 def test_l_scale_invariant_loc(
-    x: npt.NDArray[Any],
-    trim: tuple[float, float],
+    x: npt.NDArray[np.float64],
+    trim: tuple[int, int],
     dloc: float,
 ):
     l2 = lmo.l_scale(x, trim)
+    _l2 = l2  # weird pyright bug workaround
     assert np.isfinite(l2)
-    assert np.isscalar(l2)
+    assert np.isscalar(_l2)
     assert round(l2, 8) >= 0
 
     l2_add = lmo.l_scale(x + dloc, trim)
@@ -181,17 +175,18 @@ def test_l_scale_invariant_loc(
     dscale=st.floats(-1e2, -1e-2) | st.floats(1e-2, 1e2),
 )
 def test_l_scale_linear_scale(
-    x: npt.NDArray[Any],
+    x: npt.NDArray[np.float64],
     trim: tuple[int, int],
     dscale: float,
 ):
     l2 = lmo.l_scale(x, trim)
+    _l2 = l2
     assert np.isfinite(l2)
-    assert np.isscalar(l2)
+    assert np.isscalar(_l2)
     assert round(l2, 8) >= 0
 
     # asymmetric trimming flips under sign change
-    itrim = trim[::-1] if dscale < 0 else trim
+    itrim = (trim[1], trim[0]) if dscale < 0 else trim
 
     l2_mul = lmo.l_scale(x * dscale, itrim)
     assert l2_mul == pytest.approx(abs(l2 * dscale), abs=1e-8)

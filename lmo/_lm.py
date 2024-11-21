@@ -328,7 +328,7 @@ def l_moment(
     axis: int,
     dtype: _DType[np.float64] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
-) -> _ArrayOrScalar[np.float64]: ...
+) -> onp.ArrayND[np.float64]: ...
 @overload
 def l_moment(
     a: onp.ToFloatND,
@@ -339,7 +339,7 @@ def l_moment(
     axis: int,
     dtype: _DType[_SCT_f],
     **kwds: Unpack[lmt.LMomentOptions],
-) -> _ArrayOrScalar[_SCT_f]: ...
+) -> onp.ArrayND[_SCT_f]: ...
 def l_moment(
     a: onp.ToFloatND,
     r: lmt.ToOrder,
@@ -590,10 +590,10 @@ def l_ratio(
     /,
     trim: lmt.ToTrim = 0,
     *,
-    axis: int | None = None,
+    axis: int,
     dtype: _DType[np.float64] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
-) -> _ArrayOrScalar[np.float64]: ...
+) -> onp.ArrayND[np.float64]: ...
 @overload
 def l_ratio(
     a: onp.ToFloatND,
@@ -602,10 +602,10 @@ def l_ratio(
     /,
     trim: lmt.ToTrim = 0,
     *,
-    axis: int | None = None,
+    axis: int,
     dtype: _DType[_SCT_f],
     **kwds: Unpack[lmt.LMomentOptions],
-) -> _ArrayOrScalar[_SCT_f]: ...
+) -> onp.ArrayND[_SCT_f]: ...
 def l_ratio(
     a: onp.ToFloatND,
     r: lmt.ToOrder,
@@ -768,20 +768,20 @@ def l_loc(
     /,
     trim: lmt.ToTrim = 0,
     *,
-    axis: int | None = None,
+    axis: int,
     dtype: _DType[np.float64] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
-) -> _ArrayOrScalar[np.float64]: ...
+) -> onp.ArrayND[np.float64]: ...
 @overload
 def l_loc(
     a: onp.ToFloatND,
     /,
     trim: lmt.ToTrim = 0,
     *,
-    axis: int | None = None,
+    axis: int,
     dtype: _DType[_SCT_f],
     **kwds: Unpack[lmt.LMomentOptions],
-) -> _ArrayOrScalar[_SCT_f]: ...
+) -> onp.ArrayND[_SCT_f]: ...
 def l_loc(
     a: onp.ToFloatND,
     /,
@@ -892,20 +892,20 @@ def l_scale(
     /,
     trim: lmt.ToTrim = 0,
     *,
-    axis: int | None = None,
+    axis: int,
     dtype: _DType[np.float64] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
-) -> _ArrayOrScalar[np.float64]: ...
+) -> onp.ArrayND[np.float64]: ...
 @overload
 def l_scale(
     a: onp.ToFloatND,
     /,
     trim: lmt.ToTrim = 0,
     *,
-    axis: int | None = None,
+    axis: int,
     dtype: _DType[_SCT_f],
     **kwds: Unpack[lmt.LMomentOptions],
-) -> _ArrayOrScalar[_SCT_f]: ...
+) -> onp.ArrayND[_SCT_f]: ...
 def l_scale(
     a: onp.ToFloatND,
     /,
@@ -969,20 +969,20 @@ def l_variation(
     /,
     trim: lmt.ToTrim = 0,
     *,
-    axis: int | None = None,
+    axis: int,
     dtype: _DType[np.float64] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
-) -> _ArrayOrScalar[np.float64]: ...
+) -> onp.ArrayND[np.float64]: ...
 @overload
 def l_variation(
     a: onp.ToFloatND,
     /,
     trim: lmt.ToTrim = 0,
     *,
-    axis: int | None = None,
+    axis: int,
     dtype: _DType[_SCT_f],
     **kwds: Unpack[lmt.LMomentOptions],
-) -> _ArrayOrScalar[_SCT_f]: ...
+) -> onp.ArrayND[_SCT_f]: ...
 def l_variation(
     a: onp.ToFloatND,
     /,
@@ -1053,20 +1053,20 @@ def l_skew(
     /,
     trim: lmt.ToTrim = 0,
     *,
-    axis: int | None = None,
+    axis: int,
     dtype: _DType[np.float64] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
-) -> _ArrayOrScalar[np.float64]: ...
+) -> onp.ArrayND[np.float64]: ...
 @overload
 def l_skew(
     a: onp.ToFloatND,
     /,
     trim: lmt.ToTrim = 0,
     *,
-    axis: int | None = None,
+    axis: int,
     dtype: _DType[_SCT_f],
     **kwds: Unpack[lmt.LMomentOptions],
-) -> _ArrayOrScalar[_SCT_f]: ...
+) -> onp.ArrayND[_SCT_f]: ...
 def l_skew(
     a: onp.ToFloatND,
     /,
@@ -1128,20 +1128,20 @@ def l_kurtosis(
     /,
     trim: lmt.ToTrim = 0,
     *,
-    axis: int | None = None,
+    axis: int,
     dtype: _DType[np.float64] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
-) -> _ArrayOrScalar[np.float64]: ...
+) -> onp.ArrayND[np.float64]: ...
 @overload
 def l_kurtosis(
     a: onp.ToFloatND,
     /,
     trim: lmt.ToTrim = 0,
     *,
-    axis: int | None = None,
+    axis: int,
     dtype: _DType[_SCT_f],
     **kwds: Unpack[lmt.LMomentOptions],
-) -> _ArrayOrScalar[_SCT_f]: ...
+) -> onp.ArrayND[_SCT_f]: ...
 def l_kurtosis(
     a: onp.ToFloatND,
     /,

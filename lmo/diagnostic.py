@@ -657,7 +657,6 @@ def l_ratio_bounds(
     return t_min.round(12)[()], t_max.round(12)[()]
 
 
-# TODO: faster doctest
 def rejection_point(
     influence_fn: Callable[[float], float],
     /,
