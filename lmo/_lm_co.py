@@ -1,19 +1,13 @@
 from __future__ import annotations
 
-import sys
-from typing import Any, TypeAlias, Unpack, cast
+from typing import Any, TypeAlias, TypeVar, Unpack, overload
 
 import numpy as np
 import optype.numpy as onp
 
 import lmo.typing as lmt
 from ._lm import l_weights
-from ._utils import clean_order, clean_orders, ordered
-
-if sys.version_info >= (3, 13):
-    from typing import TypeVar
-else:
-    from typing_extensions import TypeVar
+from ._utils import clean_order, ordered
 
 __all__ = (
     "l_cokurt",
@@ -29,15 +23,87 @@ __all__ = (
 
 
 _SCT = TypeVar("_SCT", bound=np.generic)
-_SCT_f = TypeVar("_SCT_f", bound=np.floating[Any], default=np.float64)
+_SCT_f = TypeVar("_SCT_f", bound=np.floating[Any])
 
 _DType: TypeAlias = np.dtype[_SCT] | type[_SCT]
 _Array3D: TypeAlias = onp.Array[tuple[int, int, int], _SCT]
 
 
+@overload
 def l_comoment(
     a: onp.ToFloat1D | onp.ToFloat2D,
-    r: lmt.ToOrder0D | lmt.ToOrderND,
+    r: lmt.ToOrder0D,
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    dtype: _DType[np.float64] = np.float64,
+    rowvar: bool | None = None,
+    sort: lmt.SortKind | None = None,
+    cache: bool | None = None,
+) -> onp.Array2D[np.float64]: ...
+@overload
+def l_comoment(
+    a: onp.ToFloat1D | onp.ToFloat2D,
+    r: lmt.ToOrder0D,
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    dtype: _DType[_SCT_f],
+    rowvar: bool | None = None,
+    sort: lmt.SortKind | None = None,
+    cache: bool | None = None,
+) -> onp.Array2D[_SCT_f]: ...
+@overload
+def l_comoment(
+    a: onp.ToFloat1D | onp.ToFloat2D,
+    r: lmt.ToOrder1D,
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    dtype: _DType[np.float64] = np.float64,
+    rowvar: bool | None = None,
+    sort: lmt.SortKind | None = None,
+    cache: bool | None = None,
+) -> _Array3D[np.float64]: ...
+@overload
+def l_comoment(
+    a: onp.ToFloat1D | onp.ToFloat2D,
+    r: lmt.ToOrder1D,
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    dtype: _DType[_SCT_f],
+    rowvar: bool | None = None,
+    sort: lmt.SortKind | None = None,
+    cache: bool | None = None,
+) -> _Array3D[_SCT_f]: ...
+@overload
+def l_comoment(
+    a: onp.ToFloat1D | onp.ToFloat2D,
+    r: lmt.ToOrder,
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    dtype: _DType[np.float64] = np.float64,
+    rowvar: bool | None = None,
+    sort: lmt.SortKind | None = None,
+    cache: bool | None = None,
+) -> onp.Array[onp.AtLeast2D, np.float64]: ...
+@overload
+def l_comoment(
+    a: onp.ToFloat1D | onp.ToFloat2D,
+    r: lmt.ToOrder,
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    dtype: _DType[_SCT_f],
+    rowvar: bool | None = None,
+    sort: lmt.SortKind | None = None,
+    cache: bool | None = None,
+) -> onp.Array[onp.AtLeast2D, _SCT_f]: ...
+def l_comoment(
+    a: onp.ToFloat1D | onp.ToFloat2D,
+    r: lmt.ToOrder,
     /,
     trim: lmt.ToTrim = 0,
     *,
@@ -45,7 +111,7 @@ def l_comoment(
     rowvar: bool | None = None,
     sort: lmt.SortKind | None = None,
     cache: bool | None = None,
-) -> onp.ArrayND[_SCT_f]:
+) -> onp.Array[onp.AtLeast2D, _SCT_f | np.float64]:
     r"""
     Multivariate extension of [`lmo.l_moment`][lmo.l_moment].
 
@@ -148,16 +214,13 @@ def l_comoment(
         x = x.T
     m, n = x.shape
 
-    if np.isscalar(r):
-        _r = np.array(clean_order(cast(lmt.ToOrder0D, r)))
-    else:
-        _r = clean_orders(cast(lmt.ToOrderND, r))
+    _r = np.asarray(clean_order(r), np.intp)
 
     if not m:
         return np.empty((*np.shape(_r), 0, 0), dtype=dtype)
 
-    r_min = int(np.min(_r))
-    r_max = int(np.max(_r))
+    r_min = np.min(_r)
+    r_max = np.max(_r)
 
     if r_min == r_max == 0 and _r.ndim == 0:
         return np.identity(m, dtype=dtype)
@@ -184,16 +247,82 @@ def l_comoment(
     return l_kij.take(_r - r_min, 0)
 
 
+@overload
 def l_coratio(
     a: onp.ToFloat1D | onp.ToFloat2D,
-    r: lmt.ToOrder0D | lmt.ToOrderND,
-    s: lmt.ToOrder0D | lmt.ToOrderND,
+    r: lmt.ToOrder0D,
+    s: lmt.ToOrder0D,
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    dtype: _DType[np.float64] = np.float64,
+    **kwds: Unpack[lmt.LComomentOptions],
+) -> onp.Array2D[np.float64]: ...
+@overload
+def l_coratio(
+    a: onp.ToFloat1D | onp.ToFloat2D,
+    r: lmt.ToOrder0D,
+    s: lmt.ToOrder0D,
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    dtype: _DType[_SCT_f],
+    **kwds: Unpack[lmt.LComomentOptions],
+) -> onp.Array2D[_SCT_f]: ...
+@overload
+def l_coratio(
+    a: onp.ToFloat1D | onp.ToFloat2D,
+    r: lmt.ToOrder1D,
+    s: lmt.ToOrder0D | lmt.ToOrder1D,
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    dtype: _DType[np.float64] = np.float64,
+    **kwds: Unpack[lmt.LComomentOptions],
+) -> _Array3D[np.float64]: ...
+@overload
+def l_coratio(
+    a: onp.ToFloat1D | onp.ToFloat2D,
+    r: lmt.ToOrder1D,
+    s: lmt.ToOrder0D | lmt.ToOrder1D,
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    dtype: _DType[_SCT_f],
+    **kwds: Unpack[lmt.LComomentOptions],
+) -> _Array3D[_SCT_f]: ...
+@overload
+def l_coratio(
+    a: onp.ToFloat1D | onp.ToFloat2D,
+    r: lmt.ToOrder,
+    s: lmt.ToOrder,
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    dtype: _DType[np.float64] = np.float64,
+    **kwds: Unpack[lmt.LComomentOptions],
+) -> onp.Array[onp.AtLeast2D, np.float64]: ...
+@overload
+def l_coratio(
+    a: onp.ToFloat1D | onp.ToFloat2D,
+    r: lmt.ToOrder,
+    s: lmt.ToOrder,
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    dtype: _DType[_SCT_f],
+    **kwds: Unpack[lmt.LComomentOptions],
+) -> onp.Array[onp.AtLeast2D, _SCT_f]: ...
+def l_coratio(
+    a: onp.ToFloat1D | onp.ToFloat2D,
+    r: lmt.ToOrder,
+    s: lmt.ToOrder,
     /,
     trim: lmt.ToTrim = 0,
     *,
     dtype: _DType[_SCT_f] = np.float64,
     **kwds: Unpack[lmt.LComomentOptions],
-) -> onp.ArrayND[_SCT_f]:
+) -> onp.Array[onp.AtLeast2D, _SCT_f | np.float64]:
     r"""
     Estimate the generalized matrix of L-comoment ratio's.
 
@@ -214,6 +343,24 @@ def l_coratio(
     return l_r / np.expand_dims(np.diagonal(l_s, axis1=-2, axis2=-1), -1)
 
 
+@overload
+def l_costats(
+    a: onp.ToFloat1D | onp.ToFloat2D,
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    dtype: _DType[np.float64] = np.float64,
+    **kwds: Unpack[lmt.LComomentOptions],
+) -> _Array3D[np.float64]: ...
+@overload
+def l_costats(
+    a: onp.ToFloat1D | onp.ToFloat2D,
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    dtype: _DType[_SCT_f],
+    **kwds: Unpack[lmt.LComomentOptions],
+) -> _Array3D[_SCT_f]: ...
 def l_costats(
     a: onp.ToFloat1D | onp.ToFloat2D,
     /,
@@ -221,7 +368,7 @@ def l_costats(
     *,
     dtype: _DType[_SCT_f] = np.float64,
     **kwds: Unpack[lmt.LComomentOptions],
-) -> _Array3D[_SCT_f]:
+) -> _Array3D[_SCT_f | np.float64]:
     """
     Calculates the L-*co*scale, L-corr(elation), L-*co*skew(ness) and
     L-*co*kurt(osis).
@@ -232,12 +379,27 @@ def l_costats(
         - [`lmo.l_stats`][lmo.l_stats]
         - [`lmo.l_coratio`][lmo.l_coratio]
     """
-    r, s = [2, 2, 3, 4], [0, 2, 2, 2]
-    out = l_coratio(a, r, s, trim=trim, dtype=dtype, **kwds)
-    assert out.ndim == 3
-    return cast(_Array3D[_SCT_f], out)
+    return l_coratio(a, [2, 2, 3, 4], [0, 2, 2, 2], trim=trim, dtype=dtype, **kwds)
 
 
+@overload
+def l_coloc(
+    a: onp.ToFloat1D | onp.ToFloat2D,
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    dtype: _DType[np.float64] = np.float64,
+    **kwds: Unpack[lmt.LComomentOptions],
+) -> onp.Array2D[np.float64]: ...
+@overload
+def l_coloc(
+    a: onp.ToFloat1D | onp.ToFloat2D,
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    dtype: _DType[_SCT_f],
+    **kwds: Unpack[lmt.LComomentOptions],
+) -> onp.Array2D[_SCT_f]: ...
 def l_coloc(
     a: onp.ToFloat1D | onp.ToFloat2D,
     /,
@@ -245,7 +407,7 @@ def l_coloc(
     *,
     dtype: _DType[_SCT_f] = np.float64,
     **kwds: Unpack[lmt.LComomentOptions],
-) -> onp.Array2D[_SCT_f]:
+) -> onp.Array2D[_SCT_f | np.float64]:
     r"""
     L-colocation matrix of 1st L-comoment estimates, $\Lambda^{(s, t)}_1$.
 
@@ -284,11 +446,27 @@ def l_coloc(
         - [`lmo.l_loc`][lmo.l_loc]
         - [`numpy.mean`][numpy.mean]
     """
-    out = l_comoment(a, 1, trim=trim, dtype=dtype, **kwds)
-    assert out.ndim == 2
-    return cast(onp.Array2D[_SCT_f], out)
+    return l_comoment(a, 1, trim=trim, dtype=dtype, **kwds)
 
 
+@overload
+def l_coscale(
+    a: onp.ToFloat1D | onp.ToFloat2D,
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    dtype: _DType[np.float64] = np.float64,
+    **kwds: Unpack[lmt.LComomentOptions],
+) -> onp.Array2D[np.float64]: ...
+@overload
+def l_coscale(
+    a: onp.ToFloat1D | onp.ToFloat2D,
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    dtype: _DType[_SCT_f],
+    **kwds: Unpack[lmt.LComomentOptions],
+) -> onp.Array2D[_SCT_f]: ...
 def l_coscale(
     a: onp.ToFloat1D | onp.ToFloat2D,
     /,
@@ -296,7 +474,7 @@ def l_coscale(
     *,
     dtype: _DType[_SCT_f] = np.float64,
     **kwds: Unpack[lmt.LComomentOptions],
-) -> onp.Array2D[_SCT_f]:
+) -> onp.Array2D[_SCT_f | np.float64]:
     r"""
     L-coscale matrix of 2nd L-comoment estimates, $\Lambda^{(s, t)}_2$.
 
@@ -322,11 +500,27 @@ def l_coscale(
         - [`lmo.l_scale`][lmo.l_scale]
         - [`numpy.cov`][numpy.cov]
     """
-    out = l_comoment(a, 2, trim=trim, dtype=dtype, **kwds)
-    assert out.ndim == 2
-    return cast(onp.Array2D[_SCT_f], out)
+    return l_comoment(a, 2, trim=trim, dtype=dtype, **kwds)
 
 
+@overload
+def l_corr(
+    a: onp.ToFloat1D | onp.ToFloat2D,
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    dtype: _DType[np.float64] = np.float64,
+    **kwds: Unpack[lmt.LComomentOptions],
+) -> onp.Array2D[np.float64]: ...
+@overload
+def l_corr(
+    a: onp.ToFloat1D | onp.ToFloat2D,
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    dtype: _DType[_SCT_f],
+    **kwds: Unpack[lmt.LComomentOptions],
+) -> onp.Array2D[_SCT_f]: ...
 def l_corr(
     a: onp.ToFloat1D | onp.ToFloat2D,
     /,
@@ -334,7 +528,7 @@ def l_corr(
     *,
     dtype: _DType[_SCT_f] = np.float64,
     **kwds: Unpack[lmt.LComomentOptions],
-) -> onp.Array2D[_SCT_f]:
+) -> onp.Array2D[_SCT_f | np.float64]:
     r"""
     Sample L-correlation coefficient matrix $\tilde\Lambda^{(s, t)}_2$;
     the ratio of the L-coscale matrix over the L-scale **column**-vectors.
@@ -370,11 +564,27 @@ def l_corr(
         - [`lmo.l_coratio`][lmo.l_coratio]
         - [`numpy.corrcoef`][numpy.corrcoef]
     """
-    out = l_coratio(a, 2, 2, trim=trim, dtype=dtype, **kwds)
-    assert out.ndim == 2
-    return cast(onp.Array2D[_SCT_f], out)
+    return l_coratio(a, 2, 2, trim=trim, dtype=dtype, **kwds)
 
 
+@overload
+def l_coskew(
+    a: onp.ToFloat1D | onp.ToFloat2D,
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    dtype: _DType[np.float64] = np.float64,
+    **kwds: Unpack[lmt.LComomentOptions],
+) -> onp.Array2D[np.float64]: ...
+@overload
+def l_coskew(
+    a: onp.ToFloat1D | onp.ToFloat2D,
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    dtype: _DType[_SCT_f],
+    **kwds: Unpack[lmt.LComomentOptions],
+) -> onp.Array2D[_SCT_f]: ...
 def l_coskew(
     a: onp.ToFloat1D | onp.ToFloat2D,
     /,
@@ -382,7 +592,7 @@ def l_coskew(
     *,
     dtype: _DType[_SCT_f] = np.float64,
     **kwds: Unpack[lmt.LComomentOptions],
-) -> onp.Array2D[_SCT_f]:
+) -> onp.Array2D[_SCT_f | np.float64]:
     r"""
     Sample L-coskewness coefficient matrix $\tilde\Lambda^{(s, t)}_3$.
 
@@ -392,11 +602,27 @@ def l_coskew(
         - [`lmo.l_coratio`][lmo.l_coratio]
         - [`lmo.l_skew`][lmo.l_skew]
     """
-    out = l_coratio(a, 3, 2, trim=trim, dtype=dtype, **kwds)
-    assert out.ndim == 2
-    return cast(onp.Array2D[_SCT_f], out)
+    return l_coratio(a, 3, 2, trim=trim, dtype=dtype, **kwds)
 
 
+@overload
+def l_cokurtosis(
+    a: onp.ToFloat1D | onp.ToFloat2D,
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    dtype: _DType[np.float64] = np.float64,
+    **kwds: Unpack[lmt.LComomentOptions],
+) -> onp.Array2D[np.float64]: ...
+@overload
+def l_cokurtosis(
+    a: onp.ToFloat1D | onp.ToFloat2D,
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    dtype: _DType[_SCT_f],
+    **kwds: Unpack[lmt.LComomentOptions],
+) -> onp.Array2D[_SCT_f]: ...
 def l_cokurtosis(
     a: onp.ToFloat1D | onp.ToFloat2D,
     /,
@@ -404,7 +630,7 @@ def l_cokurtosis(
     *,
     dtype: _DType[_SCT_f] = np.float64,
     **kwds: Unpack[lmt.LComomentOptions],
-) -> onp.Array2D[_SCT_f]:
+) -> onp.Array2D[_SCT_f | np.float64]:
     r"""
     Sample L-cokurtosis coefficient matrix $\tilde\Lambda^{(s, t)}_4$.
 
@@ -414,9 +640,7 @@ def l_cokurtosis(
         - [`lmo.l_coratio`][lmo.l_coratio]
         - [`lmo.l_kurtosis`][lmo.l_kurtosis]
     """
-    out = l_coratio(a, 4, 2, trim=trim, dtype=dtype, **kwds)
-    assert out.ndim == 2
-    return cast(onp.Array2D[_SCT_f], out)
+    return l_coratio(a, 4, 2, trim=trim, dtype=dtype, **kwds)
 
 
 l_cokurt = l_cokurtosis

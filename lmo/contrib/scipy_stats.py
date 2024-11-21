@@ -25,21 +25,12 @@ from typing import (
 )
 
 import numpy as np
-import numpy.typing as npt
 import optype.numpy as onp
-from scipy.stats.distributions import rv_continuous, rv_frozen
 
 import lmo.typing as lmt
 from lmo import inference
 from lmo._lm import l_moment as l_moment_est
-from lmo._utils import (
-    clean_order,
-    clean_orders,
-    clean_trim,
-    l_stats_orders,
-    moments_to_ratio,
-    round0,
-)
+from lmo._utils import clean_order, clean_trim, l_stats_orders, moments_to_ratio, round0
 from lmo.distributions._lm import get_lm_func, has_lm_func, prefers_ppf
 from lmo.theoretical import (
     l_moment_cov_from_cdf,
@@ -60,7 +51,7 @@ __all__ = ["install", "l_rv_frozen", "l_rv_generic"]
 
 
 _T = TypeVar("_T")
-_T_x = TypeVar("_T_x", float, npt.NDArray[np.float64])
+_T_x = TypeVar("_T_x", float, onp.ArrayND[np.float64])
 
 
 class _Fn1(Protocol):
@@ -69,7 +60,7 @@ class _Fn1(Protocol):
 
 _Tuple2: TypeAlias = tuple[_T, _T]
 _Tuple4: TypeAlias = tuple[_T, _T, _T, _T]
-_Float64ND: TypeAlias = npt.NDArray[np.float64]
+_FloatND: TypeAlias = onp.ArrayND[np.float64]
 
 
 class PatchClass:
@@ -146,11 +137,11 @@ class l_rv_generic(PatchClass):
     std: Callable[..., float]
 
     @np.errstate(divide="ignore")
-    def _logqdf(self, u: _Float64ND, *args: Any) -> _Float64ND:
+    def _logqdf(self, u: _FloatND, *args: Any) -> _FloatND:
         """Overridable log quantile distribution function (QDF)."""
         return -self._logpxf(self._ppf(u, *args), *args)
 
-    def _qdf(self, /, u: _Float64ND, *args: Any) -> _Float64ND:
+    def _qdf(self, /, u: _FloatND, *args: Any) -> _FloatND:
         r"""
         Overridable quantile distribution function (QDF).
 
@@ -168,7 +159,7 @@ class l_rv_generic(PatchClass):
         trim: lmt.ToTrim = ...,
         quad_opts: lmt.QuadOptions | None = ...,
         **kwds: Any,
-    ) -> _Float64ND: ...
+    ) -> _FloatND: ...
     @overload
     def l_moment(
         self,
@@ -181,13 +172,13 @@ class l_rv_generic(PatchClass):
     ) -> np.float64: ...
     def l_moment(
         self,
-        r: lmt.ToOrder0D | lmt.ToOrderND,
+        r: lmt.ToOrder,
         /,
         *args: Any,
         trim: lmt.ToTrim = 0,
         quad_opts: lmt.QuadOptions | None = None,
         **kwds: Any,
-    ) -> np.float64 | _Float64ND:
+    ) -> np.float64 | _FloatND:
         r"""
         Population L-moment(s) $\lambda^{(s,t)}_r$.
 
@@ -257,10 +248,7 @@ class l_rv_generic(PatchClass):
         See Also:
             - [`lmo.l_moment`][lmo.l_moment]: sample L-moment
         """
-        if np.isscalar(r):
-            _r = np.asarray(clean_order(cast(lmt.ToOrder0D, r)))
-        else:
-            _r = clean_orders(cast(lmt.ToOrderND, r))
+        _r = np.asarray(clean_order(r), np.intp)
         (s, t) = _trim = clean_trim(trim)
 
         shapes, loc, scale = self._parse_args(*args, **kwds)
@@ -280,8 +268,8 @@ class l_rv_generic(PatchClass):
         l0_r = _l_moment(self, _r, *shapes, trim=_trim, quad_opts=quad_opts)
 
         # shift (by loc) and scale
-        shift_r = loc * (_r == 1)
-        scale_r = scale * (_r > 0) + (_r == 0)
+        shift_r: onp.ArrayND[np.float64] = loc * (_r == 1)
+        scale_r: onp.ArrayND[np.float64] = scale * (_r > 0) + (_r == 0)
         l_r = shift_r + scale_r * l0_r
 
         # round near zero values to 0
@@ -294,18 +282,18 @@ class l_rv_generic(PatchClass):
     def l_ratio(
         self,
         order: lmt.ToOrderND,
-        order_denom: lmt.ToOrder0D | lmt.ToOrderND,
+        order_denom: lmt.ToOrder,
         /,
         *args: Any,
         trim: lmt.ToTrim = ...,
         quad_opts: lmt.QuadOptions | None = ...,
         **kwds: Any,
-    ) -> _Float64ND: ...
+    ) -> _FloatND: ...
     @overload
     def l_ratio(
         self,
         order: lmt.ToOrder0D,
-        order_denom: lmt.ToOrder0D | lmt.ToOrderND,
+        order_denom: lmt.ToOrder,
         /,
         *args: Any,
         trim: lmt.ToTrim = ...,
@@ -314,14 +302,14 @@ class l_rv_generic(PatchClass):
     ) -> np.float64: ...
     def l_ratio(
         self,
-        r: lmt.ToOrder0D | lmt.ToOrderND,
-        k: lmt.ToOrder0D | lmt.ToOrderND,
+        r: lmt.ToOrder,
+        k: lmt.ToOrder,
         /,
         *args: Any,
         trim: lmt.ToTrim = 0,
         quad_opts: lmt.QuadOptions | None = None,
         **kwds: Any,
-    ) -> np.float64 | _Float64ND:
+    ) -> np.float64 | _FloatND:
         r"""
         L-moment ratio('s) $\tau^{(s,t)}_{r,k}$.
 
@@ -406,7 +394,7 @@ class l_rv_generic(PatchClass):
         moments: int = 4,
         quad_opts: lmt.QuadOptions | None = None,
         **kwds: Any,
-    ) -> _Float64ND:
+    ) -> _FloatND:
         r"""
         The L-moments (for $r \le 2$) and L-ratio's (for $r > 2$).
 
@@ -515,7 +503,7 @@ class l_rv_generic(PatchClass):
         trim: lmt.ToTrim = 0,
         quad_opts: lmt.QuadOptions | None = None,
         **kwds: Any,
-    ) -> _Float64ND:
+    ) -> _FloatND:
         r"""
         Variance/covariance matrix of the L-moment estimators.
 
@@ -623,10 +611,7 @@ class l_rv_generic(PatchClass):
             - [J.R.M. Hosking (2007) - Some theory and practical uses of
                 trimmed L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
         """
-        args, _, scale = cast(
-            tuple[tuple[float, ...], float, float],
-            self._parse_args(*args, **kwds),
-        )
+        args, _, scale = self._parse_args(*args, **kwds)
         support = self._get_support(*args)
         cdf, _ = _get_xxf(self, *args)
 
@@ -646,7 +631,7 @@ class l_rv_generic(PatchClass):
         trim: lmt.ToTrim = 0,
         quad_opts: lmt.QuadOptions | None = None,
         **kwds: Any,
-    ) -> _Float64ND:
+    ) -> _FloatND:
         r"""
         Similar to [`l_moments_cov`
         ][lmo.contrib.scipy_stats.l_rv_generic.l_moments_cov], but for the
@@ -941,7 +926,7 @@ class l_rv_generic(PatchClass):
         **kwds: onp.ToFloat,
     ) -> tuple[dict[str, onp.ToFloat], list[_Tuple2[float | None]]]:
         """
-        Based on `scipy.stats.rv_continuous._reduce_func`.
+        Based on `scipy.stats.lmt.rv_continuous._reduce_func`.
 
         Convert fixed shape parameters to the standard numeric form: e.g. for
         stats.beta, shapes='a, b'. To fix `a`, the caller can give a value
@@ -965,7 +950,7 @@ class l_rv_generic(PatchClass):
                         msg = f"multiple fixed args given for {name!r}#{i}"
                         raise ValueError(msg)
 
-                    val = cast(float, kwds.pop(key))
+                    val = float(kwds.pop(key))
                     if not (a <= val <= b):
                         msg = f"expected {a} <= {name} <= {b}, got {key}={val}"
                         raise ValueError(msg)
@@ -981,10 +966,10 @@ class l_rv_generic(PatchClass):
 
     def _l_gmm_error(
         self,
-        theta: _Float64ND,
+        theta: _FloatND,
         trim: _Tuple2[float],
-        l_data: _Float64ND,
-        weights: _Float64ND,
+        l_data: _FloatND,
+        weights: _FloatND,
     ) -> float:
         """L-GMM objective function."""
         loc, scale, args = self._unpack_loc_scale(theta)
@@ -1142,7 +1127,7 @@ class l_rv_generic(PatchClass):
 
         if len(args) == len(bounds):
             args0 = args
-        elif isinstance(self, rv_continuous):
+        elif isinstance(self, lmt.rv_continuous):
             args0 = self.fit(x, *args, **kwds)
         else:
             # almost never works without custom (finite and tight) bounds...
@@ -1158,16 +1143,16 @@ class l_rv_generic(PatchClass):
 
         r = np.arange(1, len(args0) + n_extra + 1)
 
-        _lmo_cache: dict[tuple[float, ...], _Float64ND] = {}
+        _lmo_cache: dict[tuple[float, ...], _FloatND] = {}
         _lmo_fn = _l_moment
 
         # temporary cache to speed up L-moment calculations with the same
         # shape args
         def lmo_fn(
-            _r: npt.NDArray[np.intp],
+            _r: onp.ArrayND[np.intp],
             *_args: float,
             **kwds: Unpack[_TrimKwargs],
-        ) -> _Float64ND:
+        ) -> _FloatND:
             shapes, loc, scale = _args[:-2], _args[-2], _args[-1]
 
             # r and trim are constants, so it's safe to ignore them here
@@ -1221,7 +1206,7 @@ class l_rv_generic(PatchClass):
 
         Notes:
             The implementation mimics that of
-            [`fit_loc_scale()`][scipy.stats.rv_continuous.fit_loc_scale]
+            [`fit_loc_scale()`][scipy.stats.lmt.rv_continuous.fit_loc_scale]
 
         Args:
             data:
@@ -1267,7 +1252,7 @@ class l_rv_frozen(PatchClass):  # noqa: D101
         /,
         trim: lmt.ToTrim = ...,
         quad_opts: lmt.QuadOptions | None = ...,
-    ) -> _Float64ND: ...
+    ) -> _FloatND: ...
     @overload
     def l_moment(
         self,
@@ -1278,11 +1263,11 @@ class l_rv_frozen(PatchClass):  # noqa: D101
     ) -> np.float64: ...
     def l_moment(  # noqa: D102
         self,
-        order: lmt.ToOrder0D | lmt.ToOrderND,
+        order: lmt.ToOrder,
         /,
         trim: lmt.ToTrim = 0,
         quad_opts: lmt.QuadOptions | None = None,
-    ) -> np.float64 | _Float64ND:
+    ) -> np.float64 | _FloatND:
         return self.dist.l_moment(
             order,
             *self.args,
@@ -1295,28 +1280,28 @@ class l_rv_frozen(PatchClass):  # noqa: D101
     def l_ratio(
         self,
         order: lmt.ToOrderND,
-        order_denom: lmt.ToOrder0D | lmt.ToOrderND,
+        order_denom: lmt.ToOrder,
         /,
         trim: lmt.ToTrim = ...,
         quad_opts: lmt.QuadOptions | None = ...,
-    ) -> _Float64ND: ...
+    ) -> _FloatND: ...
     @overload
     def l_ratio(
         self,
         order: lmt.ToOrder0D,
-        order_denom: lmt.ToOrder0D | lmt.ToOrderND,
+        order_denom: lmt.ToOrder,
         /,
         trim: lmt.ToTrim = ...,
         quad_opts: lmt.QuadOptions | None = ...,
     ) -> np.float64: ...
     def l_ratio(  # noqa: D102
         self,
-        order: lmt.ToOrder0D | lmt.ToOrderND,
-        order_denom: lmt.ToOrder0D | lmt.ToOrderND,
+        order: lmt.ToOrder,
+        order_denom: lmt.ToOrder,
         /,
         trim: lmt.ToTrim = 0,
         quad_opts: lmt.QuadOptions | None = None,
-    ) -> np.float64 | _Float64ND:
+    ) -> np.float64 | _FloatND:
         return self.dist.l_ratio(
             order,
             order_denom,
@@ -1331,7 +1316,7 @@ class l_rv_frozen(PatchClass):  # noqa: D101
         trim: lmt.ToTrim = 0,
         moments: int = 4,
         quad_opts: lmt.QuadOptions | None = None,
-    ) -> np.float64 | _Float64ND:
+    ) -> np.float64 | _FloatND:
         return self.dist.l_stats(
             *self.args,
             trim=trim,
@@ -1360,7 +1345,7 @@ class l_rv_frozen(PatchClass):  # noqa: D101
         /,
         trim: lmt.ToTrim = 0,
         quad_opts: lmt.QuadOptions | None = None,
-    ) -> _Float64ND:
+    ) -> _FloatND:
         return self.dist.l_moments_cov(
             r_max,
             *self.args,
@@ -1374,7 +1359,7 @@ class l_rv_frozen(PatchClass):  # noqa: D101
         moments: int = 4,
         trim: lmt.ToTrim = 0,
         quad_opts: lmt.QuadOptions | None = None,
-    ) -> _Float64ND:
+    ) -> _FloatND:
         return self.dist.l_stats_cov(
             *self.args,
             moments=moments,
@@ -1421,13 +1406,13 @@ class l_rv_frozen(PatchClass):  # noqa: D101
 
 
 def _l_moment(
-    self: l_rv_generic | rv_continuous,
-    r: npt.NDArray[np.intp],
+    self: l_rv_generic | lmt.rv_continuous,
+    r: onp.ArrayND[np.intp],
     /,
     *args: Any,
     trim: _Tuple2[int] | _Tuple2[float] = (0, 0),
     quad_opts: lmt.QuadOptions | None = None,
-) -> _Float64ND:
+) -> _FloatND:
     """
     Population L-moments of the standard distribution (i.e. `loc, scale = 0, 1`).
 
@@ -1461,7 +1446,7 @@ def _l_moment(
 
 
 def _get_xxf(
-    self: l_rv_generic | rv_continuous,
+    self: l_rv_generic | lmt.rv_continuous,
     /,
     *shape: float,
     loc: float = 0,
@@ -1484,9 +1469,9 @@ def install() -> None:
     """
     Add the public methods from
     [`l_rv_generic`][`lmo.contrib.scipy_stats.l_rv_generic`] and
-    [`l_rv_frozen`][`lmo.contrib.scipy_stats.l_rv_frozen`]
-    to the `scipy.stats.rv_generic` and `scipy.stats.rv_frozen`
+    [`l_lmt.rv_frozen`][`lmo.contrib.scipy_stats.l_lmt.rv_frozen`]
+    to the `scipy.stats.rv_generic` and `scipy.stats.lmt.rv_frozen`
     types, respectively.
     """
-    l_rv_generic.patch(cast(type[object], rv_continuous.__base__))
-    l_rv_frozen.patch(cast(type[object], rv_frozen))
+    l_rv_generic.patch(cast(type[object], lmt.rv_continuous.__base__))
+    l_rv_frozen.patch(cast(type[object], lmt.rv_frozen))

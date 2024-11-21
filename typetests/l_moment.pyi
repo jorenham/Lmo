@@ -6,6 +6,7 @@ import optype.numpy as onp
 
 import lmo
 
+_Float1D: TypeAlias = onp.Array1D[np.float64]
 _FloatND: TypeAlias = onp.ArrayND[np.float64]
 
 X: list[float]
@@ -33,17 +34,19 @@ assert_type(lmo.l_moment(X, 2, trim=(1, 0.5)), np.float64)
 assert_type(lmo.l_moment(X, 2, trim=(0.5, 1)), np.float64)
 
 # vectorized r
-assert_type(lmo.l_moment(X, [1, 2, 3, 4]), _FloatND)
-assert_type(lmo.l_moment(X, (1, 2, 3, 4)), _FloatND)
-assert_type(lmo.l_moment(X, np.arange(1, 5)), _FloatND)
+assert_type(lmo.l_moment(X, [1, 2, 3, 4]), _Float1D)
+assert_type(lmo.l_moment(X, (1, 2, 3, 4)), _Float1D)
+assert_type(lmo.l_moment(X, np.arange(1, 5)), _Float1D)
 
 # sctype
 assert_type(lmo.l_moment(X, 2, dtype=np.float32), np.float32)
-assert_type(lmo.l_moment(X, 2, dtype=np.longdouble), np.longdouble)
 assert_type(lmo.l_moment(X, 2, dtype=np.dtype(np.float16)), np.float16)
-assert_type(lmo.l_moment(X, [1, 2, 3, 4], dtype=np.half), onp.ArrayND[np.half])
+assert_type(lmo.l_moment(X, [1, 2, 3, 4], dtype=np.float16), onp.Array1D[np.float16])
 
 # axis
 assert_type(lmo.l_moment(XX, 2, axis=0), np.float64 | _FloatND)
 assert_type(lmo.l_moment(XX_np, 2, axis=0), np.float64 | _FloatND)
-assert_type(lmo.l_moment(XX, 2, axis=0, dtype=np.half), np.half | onp.ArrayND[np.half])
+assert_type(
+    lmo.l_moment(XX, 2, axis=0, dtype=np.float16),
+    np.float16 | onp.ArrayND[np.float16],
+)

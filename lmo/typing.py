@@ -88,8 +88,8 @@ ToIntTrim: TypeAlias = int | tuple[int, int]
 ToTrim: TypeAlias = float | tuple[float, float]
 
 ToOrder0D: TypeAlias = int | Integer
-ToOrder1D: TypeAlias = onp.CanArrayND[Integer] | Sequence[ToOrder0D]
-ToOrderND: TypeAlias = ToOrder1D | Sequence["ToOrderND"]
+ToOrder1D: TypeAlias = onp.CanArray[tuple[int], np.dtype[Integer]] | Sequence[ToOrder0D]
+ToOrderND: TypeAlias = onp.CanArrayND[Integer] | ToOrder1D | Sequence["ToOrderND"]
 ToOrder: TypeAlias = ToOrder0D | ToOrderND
 
 ToFWeights: TypeAlias = onp.Array1D[Integer]

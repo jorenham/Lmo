@@ -19,6 +19,11 @@ from typing import (
     overload,
 )
 
+if sys.version_info >= (3, 13):
+    from typing import TypeIs
+else:
+    from typing_extensions import TypeIs
+
 import numpy as np
 import optype.numpy as onp
 
@@ -29,14 +34,8 @@ from ._poly import extrema_jacobi
 from ._utils import clean_orders, clean_trim
 from .special import fpow
 
-if sys.version_info >= (3, 13):
-    from typing import TypeIs
-else:
-    from typing_extensions import TypeIs
-
 if TYPE_CHECKING:
     from .contrib.scipy_stats import l_rv_generic
-
 
 __all__ = (
     "error_sensitivity",
@@ -60,6 +59,7 @@ class _Fn1(Protocol):
 
 _Tuple2: TypeAlias = tuple[_T, _T]
 _FloatND: TypeAlias = onp.ArrayND[np.float64]
+
 
 _MIN_RHO: Final[float] = 1e-5
 
@@ -87,7 +87,7 @@ class HypothesisTestResult(NamedTuple):
 
     def is_significant(
         self,
-        level: float | lmt.Floating = 0.05,
+        level: float | np.floating[Any] = 0.05,
         /,
     ) -> np.bool_ | onp.ArrayND[np.bool_]:
         """
@@ -364,33 +364,28 @@ def _lm2_bounds_single(r: int, trim: _Tuple2[float]) -> float:
             ) / (np.pi * 2 * r**2)
 
 
-_lm2_bounds = cast(
+_lm2_bounds: Final = cast(
     Callable[[lmt.ToOrderND, _Tuple2[float]], _FloatND],
-    np.vectorize(
-        _lm2_bounds_single,
-        otypes=[float],
-        excluded={1},
-        signature="()->()",
-    ),
+    np.vectorize(_lm2_bounds_single, otypes=[float], excluded={1}, signature="()->()"),
 )
 
 
 @overload
 def l_moment_bounds(
-    r: lmt.ToOrderND,
-    /,
-    trim: lmt.ToTrim = ...,
-    scale: float = ...,
-) -> _FloatND: ...
-@overload
-def l_moment_bounds(
     r: lmt.ToOrder0D,
     /,
-    trim: lmt.ToTrim = ...,
-    scale: float = ...,
+    trim: lmt.ToTrim = 0,
+    scale: float = 1.0,
 ) -> float: ...
+@overload
 def l_moment_bounds(
-    r: lmt.ToOrder0D | lmt.ToOrderND,
+    r: lmt.ToOrderND,
+    /,
+    trim: lmt.ToTrim = 0,
+    scale: float = 1.0,
+) -> _FloatND: ...
+def l_moment_bounds(
+    r: lmt.ToOrder,
     /,
     trim: lmt.ToTrim = 0,
     scale: float = 1.0,
@@ -509,7 +504,7 @@ def l_ratio_bounds(
     legacy: bool = ...,
 ) -> _Tuple2[float]: ...
 def l_ratio_bounds(
-    r: lmt.ToOrder0D | lmt.ToOrderND,
+    r: lmt.ToOrder,
     /,
     trim: lmt.ToTrim = 0,
     *,

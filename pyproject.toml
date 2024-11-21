@@ -239,6 +239,7 @@ split-on-trailing-comma = false
 
 [tool.ruff.lint.flake8-import-conventions]
 banned-from = [
+    "lmo.typing",
     "numpy",
     "numpy.polynomial",
     "numpy.typing",
@@ -254,9 +255,10 @@ banned-from = [
 "optype" = "op"
 "optype.numpy" = "onp"
 "optype.typing" = "opt"
+"scipy.special" = "sps"
 
 [tool.ruff.lint.flake8-type-checking]
-exempt-modules = ["typing", "typing_extensions"]
+exempt-modules = ["lmo", "optype", "typing", "typing_extensions"]
 quote-annotations = true
 
 [tool.ruff.lint.pylint]

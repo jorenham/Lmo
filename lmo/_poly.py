@@ -15,7 +15,7 @@ import numpy as np
 import numpy.polynomial as npp
 import optype as op
 import optype.numpy as onp
-import scipy.special as scs
+import scipy.special as sps
 from numpy.polynomial._polybase import ABCPolyBase  # noqa: PLC2701
 
 if TYPE_CHECKING:
@@ -92,7 +92,7 @@ def eval_sh_jacobi(
         if n == 4:
             return 1 + 10 * v * (2 + 7 * v)
 
-        return scs.eval_sh_legendre(n, x)
+        return sps.eval_sh_legendre(n, x)
 
     if n == 1:
         return (a + b + 2) * x - b - 1
@@ -110,7 +110,7 @@ def eval_sh_jacobi(
         ) / 6
 
     # don't use `eval_sh_jacobi`: https://github.com/scipy/scipy/issues/18988
-    return scs.eval_jacobi(n, a, b, u)
+    return sps.eval_jacobi(n, a, b, u)
 
 
 def peaks_jacobi(n: int, a: float, b: float) -> onp.Array1D[np.float64]:
@@ -166,7 +166,7 @@ def peaks_jacobi(n: int, a: float, b: float) -> onp.Array1D[np.float64]:
     # otherwise, peaks are at the ends, and at the roots of the derivative
     x = np.empty(n + 1)
     x[0] = -1
-    x[1:-1] = scs.roots_jacobi(n - 1, a + 1, b + 1)[0]
+    x[1:-1] = sps.roots_jacobi(n - 1, a + 1, b + 1)[0]
     x[-1] = 1
 
     return np.round(x, 15) + 0.0  # cleanup of numerical noise
@@ -309,7 +309,7 @@ def jacobi(
     symbol: str = "x",
 ) -> npp.Polynomial:
     return npp.Polynomial(
-        scs.jacobi(n, a, b).coef[::-1],
+        sps.jacobi(n, a, b).coef[::-1],
         domain=domain,
         window=window,
         symbol=symbol,
