@@ -141,7 +141,7 @@ class GMMResult(NamedTuple):
             identification](https://doi.org/10.1109%2FTAC.1974.1100705)
 
         """
-        return 2 * (self.n_arg - np.log(cast(float, self.j_test.pvalue)))
+        return 2 * (self.n_arg - np.log(cast("float", self.j_test.pvalue)))
 
     @property
     def AICc(self) -> float:  # noqa: N802

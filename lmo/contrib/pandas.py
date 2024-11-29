@@ -158,10 +158,10 @@ class Series(_BaseSeries):  # pyright: ignore[reportMissingTypeArgument]
         """
         out = _l_moment(self, r, trim=trim, **kwargs)
         if np.isscalar(out):
-            return cast(float, out)
+            return cast("float", out)
 
         return pd.Series(
-            cast(npt.NDArray[np.float64], out),
+            cast("npt.NDArray[np.float64]", out),
             index=pd.Index(np.asarray(r), name="r"),
             dtype=float,
             copy=False,
@@ -185,10 +185,10 @@ class Series(_BaseSeries):  # pyright: ignore[reportMissingTypeArgument]
         rk = np.stack(np.broadcast_arrays(np.asarray(r), np.asarray(k)))
         out = moments_to_ratio(rk, _l_moment(self, rk, trim=trim, **kwargs))
         if rk.ndim == 1:
-            return cast(float, out)
+            return cast("float", out)
 
         return pd.Series(
-            cast(npt.NDArray[np.float64], out),
+            cast("npt.NDArray[np.float64]", out),
             index=_ratio_index(rk),
             dtype=float,
             copy=False,
@@ -224,7 +224,7 @@ class Series(_BaseSeries):  # pyright: ignore[reportMissingTypeArgument]
         Returns:
             out: A scalar.
         """
-        return cast(float, _l_moment(self, 1, trim, **kwargs))
+        return cast("float", _l_moment(self, 1, trim, **kwargs))
 
     def l_scale(
         self,
@@ -237,7 +237,7 @@ class Series(_BaseSeries):  # pyright: ignore[reportMissingTypeArgument]
         Returns:
             out: A scalar.
         """
-        return cast(float, _l_moment(self, 2, trim, **kwargs))
+        return cast("float", _l_moment(self, 2, trim, **kwargs))
 
     def l_variation(
         self,
@@ -250,7 +250,7 @@ class Series(_BaseSeries):  # pyright: ignore[reportMissingTypeArgument]
         Returns:
             out: A scalar.
         """
-        return cast(float, _l_ratio(self, 2, 1, trim, **kwargs))
+        return cast("float", _l_ratio(self, 2, 1, trim, **kwargs))
 
     def l_skew(
         self,
@@ -263,7 +263,7 @@ class Series(_BaseSeries):  # pyright: ignore[reportMissingTypeArgument]
         Returns:
             out: A scalar.
         """
-        return cast(float, _l_ratio(self, 3, 2, trim, **kwargs))
+        return cast("float", _l_ratio(self, 3, 2, trim, **kwargs))
 
     def l_kurtosis(
         self,
@@ -276,7 +276,7 @@ class Series(_BaseSeries):  # pyright: ignore[reportMissingTypeArgument]
         Returns:
             out: A scalar.
         """
-        return cast(float, _l_ratio(self, 4, 2, trim, **kwargs))
+        return cast("float", _l_ratio(self, 4, 2, trim, **kwargs))
 
     l_kurt = l_kurtosis
 

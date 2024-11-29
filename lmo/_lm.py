@@ -1283,7 +1283,7 @@ def l_moment_cov(
         - Use the direct (Jacobi) method from Hosking (2015).
     """
     _r_max = clean_order(r_max, "r_max")
-    _trim = cast(tuple[int, int], clean_trim(trim))
+    _trim = cast("tuple[int, int]", clean_trim(trim))
 
     if any(int(t) != t for t in _trim):
         msg = "l_moment_cov does not support fractional trimming (yet)"
@@ -1585,7 +1585,7 @@ def l_moment_influence(
     n = len(x_k)
 
     w_k: onp.Array1D[np.float64] = l_weights(_r, n, (s, t))[-1]
-    l_r = cast(np.float64, w_k @ x_k)
+    l_r = cast("np.float64", w_k @ x_k)
 
     def influence_function(x: _T_x, /) -> _T_x:
         _x = np.asanyarray(x)
@@ -1604,7 +1604,7 @@ def l_moment_influence(
 
         if _x.ndim == 0 and np.isscalar(x):
             return out.item()
-        return cast(_T_x, out)
+        return cast("_T_x", out)
 
     influence_function.__doc__ = (
         f"Empirical L-moment influence function given "
@@ -1663,7 +1663,7 @@ def l_ratio_influence(
     eif_k = l_moment_influence(_x, _s, trim, sort=False, tol=0)
 
     l_r, l_k = cast(
-        tuple[float, float],
+        "tuple[float, float]",
         (eif_r.l, eif_k.l),  # pyright: ignore[reportFunctionMemberAccess]
     )
     if abs(l_k) <= tol * abs(l_r):
@@ -1677,7 +1677,7 @@ def l_ratio_influence(
         # cheat a bit to avoid `inf - inf = nan` situations
         psi_k = np.where(np.isinf(psi_r), 0, eif_k(x))
 
-        return cast(_T_x, round0((psi_r - t_r * psi_k) / l_k, tol=tol)[()])
+        return cast("_T_x", round0((psi_r - t_r * psi_k) / l_k, tol=tol)[()])
 
     influence_function.__doc__ = (
         f"Theoretical influence function for L-moment ratio with "

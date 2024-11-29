@@ -32,7 +32,7 @@ if not TYPE_CHECKING:
     [Distributions - Wakeby](../distributions.md#wakeby).
     """
 else:
-    wakeby: Final = cast(lmt.rv_continuous, wakeby_gen(a=0.0, name="wakeby"))
+    wakeby: Final = cast("lmt.rv_continuous", wakeby_gen(a=0.0, name="wakeby"))
 
 # mkdocstring workaround
 if not TYPE_CHECKING:
@@ -57,7 +57,7 @@ if not TYPE_CHECKING:
     """
 else:
     kumaraswamy: Final = cast(
-        lmt.rv_continuous,
+        "lmt.rv_continuous",
         kumaraswamy_gen(a=0.0, b=1.0, name="kumaraswamy"),
     )
 
@@ -77,4 +77,4 @@ if not TYPE_CHECKING:
     [Distributions - GLD](../distributions.md#gld).
     """
 else:
-    genlambda: Final = cast(lmt.rv_continuous, genlambda_gen(name="genlambda"))
+    genlambda: Final = cast("lmt.rv_continuous", genlambda_gen(name="genlambda"))

@@ -297,7 +297,7 @@ def extrema_jacobi(n: int, a: float, b: float) -> tuple[float, float]:
     """
     x = peaks_jacobi(n, a, b)
     p = eval_sh_jacobi(n, a, b, (x + 1) / 2)
-    return cast(float, np.min(p)), cast(float, np.max(p))
+    return cast("float", np.min(p)), cast("float", np.max(p))
 
 
 def jacobi(
@@ -388,7 +388,7 @@ def roots(p: PolySeries, /, outside: op.CanBool = False) -> onp.Array1D[np.float
     """
     z = p.roots()
     x = cast(
-        onp.Array1D[np.float64],
+        "onp.Array1D[np.float64]",
         z[np.isreal(z)].real if np.isrealobj(p.domain) and not np.isrealobj(z) else z,
     )
 
