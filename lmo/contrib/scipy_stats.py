@@ -991,7 +991,7 @@ class l_rv_generic(PatchClass):
             raise ValueError(msg)
 
         err = l_data - l_dist
-        return cast(float, err @ weights @ err)
+        return cast("float", err @ weights @ err)
 
     @overload
     def l_fit(
@@ -1473,5 +1473,5 @@ def install() -> None:
     to the `scipy.stats.rv_generic` and `scipy.stats.lmt.rv_frozen`
     types, respectively.
     """
-    l_rv_generic.patch(cast(type[object], lmt.rv_continuous.__base__))
-    l_rv_frozen.patch(cast(type[object], lmt.rv_frozen))
+    l_rv_generic.patch(cast("type[object]", lmt.rv_continuous.__base__))
+    l_rv_frozen.patch(cast("type[object]", lmt.rv_frozen))

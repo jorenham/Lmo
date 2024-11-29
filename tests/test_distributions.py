@@ -24,7 +24,7 @@ assert_allclose = functools.partial(_assert_allclose, atol=1e-9)
 def test_l_poly_eq_uniform(trim: lmt.ToTrim):
     p0 = x0 = np.linspace(0, 1)
 
-    X = cast(Any, uniform())
+    X = cast("Any", uniform())
     X_hat = l_poly(X.l_moment([1, 2], trim=trim), trim=trim)
 
     t4 = X.l_stats(trim=trim)
@@ -70,7 +70,7 @@ def test_l_poly_eq_uniform(trim: lmt.ToTrim):
     ],
 )
 def test_wakeby(b: float, d: float, f: float):
-    X = cast(Any, wakeby(b, d, f))
+    X = cast("Any", wakeby(b, d, f))
 
     assert X.cdf(X.support()[0]) == 0
     assert X.ppf(0) == X.support()[0]
@@ -100,8 +100,8 @@ def test_wakeby(b: float, d: float, f: float):
 
 @pytest.mark.parametrize("lam", [0, 0.14, 1, -1])
 def test_genlambda_tukeylamba(lam: float):
-    X0 = cast(Any, tukeylambda(lam))
-    X = cast(Any, genlambda(lam, lam, 0))
+    X0 = cast("Any", tukeylambda(lam))
+    X = cast("Any", genlambda(lam, lam, 0))
 
     x0 = X0.ppf(Q)
     x = X.ppf(Q)
@@ -110,7 +110,7 @@ def test_genlambda_tukeylamba(lam: float):
     assert_allclose(x, x0)
 
     _pp = cast(
-        npt.NDArray[np.float64],
+        "npt.NDArray[np.float64]",
         np.linspace(X0.ppf(0.05), X0.ppf(0.95), 100),
     )
     u0 = X0.cdf(_pp)
@@ -141,7 +141,7 @@ def test_genlambda_tukeylamba(lam: float):
 @pytest.mark.parametrize("d", [-1.95, 0, 1.95], ids="d={}".format)
 @pytest.mark.parametrize("b", [-1.95, 0, 1.95], ids="b={}".format)
 def test_genlambda(b: float, d: float, f: float):
-    X = cast(Any, genlambda(b, d, f))
+    X = cast("Any", genlambda(b, d, f))
 
     assert X.cdf(X.support()[0]) == 0
     assert X.ppf(0) == X.support()[0]

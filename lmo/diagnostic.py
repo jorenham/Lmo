@@ -5,7 +5,6 @@ from __future__ import annotations
 import math
 import sys
 import warnings
-from collections.abc import Callable
 from math import lgamma
 from typing import (
     TYPE_CHECKING,
@@ -35,6 +34,8 @@ from ._utils import clean_orders, clean_trim
 from .special import fpow
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from .contrib.scipy_stats import l_rv_generic
 
 __all__ = (
@@ -366,7 +367,7 @@ def _lm2_bounds_single(r: int, trim: _Tuple2[float]) -> float:
 
 
 _lm2_bounds: Final = cast(
-    Callable[[lmt.ToOrderND, _Tuple2[float]], _FloatND],
+    "Callable[[lmt.ToOrderND, _Tuple2[float]], _FloatND]",
     np.vectorize(_lm2_bounds_single, otypes=[float], excluded={1}, signature="()->()"),
 )
 
@@ -614,7 +615,7 @@ def l_ratio_bounds(
 
     _cache: dict[int, _Tuple2[float]] = {}
     for i, ri in np.ndenumerate(_r):
-        _ri = cast(int, ri)
+        _ri = cast("int", ri)
         if _ri in _cache:
             t_min[i], t_max[i] = _cache[_ri]
 
@@ -747,7 +748,7 @@ def rejection_point(
 
     res = minimize(obj, bounds=[(rho_min, rho_max)], x0=[rho_min], method="COBYLA")
 
-    rho = cast(float, res.x[0])
+    rho = cast("float", res.x[0])
     if rho <= _MIN_RHO or influence_fn(-rho) or influence_fn(rho):
         return np.nan
 

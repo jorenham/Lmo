@@ -1,6 +1,5 @@
 import functools
-from collections.abc import Callable
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 import numpy as np
 import pytest
@@ -23,10 +22,13 @@ from lmo.theoretical import (
     qdf_from_l_moments,
 )
 
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
 assert_allclose = functools.partial(_assert_allclose, rtol=1e-6, atol=1e-8)
 
-norm_cdf = cast(Callable[[float], float], ndtr)
-norm_ppf = cast(Callable[[float], float], ndtri)
+norm_cdf = cast("Callable[[float], float]", ndtr)
+norm_ppf = cast("Callable[[float], float]", ndtri)
 
 
 @np.errstate(over="ignore", under="ignore")
@@ -267,7 +269,7 @@ def test_ls_cov_uniform():
     trim=st.tuples(st.integers(0, 1), st.integers(0, 3)),
 )
 def test_ppf_from_l_moments_identity(
-    ppf: Callable[[float], float],
+    ppf: "Callable[[float], float]",
     trim: tuple[int, int] | int,
 ):
     rmax = 8
@@ -291,7 +293,7 @@ def test_ppf_from_l_moments_identity(
     trim=st.tuples(st.integers(0, 1), st.integers(0, 3)),
 )
 def test_qdf_from_l_moments_identity(
-    qdf: Callable[[float], float],
+    qdf: "Callable[[float], float]",
     trim: tuple[int, int] | int,
 ):
     rmax = 8

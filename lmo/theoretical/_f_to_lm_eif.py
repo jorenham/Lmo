@@ -145,7 +145,7 @@ def l_moment_influence_from_cdf(
         # cheat a bit and replace 0 * inf by 0, ensuring convergence if s or t
         alpha = w * eval_sh_jacobi(_r - 1, t, s, q) * np.where(w, _x, 0)
 
-        return cast(_T_x, round0(alpha - lm, tol)[()])
+        return cast("_T_x", round0(alpha - lm, tol)[()])
 
     influence.__doc__ = (
         f"Theoretical influence function for L-moment with {r=} and {trim=}."
