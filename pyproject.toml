@@ -184,8 +184,6 @@ ignore = [
     "D205",     # blank-line-after-summary
     "D212",     # multi-line-summary-first-line
     # flake8-annotations
-    "ANN101",   # missing-type-self (deprecated)
-    "ANN102",   # missing-type-cls (deprecated)
     "ANN401",   # any-type
     # flake8-bandit
     "S101",     # assert
