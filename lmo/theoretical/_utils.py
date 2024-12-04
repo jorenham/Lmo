@@ -5,7 +5,7 @@ from math import exp, factorial, gamma, lgamma, log
 from typing import TYPE_CHECKING, Concatenate, Final, ParamSpec
 
 import numpy as np
-import numpy.typing as npt
+import optype.numpy as onp
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
@@ -52,10 +52,10 @@ def l_const(r: int, s: float, t: float, k: int = 0) -> float:
 
 
 def l_coef_factor(
-    r: int | np.intp | npt.NDArray[np.intp],
+    r: int | lmt.Integer | onp.ArrayND[lmt.Integer],
     s: float = 0,
     t: float = 0,
-) -> npt.NDArray[np.float64]:
+) -> onp.ArrayND[np.float64]:
     if s == t == 0:
         return np.sqrt(2 * r - 1)
 
@@ -63,17 +63,8 @@ def l_coef_factor(
 
     import scipy.special as sps
 
-    _r = np.asarray(r)
-    c = (
-        np.sqrt(
-            (2 * _r + (s + t - 1))
-            * sps.beta(_r + s, _r + t)
-            / sps.beta(_r, _r + s + t),
-        )
-        * _r
-        / (_r + s + t)
-    )
-    return c[()] if _r.ndim == 0 and np.isscalar(r) else c
+    rst = r + s + t
+    return np.sqrt((rst + r - 1) * sps.beta(r + s, r + t) / sps.beta(r, rst)) * r / rst
 
 
 def tighten_cdf_support(
@@ -108,7 +99,6 @@ def nquad(
     import scipy.integrate as spi
 
     if kwds:
-        integrand = functools.partial(integrand, *args, **kwds)
-        args = ()  # pyright: ignore[reportAssignmentType]
+        integrand = functools.partial(integrand, **kwds)
 
     return spi.nquad(integrand, domains[::-1], args=args, opts=opts)[0]

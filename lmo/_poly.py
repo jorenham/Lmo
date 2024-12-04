@@ -9,7 +9,7 @@ See Also:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, TypeAlias, TypeVar, cast, overload
+from typing import TYPE_CHECKING, TypeAlias, TypeVar, cast, overload
 
 import numpy as np
 import numpy.polynomial as npp
@@ -49,27 +49,31 @@ else:
 _T_shape = TypeVar("_T_shape", bound=onp.AtLeast1D)
 _T_poly = TypeVar("_T_poly", bound=PolySeries)
 
+_Float = np.float32 | np.float64
+
+###
+
 
 @overload
 def eval_sh_jacobi(
     n: int | lmt.Integer,
     a: float,
     b: float,
-    x: float | np.floating[Any],
-) -> float: ...
+    x: float | _Float,
+) -> float | _Float: ...
 @overload
 def eval_sh_jacobi(
     n: int | lmt.Integer,
     a: float,
     b: float,
-    x: onp.Array[_T_shape, lmt.Floating],
-) -> onp.Array[_T_shape, np.float64]: ...
+    x: onp.Array[_T_shape, _Float],
+) -> onp.Array[_T_shape, _Float]: ...
 def eval_sh_jacobi(  # noqa: C901
     n: int | lmt.Integer,
     a: float,
     b: float,
-    x: float | np.floating[Any] | onp.Array[_T_shape, lmt.Floating],
-) -> float | onp.Array[_T_shape, np.float64]:
+    x: float | _Float | onp.Array[_T_shape, _Float],
+) -> float | _Float | onp.Array[_T_shape, _Float]:
     """
     Fast evaluation of the n-th shifted Jacobi polynomial.
     Faster than pre-computing using np.Polynomial, and than

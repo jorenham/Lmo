@@ -11,8 +11,6 @@ from ._f_to_lm import l_moment_from_cdf
 from ._utils import ALPHA, l_const, tighten_cdf_support
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
-
     import lmo.typing as lmt
 
 
@@ -41,7 +39,7 @@ def l_moment_influence_from_cdf(
     quad_opts: lmt.QuadOptions | None = None,
     alpha: float = ALPHA,
     tol: float = 1e-8,
-) -> Callable[[_T_x], _T_x]:
+) -> _Fn1:
     r"""
     Influence Function (IF) of a theoretical L-moment.
 
@@ -166,7 +164,7 @@ def l_ratio_influence_from_cdf(
     quad_opts: lmt.QuadOptions | None = None,
     alpha: float = ALPHA,
     tol: float = 1e-8,
-) -> Callable[[_T_x], _T_x]:
+) -> _Fn1:
     r"""
     Construct the influence function of a theoretical L-moment ratio.
 

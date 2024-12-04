@@ -38,7 +38,7 @@ dependencies = [
     "numpy>=1.24",
     "scipy>=1.10",
     "scipy-stubs>=1.14.1.4",
-    "optype[numpy]>=0.7.2",
+    "optype[numpy]>=0.7.3",
 ]
 
 [project.optional-dependencies]
@@ -55,17 +55,17 @@ Funding = "https://github.com/sponsors/jorenham"
 debug = [
     "ipython>=8.30.0",
     "ipykernel>=6.29.5",
-    "line_profiler>=4.1.3; python_version<'3.13'",
-    "matplotlib>=3.9.2",
+    "line_profiler>=4.2.0",
+    "matplotlib>=3.9.3",
     "typing-extensions>=4.12.2",
 ]
 docs = [
     "mkdocs>=1.6.1",
     "mkdocs-bibtex>=2.16.2",
     "mkdocs-git-revision-date-localized-plugin>=1.3.0",
-    "mkdocs-include-markdown-plugin>=7.1.1",
+    "mkdocs-include-markdown-plugin>=7.1.2",
     "mkdocs-jupyter>=0.25.1",
-    "mkdocs-material>=9.5.46",
+    "mkdocs-material>=9.5.47",
     "mkdocs-minify-plugin>=0.8.0",
     "mkdocstrings[python]>=0.27.0",
 ]
@@ -76,10 +76,10 @@ pandas = [
 dev = [
     "blacken-docs>=1.19.1",
     "codespell>=2.3.0",
-    "hypothesis[numpy]>=6.121.2",
+    "hypothesis[numpy]>=6.122.1",
     "pre-commit>=4.0.1",
     "basedpyright>=1.22.0",
-    "pytest>=8.3.3",
+    "pytest>=8.3.4",
     "pytest-doctestplus>=1.3.0",
     "ruff>=0.8.1",
     "sp-repo-review[cli]>=2024.8.19",

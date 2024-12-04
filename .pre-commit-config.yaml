@@ -2,10 +2,6 @@ ci:
   autoupdate_branch: "master"
   autoupdate_commit_msg: "update pre-commit hooks"
   skip:
-    - markdownlint
-    - codespell
-    - ruff
-    - ruff-format
     - basedpyright
     - basedpyright-verifytypes
 
@@ -82,7 +78,7 @@ repos:
     hooks:
       - id: basedpyright
         name: basedpyright
-        entry: uv run basedpyright
+        entry: uv run basedpyright --threads=3
         language: system
         types_or: [python, pyi]
 

@@ -7,7 +7,6 @@ from __future__ import annotations
 
 from collections.abc import Callable, Sequence
 from typing import (
-    TYPE_CHECKING,
     Any,
     Literal,
     ParamSpec,
@@ -26,9 +25,6 @@ from scipy.stats._distn_infrastructure import (
     rv_frozen,
     rv_generic,
 )
-
-if TYPE_CHECKING:
-    from numpy._typing import _ArrayLikeFloat_co
 
 __all__ = [
     "Callable2",
@@ -88,11 +84,15 @@ ToIntTrim: TypeAlias = int | tuple[int, int]
 ToTrim: TypeAlias = float | tuple[float, float]
 
 ToOrder0D: TypeAlias = int | Integer
-ToOrder1D: TypeAlias = onp.CanArray[tuple[int], np.dtype[Integer]] | Sequence[ToOrder0D]
-ToOrderND: TypeAlias = onp.CanArrayND[Integer] | ToOrder1D | Sequence["ToOrderND"]
+ToOrder1D: TypeAlias = onp.CanArrayND[Integer] | Sequence[ToOrder0D]
+ToOrderND: TypeAlias = (
+    onp.CanArrayND[Integer]
+    | onp.SequenceND[onp.CanArrayND[Integer]]
+    | onp.SequenceND[ToOrder0D]
+)
 ToOrder: TypeAlias = ToOrder0D | ToOrderND
 
-ToFWeights: TypeAlias = onp.Array1D[Integer]
+ToFWeights: TypeAlias = onp.ArrayND[Integer]
 ToAWeights: TypeAlias = onp.ArrayND[Floating]
 
 
@@ -161,7 +161,7 @@ class QuadOptions(TypedDict, total=False):
     epsabs: _FloatLike
     epsrel: _FloatLike
     limit: _IntLike
-    points: _ArrayLikeFloat_co
+    points: onp.ToFloat1D
     weight: Literal["cos", "sin", "alg", "alg-loga", "alg-logb", "alg-log", "cauchy"]
     wvar: _FloatLike | tuple[_FloatLike, _FloatLike]
     wopts: tuple[_IntLike, onp.ArrayND[np.float32 | np.float64]]
