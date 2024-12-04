@@ -10,7 +10,7 @@ import sys
 from typing import Final, TypeAlias, TypeVar
 
 import numpy as np
-import numpy.typing as npt
+import optype.numpy as onp
 import scipy.special as sps
 from scipy.stats.distributions import rv_continuous
 
@@ -29,7 +29,7 @@ __all__ = ("genlambda_gen",)
 
 
 _F8: TypeAlias = float | np.float64
-_ArrF8: TypeAlias = npt.NDArray[np.float64]
+_ArrF8: TypeAlias = onp.ArrayND[np.float64]
 
 _XT = TypeVar("_XT", bound=_F8 | _ArrF8)
 
@@ -186,7 +186,7 @@ class genlambda_gen(rv_continuous):
         a, c = 1 + f, 1 - f
         b1, d1 = 1 + b, 1 + d
 
-        m1 = 0 if b == d and f == 0 else float(lm_genlambda(1, 0, 0, b, d, f).item())
+        m1: float = 0.0 if b == d and f == 0 else lm_genlambda(1, 0, 0, b, d, f).item()
 
         if b <= -1 / 2 or d <= -1 / 2:
             return m1, math.nan, math.nan, math.nan
@@ -209,7 +209,7 @@ class genlambda_gen(rv_continuous):
             m2 = (
                 (a / b1) ** 2 / (b1 + b)
                 + (c / d1) ** 2 / (d1 + d)
-                + 2 * a * c / (b * d) * (1 / (b1 * d1) - sps.beta(b1, d1))
+                + 2 * a * c / (b * d) * (1 / (b1 * d1) - sps.beta(b1, d1).item())
             )
 
         # Feeling adventurous? You're welcome to contribute these missing
@@ -229,7 +229,7 @@ class genlambda_gen(rv_continuous):
 
     def _l_moment(
         self,
-        r: npt.NDArray[np.intp],
+        r: onp.ArrayND[lmt.Integer],
         b: float,
         d: float,
         f: float,

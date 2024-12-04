@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Final, TypeAlias, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Final, TypeAlias, TypeVar, overload
 
 import numpy as np
 import optype.numpy as onp
@@ -20,20 +20,21 @@ def __dir__() -> tuple[str, ...]:
     return __all__
 
 
-_OutT = TypeVar("_OutT", bound=onp.Array)
-_Float: TypeAlias = np.float64
-_FloatND: TypeAlias = onp.ArrayND[np.float64]
+_OutT = TypeVar("_OutT", bound=onp.ArrayND[np.number[Any]])
+
+_Float: TypeAlias = float | np.float32 | np.float64
+_FloatND: TypeAlias = onp.ArrayND[np.float32 | np.float64]
 
 
-_DTYPE_CHARS: Final[str] = "?bBhHiIlLqQpP"
+###
+
+_DTYPE_CHARS: Final = "?bBhHiIlLqQpP"
 
 
 @overload
-def fpow(x: onp.ToFloat, n: onp.ToFloat, /, out: None = None) -> _Float: ...
+def fpow(x: onp.ToFloat, n: onp.ToFloat, /, out: None = None) -> float: ...
 @overload
 def fpow(x: onp.ToFloat, n: onp.ToFloatND, /, out: None = None) -> _FloatND: ...
-@overload
-def fpow(x: onp.ToFloat, n: onp.ToFloatND, /, out: _OutT) -> _OutT: ...
 @overload
 def fpow(
     x: onp.ToFloatND,
@@ -43,7 +44,7 @@ def fpow(
 ) -> _FloatND: ...
 @overload
 def fpow(
-    x: onp.ToFloatND,
+    x: onp.ToFloat | onp.ToFloatND,
     n: onp.ToFloat | onp.ToFloatND,
     /,
     out: _OutT,
@@ -53,7 +54,7 @@ def fpow(
     n: onp.ToFloat | onp.ToFloatND,
     /,
     out: _OutT | None = None,
-) -> _OutT | _Float | _FloatND:
+) -> float | _FloatND | _OutT:
     r"""
     Factorial power, or falling factorial.
 
@@ -74,11 +75,14 @@ def fpow(
     See Also:
         - [`scipy.special.poch`][scipy.special.poch] -- the rising factorial
     """
-    _x, _n = np.asanyarray(x), np.asanyarray(n)
-    res = sps.poch(_x - _n + 1, _n, out=out)
-    if res.ndim == 0 and np.isscalar(x) and np.isscalar(n):
-        return res[()]
-    return res
+    _x: _FloatND = np.asanyarray(x)
+    _n: _FloatND = np.asanyarray(n)
+
+    if out is not None:
+        return sps.poch(_x - _n + 1, _n, out=out)
+
+    res = sps.poch(_x - _n + 1, _n)
+    return res.item() if res.ndim == 0 and np.isscalar(x) and np.isscalar(n) else res
 
 
 @overload
@@ -117,8 +121,18 @@ def gamma2(
           regularized gamma function \( Q(a,\ x) \).
     """
     if a == 0:
-        return sps.exp1(x, out=out)
-    return sps.gammaincc(a, x, out=out) * sps.gamma(a)
+        return sps.expm1(x, out=out)
+
+    g = sps.gamma(a)
+
+    if out is not None:
+        out = sps.gammaincc(a, x, out=out)
+        np.multiply(out, g, out=out)
+        return out
+
+    res = sps.gammaincc(a, x)
+    res *= g
+    return res
 
 
 @overload
@@ -131,7 +145,7 @@ def harmonic(
     n: onp.ToFloat | onp.ToFloatND,
     /,
     out: _OutT | None = None,
-) -> _OutT | float | _FloatND:
+) -> float | _FloatND | _OutT:
     r"""
     Harmonic number \( H_n = \sum_{k=1}^{n} 1 / k \), extended for real and
     complex argument via analytic contunuation.
@@ -160,16 +174,34 @@ def harmonic(
     See Also:
         - [Harmonic number - Wikipedia](https://w.wiki/A63b)
     """
-    _n = np.asanyarray(n)
-    _out = sps.digamma(_n + 1, out) + np.euler_gamma
-    return _out.item() if np.isscalar(n) and out is None else _out
+    _z = np.asanyarray(n) + 1
+
+    if out is not None:
+        sps.digamma(_z, out=out)
+        np.add(out, np.euler_gamma, out=out)
+        return out
+
+    hn = sps.digamma(_z) + np.euler_gamma
+    return hn.item() if np.isscalar(n) else hn
 
 
 @overload
-def norm_sh_jacobi(n: lmt.ToOrder0D, alpha: float, beta: float) -> _Float: ...
+def norm_sh_jacobi(
+    n: lmt.ToOrder0D,
+    alpha: onp.ToFloat,
+    beta: onp.ToFloat,
+) -> float: ...
 @overload
-def norm_sh_jacobi(n: lmt.ToOrderND, alpha: float, beta: float) -> _FloatND: ...
-def norm_sh_jacobi(n: lmt.ToOrder, alpha: float, beta: float) -> _Float | _FloatND:
+def norm_sh_jacobi(
+    n: lmt.ToOrderND,
+    alpha: onp.ToFloat,
+    beta: onp.ToFloat,
+) -> _FloatND: ...
+def norm_sh_jacobi(
+    n: lmt.ToOrder,
+    alpha: onp.ToFloat,
+    beta: onp.ToFloat,
+) -> float | _FloatND:
     r"""
     Evaluate the (weighted) \( L^2 \)-norm of a shifted Jacobi polynomial.
 
@@ -217,23 +249,28 @@ def norm_sh_jacobi(n: lmt.ToOrder, alpha: float, beta: float) -> _Float | _Float
         p, q = r + alpha, r + beta
         c = np.exp(sps.betaln(p, q) - sps.betaln(r, p + beta)) / (p + q - 1)
 
-    return c[()] if r.ndim == 0 and np.isscalar(n) else c
+    return c.item() if np.isscalar(n) else c
 
 
 @overload
-def fourier_jacobi(x: onp.ToFloat, c: onp.ToFloatND, a: float, b: float) -> _Float: ...
+def fourier_jacobi(
+    x: onp.ToFloat,
+    c: onp.ToFloatND,
+    a: onp.ToFloat,
+    b: onp.ToFloat,
+) -> _Float: ...
 @overload
 def fourier_jacobi(
     x: onp.ToFloatND,
     c: onp.ToFloatND,
-    a: float,
-    b: float,
+    a: onp.ToFloat,
+    b: onp.ToFloat,
 ) -> _FloatND: ...
 def fourier_jacobi(
     x: onp.ToFloat | onp.ToFloatND,
     c: onp.ToFloatND,
-    a: float,
-    b: float,
+    a: onp.ToFloat,
+    b: onp.ToFloat,
 ) -> _Float | _FloatND:
     r"""
     Evaluate the Fourier-Jacobi series, using the Clenshaw summation
@@ -278,14 +315,14 @@ def fourier_jacobi(
         - [Jacobi Polynomial - Worlfram Mathworld](
         https://mathworld.wolfram.com/JacobiPolynomial.html)
     """
-    _c = np.array(c, ndmin=1)
+    _c = np.array(c, ndmin=1, copy=None)
     if _c.dtype.char in _DTYPE_CHARS:
         _c = _c.astype(np.float64)
 
     _x = np.asanyarray(x)
 
     if len(_c) == 0:
-        return 0.0 * _x
+        return 0.0 if np.isscalar(x) else 0.0 * _x
 
     # temporarily replace inf's with abs(_) > 1, and track the sign
     if hasinfs := np.any(infs := np.isinf(_x)):
@@ -313,10 +350,10 @@ def fourier_jacobi(
 
     # results of jacobi polynomial for n=0 and n=1
     f0 = 1
-    f1 = (a - b + (a + b + 2) * _x) / 2
+    f1 = (a - float(b) + (a + b + 2) * _x) / 2
 
     # beta[1]
-    q1 = -((a + 1) * (b + 1) * (a + b + 4) / (2 * (a + b + 2) ** 2))
+    q1 = -(a + 1) * (b + 1) * (a + b + 4) / (2 * (a + b + 2) ** 2)
 
     # Behold! The magic of Clenshaw's algorithm:
     out = _c[0] * f0 + y1 * f1 + y2 * q1 * f0
@@ -326,4 +363,4 @@ def fourier_jacobi(
         out[infs] = np.inf * np.sign(out[infs] - _c[0] * f0)
 
     # unpack array iff `x` is scalar; 0-d arrays will pass through
-    return out[()] if np.isscalar(x) else out
+    return out.item() if np.isscalar(x) else out

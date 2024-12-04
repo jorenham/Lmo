@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import sys
 from collections.abc import Callable
-from math import gamma, log
+from math import gamma, inf, log, nan
 from typing import (
     TYPE_CHECKING,
     Concatenate,
@@ -95,10 +95,12 @@ _PPF_REGISTRY: Final[set[str]] = {
 
 _Tss = ParamSpec("_Tss")
 
+_Float: TypeAlias = float | np.float32 | np.float64
 # (r, s, t, *params) -> float
-_LmFunc: TypeAlias = Callable[Concatenate[int, float, float, _Tss], float | np.float64]
+_LmFunc: TypeAlias = Callable[Concatenate[int, int, int, _Tss], _Float]
+_LmFuncF: TypeAlias = Callable[Concatenate[int, float, float, _Tss], _Float]
 
-_F1_co = TypeVar("_F1_co", bound=_LmFunc[...], covariant=True)
+_F1_co = TypeVar("_F1_co", bound=_LmFuncF[...], covariant=True)
 
 
 class _LmVFuncWrapper(Protocol[_F1_co]):
@@ -107,7 +109,7 @@ class _LmVFuncWrapper(Protocol[_F1_co]):
 
     @overload
     def __call__(
-        self: _LmVFuncWrapper[_LmFunc[_Tss]],
+        self: _LmVFuncWrapper[_LmFuncF[_Tss]],
         x: onp.ToInt,
         s: float,
         t: float,
@@ -117,7 +119,7 @@ class _LmVFuncWrapper(Protocol[_F1_co]):
     ) -> onp.Array[tuple[()], np.float64]: ...
     @overload
     def __call__(
-        self: _LmVFuncWrapper[_LmFunc[_Tss]],
+        self: _LmVFuncWrapper[_LmFuncF[_Tss]],
         x: onp.ToIntND,
         s: float,
         t: float,
@@ -127,7 +129,7 @@ class _LmVFuncWrapper(Protocol[_F1_co]):
     ) -> onp.ArrayND[np.float64]: ...
 
 
-_LmVFunc: TypeAlias = _LmVFuncWrapper[_LmFunc[_Tss]]
+_LmVFunc: TypeAlias = _LmVFuncWrapper[_LmFuncF[_Tss]]
 
 
 _LN2: Final = log(2)
@@ -175,8 +177,26 @@ def prefers_ppf(name: str, /) -> bool:
     return name in _PPF_REGISTRY
 
 
+@overload
+def _require_integral_trim(trim: float) -> int: ...
+@overload
+def _require_integral_trim(trim: tuple[float, float]) -> tuple[int, int]: ...
+def _require_integral_trim(trim: float | tuple[float, float]) -> int | tuple[int, int]:
+    if isinstance(trim, tuple):
+        s, t = trim
+        if (_s := int(s)) != s or (_t := int(t)) != t:
+            msg = "trim lengths must be integral"
+            raise NotImplementedError(msg)
+        return _s, _t
+
+    if (_t := int(trim)) != trim:
+        msg = "t must be integral"
+        raise NotImplementedError(msg)
+    return _t
+
+
 @register_lm_func("uniform", prefer_ppf=False)
-def lm_uniform(r: int, s: float, t: float, /) -> float:
+def lm_uniform(r: int, s: float, t: int, /) -> float:
     """
     Exact generalized* trimmed L-moments of the standard uniform distribution
     on the interval [0, 1].
@@ -186,9 +206,7 @@ def lm_uniform(r: int, s: float, t: float, /) -> float:
     if r == 0:
         return 1
 
-    if not isinstance(t, int):
-        msg = "t must be an integer"
-        raise NotImplementedError(msg)
+    t = _require_integral_trim(t)
 
     if r == 1:
         return (1 + s) / (2 + s + t)
@@ -198,17 +216,12 @@ def lm_uniform(r: int, s: float, t: float, /) -> float:
 
 
 @register_lm_func("logistic")
-def lm_logistic(r: int, s: float, t: float, /) -> float:
-    """
-    Exact generalized trimmed L-moments of the standard logistic
-    distribution.
-    """
+def lm_logistic(r: int, s: float, t: int, /) -> _Float:
+    """Exact generalized trimmed L-moments of the standard logistic distribution."""
     if r == 0:
         return 1
 
-    if isinstance(t, float) and not t.is_integer():
-        msg = "t must be an integer"
-        raise NotImplementedError(msg)
+    t = _require_integral_trim(t)
 
     # symmetric trimming
     if s == t:
@@ -220,7 +233,7 @@ def lm_logistic(r: int, s: float, t: float, /) -> float:
                 return 1
             if r == 4:
                 return 1 / 6
-        if s == 1:
+        elif s == 1:
             if r == 2:
                 return 1 / 2
             if r == 4:
@@ -237,7 +250,7 @@ def lm_logistic(r: int, s: float, t: float, /) -> float:
 
 
 @register_lm_func("expon")
-def lm_expon(r: int, s: float, t: float, /) -> float:
+def lm_expon(r: int, s: float, t: float, /) -> _Float:
     """
     Exact generalized trimmed L-moments of the standard exponential
     distribution.
@@ -263,7 +276,7 @@ def lm_expon(r: int, s: float, t: float, /) -> float:
 
 
 @register_lm_func("gumbel_r")
-def lm_gumbel_r(r: int, s: float, t: float, /) -> np.float64 | float:
+def lm_gumbel_r(r: int, s: int, t: int, /) -> _Float:
     """
     Exact trimmed L-moments of the Gumbel / Extreme Value (EV) distribution.
 
@@ -272,9 +285,7 @@ def lm_gumbel_r(r: int, s: float, t: float, /) -> np.float64 | float:
     if r == 0:
         return 1
 
-    if not isinstance(s, int) or not isinstance(t, int):
-        msg = "fractional trimming"
-        raise NotImplementedError(msg)
+    s, t = _require_integral_trim((s, t))
 
     match (r, s, t):
         case (1, 0, 0):
@@ -310,14 +321,14 @@ def lm_gumbel_r(r: int, s: float, t: float, /) -> np.float64 | float:
 
 
 @register_lm_func("gumbel_l")
-def lm_gumbel_l(r: int, s: float, t: float, /) -> np.float64 | float:
+def lm_gumbel_l(r: int, s: int, t: int, /) -> _Float:
     """The reflected version of `lm_gumbel_r`."""
     sign = -1 if r % 2 else 1
     return sign * lm_gumbel_r.pyfunc(r, t, s)
 
 
 @register_lm_func("genextreme")
-def lm_genextreme(r: int, s: float, t: float, /, a: float) -> np.float64 | float:
+def lm_genextreme(r: int, s: int, t: int, /, a: float) -> _Float:
     """
     Exact trimmed L-moments of the Generalized Extreme Value (GEV)
     distribution.
@@ -327,11 +338,9 @@ def lm_genextreme(r: int, s: float, t: float, /, a: float) -> np.float64 | float
     if r == 0:
         return 1
 
-    if not isinstance(s, int) or not isinstance(t, int):
-        msg = "fractional trimming"
-        raise NotImplementedError(msg)
+    s, t = _require_integral_trim((s, t))
 
-    if a < 0 and (isinstance(a, int) or a.is_integer()):
+    if a < 0 and int(a) == a:
         msg = "a cannot be a negative integer"
         raise ValueError(msg)
 
@@ -351,15 +360,15 @@ def lm_genextreme(r: int, s: float, t: float, /, a: float) -> np.float64 | float
         ) * (-1) ** (r + s) / r  # fmt: skip
 
     # NOTE: some performance notes:
-    # - `math.log` is faster for scalar input that `numpy.log`
+    # - `log` is faster for scalar input that `numpy.log`
     # - conditionals within the function are avoided through multiple functions
     if a == 0:
 
         def _ppf(q: float, /) -> float:
             if q <= 0:
-                return -float("inf")
+                return -inf
             if q >= 1:
-                return float("inf")
+                return inf
             return -log(-log(q))
 
     elif a < 0:
@@ -368,14 +377,14 @@ def lm_genextreme(r: int, s: float, t: float, /, a: float) -> np.float64 | float
             if q <= 0:
                 return 1 / a
             if q >= 1:
-                return float("inf")
+                return inf
             return (1 - (-log(q)) ** a) / a
 
     else:  # a > 0
 
         def _ppf(q: float, /) -> float:
             if q <= 0:
-                return -float("inf")
+                return -inf
             if q >= 1:
                 return 1 / a
             return (1 - (-log(q)) ** a) / a
@@ -384,7 +393,7 @@ def lm_genextreme(r: int, s: float, t: float, /, a: float) -> np.float64 | float
 
 
 @register_lm_func("genpareto")
-def lm_genpareto(r: int, s: float, t: float, /, a: float) -> np.float64 | float:
+def lm_genpareto(r: int, s: float, t: int, /, a: float) -> _Float:
     """Exact trimmed L-moments of the Generalized Pareto distribution (GPD)."""
     if r == 0:
         return 1
@@ -393,12 +402,10 @@ def lm_genpareto(r: int, s: float, t: float, /, a: float) -> np.float64 | float:
     if a == 1:
         return lm_uniform.pyfunc(r, s, t)
 
-    if not isinstance(t, int):
-        msg = "fractional trimming"
-        raise NotImplementedError(msg)
+    t = _require_integral_trim(t)
 
     if a >= 1 + t:
-        return float("nan")
+        return nan
 
     b = a - 1
     n = r + s + t + 1
@@ -412,14 +419,7 @@ def lm_genpareto(r: int, s: float, t: float, /, a: float) -> np.float64 | float:
 
 
 @register_lm_func("kumaraswamy")
-def lm_kumaraswamy(
-    r: int,
-    s: float,
-    t: float,
-    /,
-    a: float,
-    b: float,
-) -> np.float64 | float:
+def lm_kumaraswamy(r: int, s: int, t: int, /, a: float, b: float) -> _Float:
     """
     Exact trimmed L-moments of (the location-scale reparametrization of)
     Kumaraswamy's distribution [@kumaraswamy1980].
@@ -429,9 +429,7 @@ def lm_kumaraswamy(
     if r == 0:
         return 1
 
-    if not isinstance(s, int) or not isinstance(t, int):
-        msg = "fractional trimming not supported"
-        raise NotImplementedError(msg)
+    s, t = _require_integral_trim((s, t))
 
     k = np.arange(t + 1, r + s + t + 1)
     return (
@@ -447,15 +445,7 @@ def lm_kumaraswamy(
 
 
 @register_lm_func("wakeby")
-def lm_wakeby(
-    r: int,
-    s: float,
-    t: float,
-    /,
-    b: float,
-    d: float,
-    f: float,
-) -> float | np.float64:
+def lm_wakeby(r: int, s: float, t: float, /, b: float, d: float, f: float) -> _Float:
     """
     Exact generalized trimmed L-moments of (the location-scale
     reparametrization of) Wakeby's distribution [@houghton1978].
@@ -466,7 +456,7 @@ def lm_wakeby(
     if d >= (b == 0) + 1 + t:
         return np.nan
 
-    def _lmo0_partial(theta: float, scale: float, /) -> float | np.float64:
+    def _lmo0_partial(theta: float, scale: float, /) -> _Float:
         if scale == 0:
             return 0
         if r == 1 and theta == 0:
@@ -483,7 +473,7 @@ def lm_wakeby(
             / r
         )
 
-    return float(_lmo0_partial(b, f) + _lmo0_partial(-d, 1 - f))
+    return _lmo0_partial(b, f) + _lmo0_partial(-d, 1 - f)
 
 
 @register_lm_func("genlambda")

@@ -70,7 +70,7 @@ def gumbel_ppf(p: float, loc: float = 0, scale: float = 1) -> float:
 
 
 def gumbel_qdf(p: float, loc: float = 0, scale: float = 1) -> float:
-    return loc - scale / xlogy(p, p)
+    return loc - scale / float(xlogy(p, p))
 
 
 def rayleigh_cdf(x: float) -> float:

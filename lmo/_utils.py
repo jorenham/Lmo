@@ -316,9 +316,7 @@ def clean_order(
         msg = f"expected {name} >= {rmin}, got {r}"
         raise TypeError(msg)
 
-    # Pyright doesn't seem to realize that its internal `Unknown` "type" is literally
-    # defined as `Any` within gradual type-systems like Python typing...
-    return int(r)  # pyright: ignore[reportUnknownArgumentType]
+    return int(r)
 
 
 @overload

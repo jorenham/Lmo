@@ -59,7 +59,9 @@ class _Fn1(Protocol):
 
 
 _Tuple2: TypeAlias = tuple[_T, _T]
-_FloatND: TypeAlias = onp.ArrayND[np.float64]
+
+_Float: TypeAlias = float | np.float32 | np.float64
+_FloatND: TypeAlias = onp.ArrayND[np.float32 | np.float64]
 
 
 _MIN_RHO: Final[float] = 1e-5
@@ -78,8 +80,8 @@ class HypothesisTestResult(NamedTuple):
             hypothesis, $H_0$.
     """
 
-    statistic: float | _FloatND
-    pvalue: float | _FloatND
+    statistic: _Float | _FloatND
+    pvalue: _Float | _FloatND
 
     @property
     def is_valid(self) -> np.bool_ | onp.ArrayND[np.bool_]:
@@ -88,7 +90,7 @@ class HypothesisTestResult(NamedTuple):
 
     def is_significant(
         self,
-        level: float | np.floating[Any] = 0.05,
+        level: _Float | np.floating[Any] = 0.05,
         /,
     ) -> np.bool_ | onp.ArrayND[np.bool_]:
         """
@@ -211,7 +213,7 @@ def l_moment_gof(
     trim: lmt.ToTrim = 0,
     **kwargs: Any,
 ) -> HypothesisTestResult:
-    r"""
+    """
     Goodness-of-fit (GOF) hypothesis test for the null hypothesis that the
     observed L-moments come from a distribution with the given
     [`scipy.stats`][scipy.stats] distribution or cumulative distribution
@@ -224,14 +226,14 @@ def l_moment_gof(
     The test statistic is the squared Mahalanobis distance between the $n$
     observed L-moments, and the theoretical L-moments. It asymptically (in
     sample size) follows the
-    [$\chi^2$](https://wikipedia.org/wiki/Chi-squared_distribution)
+    [`Chi-squared`](https://wikipedia.org/wiki/Chi-squared_distribution)
     distribution, with $n$ degrees of freedom.
 
     The sample L-moments are expected to be of consecutive orders
-    $r = 1, 2, \dots, n$.
+    `r = 1, 2, ..., n`.
     Generally, the amount of L-moments $n$ should not be less than the amount
     of parameters of the distribution, including the location and scale
-    parameters. Therefore, it is required to have $n \ge 2$.
+    parameters. Therefore, it is required to have `n <= 2`.
 
     Notes:
         The theoretical L-moments and their covariance matrix are calculated
@@ -273,7 +275,7 @@ def l_moment_gof(
 
     See Also:
         - [`l_moment_from_cdf`][lmo.theoretical.l_moment_from_cdf]
-        - ['l_moment_cov_from_cdf'][lmo.theoretical.l_moment_cov_from_cdf]
+        - [`l_moment_cov_from_cdf`][lmo.theoretical.l_moment_cov_from_cdf]
 
     """
     l_r = np.asarray_chkfinite(l_moments)
@@ -297,7 +299,7 @@ def l_moment_gof(
 
     from scipy.special import chdtrc
 
-    stat = n_obs * _gof_stat(l_r.T, lambda_r, lambda_rr).T[()]
+    stat: _Float | _FloatND = n_obs * _gof_stat(l_r.T, lambda_r, lambda_rr).T[()]
     pval = chdtrc(n, stat)
     return HypothesisTestResult(stat, pval)
 
@@ -333,7 +335,7 @@ def l_stats_gof(
 
     from scipy.special import chdtrc
 
-    stat = n_obs * _gof_stat(t_r.T, tau_r, tau_rr).T[()]
+    stat: _Float | _FloatND = n_obs * _gof_stat(t_r.T, tau_r, tau_rr).T[()]
     pval = chdtrc(n, stat)
     return HypothesisTestResult(stat, pval)
 
@@ -366,9 +368,11 @@ def _lm2_bounds_single(r: int, trim: _Tuple2[float]) -> float:
             ) / (np.pi * 2 * r**2)
 
 
-_lm2_bounds: Final = cast(
-    "Callable[[lmt.ToOrderND, _Tuple2[float]], _FloatND]",
-    np.vectorize(_lm2_bounds_single, otypes=[float], excluded={1}, signature="()->()"),
+_lm2_bounds: Final = np.vectorize(
+    _lm2_bounds_single,
+    otypes=[float],
+    excluded={1},
+    signature="()->()",
 )
 
 
@@ -377,20 +381,20 @@ def l_moment_bounds(
     r: lmt.ToOrder0D,
     /,
     trim: lmt.ToTrim = 0,
-    scale: float = 1.0,
+    scale: _Float = 1,
 ) -> float: ...
 @overload
 def l_moment_bounds(
     r: lmt.ToOrderND,
     /,
     trim: lmt.ToTrim = 0,
-    scale: float = 1.0,
+    scale: _Float = 1,
 ) -> _FloatND: ...
 def l_moment_bounds(
     r: lmt.ToOrder,
     /,
     trim: lmt.ToTrim = 0,
-    scale: float = 1.0,
+    scale: _Float = 1,
 ) -> float | _FloatND:
     r"""
     Returns the absolute upper bounds $L^{(s,t)}_r$ on L-moments
