@@ -372,10 +372,10 @@ def sh_jacobi(
         msg = "k, a, and b must be >= 0"
         raise ValueError(msg)
 
-    _sctype = dtype or np.array([a, b]).dtype.type
-    if np.issubdtype(_sctype, np.integer) or np.issubdtype(_sctype, np.bool_):
-        return _sh_jacobi_i(k, int(a), int(b), dtype=_sctype)
-    return _sh_jacobi_f(k, float(a), float(b), dtype=_sctype)
+    sctype = dtype or np.array([a, b]).dtype.type
+    if np.issubdtype(sctype, np.integer) or np.issubdtype(sctype, np.bool_):
+        return _sh_jacobi_i(k, int(a), int(b), dtype=sctype)
+    return _sh_jacobi_f(k, float(a), float(b), dtype=sctype)
 
 
 def succession_matrix(c: onp.Array1D[_ST] | onp.Array2D[_ST], /) -> onp.Array2D[_ST]:
@@ -406,14 +406,14 @@ def succession_matrix(c: onp.Array1D[_ST] | onp.Array2D[_ST], /) -> onp.Array2D[
                [0, 0, 5, 6, 0],
                [0, 0, 0, 7, 8]])
     """
-    _c: onp.Array2D[_ST] = np.atleast_2d(c)
+    c_: onp.Array2D[_ST] = np.atleast_2d(c)
 
-    n, k = _c.shape
+    n, k = c_.shape
     i = np.arange(n)
 
-    out = np.zeros((n, n + k - 1), dtype=_c.dtype)
+    out = np.zeros((n, n + k - 1), dtype=c_.dtype)
     for d in range(k):
-        out[i, i + d] = _c[:, d]
+        out[i, i + d] = c_[:, d]
     return out
 
 

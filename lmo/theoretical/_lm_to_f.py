@@ -40,9 +40,9 @@ def _validate_l_bounds(l_r: _FloatND, s: float, t: float) -> None:
     # but rewritten using falling factorials, to avoid potential overflows
     tau = l_r[2:] / l2
 
-    _r = np.arange(3, len(l_r) + 1)
+    r = np.arange(3, len(l_r) + 1)
     m = max(s, t) + 1
-    tau_absmax = 2 * fpow(_r + s + t, m) / (_r * fpow(2 + s + t, m))
+    tau_absmax = 2 * fpow(r + s + t, m) / (r * fpow(2 + s + t, m))
 
     if np.any(invalid := np.abs(tau) > tau_absmax):
         r_invalid = list(np.argwhere(invalid) + 3)
@@ -186,11 +186,11 @@ def ppf_from_l_moments(
         y = np.asarray(u)
         y = np.where((y < 0) | (y > 1), np.nan, 2 * y - 1)
 
-        _c = c[:r_max] if 0 < r_max < len(c) else c
+        c_ = c[:r_max] if 0 < r_max < len(c) else c
 
-        x = fourier_jacobi(y, _c, t, s)
+        x = fourier_jacobi(y, c_, t, s)
         if extrapolate and _n > 2:
-            x = (x + fourier_jacobi(y, _c[:-1], t, s)) / 2
+            x = (x + fourier_jacobi(y, c_[:-1], t, s)) / 2
 
         return np.clip(x, *support)[()]  # pyright: ignore[reportReturnType]
 
@@ -262,11 +262,11 @@ def qdf_from_l_moments(
         # TODO: make this lazy
         y = np.where((y < 0) | (y > 1), np.nan, 2 * y - 1)
 
-        _c = c[:r_max] if 0 < r_max < len(c) else c
+        c_ = c[:r_max] if 0 < r_max < len(c) else c
 
-        x = fourier_jacobi(y, _c, alpha, beta)
+        x = fourier_jacobi(y, c_, alpha, beta)
         if extrapolate and _n > 2:
-            x = (x + fourier_jacobi(y, _c[:-1], alpha, beta)) / 2
+            x = (x + fourier_jacobi(y, c_[:-1], alpha, beta)) / 2
 
         return x[()]  # pyright: ignore[reportReturnType]
 

@@ -152,17 +152,17 @@ def l_moment_cov_from_cdf(
 
     s, t = clean_trim(trim)
 
-    _cdf = functools.cache(cdf)
+    cdf_ = functools.cache(cdf)
 
     if support is None:
-        a, b = tighten_cdf_support(_cdf, (-np.inf, np.inf))
+        a, b = tighten_cdf_support(cdf_, (-np.inf, np.inf))
     else:
         a, b = map(float, support)
 
     c_n = np.array([l_const(n + 1, s, t) for n in range(rs)])
 
     def integrand(x: float, y: float, k: int, r: int) -> float:
-        u, v = _cdf(x), _cdf(y)
+        u, v = cdf_(x), cdf_(y)
         return (
             c_n[k]
             * c_n[r]

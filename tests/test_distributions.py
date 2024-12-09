@@ -109,19 +109,19 @@ def test_genlambda_tukeylamba(lam: float):
     assert x[-1] <= X.support()[1]
     assert_allclose(x, x0)
 
-    _pp = cast(
+    pp = cast(
         "npt.NDArray[np.float64]",
         np.linspace(X0.ppf(0.05), X0.ppf(0.95), 100),
     )
-    u0 = X0.cdf(_pp)
-    u = X.cdf(_pp)
+    u0 = X0.cdf(pp)
+    u = X.cdf(pp)
     assert_allclose(u, u0)
 
     # the `scipy.statstukeylambda` implementation kinda sucks,,,
     with np.errstate(divide="ignore"):
-        du0 = X0.pdf(_pp)
+        du0 = X0.pdf(pp)
 
-    du = X.pdf(_pp)
+    du = X.pdf(pp)
     assert_allclose(du, du0)
 
     s0 = X0.var()

@@ -367,27 +367,27 @@ def fit(  # noqa: C901
     n_par = len(theta)
 
     if r is None:
-        _r = np.arange(1, len(l_r) + 1, dtype=np.intp)
+        r_ = np.arange(1, len(l_r) + 1, dtype=np.intp)
     else:
-        _r = clean_orders(np.asarray(r, np.intp))
+        r_ = clean_orders(np.asarray(r, np.intp))
 
-        _r_nonzero = _r != 0
-        l_r, _r = l_r[_r_nonzero], _r[_r_nonzero]
+        r_nonzero = r_ != 0
+        l_r, r_ = l_r[r_nonzero], r_[r_nonzero]
 
-    if (n_con := len(_r)) < n_par:
+    if (n_con := len(r_)) < n_par:
         msg = f"under-determined L-moment conditions: {n_con} < {n_par}"
         raise ValueError(msg)
 
-    _trim = clean_trim(trim)
-    _r = np.arange(1, n_con + 1, dtype=np.intp)
+    trim_ = clean_trim(trim)
+    r_ = np.arange(1, n_con + 1, dtype=np.intp)
 
     # Individual L-moment "natural" scaling constants, making their magnitudes
     # order- and trim- agnostic (used in convergence criterion)
-    scale_r = l_coef_factor(_r, _trim[0], _trim[1]) / l_r[1]
+    scale_r = l_coef_factor(r_, trim_[0], trim_[1]) / l_r[1]
 
     # Initial parametric population L-moments
-    _l_moment_fn = l_moment_fn or _get_l_moment_fn(ppf)
-    lmbda_r = _l_moment_fn(_r, *theta, trim=_trim)
+    l_moment_fn_ = l_moment_fn or _get_l_moment_fn(ppf)
+    lmbda_r = l_moment_fn_(r_, *theta, trim=trim_)
 
     # Prepare the converge criteria
     if k:
@@ -428,13 +428,13 @@ def fit(  # noqa: C901
     for _k in range(1, k_max + 1):
         # calculate the weight matrix
         if n_con > n_par and qs is not None:
-            w_rr = _get_weights_mc(ppf(qs, *theta), _r, trim=_trim)
+            w_rr = _get_weights_mc(ppf(qs, *theta), r_, trim=trim_)
 
         # run the optimizer
         res = minimize(
             _loss_step,
             theta,
-            args=(_l_moment_fn, _r, l_r, _trim, w_rr),
+            args=(l_moment_fn_, r_, l_r, trim_, w_rr),
             **kwds,
         )
         i += res.nfev
@@ -449,7 +449,7 @@ def fit(  # noqa: C901
 
         # re-evaluate the theoretical L-moments for the new params
         lmbda_r0 = lmbda_r
-        lmbda_r = _l_moment_fn(_r, *theta, trim=_trim)
+        lmbda_r = l_moment_fn_(r_, *theta, trim=trim_)
 
         # convergence criterion
         eps = (lmbda_r - lmbda_r0) * scale_r
@@ -462,7 +462,7 @@ def fit(  # noqa: C901
         success=success,
         statistic=float(fun**2),
         eps=eps,
-        n_samp=n_obs - int(sum(_trim)),
+        n_samp=n_obs - int(sum(trim_)),
         n_step=_k,
         n_iter=i,
         weights=w_rr,

@@ -248,28 +248,28 @@ class l_rv_generic(PatchClass):
         See Also:
             - [`lmo.l_moment`][lmo.l_moment]: sample L-moment
         """
-        _r = np.asarray(clean_order(r), np.intp)
-        (s, t) = _trim = clean_trim(trim)
+        r_ = np.asarray(clean_order(r), np.intp)
+        (s, t) = trim_ = clean_trim(trim)
 
         shapes, loc, scale = self._parse_args(*args, **kwds)
 
         if s <= 0 and t <= 0:
-            _mean = self._stats(*shapes)[0]
-            if _mean is None:
-                _mean = self.mean(*shapes)
-            if not np.isfinite(_mean):
+            mean = self._stats(*shapes)[0]
+            if mean is None:
+                mean = self.mean(*shapes)
+            if not np.isfinite(mean):
                 # first moment condition not met
-                return np.full(_r.shape, np.nan)[()]
+                return np.full(r_.shape, np.nan)[()]
 
         if not self._argcheck(*shapes):
-            return np.full(_r.shape, np.nan)[()]
+            return np.full(r_.shape, np.nan)[()]
 
         # L-moments of the standard distribution (loc=0, scale=scale0)
-        l0_r = _l_moment(self, _r, *shapes, trim=_trim, quad_opts=quad_opts)
+        l0_r = _l_moment(self, r_, *shapes, trim=trim_, quad_opts=quad_opts)
 
         # shift (by loc) and scale
-        shift_r: onp.ArrayND[np.float64] = loc * (_r == 1)
-        scale_r: onp.ArrayND[np.float64] = scale * (_r > 0) + (_r == 0)
+        shift_r: onp.ArrayND[np.float64] = loc * (r_ == 1)
+        scale_r: onp.ArrayND[np.float64] = scale * (r_ > 0) + (r_ == 0)
         l_r = shift_r + scale_r * l0_r
 
         # round near zero values to 0
@@ -1143,25 +1143,25 @@ class l_rv_generic(PatchClass):
 
         r = np.arange(1, len(args0) + n_extra + 1)
 
-        _lmo_cache: dict[tuple[float, ...], _FloatND] = {}
-        _lmo_fn = _l_moment
+        lmo_cache: dict[tuple[float, ...], _FloatND] = {}
+        lmo_fn_ = _l_moment
 
         # temporary cache to speed up L-moment calculations with the same
         # shape args
         def lmo_fn(
-            _r: onp.ArrayND[np.intp],
-            *_args: float,
+            r_: onp.ArrayND[np.intp],
+            *args_: float,
             **kwds: Unpack[_TrimKwargs],
         ) -> _FloatND:
-            shapes, loc, scale = _args[:-2], _args[-2], _args[-1]
+            shapes, loc, scale = args_[:-2], args_[-2], args_[-1]
 
             # r and trim are constants, so it's safe to ignore them here
-            if shapes in _lmo_cache:
-                lmbda_r = _lmo_cache[shapes]
+            if shapes in lmo_cache:
+                lmbda_r = lmo_cache[shapes]
             else:
-                lmbda_r = _lmo_fn(self, _r, *shapes, **kwds)
+                lmbda_r = lmo_fn_(self, r_, *shapes, **kwds)
                 lmbda_r.setflags(write=False)  # prevent cache corruption
-                _lmo_cache[shapes] = lmbda_r
+                lmo_cache[shapes] = lmbda_r
 
             # ensure we're working with a copy
             lmbda_r = lmbda_r * scale  # noqa: PLR6104
@@ -1454,13 +1454,13 @@ def _get_xxf(
 ) -> _Tuple2[_Fn1]:
     assert scale > 0
 
-    _cdf, _ppf = self._cdf, self._ppf
+    cdf_, ppf_ = self._cdf, self._ppf
 
     def cdf(x: _T_x, /) -> _T_x:
-        return _cdf(np.array([(x - loc) / scale], dtype=np.float64), *shape)[0]
+        return cdf_(np.array([(x - loc) / scale], dtype=np.float64), *shape)[0]
 
     def ppf(q: _T_x, /) -> _T_x:
-        return _ppf(np.array([q], dtype=np.float64), *shape)[0] * scale + loc
+        return ppf_(np.array([q], dtype=np.float64), *shape)[0] * scale + loc
 
     return cdf, ppf
 

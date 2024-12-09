@@ -214,15 +214,15 @@ def l_comoment(
         x = x.T
     m, n = x.shape
 
-    _r = np.asarray(clean_order(r), np.intp)
+    r_ = np.asarray(clean_order(r), np.intp)
 
     if not m:
-        return np.empty((*np.shape(_r), 0, 0), dtype=dtype)
+        return np.empty((*np.shape(r_), 0, 0), dtype=dtype)
 
-    r_min = np.min(_r)
-    r_max = np.max(_r)
+    r_min = np.min(r_)
+    r_max = np.max(r_)
 
-    if r_min == r_max == 0 and _r.ndim == 0:
+    if r_min == r_max == 0 and r_.ndim == 0:
         return np.identity(m, dtype=dtype)
 
     # projection/hat matrix of shape (r_max - r_min, n)
@@ -242,9 +242,9 @@ def l_comoment(
         # the zeroth L-comoment is the delta function, so the L-comoment
         # matrix is the identity matrix
         l_0ij = np.identity(m, dtype=dtype)[None, :]
-        return np.concat((l_0ij, l_kij)).take(_r, 0)
+        return np.concat((l_0ij, l_kij)).take(r_, 0)
 
-    return l_kij.take(_r - r_min, 0)
+    return l_kij.take(r_ - r_min, 0)
 
 
 @overload

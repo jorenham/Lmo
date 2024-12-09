@@ -118,9 +118,9 @@ def test_l_loc_linearity(
     dscale: float,
 ):
     l1: np.float64 = lmo.l_loc(x, trim)
-    _l1 = l1  # weird pyright bug workaround
-    assert np.isfinite(_l1)
-    assert np.isscalar(_l1)
+    l1_ = l1  # weird pyright bug workaround
+    assert np.isfinite(l1_)
+    assert np.isscalar(l1_)
 
     l1_add = lmo.l_loc(x + dloc, trim)
     assert l1_add == pytest.approx(l1 + dloc, rel=1e-5, abs=1e-8)
@@ -160,9 +160,9 @@ def test_l_scale_invariant_loc(
     dloc: float,
 ):
     l2 = lmo.l_scale(x, trim)
-    _l2 = l2  # weird pyright bug workaround
+    l2_ = l2  # weird pyright bug workaround
     assert np.isfinite(l2)
-    assert np.isscalar(_l2)
+    assert np.isscalar(l2_)
     assert round(l2, 8) >= 0
 
     l2_add = lmo.l_scale(x + dloc, trim)
@@ -180,9 +180,9 @@ def test_l_scale_linear_scale(
     dscale: float,
 ):
     l2 = lmo.l_scale(x, trim)
-    _l2 = l2
+    l2_ = l2
     assert np.isfinite(l2)
-    assert np.isscalar(_l2)
+    assert np.isscalar(l2_)
     assert round(l2, 8) >= 0
 
     # asymmetric trimming flips under sign change

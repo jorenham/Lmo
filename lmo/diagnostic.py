@@ -488,9 +488,9 @@ def l_moment_bounds(
         - [`lmo.l_moment`][lmo.l_moment]
 
     """
-    _r = clean_orders(np.asarray(r), rmin=1)
-    _trim = clean_trim(trim)
-    return scale * np.sqrt(_lm2_bounds(_r, _trim))[()]
+    r_ = clean_orders(np.asarray(r), rmin=1)
+    trim_ = clean_trim(trim)
+    return scale * np.sqrt(_lm2_bounds(r_, trim_))[()]
 
 
 @overload
@@ -611,53 +611,53 @@ def l_ratio_bounds(
         L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
 
     """
-    _r = clean_orders(np.asarray(r))
+    r_ = clean_orders(np.asarray(r))
     s, t = clean_trim(trim)
 
-    t_min = np.empty(_r.shape)
-    t_max = np.empty(_r.shape)
+    t_min = np.empty(r_.shape)
+    t_max = np.empty(r_.shape)
 
-    _cache: dict[int, _Tuple2[float]] = {}
-    for i, ri in np.ndenumerate(_r):
-        _ri = cast("int", ri)
-        if _ri in _cache:
-            t_min[i], t_max[i] = _cache[_ri]
+    cache: dict[int, _Tuple2[float]] = {}
+    for i, ri in np.ndenumerate(r_):
+        ri_ = cast("int", ri)
+        if ri_ in cache:
+            t_min[i], t_max[i] = cache[ri_]
 
-        if _ri == 1:
+        if ri_ == 1:
             # L-loc / L-scale; unbounded
             t_min[i], t_max[i] = -np.inf, np.inf
-        elif _ri in {0, 2}:  # or s == t == 0:
+        elif ri_ in {0, 2}:  # or s == t == 0:
             t_min[i] = t_max[i] = 1
         elif legacy:
             t_absmax = (
                 2
-                * fpow(_ri + s + t, _ri - 2)
-                / fpow(_ri + min(s, t) - 1, _ri - 2)
-                / _ri
+                * fpow(ri_ + s + t, ri_ - 2)
+                / fpow(ri_ + min(s, t) - 1, ri_ - 2)
+                / ri_
             )
             t_min[i] = -t_absmax
             t_max[i] = t_absmax
         else:
             cr_c2 = 2 * (
                 np.exp(
-                    lgamma(_ri - 1)
-                    - np.log(_ri)
+                    lgamma(ri_ - 1)
+                    - np.log(ri_)
                     + lgamma(s + 2)
-                    - lgamma(_ri + s)
+                    - lgamma(ri_ + s)
                     + lgamma(t + 2)
-                    - lgamma(_ri + t)
-                    + lgamma(_ri + s + t + 1)
+                    - lgamma(ri_ + t)
+                    + lgamma(ri_ + s + t + 1)
                     - lgamma(s + t + 3)
                 )
             )
 
-            p_min, p_max = extrema_jacobi(_ri - 2, t + 1, s + 1)
+            p_min, p_max = extrema_jacobi(ri_ - 2, t + 1, s + 1)
             assert p_min < 0 < p_max, (p_min, p_max)
 
             t_min[i] = cr_c2 * p_min
             t_max[i] = cr_c2 * p_max
 
-        _cache[_ri] = t_min[i], t_max[i]
+        cache[ri_] = t_min[i], t_max[i]
 
     return t_min.round(12)[()], t_max.round(12)[()]
 
