@@ -54,8 +54,8 @@ def ensure_axis_at(
 
     if source is None:
         # numpy typing issue workaround
-        _copy = None if copy is None else np.bool_(copy)
-        return a.reshape(-1, order=order, copy=_copy)
+        copy_ = None if copy is None else np.bool_(copy)
+        return a.reshape(-1, order=order, copy=copy_)
 
     if (src := int(source)) == (dst := int(destination)):
         return a.copy() if copy else a
@@ -105,9 +105,9 @@ def round0(
     Todo:
         - Add an `inplace: bool = False` kwarg
     """
-    _a = np.asanyarray(a)
-    _tol = np.finfo(_a.dtype).resolution * 2 if tol is None else abs(tol)
-    out = np.where(np.abs(_a) <= _tol, 0, a)
+    a_ = np.asanyarray(a)
+    tol_ = np.finfo(a_.dtype).resolution * 2 if tol is None else abs(tol)
+    out = np.where(np.abs(a_) <= tol_, 0, a)
     return out[()] if np.isscalar(a) else out
 
 
@@ -123,17 +123,17 @@ def _apply_aweights(
     # ensure that the samples are on the last axis, for easy iterating
     axis = int(axis)
     if swap_axes := axis % x.ndim != x.ndim - 1:
-        _x = np.swapaxes(x, axis, -1)
-        _vv = np.moveaxis(vv, axis, -1)
+        x_ = np.swapaxes(x, axis, -1)
+        vv_ = np.moveaxis(vv, axis, -1)
     else:
-        _x, _vv = x, vv
+        x_, vv_ = x, vv
 
     # cannot use np.apply_along_axis here, since both x_k and w_k need to be
     # applied simultaneously
     out: _AT_f = np.empty_like(x)
 
     for j in np.ndindex(out.shape[:-1]):
-        x_jk, w_jk = _x[j], _vv[j]
+        x_jk, w_jk = x_[j], vv_[j]
         if w_jk[-1] <= 0:
             msg = "weight sum must be positive"
             raise ValueError(msg)
@@ -233,36 +233,36 @@ def ordered(  # noqa: C901
     Calculate `n = len(x)` order stats of `x`, optionally weighted.
     If `y` is provided, the order of `y` is used instead.
     """
-    _x = _z = np.asanyarray(x, dtype=dtype)
+    x_ = z = np.asanyarray(x, dtype=dtype)
 
     # ravel/flatten, without copying
     if axis is None:
-        _x = _x.reshape(-1)
+        x_ = x_.reshape(-1)
 
     # figure out the ordering
     if y is not None:
-        _y = np.asanyarray(y)
+        y_ = np.asanyarray(y)
         if axis is None:
-            _y = _y.reshape(-1)
+            y_ = y_.reshape(-1)
 
         #  sort first by y, then by x (faster than lexsort)
-        if _y.ndim == _x.ndim:
-            _z = _y + 1j * _x
+        if y_.ndim == x_.ndim:
+            z = y_ + 1j * x_
         else:
             assert axis is not None
-            _z = np.apply_along_axis(np.add, axis, 1j * _x, _y)
+            z = np.apply_along_axis(np.add, axis, 1j * x_, y_)
 
     # apply the ordering
     if sort or sort is None:  # pyright: ignore[reportUnnecessaryComparison]
         kind = sort if isinstance(sort, str) else None
-        i_kk = np.argsort(_z, axis=axis, kind=kind)
-        x_kk = _sort_like(_x, i_kk, axis=axis)
+        i_kk = np.argsort(z, axis=axis, kind=kind)
+        x_kk = _sort_like(x_, i_kk, axis=axis)
     else:
         if axis is None:
-            i_kk = np.arange(len(_z))
+            i_kk = np.arange(len(z))
         else:
-            i_kk = np.mgrid[tuple(slice(0, j) for j in _z.shape)][axis]
-        x_kk = _x
+            i_kk = np.mgrid[tuple(slice(0, j) for j in z.shape)][axis]
+        x_kk = x_
 
     # prepare observation weights
     w_kk = None
@@ -340,14 +340,14 @@ def clean_orders(
     rmin: onp.ToInt = 0,
 ) -> onp.ArrayND[np.intp]:
     """Validates and cleans an array-like of (L-)moment orders."""
-    _r = np.asarray_chkfinite(r, dtype=np.intp)
+    r_ = np.asarray_chkfinite(r, dtype=np.intp)
 
-    if np.any(invalid := _r < rmin):
+    if np.any(invalid := r_ < rmin):
         i = np.argmax(invalid)
-        msg = f"expected all {name} >= {rmin}, got {name}[{i}] = {_r[i]} "
+        msg = f"expected all {name} >= {rmin}, got {name}[{i}] = {r_[i]} "
         raise TypeError(msg)
 
-    return _r
+    return r_
 
 
 _COMMON_TRIM1: Final[frozenset[int]] = frozenset({0, 1, 2})

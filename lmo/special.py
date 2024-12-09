@@ -75,13 +75,13 @@ def fpow(
     See Also:
         - [`scipy.special.poch`][scipy.special.poch] -- the rising factorial
     """
-    _x: _FloatND = np.asanyarray(x)
-    _n: _FloatND = np.asanyarray(n)
+    x_: _FloatND = np.asanyarray(x)
+    n_: _FloatND = np.asanyarray(n)
 
     if out is not None:
-        return sps.poch(_x - _n + 1, _n, out=out)
+        return sps.poch(x_ - n_ + 1, n_, out=out)
 
-    res = sps.poch(_x - _n + 1, _n)
+    res = sps.poch(x_ - n_ + 1, n_)
     return res.item() if res.ndim == 0 and np.isscalar(x) and np.isscalar(n) else res
 
 
@@ -174,14 +174,14 @@ def harmonic(
     See Also:
         - [Harmonic number - Wikipedia](https://w.wiki/A63b)
     """
-    _z = np.asanyarray(n) + 1
+    z = np.asanyarray(n) + 1
 
     if out is not None:
-        sps.digamma(_z, out=out)
+        sps.digamma(z, out=out)
         np.add(out, np.euler_gamma, out=out)
         return out
 
-    hn = sps.digamma(_z) + np.euler_gamma
+    hn = sps.digamma(z) + np.euler_gamma
     return hn.item() if np.isscalar(n) else hn
 
 
@@ -315,52 +315,52 @@ def fourier_jacobi(
         - [Jacobi Polynomial - Worlfram Mathworld](
         https://mathworld.wolfram.com/JacobiPolynomial.html)
     """
-    _c = np.array(c, ndmin=1, copy=None)
-    if _c.dtype.char in _DTYPE_CHARS:
-        _c = _c.astype(np.float64)
+    c_ = np.array(c, ndmin=1, copy=None)
+    if c_.dtype.char in _DTYPE_CHARS:
+        c_ = c_.astype(np.float64)
 
-    _x = np.asanyarray(x)
+    x_ = np.asanyarray(x)
 
-    if len(_c) == 0:
-        return 0.0 if np.isscalar(x) else 0.0 * _x
+    if len(c_) == 0:
+        return 0.0 if np.isscalar(x) else 0.0 * x_
 
     # temporarily replace inf's with abs(_) > 1, and track the sign
-    if hasinfs := np.any(infs := np.isinf(_x)):
-        _x = np.where(infs, 10 * np.sign(_x), _x)
+    if hasinfs := np.any(infs := np.isinf(x_)):
+        x_ = np.where(infs, 10 * np.sign(x_), x_)
 
     # "backwards" recursion (left-reduction)
     # y[k+2] and y[k+1]
     y2, y1 = 0.0, 0.0
     # continue until y[0]
-    for k in range(len(_c) - 1, 0, -1):
+    for k in range(len(c_) - 1, 0, -1):
         # Jacobi recurrence terms
         u, v = a + k, b + k
         w = u + v  # = a + b + 2*k
         # alpha[k]
         p1 = (
             (w + 1)
-            * (2 * k * (v - u) + w * (u - v + (w + 2) * _x))
+            * (2 * k * (v - u) + w * (u - v + (w + 2) * x_))
             / (2 * w * (k + 1) * (w - k + 1))
         )
         # beta[k+1]
         q2 = -((u + 1) * (v + 1) * (w + 4) / ((w + 2) * (k + 2) * (w - k + 2)))
 
         # update the state; "forget" y[k+2]
-        y1, y2 = _c[k] + p1 * y1 + q2 * y2, y1
+        y1, y2 = c_[k] + p1 * y1 + q2 * y2, y1
 
     # results of jacobi polynomial for n=0 and n=1
     f0 = 1
-    f1 = (a - float(b) + (a + b + 2) * _x) / 2
+    f1 = (a - float(b) + (a + b + 2) * x_) / 2
 
     # beta[1]
     q1 = -(a + 1) * (b + 1) * (a + b + 4) / (2 * (a + b + 2) ** 2)
 
     # Behold! The magic of Clenshaw's algorithm:
-    out = _c[0] * f0 + y1 * f1 + y2 * q1 * f0
+    out = c_[0] * f0 + y1 * f1 + y2 * q1 * f0
 
     # propagation of 'inf' values, ensuring correct sign
     if hasinfs:
-        out[infs] = np.inf * np.sign(out[infs] - _c[0] * f0)
+        out[infs] = np.inf * np.sign(out[infs] - c_[0] * f0)
 
     # unpack array iff `x` is scalar; 0-d arrays will pass through
     return out.item() if np.isscalar(x) else out

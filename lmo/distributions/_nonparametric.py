@@ -112,16 +112,16 @@ class l_poly:  # noqa: N801
             seed:
                 Random number generator.
         """
-        _lmbda = np.asarray(lmbda)
-        if (_n := len(_lmbda)) < 2:
+        lmbda_ = np.asarray(lmbda)
+        if (_n := len(lmbda_)) < 2:
             msg = f"at least 2 L-moments required, got len(lmbda) = {_n}"
             raise ValueError(msg)
-        self._l_moments = _lmbda
+        self._l_moments = lmbda_
 
-        self._trim = _trim = clean_trim(trim)
+        self._trim = trim_ = clean_trim(trim)
 
-        self._ppf = ppf_from_l_moments(_lmbda, trim=_trim)
-        self._qdf = qdf_from_l_moments(_lmbda, trim=_trim, validate=False)
+        self._ppf = ppf_from_l_moments(lmbda_, trim=trim_)
+        self._qdf = qdf_from_l_moments(lmbda_, trim=trim_, validate=False)
 
         a, b = self._ppf(np.array([0, 1]))
         self._support = a, b
@@ -600,14 +600,14 @@ class l_poly:  # noqa: N801
         """
         out: list[float] = []
 
-        _moments = set(moments)
-        if "m" in _moments:
+        moments_ = set(moments)
+        if "m" in moments_:
             out.append(self._mean)
-        if "v" in _moments:
+        if "v" in moments_:
             out.append(self._var)
-        if "s" in _moments:
+        if "s" in moments_:
             out.append(self._skew)
-        if "k" in _moments:
+        if "k" in moments_:
             out.append(self._kurtosis)
 
         return tuple(round0(np.array(out), 1e-15))
@@ -671,8 +671,8 @@ class l_poly:  # noqa: N801
                 Left- and right- trim. Can be scalar or 2-tuple of
                 non-negative int or float.
         """
-        _trim = self._trim if trim is None else clean_trim(trim)
-        return l_moment_from_ppf(self._ppf, r, trim=_trim)
+        trim_ = self._trim if trim is None else clean_trim(trim)
+        return l_moment_from_ppf(self._ppf, r, trim=trim_)
 
     @overload
     def l_ratio(

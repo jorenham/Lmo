@@ -232,16 +232,16 @@ def l_weights(
         w = _w
     else:
         # when caching, use at least 4 orders, to avoid cache misses
-        _r_max = 4 if cache and r_max < 4 else r_max
+        r_max_ = 4 if cache and r_max < 4 else r_max
 
-        _cache_default = False
+        cache_default = False
         if r_max + s + t <= 24 and isinstance(s, int) and isinstance(t, int):
-            w = _l_weights_pwm(_r_max, n, trim=(s, t), dtype=sctype)
-            _cache_default = True
+            w = _l_weights_pwm(r_max_, n, trim=(s, t), dtype=sctype)
+            cache_default = True
         else:
-            w = _l_weights_ostat(_r_max, n, trim=(s, t), dtype=sctype)
+            w = _l_weights_ostat(r_max_, n, trim=(s, t), dtype=sctype)
 
-        if cache or cache is None and _cache_default:
+        if cache or cache is None and cache_default:
             w.setflags(write=False)
             # be wary of a potential race condition
             if key not in _CACHE or w.shape[0] >= _CACHE[key].shape[0]:
@@ -463,8 +463,8 @@ def l_moment(
     x_k = ensure_axis_at(x_k, axis, -1)
     n = x_k.shape[-1]
 
-    _r = clean_order(r)
-    r_min, r_max = np.min(_r), np.max(_r)
+    r_ = clean_order(r)
+    r_min, r_max = np.min(r_), np.max(r_)
 
     # TODO @jorenham: nan handling, see:
     # https://github.com/jorenham/Lmo/issues/70
@@ -481,9 +481,9 @@ def l_moment(
     l_r = np.inner(l_weights(r_max, n, st, dtype=dtype, cache=cache), x_k)
 
     if r_min > 0:
-        return l_r.take(_r - 1, 0)
+        return l_r.take(r_ - 1, 0)
 
-    return np.r_[np.ones((1, *l_r.shape[1:]), l_r.dtype), l_r].take(_r, 0)
+    return np.r_[np.ones((1, *l_r.shape[1:]), l_r.dtype), l_r].take(r_, 0)
 
 
 @overload
@@ -1282,21 +1282,21 @@ def l_moment_cov(
     Todo:
         - Use the direct (Jacobi) method from Hosking (2015).
     """
-    _r_max = clean_order(r_max, "r_max")
-    _trim = cast("tuple[int, int]", clean_trim(trim))
+    r_max_ = clean_order(r_max, "r_max")
+    trim_ = cast("tuple[int, int]", clean_trim(trim))
 
-    if any(int(t) != t for t in _trim):
+    if any(int(t) != t for t in trim_):
         msg = "l_moment_cov does not support fractional trimming (yet)"
         raise TypeError(msg)
 
-    ks = _r_max + sum(_trim)
-    if ks < _r_max:
+    ks = r_max_ + sum(trim_)
+    if ks < r_max_:
         msg = "trimmings must be positive"
         raise ValueError(msg)
 
     # projection matrix: PWMs -> generalized trimmed L-moments
     p_l: npt.NDArray[np.floating[Any]]
-    p_l = trim_matrix(_r_max, trim=_trim, dtype=dtype) @ sh_legendre(ks)
+    p_l = trim_matrix(r_max_, trim=trim_, dtype=dtype) @ sh_legendre(ks)
     # clean some numerical noise
     # p_l = np.round(p_l, 12) + 0.
 
@@ -1420,12 +1420,12 @@ def l_ratio_se(
             L-moments](https://doi.org/10.1016/S0378-3758(03)00213-1)
 
     """
-    _r, _s = np.broadcast_arrays(np.asarray(r), np.asarray(s))
-    _rs = np.stack((_r, _s))
-    r_max = np.amax(np.r_[_r, _s].ravel())
+    r_, s_ = np.broadcast_arrays(np.asarray(r), np.asarray(s))
+    rs = np.stack((r_, s_))
+    r_max = np.amax(np.r_[r_, s_].ravel())
 
     # L-moments
-    l_rs = l_moment(a, _rs, trim, axis=axis, dtype=dtype, **kwds)
+    l_rs = l_moment(a, rs, trim, axis=axis, dtype=dtype, **kwds)
     l_r, l_s = l_rs[0], l_rs[1]
 
     # L-moment auto-covariance matrix
@@ -1433,19 +1433,19 @@ def l_ratio_se(
     # prepend the "zeroth" moment, with has 0 (co)variance
     k_l = np.pad(k_l, (1, 0), constant_values=0)
 
-    s_rr = k_l[_r, _r]  # Var[l_r]
-    s_ss = k_l[_s, _s]  # Var[l_r]
-    s_rs = k_l[_r, _s]  # Cov[l_r, l_s]
+    s_rr = k_l[r_, r_]  # Var[l_r]
+    s_ss = k_l[s_, s_]  # Var[l_r]
+    s_rs = k_l[r_, s_]  # Cov[l_r, l_s]
 
     # the classic approximation to propagation of uncertainty for an RV ratio
     with np.errstate(divide="ignore", invalid="ignore"):
-        _s_tt = (l_r / l_s) ** 2 * (
+        s_tt_ = (l_r / l_s) ** 2 * (
             s_rr / l_r**2 + s_ss / l_s**2 - 2 * s_rs / (l_r * l_s)
         )
         # Var[l_r / l_r] = Var[1] = 0
-        _s_tt = np.where(_s == 0, s_rr, _s_tt)
+        s_tt_ = np.where(s_ == 0, s_rr, s_tt_)
         # Var[l_r / l_0] == Var[l_r / 1] == Var[l_r]
-        s_tt = np.where(_r == _s, 0, _s_tt)
+        s_tt = np.where(r_ == s_, 0, s_tt_)
 
     return np.sqrt(s_tt)
 
@@ -1573,7 +1573,7 @@ def l_moment_influence(
         TypeError: If `a` is not a floating-point type.
 
     """
-    _r = clean_order(r)
+    r_ = clean_order(r)
     s, t = clean_trim(trim)
 
     x_k = np.array(a, copy=bool(sort), dtype=np.float64)
@@ -1584,31 +1584,31 @@ def l_moment_influence(
 
     n = len(x_k)
 
-    w_k: onp.Array1D[np.float64] = l_weights(_r, n, (s, t))[-1]
+    w_k: onp.Array1D[np.float64] = l_weights(r_, n, (s, t))[-1]
     l_r = cast("np.float64", w_k @ x_k)
 
     def influence_function(x: _T_x, /) -> _T_x:
-        _x = np.asanyarray(x)
+        x_ = np.asanyarray(x)
 
         # ECDF
         # k = np.maximum(np.searchsorted(x_k, _x, side='right') - 1, 0)
         w = np.interp(
-            _x,
+            x_,
             x_k,
             w_k,
             left=0 if s else w_k[0],
             right=0 if t else w_k[-1],
         )
-        alpha = n * w * np.where(w, _x, 0)
+        alpha = n * w * np.where(w, x_, 0)
         out = round0(alpha - l_r, tol=tol)
 
-        if _x.ndim == 0 and np.isscalar(x):
+        if x_.ndim == 0 and np.isscalar(x):
             return out.item()
         return cast("_T_x", out)
 
     influence_function.__doc__ = (
         f"Empirical L-moment influence function given "
-        f"`r = {_r}`, `trim = {(s, t)}` and `{n = }`."
+        f"`r = {r_}`, `trim = {(s, t)}` and `{n = }`."
     )
     # piggyback the L-moment, to avoid recomputing it in l_ratio_influence
     influence_function.l = l_r  # pyright: ignore[reportFunctionMemberAccess]
@@ -1653,14 +1653,14 @@ def l_ratio_influence(
             The (vectorized) empirical influence function.
 
     """
-    _r, _s = clean_order(r), clean_order(s, name="s")
+    r_, s_ = clean_order(r), clean_order(s, name="s")
 
-    _x = np.array(a, copy=bool(sort))
-    _x = sort_maybe(_x, sort=sort, inplace=True)
-    n = len(_x)
+    x = np.array(a, copy=bool(sort))
+    x = sort_maybe(x, sort=sort, inplace=True)
+    n = len(x)
 
-    eif_r = l_moment_influence(_x, _r, trim, sort=False, tol=0)
-    eif_k = l_moment_influence(_x, _s, trim, sort=False, tol=0)
+    eif_r = l_moment_influence(x, r_, trim, sort=False, tol=0)
+    eif_k = l_moment_influence(x, s_, trim, sort=False, tol=0)
 
     l_r, l_k = cast(
         "tuple[float, float]",
@@ -1681,6 +1681,6 @@ def l_ratio_influence(
 
     influence_function.__doc__ = (
         f"Theoretical influence function for L-moment ratio with "
-        f"`r = {_r}`, `k = {_s}`, `{trim = }`, and `{n = }`."
+        f"`r = {r_}`, `k = {s_}`, `{trim = }`, and `{n = }`."
     )
     return influence_function

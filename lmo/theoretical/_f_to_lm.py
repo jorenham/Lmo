@@ -213,9 +213,9 @@ def l_moment_from_cdf(
 
     from scipy.special import betainc
 
-    def ig(x: float, _r: int) -> float:
+    def ig(x: float, r_: int) -> float:
         p = cdf(x)
-        if _r == 1:
+        if r_ == 1:
             if s or t:  # noqa: SIM108
                 v = betainc(s + 1, t + 1, p)
             else:
@@ -223,10 +223,10 @@ def l_moment_from_cdf(
             return np.heaviside(x, 0.5) - v
 
         return (
-            np.sqrt(2 * _r - 1)
+            np.sqrt(2 * r_ - 1)
             * p ** (s + 1)
             * (1 - p) ** (t + 1)
-            * eval_sh_jacobi(_r - 2, t + 1, s + 1, p)
+            * eval_sh_jacobi(r_ - 2, t + 1, s + 1, p)
         )
 
     a, d = support or tighten_cdf_support(cdf, support)
@@ -237,24 +237,24 @@ def l_moment_from_cdf(
     kwds = quad_opts or {}
     _ = kwds.setdefault("limit", QUAD_LIMIT)
 
-    def _l_moment_single(_r: int) -> float:
-        if _r == 0:
+    def _l_moment_single(r_: int) -> float:
+        if r_ == 0:
             return 1
 
         return (
-            l_const(_r, s, t, 1) / np.sqrt(2 * _r - 1)
-            * _df_quad3(ig, a, b, c, d, _r, **kwds)
-            + loc0 * (_r == 1)
+            l_const(r_, s, t, 1) / np.sqrt(2 * r_ - 1)
+            * _df_quad3(ig, a, b, c, d, r_, **kwds)
+            + loc0 * (r_ == 1)
         )  # fmt: skip
 
     l_r_cache: dict[int, float] = {}
     l_r = np.empty_like(rs, dtype=np.float64)
     for i, _r in np.ndenumerate(rs):
-        _k = int(_r)
-        if _k in l_r_cache:
-            l_r[i] = l_r_cache[_k]
+        k = int(_r)
+        if k in l_r_cache:
+            l_r[i] = l_r_cache[k]
         else:
-            l_r[i] = l_r_cache[_k] = _l_moment_single(_k)
+            l_r[i] = l_r_cache[k] = _l_moment_single(k)
 
     return round0(l_r, 1e-12)[()]  # convert back to scalar if needed
 
@@ -386,27 +386,27 @@ def l_moment_from_ppf(
     rs = clean_orders(np.asanyarray(r))
     s, t = clean_trim(trim)
 
-    def igf(p: float, _r: int, /) -> float:
-        return p**s * (1 - p) ** t * eval_sh_jacobi(_r - 1, t, s, p) * ppf(p)
+    def igf(p: float, r_: int, /) -> float:
+        return p**s * (1 - p) ** t * eval_sh_jacobi(r_ - 1, t, s, p) * ppf(p)
 
     kwds = quad_opts or {}
     _ = kwds.setdefault("limit", QUAD_LIMIT)
 
-    def _l_moment_single(_r: int) -> float:
-        if _r == 0:
+    def _l_moment_single(r_: int) -> float:
+        if r_ == 0:
             return 1
 
         a, b, c, d = support[0], alpha, 1 - alpha, support[1]
-        return l_const(_r, s, t) * _df_quad3(igf, a, b, c, d, _r, **kwds)
+        return l_const(r_, s, t) * _df_quad3(igf, a, b, c, d, r_, **kwds)
 
     l_r_cache: dict[int, float] = {}
     l_r = np.empty_like(rs, dtype=np.float64)
     for i, _r in np.ndenumerate(rs):
-        _k = int(_r)
-        if _k in l_r_cache:
-            l_r[i] = l_r_cache[_k]
+        k = int(_r)
+        if k in l_r_cache:
+            l_r[i] = l_r_cache[k]
         else:
-            l_r[i] = l_r_cache[_k] = _l_moment_single(_k)
+            l_r[i] = l_r_cache[k] = _l_moment_single(k)
 
     return round0(l_r)[()]  # convert back to scalar if needed
 

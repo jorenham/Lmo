@@ -99,23 +99,23 @@ def weights(
         1d array of size $N$ with (ordered) sample weights.
 
     """
-    _i = int(i) if float(i).is_integer() else float(i)
-    _n = int(n) if float(n).is_integer() else float(n)
-    _N = int(N)  # noqa: N806
+    i_ = int(i) if float(i).is_integer() else float(i)
+    n_ = int(n) if float(n).is_integer() else float(n)
+    N_ = int(N)  # noqa: N806
 
-    if _i < 0:
+    if i_ < 0:
         # negative indexing
-        _i += _n
+        i_ += n_
 
-    if (_i, _n) == (0, 1):
+    if (i_, n_) == (0, 1):
         # identity case
-        return np.full(_N, 1 / _N)
-    if _i >= _n:
+        return np.full(N_, 1 / N_)
+    if i_ >= n_:
         # impossible case
-        return np.full(_N, np.nan)
+        return np.full(N_, np.nan)
 
-    _fn = _weights_cached if cached else _weights
-    return _fn(_i, _n, _N)
+    fn = _weights_cached if cached else _weights
+    return fn(i_, n_, N_)
 
 
 @overload

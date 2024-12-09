@@ -97,8 +97,8 @@ def l_moment_influence_from_cdf(
         - [`lmo.l_moment`][lmo.l_moment]
 
     """
-    _r = clean_order(int(r))
-    if _r == 0:
+    r_ = clean_order(int(r))
+    if r_ == 0:
 
         def influence0(x: _T_x, /) -> _T_x:
             """
@@ -119,7 +119,7 @@ def l_moment_influence_from_cdf(
     if l_moment is None:
         lm = l_moment_from_cdf(
             cdf,
-            _r,
+            r_,
             trim=(s, t),
             support=support,
             quad_opts=quad_opts,
@@ -129,19 +129,19 @@ def l_moment_influence_from_cdf(
         lm = l_moment
 
     a, b = support or tighten_cdf_support(cdf, support)
-    c = l_const(_r, s, t)
+    c = l_const(r_, s, t)
 
     def influence(x: _T_x, /) -> _T_x:
-        _x = np.asanyarray(x, np.float64)
+        x_ = np.asanyarray(x, np.float64)
         q = np.piecewise(
-            _x,
-            [_x <= a, (_x > a) & (_x < b), _x >= b],
+            x_,
+            [x_ <= a, (x_ > a) & (x_ < b), x_ >= b],
             [0, cdf, 1],
         )
         w = round0(c * q**s * (1 - q) ** t, tol)
 
         # cheat a bit and replace 0 * inf by 0, ensuring convergence if s or t
-        alpha = w * eval_sh_jacobi(_r - 1, t, s, q) * np.where(w, _x, 0)
+        alpha = w * eval_sh_jacobi(r_ - 1, t, s, q) * np.where(w, x_, 0)
 
         return cast("_T_x", round0(alpha - lm, tol)[()])
 
@@ -219,17 +219,17 @@ def l_ratio_influence_from_cdf(
         - [`lmo.l_ratio`][lmo.l_ratio]
 
     """
-    _r, _k = clean_order(int(r)), clean_order(int(k))
+    r_, k_ = clean_order(int(r)), clean_order(int(k))
 
     kwds: dict[str, Any] = {"support": support, "quad_opts": quad_opts}
 
     if l_moments is None:
-        l_r, l_k = l_moment_from_cdf(cdf, [_r, _k], trim=trim, alpha=alpha, **kwds)
+        l_r, l_k = l_moment_from_cdf(cdf, [r_, k_], trim=trim, alpha=alpha, **kwds)
     else:
         l_r, l_k = l_moments
 
-    if_r = l_moment_influence_from_cdf(cdf, _r, trim, l_moment=l_r, tol=0, **kwds)
-    if_k = l_moment_influence_from_cdf(cdf, _k, trim, l_moment=l_k, tol=0, **kwds)
+    if_r = l_moment_influence_from_cdf(cdf, r_, trim, l_moment=l_r, tol=0, **kwds)
+    if_k = l_moment_influence_from_cdf(cdf, k_, trim, l_moment=l_k, tol=0, **kwds)
 
     if abs(l_k) <= tol:
         msg = f"L-ratio ({r=}, {k=}) denominator is approximately zero."
@@ -244,8 +244,8 @@ def l_ratio_influence_from_cdf(
         return round0((psi_r - t_r * psi_k) / l_k, tol=tol)[()]  # pyright: ignore[reportReturnType]
 
     influence_function.__doc__ = (
-        f"Theoretical influence function for L-moment ratio with r={_r}, "
-        f"k={_k}, and {trim=}."
+        f"Theoretical influence function for L-moment ratio with r={r_}, "
+        f"k={k_}, and {trim=}."
     )
 
     return influence_function

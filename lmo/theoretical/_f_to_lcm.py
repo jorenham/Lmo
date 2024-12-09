@@ -204,15 +204,15 @@ def l_comoment_from_pdf(
     n = len(cdfs)
     limits = supports or [tighten_cdf_support(cdf, None) for cdf in cdfs]
 
-    _r = clean_order(int(r))
+    r_ = clean_order(int(r))
     s, t = clean_trim(trim)
 
-    c = l_const(_r, s, t)
+    c = l_const(r_, s, t)
 
     # def integrand(*xs: float, i: int, j: int) -> float:
     def integrand(*xs: float, i: int, j: int) -> float:
         q_j = cdfs[j](xs[j])
-        p_j = eval_sh_jacobi(_r - 1, t, s, q_j)
+        p_j = eval_sh_jacobi(r_ - 1, t, s, q_j)
         x = np.asarray(xs, dtype=float)
         return c * x[i] * q_j**s * (1 - q_j) ** t * p_j * pdf(x)
 
@@ -225,12 +225,12 @@ def l_comoment_from_pdf(
         if i == j:
             l_r[i, j] = l_moment_from_cdf(
                 cdfs[i],
-                _r,
+                r_,
                 trim=(s, t),
                 support=limits[i],
                 quad_opts=quad_opts,
             )
-        elif _r:
+        elif r_:
             fn = partial(integrand, i=i, j=j)
             l_r[i, j] = nquad(fn, limits, opts=quad_opts)[0]
 
