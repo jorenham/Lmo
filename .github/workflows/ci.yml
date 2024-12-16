@@ -23,7 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: scientific-python/repo-review@v0.11.2
+      - uses: scientific-python/repo-review@v0.11.3
         with:
           plugins: sp-repo-review
 
