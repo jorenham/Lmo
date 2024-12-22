@@ -97,13 +97,6 @@ with:
 pip install lmo
 ```
 
-If you care about static typing, then it is recommended to install Lmo as
-`Lmo[typing]`, i.e.:
-
-```shell
-pip install Lmo[typing]
-```
-
 ## Roadmap
 
 - Automatic trim-length selection.
