@@ -113,11 +113,11 @@ pip install Lmo[typing]
 
 These are automatically installed by your package manager when installing Lmo.
 
-|                | version  |
-| -------------: | -------- |
-| [`python`][PY] | `>=3.11` |
-| [`numpy`][NP]  | `>=1.24` |
-| [`scipy`][SP]  | `>=1.10` |
+|                | version    |
+| -------------: | ---------- |
+| [`python`][PY] | `>=3.11`   |
+|  [`numpy`][NP] | `>=1.25.2` |
+|  [`scipy`][SP] | `>=1.11.4` |
 
 Additionally, Lmo supports the following optional packages:
 
