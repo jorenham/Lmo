@@ -68,7 +68,7 @@ repos:
       - id: codespell
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.8.3
+    rev: v0.8.4
     hooks:
       - id: ruff
         args: [--fix, --show-fixes]
@@ -78,7 +78,7 @@ repos:
     hooks:
       - id: basedpyright
         name: basedpyright
-        entry: uv run basedpyright --threads=3
+        entry: uv run basedpyright
         language: system
         types_or: [python, pyi]
 
