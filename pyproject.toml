@@ -8,7 +8,7 @@ description = "L-moments for robust data science."
 version = "0.15.0.dev0"
 authors = [{name = "Joren Hammudoglu", email = "jhammudoglu@gmail.com"}]
 readme = "README.md"
-license = {file = "LICENSE"}
+license = "BSD-3-Clause"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
