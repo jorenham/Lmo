@@ -30,10 +30,13 @@ _lm_kumaraswamy = get_lm_func("kumaraswamy")
 
 
 # pyright: reportIncompatibleMethodOverride=false
+# pyright: reportUnusedFunction=false
 
 
 @final
 class kumaraswamy_gen(lmt.rv_continuous):
+    # https://wikipedia.org/wiki/Kumaraswamy_distribution
+
     @override
     def _argcheck(self, /, a: float, b: float) -> bool | np.bool_:
         return (a > 0) & (b > 0)
@@ -77,7 +80,6 @@ class kumaraswamy_gen(lmt.rv_continuous):
         return (1 - (1 - q) ** (1 / b)) ** (1 / a)  # pyright: ignore[reportReturnType]
 
     def _entropy(self, a: float, b: float) -> float:
-        # https://wikipedia.org/wiki/Kumaraswamy_distribution
         return (1 - 1 / b) + (1 - 1 / a) * harmonic(b) - math.log(a * b)
 
     @override
