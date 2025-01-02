@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import math
-from typing import Any, Final, TypeAlias, TypeVar, overload
+from typing import Final, TypeAlias, TypeVar, overload
 
 import numpy as np
 import optype as op
 import optype.numpy as onp
+import optype.numpy.compat as npc
+import optype.typing as opt
 
 import lmo.typing as lmt
 
@@ -23,17 +25,22 @@ __all__ = (
     "sort_maybe",
 )
 
+###
+
+_IntND: TypeAlias = onp.ArrayND[npc.integer]
+_FloatND: TypeAlias = onp.ArrayND[npc.floating]
+
 _T = TypeVar("_T")
 _SCT = TypeVar("_SCT", bound=np.generic)
-_SCT_f = TypeVar("_SCT_f", bound=np.floating[Any])
-_SCT_uifc = TypeVar("_SCT_uifc", bound=np.number[Any])
-_DT_f = TypeVar("_DT_f", bound=np.dtype[np.floating[Any]])
-_AT_f = TypeVar("_AT_f", bound=onp.ArrayND[np.floating[Any]])
-_AST_f = TypeVar("_AST_f", bound=np.floating[Any] | onp.ArrayND[np.floating[Any]])
+_FloatT = TypeVar("_FloatT", bound=npc.floating)
+_NumberT = TypeVar("_NumberT", bound=npc.number)
+_FloatNDT = TypeVar("_FloatNDT", bound=_FloatND)
 _ShapeT = TypeVar("_ShapeT", bound=tuple[int, ...])
 
 _Tuple2: TypeAlias = tuple[_T, _T]
-_DType: TypeAlias = np.dtype[_SCT] | type[_SCT]
+_ToDType: TypeAlias = type[_SCT] | np.dtype[_SCT] | onp.HasDType[np.dtype[_SCT]]
+
+###
 
 
 def ensure_axis_at(
@@ -53,9 +60,7 @@ def ensure_axis_at(
         return a.copy() if copy else a
 
     if source is None:
-        # numpy typing issue workaround
-        copy_ = None if copy is None else np.bool_(copy)
-        return a.reshape(-1, order=order, copy=copy_)
+        return a.reshape(-1, order=order, copy=copy)
 
     if (src := int(source)) == (dst := int(destination)):
         return a.copy() if copy else a
@@ -69,11 +74,11 @@ def ensure_axis_at(
 
 
 def plotting_positions(
-    n: int | np.integer[Any],
+    n: onp.ToInt,
     /,
-    alpha: float | np.floating[Any] = 0.4,
-    beta: float | np.floating[Any] | None = None,
-) -> onp.Array1D[np.float64]:
+    alpha: onp.ToFloat = 0.4,
+    beta: onp.ToFloat | None = None,
+) -> _FloatND:
     """
     A re-implementation of [`scipy.stats.mstats.plotting_positions`
     ](scipy.stats.mstats.plotting_positions), but without the ridiculous
@@ -81,24 +86,20 @@ def plotting_positions(
     """
     x0 = 1 - alpha
     xn = x0 + n - (alpha if beta is None else beta)
-    return np.linspace(x0 / xn, (x0 + n - 1) / xn, n, dtype=np.float64)
+    return np.linspace(x0 / xn, (x0 + n - 1) / xn, n)
 
 
 @overload
-def round0(a: float | np.float64, /, tol: float | None = None) -> np.float64: ...
+def round0(a: onp.ToFloat, /, tol: float | None = None) -> float: ...
 @overload
-def round0(a: _AST_f, /, tol: float | None = None) -> _AST_f: ...
+def round0(a: _FloatNDT, /, tol: float | None = None) -> _FloatNDT: ...
 @overload
+def round0(a: onp.ToFloatND, /, tol: float | None = None) -> _FloatND: ...
 def round0(
-    a: onp.CanArray[_ShapeT, _DT_f],
+    a: onp.ToFloat | onp.ToFloatND,
     /,
     tol: float | None = None,
-) -> np.ndarray[_ShapeT, _DT_f]: ...
-def round0(
-    a: float | np.float64 | onp.CanArray[_ShapeT, np.dtype[_SCT_f]],
-    /,
-    tol: float | None = None,
-) -> _SCT_f | onp.Array[_ShapeT, _SCT_f]:
+) -> float | _FloatND:
     """
     Replace all values `<= tol` with `0`.
 
@@ -106,16 +107,15 @@ def round0(
         - Add an `inplace: bool = False` kwarg
     """
     a_ = np.asanyarray(a)
+    if a_.dtype.kind not in "fc":
+        return a_.item() if a_.ndim == 0 and np.isscalar(a) else a_
+
     tol_ = np.finfo(a_.dtype).resolution * 2 if tol is None else abs(tol)
-    out = np.where(np.abs(a_) <= tol_, 0, a)
+    out = np.where(np.abs(a_) <= tol_, 0, a_)
     return out[()] if np.isscalar(a) else out
 
 
-def _apply_aweights(
-    x: _AT_f,
-    v: onp.ArrayND[np.floating[Any]],
-    axis: op.CanIndex,
-) -> _AT_f:
+def _apply_aweights(x: _FloatNDT, v: _FloatND, axis: op.CanIndex) -> _FloatNDT:
     # interpret the weights as horizontal coordinates using cumsum
     vv = np.cumsum(v, axis=axis)
     assert vv.shape == x.shape, (vv.shape, x.shape)
@@ -130,7 +130,7 @@ def _apply_aweights(
 
     # cannot use np.apply_along_axis here, since both x_k and w_k need to be
     # applied simultaneously
-    out: _AT_f = np.empty_like(x)
+    out: _FloatNDT = np.empty_like(x)
 
     for j in np.ndindex(out.shape[:-1]):
         x_jk, w_jk = x_[j], vv_[j]
@@ -151,11 +151,11 @@ def _apply_aweights(
 
 
 def _sort_like(
-    a: onp.Array[_ShapeT, _SCT_uifc],
-    i: onp.Array1D[np.integer[Any]],
+    a: onp.ArrayND[_NumberT],
+    i: _IntND,
     /,
     axis: op.CanIndex | None,
-) -> onp.Array[_ShapeT, _SCT_uifc]:
+) -> onp.ArrayND[_NumberT]:
     return (
         np.take(a, i, axis=None if a.ndim == i.ndim else axis)
         if a.ndim <= 1 or i.ndim <= 1
@@ -164,13 +164,13 @@ def _sort_like(
 
 
 def sort_maybe(
-    x: onp.Array[_ShapeT, _SCT_uifc],
+    x: onp.ArrayND[_NumberT],
     /,
     axis: op.CanIndex = -1,
     *,
     sort: bool | lmt.SortKind = True,
     inplace: bool = False,
-) -> onp.Array[_ShapeT, _SCT_uifc]:
+) -> onp.ArrayND[_NumberT]:
     if not sort:
         return x
 
@@ -193,19 +193,19 @@ def ordered(
     fweights: lmt.ToFWeights | None = None,
     aweights: lmt.ToAWeights | None = None,
     sort: lmt.SortKind | bool = True,
-) -> onp.Array[onp.AtLeast1D, np.floating[Any]]: ...
+) -> _FloatND: ...
 @overload
 def ordered(
     x: onp.ToFloatND,
     y: onp.ToFloatND | None,
     /,
     axis: op.CanIndex | None,
-    dtype: _DType[_SCT_f],
+    dtype: _ToDType[_FloatT],
     *,
     fweights: lmt.ToFWeights | None = None,
     aweights: lmt.ToAWeights | None = None,
     sort: lmt.SortKind | bool = True,
-) -> onp.Array[onp.AtLeast1D, _SCT_f]: ...
+) -> onp.ArrayND[_FloatT]: ...
 @overload
 def ordered(
     x: onp.ToFloatND,
@@ -213,22 +213,22 @@ def ordered(
     /,
     axis: op.CanIndex | None = None,
     *,
-    dtype: _DType[_SCT_f],
+    dtype: _ToDType[_FloatT],
     fweights: lmt.ToFWeights | None = None,
     aweights: lmt.ToAWeights | None = None,
     sort: lmt.SortKind | bool = True,
-) -> onp.Array[onp.AtLeast1D, _SCT_f]: ...
+) -> _FloatND: ...
 def ordered(  # noqa: C901
     x: onp.ToFloatND,
     y: onp.ToFloatND | None = None,
     /,
     axis: op.CanIndex | None = None,
-    dtype: _DType[np.floating[Any]] | None = None,
+    dtype: onp.AnyFloatingDType | None = None,
     *,
     fweights: lmt.ToFWeights | None = None,
     aweights: lmt.ToAWeights | None = None,
     sort: lmt.SortKind | bool = True,
-) -> onp.Array[onp.AtLeast1D, np.floating[Any]]:
+) -> _FloatND:
     """
     Calculate `n = len(x)` order stats of `x`, optionally weighted.
     If `y` is provided, the order of `y` is used instead.
@@ -398,10 +398,10 @@ def clean_trim(trim: lmt.ToTrim, /) -> tuple[float, float]:
 
 
 def moments_to_ratio(
-    rs: onp.ArrayND[np.integer[Any]],
-    l_rs: onp.ArrayND[_SCT_f],
+    rs: _IntND,
+    l_rs: onp.ArrayND[_FloatT],
     /,
-) -> _SCT_f | onp.ArrayND[_SCT_f]:
+) -> float | onp.ArrayND[_FloatT]:
     """
     Using stacked order of shape (2, ...), and an L-moments array, returns
     the L-moment ratio's.
@@ -419,17 +419,19 @@ def moments_to_ratio(
         )
 
     with np.errstate(divide="ignore", invalid="ignore"):
-        return np.where(
+        out = np.where(
             r_eq_s,
             np.ones_like(l_rs[0]),
             np.divide(l_rs[0], l_rs[1], where=~r_eq_s),
-        )[()]
+        )
+
+    return out.item() if out.ndim == 0 else out
 
 
 def moments_to_stats_cov(
-    t_0r: onp.ArrayND[np.floating[Any]],
-    ll_kr: onp.Array[_ShapeT, _SCT_f],
-) -> onp.Array[_ShapeT, _SCT_f]:
+    t_0r: _FloatND,
+    ll_kr: onp.Array[_ShapeT, _FloatT],
+) -> onp.Array[_ShapeT, _FloatT]:
     # t_0r are L-ratio's for r = 0, 1, ..., R (t_0r[0] == 1 / L-scale)
     # t_0r[1] isn't used, and can be set to anything
     # ll_kr is the L-moment cov of size R**2 (orders start at 1 here)
@@ -456,13 +458,13 @@ def moments_to_stats_cov(
     return tt_kr
 
 
-def l_stats_orders(num: op.CanIndex, /) -> _Tuple2[onp.Array1D[np.intp]]:
+def l_stats_orders(num: opt.AnyInt, /) -> _Tuple2[onp.ArrayND[np.int32]]:
     """
     Create the L-moment order array `[1, 2, ..., r]` and corresponding
     ratio array `[0, 0, 2, ...]` of same size.
     """
     n = int(num)
     return (
-        np.arange(1, n + 1, dtype=np.intp),
-        np.array([0] * min(2, n) + [2] * (n - 2), dtype=np.intp),
+        np.arange(1, n + 1, dtype=np.int32),
+        np.array([0] * min(2, n) + [2] * (n - 2), dtype=np.int32),
     )

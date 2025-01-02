@@ -15,13 +15,12 @@ import numpy as np
 import numpy.polynomial as npp
 import optype as op
 import optype.numpy as onp
+import optype.numpy.compat as npc
 import scipy.special as sps
 from numpy.polynomial._polybase import ABCPolyBase  # noqa: PLC2701
 
 if TYPE_CHECKING:
     from typing import LiteralString
-
-    import lmo.typing as lmt
 
 
 __all__ = (
@@ -46,9 +45,7 @@ else:
     PolySeries: TypeAlias = ABCPolyBase
 
 
-_T_shape = TypeVar("_T_shape", bound=onp.AtLeast1D)
 _T_poly = TypeVar("_T_poly", bound=PolySeries)
-
 _Float = np.float32 | np.float64
 
 ###
@@ -56,24 +53,24 @@ _Float = np.float32 | np.float64
 
 @overload
 def eval_sh_jacobi(
-    n: int | lmt.Integer,
+    n: int | npc.integer,
     a: float,
     b: float,
-    x: float | _Float,
-) -> float | _Float: ...
+    x: onp.ToFloat,
+) -> float: ...
 @overload
 def eval_sh_jacobi(
-    n: int | lmt.Integer,
+    n: int | npc.integer,
     a: float,
     b: float,
-    x: onp.Array[_T_shape, _Float],
-) -> onp.Array[_T_shape, _Float]: ...
+    x: onp.ArrayND[_Float],
+) -> onp.ArrayND[_Float]: ...
 def eval_sh_jacobi(  # noqa: C901
-    n: int | lmt.Integer,
+    n: int | npc.integer,
     a: float,
     b: float,
-    x: float | _Float | onp.Array[_T_shape, _Float],
-) -> float | _Float | onp.Array[_T_shape, _Float]:
+    x: onp.ToFloat | onp.ArrayND[_Float],
+) -> float | onp.ArrayND[_Float]:
     """
     Fast evaluation of the n-th shifted Jacobi polynomial.
     Faster than pre-computing using np.Polynomial, and than
@@ -88,7 +85,8 @@ def eval_sh_jacobi(  # noqa: C901
         if n == 1:
             return 2 * x - 1
         if n > 4:
-            return sps.eval_sh_legendre(n, x)
+            out = sps.eval_sh_legendre(n, x)
+            return float(out) if isinstance(out, np.floating) else out
 
         v = x * (x - 1)
 
@@ -118,7 +116,7 @@ def eval_sh_jacobi(  # noqa: C901
     return sps.eval_jacobi(n, a, b, 2 * x - 1)
 
 
-def peaks_jacobi(n: int, a: float, b: float) -> onp.Array1D[np.float64]:
+def peaks_jacobi(n: int, a: float, b: float) -> onp.ArrayND[_Float]:
     r"""
     Finds the \( x \in [-1, 1] \) s.t.
     \( /frac{\dd{\shjacobi{n}{a}{b}{x}}}{\dd{x}} = 0 \) of a Jacobi polynomial,
@@ -163,7 +161,7 @@ def peaks_jacobi(n: int, a: float, b: float) -> onp.Array1D[np.float64]:
     """
     if n == 0:
         # constant; any x is a "peak"; so take the "middle ground"
-        return np.array([0.0])
+        return np.array([0.0], np.float64)
     if n == 1:
         # linear; the peaks are only at the ends
         return np.array([-1.0, 1.0])
@@ -174,7 +172,7 @@ def peaks_jacobi(n: int, a: float, b: float) -> onp.Array1D[np.float64]:
     x[1:-1] = sps.roots_jacobi(n - 1, a + 1, b + 1)[0]
     x[-1] = 1
 
-    return np.round(x, 15) + 0.0  # cleanup of numerical noise
+    return np.round(x, 15) + 0.0
 
 
 def arg_extrema_jacobi(n: int, a: float, b: float) -> tuple[float, float]:
@@ -376,14 +374,10 @@ def jacobi_series(
     )
     assert p
 
-    return p.convert(  # pyright: ignore[reportUnknownMemberType]
-        domain=domain,
-        kind=kind or npp.Polynomial,
-        window=window,
-    )
+    return p.convert(domain=domain, kind=kind or npp.Polynomial, window=window)
 
 
-def roots(p: PolySeries, /, outside: op.CanBool = False) -> onp.Array1D[np.float64]:
+def roots(p: PolySeries, /, outside: op.CanBool = False) -> onp.ArrayND[np.float64]:
     """
     Return the $x$ in the domain of $p$, where $p(x) = 0$.
 

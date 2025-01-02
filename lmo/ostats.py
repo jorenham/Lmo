@@ -18,6 +18,7 @@ from typing import Any, TypeAlias, overload
 import numpy as np
 import optype as op
 import optype.numpy as onp
+import optype.numpy.compat as npc
 from scipy.special import betainc, betaln
 
 __all__ = "from_cdf", "weights"
@@ -25,6 +26,7 @@ __all__ = "from_cdf", "weights"
 
 # doesn't include `np.bool_` like in `onp.ToFloat`
 _ToReal: TypeAlias = float | np.floating[Any] | np.integer[Any]
+_FloatND: TypeAlias = onp.ArrayND[npc.floating]
 
 
 def _weights(i: float, n: float, N: int, /) -> onp.Array1D[np.float64]:
@@ -119,18 +121,14 @@ def weights(
 
 
 @overload
-def from_cdf(F: onp.ToFloat, i: _ToReal, n: _ToReal) -> np.float64: ...
+def from_cdf(F: onp.ToFloat, i: _ToReal, n: _ToReal) -> float: ...
 @overload
-def from_cdf(
-    F: onp.ToFloatND,
-    i: _ToReal,
-    n: _ToReal,
-) -> onp.Array[onp.AtLeast1D, np.float64]: ...
+def from_cdf(F: onp.ToFloatND, i: _ToReal, n: _ToReal) -> _FloatND: ...
 def from_cdf(
     F: onp.ToFloat | onp.ToFloatND,
     i: _ToReal,
     n: _ToReal,
-) -> np.float64 | onp.Array[onp.AtLeast1D, np.float64]:
+) -> float | _FloatND:
     r"""
     Transform $F(X)$ to $F_{i:n}(X)$, of the $i$th variate within subsamples
     of size, i.e. $0 \le i \le n - 1$.
@@ -147,4 +145,5 @@ def from_cdf(
         msg = "F must lie between 0 and 1"
         raise ValueError(msg)
 
-    return betainc(i + 1, n - i, F)
+    out = betainc(i + 1, n - i, p)
+    return out.item() if out.ndim == 0 and np.isscalar(F) else out

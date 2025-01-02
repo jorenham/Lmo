@@ -150,7 +150,7 @@ def _wakeby_sf0(x: _F8, /, b: _F8, d: _F8, f: _F8) -> _F8:  # noqa: C901
             tmp = qd1
 
         # NOTE: float64 will be fixed
-        z_inc = min(qd0 / tmp, 3)  # pyright: ignore[reportArgumentType]
+        z_inc = min(qd0 / tmp, 3)
         z_new = z + z_inc
         if z_new <= 0:
             z /= 5
@@ -214,7 +214,7 @@ class wakeby_gen(lmt.rv_continuous):
     @override
     def _pdf(self, /, x: _XT, b: float, d: float, f: float) -> _XT:  # pyright: ignore[reportIncompatibleMethodOverride]
         # application of the inverse function theorem
-        return 1 / self._qdf(self._cdf(x, b, d, f), b, d, f)
+        return 1 / self._qdf(self._cdf(x, b, d, f), b, d, f)  # pyright: ignore[reportReturnType]
 
     @override
     def _cdf(self, /, x: _XT, b: float, d: float, f: float) -> _XT:  # pyright: ignore[reportIncompatibleMethodOverride]

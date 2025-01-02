@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Protocol, TypeAlias, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Protocol, TypeAlias, TypeVar, overload
 
 import numpy as np
-import numpy.typing as npt
+import optype.numpy as onp
+import optype.numpy.compat as npc
 
 from lmo._poly import eval_sh_jacobi
 from lmo._utils import clean_order, clean_trim, round0
@@ -18,14 +19,19 @@ __all__ = ["l_moment_influence_from_cdf", "l_ratio_influence_from_cdf"]
 
 
 _T = TypeVar("_T")
-_T_x = TypeVar("_T_x", float, npt.NDArray[np.float64])
+_Pair: TypeAlias = tuple[_T, _T]
+
+_FloatND: TypeAlias = onp.ArrayND[npc.floating]
 
 
 class _Fn1(Protocol):
-    def __call__(self, x: _T_x, /) -> _T_x: ...
+    @overload
+    def __call__(self, x: onp.ToFloat, /) -> float: ...
+    @overload
+    def __call__(self, x: onp.ToFloatND, /) -> _FloatND: ...
 
 
-_Pair: TypeAlias = tuple[_T, _T]
+###
 
 
 def l_moment_influence_from_cdf(
@@ -35,7 +41,7 @@ def l_moment_influence_from_cdf(
     trim: lmt.ToTrim = 0,
     *,
     support: _Pair[float] | None = None,
-    l_moment: float | np.float64 | None = None,
+    l_moment: onp.ToFloat | None = None,
     quad_opts: lmt.QuadOptions | None = None,
     alpha: float = ALPHA,
     tol: float = 1e-8,
@@ -100,7 +106,11 @@ def l_moment_influence_from_cdf(
     r_ = clean_order(int(r))
     if r_ == 0:
 
-        def influence0(x: _T_x, /) -> _T_x:
+        @overload
+        def influence0(x: onp.ToFloat, /) -> float: ...
+        @overload
+        def influence0(x: onp.ToFloatND, /) -> _FloatND: ...
+        def influence0(x: onp.ToFloat | onp.ToFloatND, /) -> float | _FloatND:
             """
             L-moment Influence Function for `r=0`.
 
@@ -110,7 +120,7 @@ def l_moment_influence_from_cdf(
             Returns:
                 out
             """
-            return np.asanyarray(x, np.float64)[()] * 0.0 + 0.0  # pyright: ignore[reportReturnType]
+            return 0.0 if np.isscalar(x) else np.zeros_like(x)
 
         return influence0
 
@@ -131,7 +141,11 @@ def l_moment_influence_from_cdf(
     a, b = support or tighten_cdf_support(cdf, support)
     c = l_const(r_, s, t)
 
-    def influence(x: _T_x, /) -> _T_x:
+    @overload
+    def influence(x: onp.ToFloat, /) -> float: ...
+    @overload
+    def influence(x: onp.ToFloatND, /) -> _FloatND: ...
+    def influence(x: onp.ToFloat | onp.ToFloatND, /) -> float | _FloatND:
         x_ = np.asanyarray(x, np.float64)
         q = np.piecewise(
             x_,
@@ -142,8 +156,8 @@ def l_moment_influence_from_cdf(
 
         # cheat a bit and replace 0 * inf by 0, ensuring convergence if s or t
         alpha = w * eval_sh_jacobi(r_ - 1, t, s, q) * np.where(w, x_, 0)
-
-        return cast("_T_x", round0(alpha - lm, tol)[()])
+        out = alpha - lm
+        return round0(out.item() if out.ndim == 0 and np.isscalar(x) else out, tol)
 
     influence.__doc__ = (
         f"Theoretical influence function for L-moment with {r=} and {trim=}."
@@ -160,7 +174,7 @@ def l_ratio_influence_from_cdf(
     trim: lmt.ToTrim = 0,
     *,
     support: _Pair[float] | None = None,
-    l_moments: _Pair[float] | None = None,
+    l_moments: _Pair[onp.ToFloat] | None = None,
     quad_opts: lmt.QuadOptions | None = None,
     alpha: float = ALPHA,
     tol: float = 1e-8,
@@ -237,15 +251,20 @@ def l_ratio_influence_from_cdf(
 
     t_r = l_r / l_k
 
-    def influence_function(x: _T_x, /) -> _T_x:
+    @overload
+    def influence(x: onp.ToFloat, /) -> float: ...
+    @overload
+    def influence(x: onp.ToFloatND, /) -> _FloatND: ...
+    def influence(x: onp.ToFloat | onp.ToFloatND, /) -> float | _FloatND:
         psi_r = if_r(x)
         # cheat a bit to avoid `inf - inf = nan` situations
         psi_k = np.where(np.isinf(psi_r), 0, if_k(x))
-        return round0((psi_r - t_r * psi_k) / l_k, tol=tol)[()]  # pyright: ignore[reportReturnType]
+        out = (psi_r - t_r * psi_k) / l_k
+        return round0(out.item() if out.ndim == 0 and np.isscalar(x) else out, tol=tol)
 
-    influence_function.__doc__ = (
+    influence.__doc__ = (
         f"Theoretical influence function for L-moment ratio with r={r_}, "
         f"k={k_}, and {trim=}."
     )
 
-    return influence_function
+    return influence

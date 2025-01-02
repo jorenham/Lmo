@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Concatenate, Final, ParamSpec
 
 import numpy as np
 import optype.numpy as onp
+import optype.numpy.compat as npc
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
@@ -52,10 +53,10 @@ def l_const(r: int, s: float, t: float, k: int = 0) -> float:
 
 
 def l_coef_factor(
-    r: int | lmt.Integer | onp.ArrayND[lmt.Integer],
+    r: onp.ToInt | onp.ArrayND[npc.integer],
     s: float = 0,
     t: float = 0,
-) -> onp.ArrayND[np.float64]:
+) -> onp.ArrayND[npc.floating]:
     if s == t == 0:
         return np.sqrt(2 * r - 1)
 
@@ -68,7 +69,7 @@ def l_coef_factor(
 
 
 def tighten_cdf_support(
-    cdf: Callable[[float], float],
+    cdf: Callable[[float], onp.ToFloat],
     support: tuple[float, float] | None = None,
 ) -> tuple[float, float]:
     """Attempt to tighten the support by checking some common bounds."""
@@ -90,7 +91,7 @@ def tighten_cdf_support(
 
 
 def nquad(
-    integrand: Callable[Concatenate[float, float, _Tss], float],
+    integrand: Callable[Concatenate[float, float, _Tss], float | npc.floating],
     domains: Sequence[tuple[float, float] | Callable[..., tuple[float, float]],],
     opts: lmt.QuadOptions | None = None,
     *args: _Tss.args,

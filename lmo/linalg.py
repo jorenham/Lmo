@@ -4,10 +4,11 @@
 from __future__ import annotations
 
 from math import comb, lgamma
-from typing import Any, TypeAlias, TypeVar, assert_never, overload
+from typing import TypeAlias, TypeVar, assert_never, overload
 
 import numpy as np
 import optype.numpy as onp
+import optype.numpy.compat as npc
 
 __all__ = (
     "ir_pascal",
@@ -19,34 +20,38 @@ __all__ = (
     "trim_matrix",
 )
 
+###
 
-_ST = TypeVar("_ST", bound=np.generic)
-_ST_f = TypeVar("_ST_f", bound=np.floating[Any])
-_ST_if = TypeVar("_ST_if", bound=np.floating[Any] | np.signedinteger[Any])
+_SCT = TypeVar("_SCT", bound=np.generic)
+_FloatT = TypeVar("_FloatT", bound=npc.floating)
+_RealT = TypeVar("_RealT", bound=npc.floating | npc.signedinteger)
 
-_DType: TypeAlias = np.dtype[_ST] | type[_ST]
+_ToDType: TypeAlias = type[_SCT] | np.dtype[_SCT] | onp.HasDType[np.dtype[_SCT]]
+_FloatND: TypeAlias = onp.ArrayND[npc.floating]
+
+###
 
 
 @overload
 def sandwich(
-    A: onp.Array2D[np.floating[Any]],
-    X: onp.Array[onp.AtLeast2D, np.floating[Any]],
+    A: _FloatND,
+    X: _FloatND,
     /,
-    dtype: _DType[np.float64] = np.float64,
+    dtype: _ToDType[np.float64] = np.float64,
 ) -> onp.Array[onp.AtLeast2D, np.float64]: ...
 @overload
 def sandwich(
-    A: onp.Array2D[np.floating[Any]],
-    X: onp.Array[onp.AtLeast2D, np.floating[Any]],
+    A: _FloatND,
+    X: _FloatND,
     /,
-    dtype: _DType[_ST_f],
-) -> onp.Array[onp.AtLeast2D, _ST_f]: ...
+    dtype: _ToDType[_FloatT],
+) -> onp.Array[onp.AtLeast2D, _FloatT]: ...
 def sandwich(
-    A: onp.Array2D[np.floating[Any]],
-    X: onp.Array[onp.AtLeast2D, np.floating[Any]],
+    A: _FloatND,
+    X: _FloatND,
     /,
-    dtype: _DType[_ST_f] = np.float64,
-) -> onp.Array[onp.AtLeast2D, _ST_f | np.float64]:
+    dtype: _ToDType[_FloatT] = np.float64,
+) -> onp.Array[onp.AtLeast2D, _FloatT | np.float64]:
     """
     Calculates the "sandwich" matrix product (`A @ X @ A.T`) along the
     specified `X` axis.
@@ -64,14 +69,14 @@ def sandwich(
     """
     # if X is 1-d, this is equivalent to: C @ S_b @ C.T
     spec = "ui, ij..., vj -> uv..."
-    return np.einsum(spec, A, X, A, dtype=dtype)  # pyright: ignore[reportUnknownMemberType]
+    return np.einsum(spec, A, X, A, dtype=dtype)
 
 
 @overload
 def pascal(
     k: int,
     /,
-    dtype: _DType[np.int64] = np.int64,
+    dtype: _ToDType[np.int64] = np.int64,
     *,
     inv: bool = False,
 ) -> onp.Array2D[np.int64]: ...
@@ -79,17 +84,17 @@ def pascal(
 def pascal(
     k: int,
     /,
-    dtype: _DType[_ST_if],
+    dtype: _ToDType[_RealT],
     *,
     inv: bool = False,
-) -> onp.Array2D[_ST_if]: ...
+) -> onp.Array2D[_RealT]: ...
 def pascal(
     k: int,
     /,
-    dtype: _DType[_ST_if] = np.int64,
+    dtype: _ToDType[_RealT] = np.int64,
     *,
     inv: bool = False,
-) -> onp.Array2D[_ST_if | np.int64]:
+) -> onp.Array2D[_RealT | np.int64]:
     r"""
     Construct the lower-diagonal Pascal matrix $L_{k \times k$}$, or its matrix
     inverse $L^{-1}$.
@@ -162,17 +167,16 @@ def pascal(
     return out
 
 
-def ir_pascal(k: int, /, dtype: _DType[_ST_if]) -> onp.Array2D[_ST_if]:
+def ir_pascal(k: int, /, dtype: _ToDType[_RealT]) -> onp.Array2D[_RealT]:
     r"""
     Inverse regulatized lower-diagonal Pascal matrix,
     $\bar{L}_{ij} = L^{-1}_ij / i$.
 
     Used to linearly combine order statistics order statistics into L-moments.
     """
-    p = pascal(k, dtype=dtype, inv=True)
-    out = p / np.arange(1, k + 1, dtype=dtype)[:, None]
-
-    return np.asarray(out, dtype)
+    p: onp.Array2D[_RealT] = pascal(k, dtype=dtype, inv=True)
+    p /= np.arange(1, k + 1, dtype=dtype)[:, None]  # pyright: ignore[reportAssignmentType]
+    return p
 
 
 def _sh_jacobi_i(
@@ -180,8 +184,8 @@ def _sh_jacobi_i(
     a: int,
     b: int,
     /,
-    dtype: _DType[_ST_if],
-) -> onp.Array2D[_ST_if]:
+    dtype: _ToDType[_RealT],
+) -> onp.Array2D[_RealT]:
     out = np.zeros((k, k), dtype=dtype)
     for r in range(k):
         for j in range(r + 1):
@@ -194,8 +198,8 @@ def _sh_jacobi_f(
     a: float,
     b: float,
     /,
-    dtype: _DType[_ST_f],
-) -> onp.Array2D[_ST_f]:
+    dtype: _ToDType[_FloatT],
+) -> onp.Array2D[_FloatT]:
     out = np.zeros((k, k), dtype=dtype)
 
     # semi dynamic programming
@@ -222,11 +226,11 @@ def _sh_jacobi_f(
 def sh_legendre(
     k: int,
     /,
-    dtype: _DType[np.int64] = np.int64,
+    dtype: _ToDType[np.int64] = np.int64,
 ) -> onp.Array2D[np.int64]: ...
 @overload
-def sh_legendre(k: int, /, dtype: _DType[_ST_if]) -> onp.Array2D[_ST_if]: ...
-def sh_legendre(k: int, /, dtype: _DType[_ST_if] = np.int64) -> onp.Array2D[_ST_if]:
+def sh_legendre(k: int, /, dtype: _ToDType[_RealT]) -> onp.Array2D[_RealT]: ...
+def sh_legendre(k: int, /, dtype: _ToDType[_RealT] = np.int64) -> onp.Array2D[_RealT]:
     r"""
     Shifted Legendre polynomial coefficient matrix $\widetilde{P}$ of
     shape `(k, k)`.
@@ -288,8 +292,8 @@ def sh_jacobi(
     a: float,
     b: float,
     /,
-    dtype: _DType[_ST_if],
-) -> onp.Array2D[_ST_if]: ...
+    dtype: _ToDType[_RealT],
+) -> onp.Array2D[_RealT]: ...
 @overload
 def sh_jacobi(
     k: int,
@@ -311,8 +315,8 @@ def sh_jacobi(
     a: float,
     b: float,
     /,
-    dtype: _DType[_ST_if] | None = None,
-) -> onp.Array2D[_ST_if | np.int64 | np.float64]:
+    dtype: _ToDType[_RealT] | None = None,
+) -> onp.Array2D[_RealT | np.int64 | np.float64]:
     r"""
     Shifted Jacobi polynomial coefficient matrix $\widetilde{P}^{(a,b)}$ of
     shape `(k, k)`.
@@ -378,7 +382,7 @@ def sh_jacobi(
     return _sh_jacobi_f(k, float(a), float(b), dtype=sctype)
 
 
-def succession_matrix(c: onp.Array1D[_ST] | onp.Array2D[_ST], /) -> onp.Array2D[_ST]:
+def succession_matrix(c: onp.ArrayND[_SCT], /) -> onp.Array2D[_SCT]:
     r"""
     A toeplitz-like transformation matrix construction, that prepends $i$
     zeroes to $i$-th row, so that the input shape is mapped from `(n, k)`
@@ -406,7 +410,7 @@ def succession_matrix(c: onp.Array1D[_ST] | onp.Array2D[_ST], /) -> onp.Array2D[
                [0, 0, 5, 6, 0],
                [0, 0, 0, 7, 8]])
     """
-    c_: onp.Array2D[_ST] = np.atleast_2d(c)
+    c_ = np.atleast_2d(c)
 
     n, k = c_.shape
     i = np.arange(n)
@@ -422,21 +426,21 @@ def trim_matrix(
     r: int,
     /,
     trim: tuple[int, int],
-    dtype: _DType[np.float64] = np.float64,
+    dtype: _ToDType[np.float64] = np.float64,
 ) -> onp.Array2D[np.float64]: ...
 @overload
 def trim_matrix(
     r: int,
     /,
     trim: tuple[int, int],
-    dtype: _DType[_ST_f],
-) -> onp.Array2D[_ST_f]: ...
+    dtype: _ToDType[_FloatT],
+) -> onp.Array2D[_FloatT]: ...
 def trim_matrix(
     r: int,
     /,
     trim: tuple[int, int],
-    dtype: _DType[_ST_f] = np.float64,
-) -> onp.Array2D[_ST_f]:
+    dtype: _ToDType[_FloatT] = np.float64,
+) -> onp.Array2D[_FloatT]:
     r"""
     Linearization of the trimmed L-moment recurrence relations, following
     the (corrected) derivation by Hosking (2007) from the (shifted) Jacobi

@@ -15,23 +15,23 @@ XX: list[list[float]]
 XX_np: onp.Array2D[np.float64]
 
 # default
-assert_type(lmo.l_moment(X, 2), np.float64)
-assert_type(lmo.l_moment(np.array(X), 2), np.float64)
-assert_type(lmo.l_moment(np.array(X, dtype=np.float32), 2), np.float64)
-assert_type(lmo.l_moment(np.array(X, dtype=np.int32), 2), np.float64)
-assert_type(lmo.l_moment(X, np.intp(2)), np.float64)
-assert_type(lmo.l_moment(X, np.uint8(2)), np.float64)
-assert_type(lmo.l_moment(XX, np.uint8(2)), np.float64)
-assert_type(lmo.l_moment(np.array(XX), np.uint8(2)), np.float64)
+assert_type(lmo.l_moment(X, 2), float)
+assert_type(lmo.l_moment(np.array(X), 2), float)
+assert_type(lmo.l_moment(np.array(X, dtype=np.float32), 2), float)
+assert_type(lmo.l_moment(np.array(X, dtype=np.int32), 2), float)
+assert_type(lmo.l_moment(X, np.intp(2)), float)
+assert_type(lmo.l_moment(X, np.uint8(2)), float)
+assert_type(lmo.l_moment(XX, np.uint8(2)), float)
+assert_type(lmo.l_moment(np.array(XX), np.uint8(2)), float)
 
 # trim
-assert_type(lmo.l_moment(X, 2, 0), np.float64)
-assert_type(lmo.l_moment(X, 2, 1), np.float64)
-assert_type(lmo.l_moment(X, 2, trim=1), np.float64)
-assert_type(lmo.l_moment(X, 2, trim=(1, 1)), np.float64)
-assert_type(lmo.l_moment(X, 2, trim=(0.5, 0.5)), np.float64)
-assert_type(lmo.l_moment(X, 2, trim=(1, 0.5)), np.float64)
-assert_type(lmo.l_moment(X, 2, trim=(0.5, 1)), np.float64)
+assert_type(lmo.l_moment(X, 2, 0), float)
+assert_type(lmo.l_moment(X, 2, 1), float)
+assert_type(lmo.l_moment(X, 2, trim=1), float)
+assert_type(lmo.l_moment(X, 2, trim=(1, 1)), float)
+assert_type(lmo.l_moment(X, 2, trim=(0.5, 0.5)), float)
+assert_type(lmo.l_moment(X, 2, trim=(1, 0.5)), float)
+assert_type(lmo.l_moment(X, 2, trim=(0.5, 1)), float)
 
 # vectorized r
 assert_type(lmo.l_moment(X, [1, 2, 3, 4]), _Float1D)
@@ -39,8 +39,8 @@ assert_type(lmo.l_moment(X, (1, 2, 3, 4)), _Float1D)
 assert_type(lmo.l_moment(X, np.arange(1, 5)), _Float1D)
 
 # sctype
-assert_type(lmo.l_moment(X, 2, dtype=np.float32), np.float32)
-assert_type(lmo.l_moment(X, 2, dtype=np.dtype(np.float16)), np.float16)
+assert_type(lmo.l_moment(X, 2, dtype=np.float32), float)
+assert_type(lmo.l_moment(X, 2, dtype=np.dtype(np.float16)), float)
 assert_type(lmo.l_moment(X, [1, 2, 3, 4], dtype=np.float16), onp.Array1D[np.float16])
 
 # axis

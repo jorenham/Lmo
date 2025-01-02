@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import math
 from typing import TYPE_CHECKING, Final, TypeAlias, TypeVar, Unpack, overload
 
 import numpy as np
-import numpy.typing as npt
+import optype.numpy as onp
+import optype.numpy.compat as npc
 
 from lmo._poly import eval_sh_jacobi
 from lmo._utils import (
@@ -29,10 +31,10 @@ __all__ = [
 
 
 _T = TypeVar("_T")
-
-
 _Pair: TypeAlias = tuple[_T, _T]
-_ArrF8: TypeAlias = npt.NDArray[np.float64]
+
+_Float1D: TypeAlias = onp.Array1D[np.float64]
+_FloatND: TypeAlias = onp.ArrayND[np.float64]
 
 
 ALPHA: Final[float] = 0.1
@@ -40,12 +42,12 @@ QUAD_LIMIT: Final[int] = 100
 
 
 def _df_quad3(
-    f: Callable[[float, int], float],
+    f: Callable[[float, int], float | npc.floating],
     /,
-    a: float | np.float64,
-    b: float | np.float64,
-    c: float | np.float64,
-    d: float | np.float64,
+    a: onp.ToFloat,
+    b: onp.ToFloat,
+    c: onp.ToFloat,
+    d: onp.ToFloat,
     r: int,
     **kwds: Unpack[lmt.QuadOptions],
 ) -> float:
@@ -62,30 +64,30 @@ def _df_quad3(
 
 @overload
 def l_moment_from_cdf(
-    cdf: Callable[[float], float],
-    r: lmt.ToOrderND,
-    /,
-    trim: lmt.ToTrim = ...,
-    *,
-    support: _Pair[float] | None = ...,
-    quad_opts: lmt.QuadOptions | None = ...,
-    alpha: float = ...,
-    ppf: Callable[[float], float] | None = ...,
-) -> _ArrF8: ...
-@overload
-def l_moment_from_cdf(
-    cdf: Callable[[float], float],
+    cdf: Callable[[float], onp.ToFloat],
     r: lmt.ToOrder0D,
     /,
-    trim: lmt.ToTrim = ...,
+    trim: lmt.ToTrim = 0,
     *,
-    support: _Pair[float] | None = ...,
-    quad_opts: lmt.QuadOptions | None = ...,
-    alpha: float = ...,
-    ppf: Callable[[float], float] | None = ...,
-) -> np.float64: ...
+    support: _Pair[float] | None = None,
+    quad_opts: lmt.QuadOptions | None = None,
+    alpha: float = ALPHA,
+    ppf: Callable[[float], onp.ToFloat] | None = None,
+) -> float: ...
+@overload
 def l_moment_from_cdf(
-    cdf: Callable[[float], float],
+    cdf: Callable[[float], onp.ToFloat],
+    r: lmt.ToOrderND,
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    support: _Pair[float] | None = None,
+    quad_opts: lmt.QuadOptions | None = None,
+    alpha: float = ALPHA,
+    ppf: Callable[[float], onp.ToFloat] | None = None,
+) -> _FloatND: ...
+def l_moment_from_cdf(
+    cdf: Callable[[float], onp.ToFloat],
     r: lmt.ToOrder,
     /,
     trim: lmt.ToTrim = 0,
@@ -93,8 +95,8 @@ def l_moment_from_cdf(
     support: _Pair[float] | None = None,
     quad_opts: lmt.QuadOptions | None = None,
     alpha: float = ALPHA,
-    ppf: Callable[[float], float] | None = None,
-) -> np.float64 | _ArrF8:
+    ppf: Callable[[float], onp.ToFloat] | None = None,
+) -> float | _FloatND:
     r"""
     Evaluate the population L-moment of a continuous probability distribution,
     using its Cumulative Distribution Function (CDF) $F_X(x) = P(X \le x)$.
@@ -214,7 +216,7 @@ def l_moment_from_cdf(
     from scipy.special import betainc
 
     def ig(x: float, r_: int) -> float:
-        p = cdf(x)
+        p = float(cdf(x))
         if r_ == 1:
             if s or t:  # noqa: SIM108
                 v = betainc(s + 1, t + 1, p)
@@ -223,7 +225,7 @@ def l_moment_from_cdf(
             return np.heaviside(x, 0.5) - v
 
         return (
-            np.sqrt(2 * r_ - 1)
+            math.sqrt(2 * r_ - 1)
             * p ** (s + 1)
             * (1 - p) ** (t + 1)
             * eval_sh_jacobi(r_ - 2, t + 1, s + 1, p)
@@ -262,25 +264,25 @@ def l_moment_from_cdf(
 @overload
 def l_moment_from_ppf(
     ppf: Callable[[float], float],
-    r: lmt.ToOrderND,
+    r: lmt.ToOrder0D,
     /,
-    trim: lmt.ToTrim = ...,
+    trim: lmt.ToTrim = 0,
     *,
-    support: _Pair[float] = ...,
-    quad_opts: lmt.QuadOptions | None = ...,
+    support: _Pair[float] = (0, 1),
+    quad_opts: lmt.QuadOptions | None = None,
     alpha: float = ...,
-) -> _ArrF8: ...
+) -> float: ...
 @overload
 def l_moment_from_ppf(
     ppf: Callable[[float], float],
-    r: lmt.ToOrder0D,
+    r: lmt.ToOrderND,
     /,
-    trim: lmt.ToTrim = ...,
+    trim: lmt.ToTrim = 0,
     *,
-    support: _Pair[float] = ...,
-    quad_opts: lmt.QuadOptions | None = ...,
+    support: _Pair[float] = (0, 1),
+    quad_opts: lmt.QuadOptions | None = None,
     alpha: float = ...,
-) -> np.float64: ...
+) -> _FloatND: ...
 def l_moment_from_ppf(
     ppf: Callable[[float], float],
     r: lmt.ToOrder,
@@ -290,7 +292,7 @@ def l_moment_from_ppf(
     support: _Pair[float] = (0, 1),
     quad_opts: lmt.QuadOptions | None = None,
     alpha: float = ALPHA,
-) -> np.float64 | _ArrF8:
+) -> float | _FloatND:
     r"""
     Evaluate the population L-moment of a univariate probability distribution,
     using its Percentile Function (PPF), $x(F)$, also commonly known as the
@@ -408,31 +410,31 @@ def l_moment_from_ppf(
         else:
             l_r[i] = l_r_cache[k] = _l_moment_single(k)
 
-    return round0(l_r)[()]  # convert back to scalar if needed
+    return round0(l_r.item() if l_r.ndim == 0 and np.isscalar(rs) else l_r)
 
 
-@overload
-def l_moment_from_qdf(
-    qdf: Callable[[float], float],
-    r: lmt.ToOrderND,
-    /,
-    trim: lmt.ToTrim = ...,
-    *,
-    support: _Pair[float] = ...,
-    quad_opts: lmt.QuadOptions | None = ...,
-    alpha: float = ...,
-) -> _ArrF8: ...
 @overload
 def l_moment_from_qdf(
     qdf: Callable[[float], float],
     r: lmt.ToOrder0D,
     /,
-    trim: lmt.ToTrim = ...,
+    trim: lmt.ToTrim = 0,
     *,
-    support: _Pair[float] = ...,
-    quad_opts: lmt.QuadOptions | None = ...,
+    support: _Pair[float] = (0, 1),
+    quad_opts: lmt.QuadOptions | None = None,
     alpha: float = ...,
-) -> np.float64: ...
+) -> float: ...
+@overload
+def l_moment_from_qdf(
+    qdf: Callable[[float], float],
+    r: lmt.ToOrderND,
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    support: _Pair[float] = (0, 1),
+    quad_opts: lmt.QuadOptions | None = None,
+    alpha: float = ...,
+) -> _FloatND: ...
 def l_moment_from_qdf(
     qdf: Callable[[float], float],
     r: lmt.ToOrder,
@@ -442,7 +444,7 @@ def l_moment_from_qdf(
     support: _Pair[float] = (0, 1),
     quad_opts: lmt.QuadOptions | None = None,
     alpha: float = ALPHA,
-) -> np.float64 | _ArrF8:
+) -> float | _FloatND:
     r"""
     Evaluate the population L-moments \( \tlmoment{s, t}{r} \) for \( r > 1 \)
     from the quantile distribution function (QDF), which is the derivative of
@@ -466,49 +468,50 @@ def l_moment_from_qdf(
     # correction of the L-moment constant, which follows from the recurrence
     # relations of the gamma (or beta) functions
     c_scale = r_pp / (r_qd * (r_pp + s_pp + t_pp))
+    out *= c_scale
 
-    return out * c_scale
+    return out.item() if out.ndim == 0 and np.isscalar(r) else out
 
 
-@overload
-def l_ratio_from_cdf(
-    cdf: Callable[[float], float],
-    r: lmt.ToOrderND,
-    s: lmt.ToOrder,
-    /,
-    trim: lmt.ToTrim = ...,
-    *,
-    support: _Pair[float] | None = ...,
-    quad_opts: lmt.QuadOptions | None = ...,
-    alpha: float = ...,
-    ppf: Callable[[float], float] | None = ...,
-) -> _ArrF8: ...
-@overload
-def l_ratio_from_cdf(
-    cdf: Callable[[float], float],
-    r: lmt.ToOrder,
-    s: lmt.ToOrderND,
-    /,
-    trim: lmt.ToTrim = ...,
-    *,
-    support: _Pair[float] | None = ...,
-    quad_opts: lmt.QuadOptions | None = ...,
-    alpha: float = ...,
-    ppf: Callable[[float], float] | None = ...,
-) -> _ArrF8: ...
 @overload
 def l_ratio_from_cdf(
     cdf: Callable[[float], float],
     r: lmt.ToOrder0D,
     s: lmt.ToOrder0D,
     /,
-    trim: lmt.ToTrim = ...,
+    trim: lmt.ToTrim = 0,
     *,
-    support: _Pair[float] | None = ...,
-    quad_opts: lmt.QuadOptions | None = ...,
+    support: _Pair[float] | None = None,
+    quad_opts: lmt.QuadOptions | None = None,
     alpha: float = ...,
     ppf: Callable[[float], float] | None = None,
-) -> np.float64: ...
+) -> float: ...
+@overload
+def l_ratio_from_cdf(
+    cdf: Callable[[float], float],
+    r: lmt.ToOrderND,
+    s: lmt.ToOrder,
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    support: _Pair[float] | None = None,
+    quad_opts: lmt.QuadOptions | None = None,
+    alpha: float = ...,
+    ppf: Callable[[float], float] | None = None,
+) -> _FloatND: ...
+@overload
+def l_ratio_from_cdf(
+    cdf: Callable[[float], float],
+    r: lmt.ToOrder,
+    s: lmt.ToOrderND,
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    support: _Pair[float] | None = None,
+    quad_opts: lmt.QuadOptions | None = None,
+    alpha: float = ...,
+    ppf: Callable[[float], float] | None = None,
+) -> _FloatND: ...
 def l_ratio_from_cdf(
     cdf: Callable[[float], float],
     r: lmt.ToOrder,
@@ -520,7 +523,7 @@ def l_ratio_from_cdf(
     quad_opts: lmt.QuadOptions | None = None,
     alpha: float = ALPHA,
     ppf: Callable[[float], float] | None = None,
-) -> np.float64 | _ArrF8:
+) -> float | _FloatND:
     """
     Population L-ratio's from a CDF.
 
@@ -544,39 +547,39 @@ def l_ratio_from_cdf(
 @overload
 def l_ratio_from_ppf(
     ppf: Callable[[float], float],
+    r: lmt.ToOrder0D,
+    s: lmt.ToOrder0D,
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    support: _Pair[float] = ...,
+    quad_opts: lmt.QuadOptions | None = None,
+    alpha: float = ...,
+) -> float: ...
+@overload
+def l_ratio_from_ppf(
+    ppf: Callable[[float], float],
     r: lmt.ToOrderND,
     s: lmt.ToOrder,
     /,
-    trim: lmt.ToTrim = ...,
+    trim: lmt.ToTrim = 0,
     *,
     support: _Pair[float] = ...,
-    quad_opts: lmt.QuadOptions | None = ...,
+    quad_opts: lmt.QuadOptions | None = None,
     alpha: float = ...,
-) -> _ArrF8: ...
+) -> _FloatND: ...
 @overload
 def l_ratio_from_ppf(
     ppf: Callable[[float], float],
     r: lmt.ToOrder,
     s: lmt.ToOrderND,
     /,
-    trim: lmt.ToTrim = ...,
+    trim: lmt.ToTrim = 0,
     *,
     support: _Pair[float] = ...,
-    quad_opts: lmt.QuadOptions | None = ...,
+    quad_opts: lmt.QuadOptions | None = None,
     alpha: float = ...,
-) -> _ArrF8: ...
-@overload
-def l_ratio_from_ppf(
-    ppf: Callable[[float], float],
-    r: lmt.ToOrder0D,
-    s: lmt.ToOrder0D,
-    /,
-    trim: lmt.ToTrim = ...,
-    *,
-    support: _Pair[float] = ...,
-    quad_opts: lmt.QuadOptions | None = ...,
-    alpha: float = ...,
-) -> np.float64: ...
+) -> _FloatND: ...
 def l_ratio_from_ppf(
     ppf: Callable[[float], float],
     r: lmt.ToOrder,
@@ -587,7 +590,7 @@ def l_ratio_from_ppf(
     support: _Pair[float] = (0, 1),
     quad_opts: lmt.QuadOptions | None = None,
     alpha: float = ALPHA,
-) -> np.float64 | _ArrF8:
+) -> float | _FloatND:
     """
     Population L-ratio's from a PPF.
 
@@ -617,7 +620,7 @@ def l_stats_from_cdf(
     quad_opts: lmt.QuadOptions | None = None,
     alpha: float = ALPHA,
     ppf: Callable[[float], float] | None = None,
-) -> _ArrF8:
+) -> _Float1D:
     r"""
     Calculates the theoretical- / population- L-moments (for $r \le 2$)
     and L-ratio's (for $r > 2$) of a distribution, from its CDF.
@@ -664,7 +667,7 @@ def l_stats_from_ppf(
     support: _Pair[float] = (0, 1),
     quad_opts: lmt.QuadOptions | None = None,
     alpha: float = ALPHA,
-) -> _ArrF8:
+) -> _Float1D:
     r"""
     Calculates the theoretical- / population- L-moments (for $r \le 2$)
     and L-ratio's (for $r > 2$) of a distribution, from its quantile function.

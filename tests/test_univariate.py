@@ -1,6 +1,7 @@
 # pyright: reportUnknownMemberType=false
 
 import functools
+from typing import Any
 
 import numpy as np
 import numpy.typing as npt
@@ -30,7 +31,7 @@ st_t = st.integers(0, _T_MAX)
 st_n = st.integers(_N_MIN, 50)
 st_n2 = st.tuples(st_n, st.integers(1, 10))
 st_trim = st.tuples(st_t, st_t)
-st_dtype: SearchStrategy[np.dtype[np.float64]] = hnp.floating_dtypes(sizes=(64,))
+st_dtype: SearchStrategy[np.dtype[np.floating[Any]]] = hnp.floating_dtypes(sizes=(64,))
 st_elements = st.floats(-1e4, -1e-2) | st.floats(1e-2, 1e4)
 
 st_a1 = hnp.arrays(shape=st_n, unique=False, dtype=st_dtype, elements=st_elements)
@@ -73,7 +74,7 @@ def test_l_loc_mean(a: npt.NDArray[np.float64]):
     loc = a.mean(dtype=np.float64)
     l_loc = lmo.l_loc(a)
 
-    assert l_loc.shape == loc.shape
+    assert np.shape(l_loc) == loc.shape
     assert l_loc == pytest.approx(loc, rel=1e-5, abs=1e-8)
 
 
@@ -117,7 +118,7 @@ def test_l_loc_linearity(
     dloc: float,
     dscale: float,
 ):
-    l1: np.float64 = lmo.l_loc(x, trim)
+    l1: float = lmo.l_loc(x, trim)
     l1_ = l1  # weird pyright bug workaround
     assert np.isfinite(l1_)
     assert np.isscalar(l1_)
@@ -137,7 +138,7 @@ def test_l_scale_equiv_md(a: npt.NDArray[np.float64]):
 
     l2 = lmo.l_scale(a)
 
-    assert l2.shape == scale.shape
+    assert np.shape(l2) == scale.shape
     assert l2 == pytest.approx(scale, rel=1e-5, abs=1e-8)
 
 
