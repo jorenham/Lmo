@@ -34,7 +34,7 @@ class _Fn1(Protocol):
 ###
 
 
-def l_moment_influence_from_cdf(
+def l_moment_influence_from_cdf(  # noqa: C901
     cdf: _Fn1,
     r: lmt.ToOrder0D,
     /,
@@ -139,6 +139,7 @@ def l_moment_influence_from_cdf(
         lm = l_moment
 
     a, b = support or tighten_cdf_support(cdf, support)
+    bounded = not np.isinf(a) or not np.isinf(b)
     c = l_const(r_, s, t)
 
     @overload
@@ -147,17 +148,30 @@ def l_moment_influence_from_cdf(
     def influence(x: onp.ToFloatND, /) -> _FloatND: ...
     def influence(x: onp.ToFloat | onp.ToFloatND, /) -> float | _FloatND:
         x_ = np.asanyarray(x, np.float64)
-        q = np.piecewise(
-            x_,
-            [x_ <= a, (x_ > a) & (x_ < b), x_ >= b],
-            [0, cdf, 1],
-        )
+
+        if bounded:
+            if x_.ndim == 0 and np.isscalar(x):
+                if x_[()] <= a:
+                    q = 0
+                elif x_[()] >= b:
+                    q = 1
+                else:
+                    q = cdf(x_.item())
+            else:
+                q = np.piecewise(
+                    x_,
+                    [x_ <= a, (x_ > a) & (x_ < b), x_ >= b],
+                    [0, cdf, 1],
+                )
+        else:
+            q = cdf(x_)
+
         w = round0(c * q**s * (1 - q) ** t, tol)
 
         # cheat a bit and replace 0 * inf by 0, ensuring convergence if s or t
         alpha = w * eval_sh_jacobi(r_ - 1, t, s, q) * np.where(w, x_, 0)
         out = alpha - lm
-        return round0(out.item() if out.ndim == 0 and np.isscalar(x) else out, tol)
+        return out.item() if x_.ndim == 0 and np.isscalar(x) else out
 
     influence.__doc__ = (
         f"Theoretical influence function for L-moment with {r=} and {trim=}."
@@ -260,7 +274,7 @@ def l_ratio_influence_from_cdf(
         # cheat a bit to avoid `inf - inf = nan` situations
         psi_k = np.where(np.isinf(psi_r), 0, if_k(x))
         out = (psi_r - t_r * psi_k) / l_k
-        return round0(out.item() if out.ndim == 0 and np.isscalar(x) else out, tol=tol)
+        return round0(out.item() if np.isscalar(x) else out, tol=tol)
 
     influence.__doc__ = (
         f"Theoretical influence function for L-moment ratio with r={r_}, "

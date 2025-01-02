@@ -216,7 +216,7 @@ def l_moment_from_cdf(
     from scipy.special import betainc
 
     def ig(x: float, r_: int) -> float:
-        p = float(cdf(x))
+        p = np.asarray(cdf(x), np.float64).item()
         if r_ == 1:
             if s or t:  # noqa: SIM108
                 v = betainc(s + 1, t + 1, p)
