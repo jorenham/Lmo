@@ -22,8 +22,8 @@ def __dir__() -> tuple[str, ...]:
 
 _OutT = TypeVar("_OutT", bound=onp.ArrayND[np.number[Any]])
 
-_Float: TypeAlias = float | np.float32 | np.float64
-_FloatND: TypeAlias = onp.ArrayND[np.float32 | np.float64]
+_Float: TypeAlias = float | np.floating[Any]
+_FloatND: TypeAlias = onp.ArrayND[np.floating[Any]]
 
 
 ###

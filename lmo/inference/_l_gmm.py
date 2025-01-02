@@ -7,12 +7,13 @@ from typing import (
     NamedTuple,
     Protocol,
     TypeAlias,
-    TypeVar,
     cast,
+    overload,
 )
 
 import numpy as np
-import numpy.typing as npt
+import optype.numpy as onp
+import optype.numpy.compat as npc
 
 from lmo._lm import l_moment as l_moment_est
 from lmo._lm_co import l_coscale as l_coscale_est
@@ -24,20 +25,24 @@ from lmo.theoretical._utils import l_coef_factor
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    import optype.numpy as onp
-
     import lmo.typing as lmt
 
 
 __all__ = "GMMResult", "fit"
 
-_ArrF8: TypeAlias = npt.NDArray[np.float64]
+###
 
-_T_x = TypeVar("_T_x", float, _ArrF8)
+_FloatND: TypeAlias = onp.ArrayND[npc.floating]
 
 
 class _Fn1(Protocol):
-    def __call__(self, x: _T_x, /) -> _T_x: ...
+    @overload
+    def __call__(self, x: onp.ToFloat, /) -> float: ...
+    @overload
+    def __call__(self, x: onp.ToFloatND, /) -> _FloatND: ...
+
+
+###
 
 
 class GMMResult(NamedTuple):
@@ -75,9 +80,9 @@ class GMMResult(NamedTuple):
     args: tuple[float | int, ...]
     success: bool
     statistic: float
-    eps: _ArrF8
+    eps: _FloatND
 
-    weights: _ArrF8
+    weights: _FloatND
 
     @property
     def n_arg(self) -> int:
@@ -160,12 +165,12 @@ class GMMResult(NamedTuple):
 
 
 def _loss_step(
-    args: _ArrF8,
-    l_fn: Callable[..., _ArrF8],
-    r: npt.NDArray[np.intp],
-    l_r: _ArrF8,
+    args: _FloatND,
+    l_fn: Callable[..., _FloatND],
+    r: onp.ArrayND[np.intp],
+    l_r: _FloatND,
     trim: lmt.ToTrim,
-    w_rr: _ArrF8,
+    w_rr: _FloatND,
 ) -> np.float64:
     """
     This is the computational bottleneck of L-(G)MM.
@@ -186,9 +191,13 @@ def _loss_step(
     return np.sqrt(g_r.T @ w_rr @ g_r)  # pyright: ignore[reportReturnType]
 
 
-def _get_l_moment_fn(ppf: _Fn1) -> Callable[Concatenate[lmt.ToOrderND, ...], _ArrF8]:
-    def l_moment_fn(r: lmt.ToOrderND, /, *args: Any, trim: lmt.ToTrim = 0) -> _ArrF8:
-        def _ppf(q: _T_x, /) -> _T_x:
+def _get_l_moment_fn(ppf: _Fn1) -> Callable[Concatenate[lmt.ToOrderND, ...], _FloatND]:
+    def l_moment_fn(r: lmt.ToOrderND, /, *args: Any, trim: lmt.ToTrim = 0) -> _FloatND:
+        @overload
+        def _ppf(q: onp.ToFloat, /) -> float: ...
+        @overload
+        def _ppf(q: onp.ToFloatND, /) -> _FloatND: ...
+        def _ppf(q: onp.ToFloat | onp.ToFloatND, /) -> float | _FloatND:
             return ppf(q, *args)
 
         return l_moment_from_ppf(_ppf, r, trim=trim)
@@ -197,11 +206,11 @@ def _get_l_moment_fn(ppf: _Fn1) -> Callable[Concatenate[lmt.ToOrderND, ...], _Ar
 
 
 def _get_weights_mc(
-    y: _ArrF8,
-    r: npt.NDArray[np.intp],
+    y: _FloatND,
+    r: onp.ArrayND[npc.integer],
     /,
     trim: tuple[int, int] | tuple[float, float] = (0, 0),
-) -> _ArrF8:
+) -> _FloatND:
     l_r = l_moment_est(
         y,
         r,
@@ -234,7 +243,9 @@ def _ensure_1d_f8(arr: onp.ToFloat1D) -> onp.Array1D[np.float64]:
     if out.ndim != 1:
         err = f"expected 1D array, got {out.shape}"
         raise ValueError(err)
-    return out
+    if out.dtype.type is not np.float64:
+        out = out.astype(np.float64)
+    return out  # pyright: ignore[reportReturnType]
 
 
 def fit(  # noqa: C901
@@ -248,7 +259,7 @@ def fit(  # noqa: C901
     k: int | None = None,
     k_max: int = 50,
     l_tol: float = 1e-4,
-    l_moment_fn: Callable[..., _ArrF8] | None = None,
+    l_moment_fn: Callable[..., _FloatND] | None = None,
     n_mc_samples: int = 9999,
     random_state: lmt.Seed | None = None,
     **kwds: Any,

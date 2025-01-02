@@ -50,18 +50,23 @@ __all__ = (
 )
 
 
+###
+
 _T = TypeVar("_T")
-_T_x = TypeVar("_T_x", float, onp.ArrayND[np.float64])
-
-
-class _Fn1(Protocol):
-    def __call__(self, x: _T_x, /) -> _T_x: ...
-
-
 _Tuple2: TypeAlias = tuple[_T, _T]
 
 _Float: TypeAlias = float | np.float32 | np.float64
 _FloatND: TypeAlias = onp.ArrayND[np.float32 | np.float64]
+
+
+class _Fn1(Protocol):
+    @overload
+    def __call__(self, x: onp.ToFloat, /) -> float: ...
+    @overload
+    def __call__(self, x: onp.ToFloatND, /) -> _FloatND: ...
+
+
+###
 
 
 _MIN_RHO: Final[float] = 1e-5
@@ -90,9 +95,9 @@ class HypothesisTestResult(NamedTuple):
 
     def is_significant(
         self,
-        level: _Float | np.floating[Any] = 0.05,
+        level: onp.ToFloat = 0.05,
         /,
-    ) -> np.bool_ | onp.ArrayND[np.bool_]:
+    ) -> bool | np.bool_ | onp.ArrayND[np.bool_]:
         """
         Whether or not the null hypothesis can be rejected, with a certain
         confidence level (5% by default).
@@ -100,7 +105,7 @@ class HypothesisTestResult(NamedTuple):
         if not (0 < level < 1):
             msg = "significance level must lie between 0 and 1"
             raise ValueError(msg)
-        return self.pvalue < np.float64(level)
+        return self.pvalue < level
 
 
 def normaltest(
@@ -663,7 +668,7 @@ def l_ratio_bounds(
 
 
 def rejection_point(
-    influence_fn: Callable[[float], float],
+    influence_fn: Callable[[float], onp.ToFloat],
     /,
     rho_min: float = 0,
     rho_max: float = np.inf,
@@ -743,7 +748,7 @@ def rejection_point(
     from scipy.integrate import quad
 
     def integrand(x: float) -> float:
-        return max(abs(influence_fn(-x)), abs(influence_fn(x)))
+        return max(abs(float(influence_fn(-x))), abs(float(influence_fn(x))))
 
     def obj(r: _FloatND) -> float:
         return quad(integrand, r[0], np.inf)[0]
@@ -760,7 +765,7 @@ def rejection_point(
 
 
 def error_sensitivity(
-    influence_fn: Callable[[float], float],
+    influence_fn: Callable[[float], onp.ToFloat],
     /,
     domain: _Tuple2[float] = (-math.inf, math.inf),
 ) -> float:
@@ -806,7 +811,7 @@ def error_sensitivity(
         return np.inf
 
     def obj(xs: _FloatND) -> float:
-        return -abs(influence_fn(xs[0]))
+        return -abs(float(influence_fn(xs[0])))
 
     bounds = None if np.isneginf(a) and np.isposinf(b) else [(a, b)]
 
@@ -820,7 +825,7 @@ def error_sensitivity(
 
 
 def shift_sensitivity(
-    influence_fn: Callable[[float], float],
+    influence_fn: Callable[[float], onp.ToFloat],
     /,
     domain: _Tuple2[float] = (-math.inf, math.inf),
 ) -> float:
@@ -879,10 +884,10 @@ def shift_sensitivity(
     """
 
     def obj(xs: _FloatND) -> float:
-        x, y = xs
+        x, y = xs.item(0), xs.item(1)
         if y == x:
             return 0
-        return -abs((influence_fn(y) - influence_fn(x)) / (y - x))
+        return -abs((float(influence_fn(y)) - float(influence_fn(x))) / (y - x))
 
     a, b = domain
     bounds = None if np.isneginf(a) and np.isposinf(b) else [(a, b)]

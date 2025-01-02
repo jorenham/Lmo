@@ -13,26 +13,26 @@ _Float1D: TypeAlias = onp.Array1D[np.float64]
 _FloatND: TypeAlias = onp.ArrayND[np.float64]
 
 # default
-assert_type(lmo.l_ratio(X, 4, 2), np.float64)
-assert_type(lmo.l_ratio(np.array(X), 4, 2), np.float64)
-assert_type(lmo.l_ratio(np.array(X, dtype=np.float32), 4, 2), np.float64)
-assert_type(lmo.l_ratio(np.array(X, dtype=np.int32), 4, 2), np.float64)
-assert_type(lmo.l_ratio(X, np.int16(4), 2), np.float64)
-assert_type(lmo.l_ratio(X, 4, np.uint8(2)), np.float64)
-assert_type(lmo.l_ratio(X, np.int16(4), np.uint8(2)), np.float64)
+assert_type(lmo.l_ratio(X, 4, 2), float)
+assert_type(lmo.l_ratio(np.array(X), 4, 2), float)
+assert_type(lmo.l_ratio(np.array(X, dtype=np.float32), 4, 2), float)
+assert_type(lmo.l_ratio(np.array(X, dtype=np.int32), 4, 2), float)
+assert_type(lmo.l_ratio(X, np.int16(4), 2), float)
+assert_type(lmo.l_ratio(X, 4, np.uint8(2)), float)
+assert_type(lmo.l_ratio(X, np.int16(4), np.uint8(2)), float)
 
 # trim
-assert_type(lmo.l_ratio(X, 4, 2, 0), np.float64)
-assert_type(lmo.l_ratio(X, 4, 2, 1), np.float64)
-assert_type(lmo.l_ratio(X, 4, 2, trim=1), np.float64)
-assert_type(lmo.l_ratio(X, 4, 2, trim=(1, 1)), np.float64)
-assert_type(lmo.l_ratio(X, 4, 2, trim=(0.5, 0.5)), np.float64)
-assert_type(lmo.l_ratio(X, 4, 2, trim=(1, 0.5)), np.float64)
-assert_type(lmo.l_ratio(X, 4, 2, trim=(0.5, 1)), np.float64)
+assert_type(lmo.l_ratio(X, 4, 2, 0), float)
+assert_type(lmo.l_ratio(X, 4, 2, 1), float)
+assert_type(lmo.l_ratio(X, 4, 2, trim=1), float)
+assert_type(lmo.l_ratio(X, 4, 2, trim=(1, 1)), float)
+assert_type(lmo.l_ratio(X, 4, 2, trim=(0.5, 0.5)), float)
+assert_type(lmo.l_ratio(X, 4, 2, trim=(1, 0.5)), float)
+assert_type(lmo.l_ratio(X, 4, 2, trim=(0.5, 1)), float)
 
 # sctype
-assert_type(lmo.l_ratio(X, 4, 2, dtype=np.float32), np.float32)
-assert_type(lmo.l_ratio(X, 4, 2, dtype=np.dtype(np.float16)), np.float16)
+assert_type(lmo.l_ratio(X, 4, 2, dtype=np.float32), float)
+assert_type(lmo.l_ratio(X, 4, 2, dtype=np.dtype(np.float16)), float)
 
 # vectorized r
 assert_type(lmo.l_ratio(X, [3, 4], 2), _Float1D)

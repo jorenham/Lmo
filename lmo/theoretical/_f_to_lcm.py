@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from functools import partial
-from typing import TYPE_CHECKING, Protocol, TypeAlias, TypeVar
+from typing import TYPE_CHECKING, TypeAlias, TypeVar
 
 import numpy as np
+import optype.numpy as onp
+import optype.numpy.compat as npc
 
 from lmo._poly import eval_sh_jacobi
 from lmo._utils import clean_order, clean_trim, round0
@@ -13,7 +16,7 @@ from ._f_to_lm import l_moment_from_cdf
 from ._utils import l_const, tighten_cdf_support
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Sequence
+    from collections.abc import Sequence
 
     import lmo.typing as lmt
 
@@ -24,18 +27,15 @@ __all__ = ["l_comoment_from_pdf", "l_coratio_from_pdf"]
 _T = TypeVar("_T")
 _Pair: TypeAlias = tuple[_T, _T]
 
-_FloatND: TypeAlias = np.ndarray[tuple[int, ...], np.dtype[np.float64]]
+_FloatND: TypeAlias = onp.ArrayND[np.float64]
 
-_AnyFloatND = TypeVar("_AnyFloatND", float, _FloatND)
-
-
-class _Fn1(Protocol):
-    def __call__(self, x: _AnyFloatND, /) -> _AnyFloatND: ...
+_ToPDF: TypeAlias = Callable[[onp.ArrayND[np.float64]], onp.ToFloat]
+_ToCDF: TypeAlias = Callable[[float], onp.ToFloat]
 
 
 def l_comoment_from_pdf(
-    pdf: Callable[[_FloatND], float] | Callable[[_FloatND], np.float64],
-    cdfs: Sequence[_Fn1],
+    pdf: _ToPDF,
+    cdfs: Sequence[_ToCDF],
     r: lmt.ToOrder0D,
     /,
     trim: lmt.ToTrim = 0,
@@ -213,7 +213,7 @@ def l_comoment_from_pdf(
     def integrand(*xs: float, i: int, j: int) -> float:
         q_j = cdfs[j](xs[j])
         p_j = eval_sh_jacobi(r_ - 1, t, s, q_j)
-        x = np.asarray(xs, dtype=float)
+        x = np.asarray(xs, dtype=np.float64)
         return c * x[i] * q_j**s * (1 - q_j) ** t * p_j * pdf(x)
 
     from scipy.integrate import nquad
@@ -238,8 +238,8 @@ def l_comoment_from_pdf(
 
 
 def l_coratio_from_pdf(
-    pdf: Callable[[_FloatND], float] | Callable[[_FloatND], np.float64],
-    cdfs: Sequence[_Fn1],
+    pdf: _ToPDF,
+    cdfs: Sequence[_ToCDF],
     r: lmt.ToOrder0D,
     r0: lmt.ToOrder0D = 2,
     /,
@@ -247,7 +247,7 @@ def l_coratio_from_pdf(
     *,
     supports: Sequence[_Pair[float]] | None = None,
     quad_opts: lmt.QuadOptions | None = None,
-) -> _FloatND:
+) -> onp.ArrayND[npc.floating]:
     r"""
     Evaluate the theoretical L-*co*moment ratio matrix of a multivariate
     probability distribution, using the joint PDF $f_{\vec{X}}(\vec{x})$ and

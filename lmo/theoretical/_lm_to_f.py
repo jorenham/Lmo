@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Protocol, TypeAlias, TypeVar
+from typing import TYPE_CHECKING, Protocol, TypeAlias, TypeVar, overload
 
 import numpy as np
-import numpy.typing as npt
+import optype.numpy as onp
+import optype.numpy.compat as npc
 
 from lmo._utils import clean_trim, plotting_positions
 from lmo.special import fourier_jacobi, fpow
@@ -11,21 +12,27 @@ from lmo.special import fourier_jacobi, fpow
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    import optype.numpy as onp
-
     import lmo.typing as lmt
 
 __all__ = ["ppf_from_l_moments", "qdf_from_l_moments"]
 
-_T = TypeVar("_T")
-_T_x = TypeVar("_T_x", float, npt.NDArray[np.float64])
 
+###
+
+_T = TypeVar("_T")
 _Pair: TypeAlias = tuple[_T, _T]
-_FloatND: TypeAlias = npt.NDArray[np.float64]
+
+_FloatND: TypeAlias = onp.ArrayND[npc.floating]
 
 
 class _Fn1(Protocol):
-    def __call__(self, x: _T_x, /) -> _T_x: ...
+    @overload
+    def __call__(self, x: onp.ToFloat, /) -> float: ...
+    @overload
+    def __call__(self, x: onp.ToFloatND, /) -> _FloatND: ...
+
+
+###
 
 
 def _validate_l_bounds(l_r: _FloatND, s: float, t: float) -> None:
@@ -74,17 +81,15 @@ def _validate_l_bounds(l_r: _FloatND, s: float, t: float) -> None:
 
 
 def _monotonic(
-    f: Callable[[_FloatND], np.float64 | _FloatND],
+    f: Callable[[_FloatND], _FloatND],
     a: float,
     b: float,
     n: int = 100,
     strict: bool = False,
 ) -> bool:
     """Numeric validation of the monotinicity of a function on [a, b]."""
-    x = np.linspace(a, b, n + 1)
-    y = f(x)
-    # dy = np.gradient(y)
-    dy = np.ediff1d(y)
+    x = np.linspace(a, b, n + 1, dtype=np.float64)
+    dy = np.ediff1d(f(x))
 
     return bool(np.all(dy > 0 if strict else dy >= 0))
 
@@ -178,11 +183,11 @@ def ppf_from_l_moments(
         w -= st * np.arange(_n) / np.arange(st + 1, _n + st + 1)
     c = w * l_r
 
-    def ppf(
-        u: _T_x,
-        *,
-        r_max: int = -1,
-    ) -> _T_x:
+    @overload
+    def ppf(u: onp.ToFloat, *, r_max: int = -1) -> float: ...
+    @overload
+    def ppf(u: onp.ToFloatND, *, r_max: int = -1) -> _FloatND: ...
+    def ppf(u: onp.ToFloat | onp.ToFloatND, *, r_max: int = -1) -> float | _FloatND:
         y = np.asarray(u)
         y = np.where((y < 0) | (y > 1), np.nan, 2 * y - 1)
 
@@ -192,7 +197,8 @@ def ppf_from_l_moments(
         if extrapolate and _n > 2:
             x = (x + fourier_jacobi(y, c_[:-1], t, s)) / 2
 
-        return np.clip(x, *support)[()]  # pyright: ignore[reportReturnType]
+        out = np.clip(x, *support)
+        return out.item() if y.ndim == 0 and np.isscalar(u) else out
 
     if validate and not _monotonic(ppf, 0, 1):
         msg = (
@@ -256,7 +262,11 @@ def qdf_from_l_moments(
     )[1:]
     alpha, beta = t + 1, s + 1
 
-    def qdf(u: _T_x, *, r_max: int = -1) -> _T_x:
+    @overload
+    def qdf(u: onp.ToFloat, *, r_max: int = -1) -> float: ...
+    @overload
+    def qdf(u: onp.ToFloatND, *, r_max: int = -1) -> _FloatND: ...
+    def qdf(u: onp.ToFloat | onp.ToFloatND, *, r_max: int = -1) -> float | _FloatND:
         """Quantile Distribution Function (QDF) polynomial approximation."""
         y = np.asanyarray(u, dtype=np.float64)
         # TODO: make this lazy
@@ -268,7 +278,7 @@ def qdf_from_l_moments(
         if extrapolate and _n > 2:
             x = (x + fourier_jacobi(y, c_[:-1], alpha, beta)) / 2
 
-        return x[()]  # pyright: ignore[reportReturnType]
+        return x.item() if y.ndim == 0 and np.isscalar(u) else x
 
     if validate and np.any(qdf(plotting_positions(100)) < 0):
         msg = "QDF is not positive; consider increasing the trim"

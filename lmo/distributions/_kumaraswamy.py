@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 import sys
-from typing import TypeAlias, TypeVar, final
+from typing import Any, Final, TypeAlias, final
 
 import numpy as np
 import numpy.typing as npt
@@ -20,13 +20,11 @@ else:
 
 __all__ = ("kumaraswamy_gen",)
 
+_Float: TypeAlias = float | np.floating[Any]
+_FloatND: TypeAlias = onp.ArrayND[np.floating[Any]]
+_FloatOrND: TypeAlias = _Float | onp.ArrayND[np.floating[Any]]
 
-_FloatND: TypeAlias = onp.ArrayND[np.float64]
-
-_XT = TypeVar("_XT", float | np.float64, _FloatND)
-
-
-_lm_kumaraswamy = get_lm_func("kumaraswamy")
+_lm_kumaraswamy: Final = get_lm_func("kumaraswamy")
 
 
 # pyright: reportIncompatibleMethodOverride=false
@@ -52,32 +50,32 @@ class kumaraswamy_gen(lmt.rv_continuous):
         return 0.0, 1.0
 
     @override
-    def _pdf(self, /, x: _XT, a: float, b: float) -> _XT:
-        return a * b * x ** (a - 1) * (1 - x**a) ** (b - 1)  # pyright: ignore[reportReturnType]
+    def _pdf(self, /, x: _FloatOrND, a: float, b: float) -> _FloatOrND:
+        return a * b * x ** (a - 1) * (1 - x**a) ** (b - 1)
 
     @override
-    def _logpdf(self, /, x: _XT, a: float, b: float) -> _XT:
+    def _logpdf(self, /, x: _FloatOrND, a: float, b: float) -> _FloatOrND:
         return np.log(a * b) + (a - 1) * np.log(x) + (b - 1) * np.log(1 - x**a)
 
     @override
-    def _cdf(self, /, x: _XT, a: float, b: float) -> _XT:
-        return 1 - (1 - x**a) ** b  # pyright: ignore[reportReturnType]
+    def _cdf(self, /, x: _FloatOrND, a: float, b: float) -> _FloatOrND:
+        return 1 - (1 - x**a) ** b
 
     @override
-    def _sf(self, /, x: _XT, a: float, b: float) -> _XT:
-        return (1 - x**a) ** (b - 1)  # pyright: ignore[reportReturnType]
+    def _sf(self, /, x: _FloatOrND, a: float, b: float) -> _FloatOrND:
+        return (1 - x**a) ** (b - 1)
 
     @override
-    def _isf(self, /, q: _XT, a: float, b: float) -> _XT:
-        return (1 - q ** (1 / b)) ** (1 / a)  # pyright: ignore[reportReturnType]
+    def _isf(self, /, q: _FloatOrND, a: float, b: float) -> _FloatOrND:
+        return (1 - q ** (1 / b)) ** (1 / a)
 
-    def _qdf(self, /, q: _XT, a: float, b: float) -> _XT:
+    def _qdf(self, /, q: _FloatOrND, a: float, b: float) -> _FloatOrND:
         p = 1 - q
-        return p ** (1 / (b - 1)) * (1 - p ** (1 / b)) ** (1 / (a - 1)) / (a * b)  # pyright: ignore[reportReturnType]
+        return p ** (1 / (b - 1)) * (1 - p ** (1 / b)) ** (1 / (a - 1)) / (a * b)
 
     @override
-    def _ppf(self, /, q: _XT, a: float, b: float) -> _XT:
-        return (1 - (1 - q) ** (1 / b)) ** (1 / a)  # pyright: ignore[reportReturnType]
+    def _ppf(self, /, q: _FloatOrND, a: float, b: float) -> _FloatOrND:
+        return (1 - (1 - q) ** (1 / b)) ** (1 / a)
 
     def _entropy(self, a: float, b: float) -> float:
         return (1 - 1 / b) + (1 - 1 / a) * harmonic(b) - math.log(a * b)

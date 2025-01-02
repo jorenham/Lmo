@@ -7,10 +7,11 @@ Primarily used as an intermediate step for L-moment estimation.
 
 from __future__ import annotations
 
-from typing import Any, TypeAlias, TypeVar, Unpack, overload
+from typing import TypeAlias, TypeVar, Unpack, overload
 
 import numpy as np
 import optype.numpy as onp
+import optype.numpy.compat as npc
 
 import lmo.typing as lmt
 from ._utils import ordered
@@ -18,9 +19,11 @@ from ._utils import ordered
 __all__ = "cov", "weights"
 
 
-_F = TypeVar("_F", bound=np.floating[Any])
+_FloatT = TypeVar("_FloatT", bound=npc.floating)
 
-_DType: TypeAlias = np.dtype[_F] | type[_F]
+_ToDType: TypeAlias = (
+    type[_FloatT] | np.dtype[_FloatT] | onp.HasDType[np.dtype[_FloatT]]
+)
 
 
 @overload
@@ -28,11 +31,13 @@ def weights(
     r: int,
     n: int,
     /,
-    dtype: _DType[np.float64] = np.float64,
+    dtype: _ToDType[np.float64] = np.float64,
 ) -> onp.Array2D[np.float64]: ...
 @overload
-def weights(r: int, n: int, /, dtype: _DType[_F]) -> onp.Array2D[_F]: ...
-def weights(r: int, n: int, /, dtype: _DType[_F] = np.float64) -> onp.Array2D[_F]:
+def weights(r: int, n: int, /, dtype: _ToDType[_FloatT]) -> onp.Array2D[_FloatT]: ...
+def weights(
+    r: int, n: int, /, dtype: _ToDType[_FloatT] = np.float64
+) -> onp.Array2D[_FloatT]:
     r"""
     Probability Weighted moment (PWM) projection matrix $B$ of the
     unbiased estimator for $\beta_k = M_{1,k,0}$ for $k = 0, \dots, r - 1$.
@@ -84,26 +89,26 @@ def cov(
     r: int,
     /,
     axis: None = None,
-    dtype: _DType[_F] = np.float64,
+    dtype: _ToDType[_FloatT] = np.float64,
     **kwds: Unpack[lmt.UnivariateOptions],
-) -> onp.Array2D[_F]: ...
+) -> onp.Array2D[_FloatT]: ...
 @overload
 def cov(
     a: onp.ToFloatND,
     r: int,
     /,
     axis: int,
-    dtype: _DType[_F] = np.float64,
+    dtype: _ToDType[_FloatT] = np.float64,
     **kwds: Unpack[lmt.UnivariateOptions],
-) -> onp.Array[onp.AtLeast2D, _F]: ...
+) -> onp.Array[onp.AtLeast2D, _FloatT]: ...
 def cov(
     a: onp.ToFloatND,
     r: int,
     /,
     axis: int | None = None,
-    dtype: _DType[_F] = np.float64,
+    dtype: _ToDType[_FloatT] = np.float64,
     **kwds: Unpack[lmt.UnivariateOptions],
-) -> onp.ArrayND[_F]:
+) -> onp.ArrayND[_FloatT]:
     r"""
     Distribution-free variance-covariance matrix of the probability weighted
     moment (PWM) point estimates $\beta_k = M_{1,k,0}$, with orders
@@ -170,7 +175,7 @@ def cov(
 
         # (n-k-1)^(k+1)
         denom = n * (n - 2 * k - 1) * ffact[k, n - k - 1]
-        m_bb = np.einsum(spec, v_ki, x) / denom  # pyright: ignore[reportUnknownMemberType]
+        m_bb = np.einsum(spec, v_ki, x) / denom
         s_b[k, k] = b[k] ** 2 - m_bb
 
     # for k != l (actually k > l since symmetric)
@@ -192,7 +197,7 @@ def cov(
 
         # `(n-k-1)^(l+1)`
         denom = n * (n - k - m - 1) * ffact[m, n - k - 1]
-        m_bb = np.einsum(spec, v_ki, x) / denom  # pyright: ignore[reportUnknownMemberType]
+        m_bb = np.einsum(spec, v_ki, x) / denom
 
         # because s_bb.T == s_bb
         s_b[k, m] = s_b[m, k] = b[k] * b[m] - m_bb

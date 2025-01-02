@@ -4,7 +4,7 @@ import functools
 from typing import TYPE_CHECKING, TypeAlias, TypeVar
 
 import numpy as np
-import numpy.typing as npt
+import optype.numpy as onp
 
 from lmo._poly import eval_sh_jacobi
 from lmo._utils import clean_order, clean_trim, moments_to_stats_cov, round0
@@ -21,21 +21,21 @@ __all__ = ["l_moment_cov_from_cdf", "l_stats_cov_from_cdf"]
 
 
 _T = TypeVar("_T")
-
-
 _Pair: TypeAlias = tuple[_T, _T]
-_ArrF8: TypeAlias = npt.NDArray[np.float64]
+
+_Float2D: TypeAlias = onp.Array2D[np.float64]
+_FloatND: TypeAlias = onp.ArrayND[np.float64]
 
 
 def l_moment_cov_from_cdf(
-    cdf: Callable[[float], float],
+    cdf: Callable[[float], onp.ToFloat],
     r_max: lmt.ToOrder0D,
     /,
     trim: lmt.ToTrim = 0,
     *,
     support: _Pair[float] | None = None,
     quad_opts: lmt.QuadOptions | None = None,
-) -> _ArrF8:
+) -> _Float2D:
     r"""
     L-moments that are estimated from $n$ samples of a distribution with CDF
     $F$, converge to the multivariate normal distribution as the sample size
@@ -162,7 +162,8 @@ def l_moment_cov_from_cdf(
     c_n = np.array([l_const(n + 1, s, t) for n in range(rs)])
 
     def integrand(x: float, y: float, k: int, r: int) -> float:
-        u, v = cdf_(x), cdf_(y)
+        u: float = np.asarray(cdf_(x)).item(0)
+        v: float = np.asarray(cdf_(y)).item(0)
         return (
             c_n[k]
             * c_n[r]
@@ -220,7 +221,7 @@ def l_stats_cov_from_cdf(
     quad_opts: lmt.QuadOptions | None = None,
     alpha: float = ALPHA,
     ppf: Callable[[float], float] | None = None,
-) -> _ArrF8:
+) -> _FloatND:
     r"""
     Similar to [`l_moment_from_cdf`][lmo.theoretical.l_moment_from_cdf], but
     for the [`lmo.l_stats`][lmo.l_stats].

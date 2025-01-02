@@ -16,8 +16,10 @@ from typing import (
 )
 
 import numpy as np
-import numpy.typing as npt
+import optype as op
 import optype.numpy as onp
+import optype.numpy.compat as npc
+import optype.typing as opt
 
 import lmo.typing as lmt
 from lmo._utils import clean_trim, l_stats_orders, moments_to_ratio, round0
@@ -32,24 +34,20 @@ from lmo.theoretical import (
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    import optype as op
+__all__ = ["l_poly"]
 
+###
 
-_F8: TypeAlias = np.float64
-_ArrF8: TypeAlias = npt.NDArray[_F8]
-_VecF8: TypeAlias = np.ndarray[tuple[int], np.dtype[_F8]]
+_Float1D: TypeAlias = onp.Array1D[npc.floating]
+_FloatND: TypeAlias = onp.ArrayND[npc.floating]
 
 _T = TypeVar("_T")
-_T_x = TypeVar("_T_x", float, _ArrF8)
-
-
-class _Fn1(Protocol):
-    def __call__(self, x: _T_x, /) -> _T_x: ...
 
 
 _Trim: TypeAlias = tuple[int, int] | tuple[float, float]
 _MomentType: TypeAlias = Literal[0, 1]
 _LPolyParams: TypeAlias = tuple[onp.ToFloat1D] | tuple[onp.ToFloat1D, lmt.ToTrim]
+_ToShape: TypeAlias = op.CanIndex | tuple[op.CanIndex, ...]
 
 _Stats0: TypeAlias = Literal[""]
 _Stats1: TypeAlias = Literal["m", "v", "s", "k"]
@@ -64,6 +62,16 @@ _Tuple2: TypeAlias = tuple[_T, _T]
 _Tuple3: TypeAlias = tuple[_T, _T, _T]
 _Tuple4: TypeAlias = tuple[_T, _T, _T, _T]
 _Tuple4m: TypeAlias = tuple[()] | _Tuple1[_T] | _Tuple2[_T] | _Tuple3[_T] | _Tuple4[_T]
+
+
+class _Fn1(Protocol):
+    @overload
+    def __call__(self, x: onp.ToFloat, /) -> float: ...
+    @overload
+    def __call__(self, x: onp.ToFloatND, /) -> _FloatND: ...
+
+
+###
 
 
 def _get_rng(s: lmt.Seed | None = None, /) -> np.random.Generator:
@@ -81,9 +89,9 @@ class l_poly:  # noqa: N801
     numargs: ClassVar[Literal[2]] = 2
     shapes: ClassVar[Literal["lmbda, trim"]] = "lmbda, trim"
 
-    _l_moments: Final[_VecF8]
+    _l_moments: Final[_Float1D]
     _trim: Final[_Trim]
-    _support: Final[_Tuple2[_F8]]
+    _support: Final[_Tuple2[float]]
 
     _cdf: Final[_Fn1]
     _ppf: Final[_Fn1]
@@ -112,7 +120,8 @@ class l_poly:  # noqa: N801
             seed:
                 Random number generator.
         """
-        lmbda_ = np.asarray(lmbda)
+        lmbda_ = np.asarray(lmbda, dtype=np.float64).reshape(-1)
+
         if (_n := len(lmbda_)) < 2:
             msg = f"at least 2 L-moments required, got len(lmbda) = {_n}"
             raise ValueError(msg)
@@ -124,7 +133,7 @@ class l_poly:  # noqa: N801
         self._qdf = qdf_from_l_moments(lmbda_, trim=trim_, validate=False)
 
         a, b = self._ppf(np.array([0, 1]))
-        self._support = a, b
+        self._support = float(a), float(b)
 
         self._cdf_single = cdf_from_ppf(self._ppf)
         self._cdf = np.vectorize(self._cdf_single, [float])
@@ -134,12 +143,12 @@ class l_poly:  # noqa: N801
         super().__init__()
 
     @property
-    def a(self, /) -> _F8:
+    def a(self, /) -> float:
         """Lower bound of the support."""
         return self._support[0]
 
     @property
-    def b(self, /) -> _F8:
+    def b(self, /) -> float:
         """Upper bound of the support."""
         return self._support[1]
 
@@ -211,43 +220,40 @@ class l_poly:  # noqa: N801
     def rvs(
         self,
         /,
-        size: Literal[1] | None = None,
-        random_state: lmt.Seed | None = None,
-    ) -> _F8: ...
+        size: tuple[()] | None = None,
+        *,
+        rng: lmt.Seed = None,
+    ) -> float: ...
     @overload
+    def rvs(self, /, size: _ToShape, *, rng: lmt.Seed = None) -> _FloatND: ...
     def rvs(
         self,
         /,
-        size: int | tuple[int, ...],
-        random_state: lmt.Seed | None = None,
-    ) -> _ArrF8: ...
-    def rvs(
-        self,
-        /,
-        size: int | tuple[int, ...] | None = None,
-        random_state: lmt.Seed | None = None,
-    ) -> _F8 | _ArrF8:
+        size: _ToShape | None = None,
+        *,
+        rng: lmt.Seed = None,
+    ) -> float | _FloatND:
         """
         Draw random variates from the relevant distribution.
 
         Args:
             size:
                 Defining number of random variates, defaults to 1.
-            random_state:
-                Seed or [`numpy.random.Generator`][numpy.random.Generator]
-                instance. Defaults to `l_poly.random_state`.
+            rng:
+                RNG to pass to [`numpy.random.default_rng`][numpy.random.default_rng].
+                Defaults to `l_poly.random_state`.
 
         Returns:
             A scalar or array with shape like `size`.
         """
-        if random_state is None:
-            rng = self._random_state
-        else:
-            rng = np.random.default_rng(random_state)
-
+        rng = self._random_state if rng is None else np.random.default_rng(rng)
         return self._ppf(rng.uniform(size=size))
 
-    def ppf(self, p: _T_x, /) -> _T_x:
+    @overload
+    def ppf(self, p: onp.ToFloat, /) -> float: ...
+    @overload
+    def ppf(self, p: onp.ToFloatND, /) -> _FloatND: ...
+    def ppf(self, p: onp.ToFloat | onp.ToFloatND, /) -> float | _FloatND:
         r"""
         [Percent point function](https://w.wiki/8cQU) \( Q(p) \) (inverse of
         [CDF][lmo.distributions.l_poly.cdf], a.k.a. the quantile function) at
@@ -261,7 +267,11 @@ class l_poly:  # noqa: N801
         """
         return self._ppf(p)
 
-    def isf(self, q: _T_x, /) -> _T_x:
+    @overload
+    def isf(self, q: onp.ToFloat, /) -> float: ...
+    @overload
+    def isf(self, q: onp.ToFloatND, /) -> _FloatND: ...
+    def isf(self, q: onp.ToFloat | onp.ToFloatND, /) -> float | _FloatND:
         r"""
         Inverse survival function \( \bar{Q}(q) = Q(1 - q) \) (inverse of
         [`sf`][lmo.distributions.l_poly.sf]) at \( q \).
@@ -269,9 +279,16 @@ class l_poly:  # noqa: N801
         Args:
             q: Scalar or array-like of upper tail probability values in \( [0, 1] \).
         """
-        return self._ppf(1 - q)
+        p = 1 - np.asarray(q, np.float64)
+        if p.ndim == 0 and np.isscalar(q):
+            p = p[()]
+        return self._ppf(p)
 
-    def qdf(self, p: _T_x, /) -> _T_x:
+    @overload
+    def qdf(self, p: onp.ToFloat, /) -> float: ...
+    @overload
+    def qdf(self, p: onp.ToFloatND, /) -> _FloatND: ...
+    def qdf(self, p: onp.ToFloat | onp.ToFloatND, /) -> float | _FloatND:
         r"""
         Quantile density function \( q \equiv \frac{\dd{Q}}{\dd{p}} \) (
         derivative of the [PPF][lmo.distributions.l_poly.ppf]) at \( p \) of
@@ -285,7 +302,11 @@ class l_poly:  # noqa: N801
         """
         return self._qdf(p)
 
-    def cdf(self, x: _T_x, /) -> _T_x:
+    @overload
+    def cdf(self, x: onp.ToFloat, /) -> float: ...
+    @overload
+    def cdf(self, x: onp.ToFloatND, /) -> _FloatND: ...
+    def cdf(self, x: onp.ToFloat | onp.ToFloatND, /) -> float | _FloatND:
         r"""
         [Cumulative distribution function](https://w.wiki/3ota)
         \( F(x) = \mathrm{P}(X \le x) \) at \( x \) of the given distribution.
@@ -299,8 +320,12 @@ class l_poly:  # noqa: N801
         """
         return self._cdf(x)
 
+    @overload
+    def logcdf(self, x: onp.ToFloat, /) -> float: ...
+    @overload
+    def logcdf(self, x: onp.ToFloatND, /) -> _FloatND: ...
     @np.errstate(divide="ignore")
-    def logcdf(self, x: _T_x, /) -> _T_x:
+    def logcdf(self, x: onp.ToFloat | onp.ToFloatND, /) -> float | _FloatND:
         r"""
         Logarithm of the cumulative distribution function (CDF) at \( x \),
         i.e. \( \ln F(x) \).
@@ -308,9 +333,13 @@ class l_poly:  # noqa: N801
         Args:
             x: Scalar or array-like of quantiles.
         """
-        return np.log(self._cdf(x))  # pyright: ignore[reportReturnType]
+        return np.log(self._cdf(x))
 
-    def sf(self, x: _T_x, /) -> _T_x:
+    @overload
+    def sf(self, x: onp.ToFloat, /) -> float: ...
+    @overload
+    def sf(self, x: onp.ToFloatND, /) -> _FloatND: ...
+    def sf(self, x: onp.ToFloat | onp.ToFloatND, /) -> float | _FloatND:
         r"""
         Survival function \(S(x) = \mathrm{P}(X > x) =
         1 - \mathrm{P}(X \le x) = 1 - F(x) \) (the complement of the
@@ -321,8 +350,12 @@ class l_poly:  # noqa: N801
         """
         return 1 - self._cdf(x)
 
+    @overload
+    def logsf(self, x: onp.ToFloat, /) -> float: ...
+    @overload
+    def logsf(self, x: onp.ToFloatND, /) -> _FloatND: ...
     @np.errstate(divide="ignore")
-    def logsf(self, x: _T_x, /) -> _T_x:
+    def logsf(self, x: onp.ToFloat | onp.ToFloatND, /) -> float | _FloatND:
         r"""
         Logarithm of the survical function (SF) at \( x \), i.e.
         \( \ln \left( S(x) \right) \).
@@ -330,9 +363,13 @@ class l_poly:  # noqa: N801
         Args:
             x: Scalar or array-like of quantiles.
         """
-        return np.log(self._cdf(x))  # pyright: ignore[reportReturnType]
+        return np.log(self._cdf(x))
 
-    def pdf(self, x: _T_x, /) -> _T_x:
+    @overload
+    def pdf(self, x: onp.ToFloat, /) -> float: ...
+    @overload
+    def pdf(self, x: onp.ToFloatND, /) -> _FloatND: ...
+    def pdf(self, x: onp.ToFloat | onp.ToFloatND, /) -> float | _FloatND:
         r"""
         Probability density function \( f \equiv \frac{\dd{F}}{\dd{x}} \)
         (derivative of the [CDF][lmo.distributions.l_poly.cdf]) at \( x \).
@@ -346,11 +383,19 @@ class l_poly:  # noqa: N801
         """
         return 1 / self._qdf(self._cdf(x))
 
-    def logpdf(self, x: _T_x, /) -> _T_x:
+    @overload
+    def logpdf(self, x: onp.ToFloat, /) -> float: ...
+    @overload
+    def logpdf(self, x: onp.ToFloatND, /) -> _FloatND: ...
+    def logpdf(self, x: onp.ToFloat | onp.ToFloatND, /) -> float | _FloatND:
         """Logarithm of the PDF."""
-        return -np.log(self._qdf(self._cdf(x)))  # pyright: ignore[reportReturnType]
+        return -np.log(self._qdf(self._cdf(x)))
 
-    def hf(self, x: _T_x, /) -> _T_x:
+    @overload
+    def hf(self, x: onp.ToFloat, /) -> float: ...
+    @overload
+    def hf(self, x: onp.ToFloatND, /) -> _FloatND: ...
+    def hf(self, x: onp.ToFloat | onp.ToFloatND, /) -> float | _FloatND:
         r"""
         [Hazard function
         ](https://w.wiki/8cWL#Failure_rate_in_the_continuous_sense)
@@ -456,7 +501,7 @@ class l_poly:  # noqa: N801
         See Also:
             - [`l_poly.l_scale`][lmo.distributions.l_poly.l_scale]
         """
-        return np.sqrt(self._var)
+        return math.sqrt(self._var)
 
     @functools.cached_property
     def _entropy(self, /) -> float:
@@ -485,7 +530,7 @@ class l_poly:  # noqa: N801
         """
         return self._entropy
 
-    def support(self, /) -> tuple[_F8, _F8]:
+    def support(self, /) -> _Tuple2[float]:
         r"""
         The support \( (Q(0), Q(1)) \) of the distribution, where \( Q(p) \)
         is the [PPF][lmo.distributions.l_poly.ppf].
@@ -493,14 +538,14 @@ class l_poly:  # noqa: N801
         return self._support
 
     @overload
-    def interval(self, confidence: onp.ToFloat, /) -> _Tuple2[_F8]: ...
+    def interval(self, confidence: onp.ToFloat, /) -> _Tuple2[float]: ...
     @overload
-    def interval(self, confidence: onp.ToFloatND, /) -> _Tuple2[_ArrF8]: ...
+    def interval(self, confidence: onp.ToFloatND, /) -> _Tuple2[_FloatND]: ...
     def interval(
         self,
         confidence: onp.ToFloat | onp.ToFloatND,
         /,
-    ) -> _Tuple2[_F8] | _Tuple2[_ArrF8]:
+    ) -> _Tuple2[float] | _Tuple2[_FloatND]:
         r"""
         [Confidence interval](https://w.wiki/3kdb) with equal areas around
         the [median][lmo.distributions.l_poly.median].
@@ -530,7 +575,7 @@ class l_poly:  # noqa: N801
 
         return self._ppf((1 - alpha) / 2), self._ppf((1 + alpha) / 2)
 
-    def moment(self, n: op.CanIndex, /) -> float:
+    def moment(self, n: opt.AnyInt, /) -> float:
         r"""
         Non-central product moment \( \E[X^n] \) of \( X \) of specified
         order \( n \).
@@ -646,20 +691,25 @@ class l_poly:  # noqa: N801
         return quad(i, a, b)[0] + quad(i, b, c)[0] + quad(i, c, d)[0]
 
     @overload
-    def l_moment(self, r: lmt.ToOrder0D, /, trim: lmt.ToTrim | None = None) -> _F8: ...
+    def l_moment(
+        self,
+        r: lmt.ToOrder0D,
+        /,
+        trim: lmt.ToTrim | None = None,
+    ) -> float: ...
     @overload
     def l_moment(
         self,
         r: lmt.ToOrderND,
         /,
         trim: lmt.ToTrim | None = None,
-    ) -> _ArrF8: ...
+    ) -> _FloatND: ...
     def l_moment(
         self,
         r: lmt.ToOrder,
         /,
         trim: lmt.ToTrim | None = None,
-    ) -> _F8 | _ArrF8:
+    ) -> float | _FloatND:
         r"""
         Evaluate the population L-moment(s) $\lambda^{(s,t)}_r$.
 
@@ -681,7 +731,7 @@ class l_poly:  # noqa: N801
         k: lmt.ToOrder0D,
         /,
         trim: lmt.ToTrim | None = None,
-    ) -> _F8: ...
+    ) -> float: ...
     @overload
     def l_ratio(
         self,
@@ -689,7 +739,7 @@ class l_poly:  # noqa: N801
         k: lmt.ToOrder,
         /,
         trim: lmt.ToTrim | None = None,
-    ) -> _ArrF8: ...
+    ) -> _FloatND: ...
     @overload
     def l_ratio(
         self,
@@ -697,14 +747,14 @@ class l_poly:  # noqa: N801
         k: lmt.ToOrderND,
         /,
         trim: lmt.ToTrim | None = None,
-    ) -> _ArrF8: ...
+    ) -> _FloatND: ...
     def l_ratio(
         self,
         r: lmt.ToOrder,
         k: lmt.ToOrder,
         /,
         trim: lmt.ToTrim | None = None,
-    ) -> _F8 | _ArrF8:
+    ) -> float | _FloatND:
         r"""
         Evaluate the population L-moment ratio('s) $\tau^{(s,t)}_{r,k}$.
 
@@ -722,7 +772,7 @@ class l_poly:  # noqa: N801
         lms = self.l_moment(rs, trim=trim)
         return moments_to_ratio(rs, lms)
 
-    def l_stats(self, /, trim: lmt.ToTrim | None = None, moments: int = 4) -> _ArrF8:
+    def l_stats(self, /, trim: lmt.ToTrim | None = None, moments: int = 4) -> _Float1D:
         r"""
         Evaluate the L-moments (for $r \le 2$) and L-ratio's (for $r > 2$).
 
@@ -745,7 +795,7 @@ class l_poly:  # noqa: N801
         See Also:
             - [`l_poly.l_moment`][lmo.distributions.l_poly.l_moment]
         """
-        return float(self.l_moment(1, trim=trim))
+        return self.l_moment(1, trim=trim)
 
     def l_scale(self, /, trim: lmt.ToTrim | None = None) -> float:
         """
@@ -756,7 +806,7 @@ class l_poly:  # noqa: N801
         See Also:
             - [`l_poly.l_moment`][lmo.distributions.l_poly.l_moment]
         """
-        return float(self.l_moment(2, trim=trim))
+        return self.l_moment(2, trim=trim)
 
     def l_skew(self, /, trim: lmt.ToTrim | None = None) -> float:
         """L-skewness coefficient of the distribution; the 3rd L-moment ratio.
@@ -766,7 +816,7 @@ class l_poly:  # noqa: N801
         See Also:
             - [`l_poly.l_ratio`][lmo.distributions.l_poly.l_ratio]
         """
-        return float(self.l_ratio(3, 2, trim=trim))
+        return self.l_ratio(3, 2, trim=trim)
 
     def l_kurtosis(self, /, trim: lmt.ToTrim | None = None) -> float:
         """L-kurtosis coefficient of the distribution; the 4th L-moment ratio.
@@ -776,7 +826,7 @@ class l_poly:  # noqa: N801
         See Also:
             - [`l_poly.l_ratio`][lmo.distributions.l_poly.l_ratio]
         """
-        return float(self.l_ratio(4, 2, trim=trim))
+        return self.l_ratio(4, 2, trim=trim)
 
     l_kurt = l_kurtosis
 
@@ -787,7 +837,7 @@ class l_poly:  # noqa: N801
         return type(self)
 
     @property
-    def args(self, /) -> tuple[_VecF8, _Trim]:
+    def args(self, /) -> tuple[_Float1D, _Trim]:
         return self._l_moments, self._trim
 
     @property
@@ -805,7 +855,7 @@ class l_poly:  # noqa: N801
         return cls(lmbda, trim, **kwds)
 
     @classmethod
-    def nnlf(cls, /, theta: _LPolyParams, x: _ArrF8) -> float | _ArrF8:
+    def nnlf(cls, /, theta: _LPolyParams, x: _FloatND) -> float | _FloatND:
         """
         Negative loglikelihood function.
 

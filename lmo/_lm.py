@@ -2,14 +2,12 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Final, TypeAlias, TypeVar, Unpack, cast, overload
-
-if TYPE_CHECKING:
-    from collections.abc import Callable
+from typing import Any, Final, Protocol, TypeAlias, TypeVar, Unpack, cast, overload
 
 import numpy as np
 import numpy.typing as npt
 import optype.numpy as onp
+import optype.numpy.compat as npc
 
 import lmo.typing as lmt
 from . import ostats, pwm_beta
@@ -43,19 +41,35 @@ __all__ = (
     "l_weights",
 )
 
+###
 
 _OrderT = TypeVar("_OrderT", bound=int)
 _SizeT = TypeVar("_SizeT", bound=int)
-_SCT_f = TypeVar("_SCT_f", bound=np.floating[Any])
+_FloatT = TypeVar("_FloatT", bound=npc.floating)
 
-_DType: TypeAlias = np.dtype[_SCT_f] | type[_SCT_f]
-_ArrayOrScalar: TypeAlias = _SCT_f | onp.ArrayND[_SCT_f]
+_ToDType: TypeAlias = (
+    type[_FloatT] | np.dtype[_FloatT] | onp.HasDType[np.dtype[_FloatT]]
+)
+_FloatND: TypeAlias = onp.ArrayND[npc.floating]
 
 # (dtype.char, n, s, t)
 _CacheKey: TypeAlias = tuple[str, int, int, int] | tuple[str, int, float, float]
 # `r: _T_order >= 4`
-_CacheArray: TypeAlias = onp.Array[tuple[_OrderT, _SizeT], np.longdouble]
+_CacheArray: TypeAlias = onp.Array[tuple[_OrderT, _SizeT], npc.floating]
 _Cache: TypeAlias = dict[_CacheKey, _CacheArray[Any, Any]]
+
+
+class _InfluenceFunction(Protocol):
+    @property
+    def l(self, /) -> float: ...  # noqa: E743
+
+    @overload
+    def __call__(self, x: onp.ToFloat, /) -> float: ...
+    @overload
+    def __call__(self, x: onp.ToFloatND, /) -> _FloatND: ...
+
+
+###
 
 # depends on `dtype`, `n`, and `trim`
 _CACHE: Final[_Cache] = {}
@@ -67,10 +81,11 @@ def _l_weights_pwm(
     /,
     trim: tuple[int, int],
     *,
-    dtype: _DType[_SCT_f],
-) -> onp.Array[tuple[_OrderT, _SizeT], _SCT_f]:
+    dtype: _ToDType[_FloatT],
+) -> onp.Array[tuple[_OrderT, _SizeT], _FloatT]:
     s, t = trim
     r0 = r + s + t
+    dtype = np.dtype(dtype)
 
     # `__matmul__` annotations are lacking (`np.matmul` is equivalent to it)
     wr = np.matmul(
@@ -96,8 +111,8 @@ def _l_weights_ostat(
     /,
     trim: tuple[int, int] | tuple[float, float],
     *,
-    dtype: _DType[_SCT_f],
-) -> onp.Array[tuple[_OrderT, _SizeT], _SCT_f]:
+    dtype: _ToDType[_FloatT],
+) -> onp.Array[tuple[_OrderT, _SizeT], _FloatT]:
     assert r >= 1, r
 
     s, t = trim
@@ -122,33 +137,33 @@ def _l_weights_ostat(
 
 @overload
 def l_weights(
-    r_max: int | np.integer[Any],
-    n: int | np.integer[Any],
+    r_max: int | npc.integer,
+    n: int | npc.integer,
     /,
     trim: lmt.ToTrim = 0,
     *,
-    dtype: _DType[np.float64] = np.float64,
+    dtype: _ToDType[np.float64] = np.float64,
     cache: bool | None = None,
 ) -> onp.Array2D[np.float64]: ...
 @overload
 def l_weights(
-    r_max: int | np.integer[Any],
-    n: int | np.integer[Any],
+    r_max: int | npc.integer,
+    n: int | npc.integer,
     /,
     trim: lmt.ToTrim = 0,
     *,
-    dtype: _DType[_SCT_f],
+    dtype: _ToDType[_FloatT],
     cache: bool | None = None,
-) -> onp.Array2D[_SCT_f]: ...
+) -> onp.Array2D[_FloatT]: ...
 def l_weights(
-    r_max: int | np.integer[Any],
-    n: int | np.integer[Any],
+    r_max: int | npc.integer,
+    n: int | npc.integer,
     /,
     trim: lmt.ToTrim = 0,
     *,
-    dtype: _DType[_SCT_f] = np.float64,
+    dtype: _ToDType[npc.floating] = np.float64,
     cache: bool | None = None,
-) -> onp.Array2D[_SCT_f | np.float64]:
+) -> onp.Array2D[npc.floating]:
     r"""
     Projection matrix of the first $r$ (T)L-moments for $n$ samples.
 
@@ -249,7 +264,7 @@ def l_weights(
 
     if w.shape[0] > r_max:
         w = w[:r_max]
-    return w
+    return w  # pyright: ignore[reportReturnType]
 
 
 @overload
@@ -260,20 +275,9 @@ def l_moment(
     trim: lmt.ToTrim = 0,
     *,
     axis: None = None,
-    dtype: _DType[np.float64] = np.float64,
+    dtype: _ToDType[npc.floating] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
-) -> np.float64: ...
-@overload
-def l_moment(
-    a: onp.ToFloatND,
-    r: lmt.ToOrder0D,
-    /,
-    trim: lmt.ToTrim = 0,
-    *,
-    axis: None = None,
-    dtype: _DType[_SCT_f],
-    **kwds: Unpack[lmt.LMomentOptions],
-) -> _SCT_f: ...
+) -> float: ...
 @overload
 def l_moment(
     a: onp.ToFloatND,
@@ -282,7 +286,7 @@ def l_moment(
     trim: lmt.ToTrim = 0,
     *,
     axis: None = None,
-    dtype: _DType[np.float64] = np.float64,
+    dtype: _ToDType[np.float64] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
 ) -> onp.Array1D[np.float64]: ...
 @overload
@@ -293,9 +297,9 @@ def l_moment(
     trim: lmt.ToTrim = 0,
     *,
     axis: None = None,
-    dtype: _DType[_SCT_f],
+    dtype: _ToDType[_FloatT],
     **kwds: Unpack[lmt.LMomentOptions],
-) -> onp.Array1D[_SCT_f]: ...
+) -> onp.Array1D[_FloatT]: ...
 @overload
 def l_moment(
     a: onp.ToFloatND,
@@ -304,7 +308,7 @@ def l_moment(
     trim: lmt.ToTrim = 0,
     *,
     axis: int | None = None,
-    dtype: _DType[np.float64] = np.float64,
+    dtype: _ToDType[np.float64] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
 ) -> onp.ArrayND[np.float64]: ...
 @overload
@@ -315,9 +319,9 @@ def l_moment(
     trim: lmt.ToTrim = 0,
     *,
     axis: int | None = None,
-    dtype: _DType[_SCT_f],
+    dtype: _ToDType[_FloatT],
     **kwds: Unpack[lmt.LMomentOptions],
-) -> onp.ArrayND[_SCT_f]: ...
+) -> onp.ArrayND[_FloatT]: ...
 @overload
 def l_moment(
     a: onp.ToFloatND,
@@ -326,7 +330,7 @@ def l_moment(
     trim: lmt.ToTrim = 0,
     *,
     axis: int,
-    dtype: _DType[np.float64] = np.float64,
+    dtype: _ToDType[np.float64] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
 ) -> onp.ArrayND[np.float64]: ...
 @overload
@@ -337,9 +341,9 @@ def l_moment(
     trim: lmt.ToTrim = 0,
     *,
     axis: int,
-    dtype: _DType[_SCT_f],
+    dtype: _ToDType[_FloatT],
     **kwds: Unpack[lmt.LMomentOptions],
-) -> onp.ArrayND[_SCT_f]: ...
+) -> onp.ArrayND[_FloatT]: ...
 def l_moment(
     a: onp.ToFloatND,
     r: lmt.ToOrder,
@@ -347,12 +351,12 @@ def l_moment(
     trim: lmt.ToTrim = 0,
     *,
     axis: int | None = None,
-    dtype: _DType[_SCT_f] = np.float64,
+    dtype: _ToDType[npc.floating] = np.float64,
     fweights: lmt.ToFWeights | None = None,
     aweights: lmt.ToAWeights | None = None,
     sort: lmt.SortKind | bool = True,
     cache: bool | None = None,
-) -> _ArrayOrScalar[_SCT_f | np.float64]:
+) -> float | _FloatND:
     r"""
     Estimates the generalized trimmed L-moment $\lambda^{(s, t)}_r$ from
     the samples along the specified axis. By default, this will be the regular
@@ -480,10 +484,13 @@ def l_moment(
 
     l_r = np.inner(l_weights(r_max, n, st, dtype=dtype, cache=cache), x_k)
 
+    out: npc.floating | _FloatND
     if r_min > 0:
-        return l_r.take(r_ - 1, 0)
+        out = l_r.take(r_ - 1, 0)
+    else:
+        out = np.r_[np.ones((1, *l_r.shape[1:]), l_r.dtype), l_r].take(r_, 0)
 
-    return np.r_[np.ones((1, *l_r.shape[1:]), l_r.dtype), l_r].take(r_, 0)
+    return out.item() if out.ndim == 0 and np.isscalar(r) else out  # pyright: ignore[reportReturnType]
 
 
 @overload
@@ -495,21 +502,9 @@ def l_ratio(
     trim: lmt.ToTrim = 0,
     *,
     axis: None = None,
-    dtype: _DType[np.float64] = np.float64,
+    dtype: _ToDType[npc.floating] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
-) -> np.float64: ...
-@overload
-def l_ratio(
-    a: onp.ToFloatND,
-    r: lmt.ToOrder0D,
-    s: lmt.ToOrder0D,
-    /,
-    trim: lmt.ToTrim = 0,
-    *,
-    axis: None = None,
-    dtype: _DType[_SCT_f],
-    **kwds: Unpack[lmt.LMomentOptions],
-) -> _SCT_f: ...
+) -> float: ...
 @overload
 def l_ratio(
     a: onp.ToFloatND,
@@ -519,7 +514,7 @@ def l_ratio(
     trim: lmt.ToTrim = 0,
     *,
     axis: None = None,
-    dtype: _DType[np.float64] = np.float64,
+    dtype: _ToDType[np.float64] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
 ) -> onp.Array1D[np.float64]: ...
 @overload
@@ -531,9 +526,9 @@ def l_ratio(
     trim: lmt.ToTrim = 0,
     *,
     axis: None = None,
-    dtype: _DType[_SCT_f],
+    dtype: _ToDType[_FloatT],
     **kwds: Unpack[lmt.LMomentOptions],
-) -> onp.Array1D[_SCT_f]: ...
+) -> onp.Array1D[_FloatT]: ...
 @overload
 def l_ratio(
     a: onp.ToFloatND,
@@ -543,7 +538,7 @@ def l_ratio(
     trim: lmt.ToTrim = 0,
     *,
     axis: None = None,
-    dtype: _DType[np.float64] = np.float64,
+    dtype: _ToDType[np.float64] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
 ) -> onp.Array1D[np.float64]: ...
 @overload
@@ -555,9 +550,9 @@ def l_ratio(
     trim: lmt.ToTrim = 0,
     *,
     axis: None = None,
-    dtype: _DType[_SCT_f],
+    dtype: _ToDType[_FloatT],
     **kwds: Unpack[lmt.LMomentOptions],
-) -> onp.Array1D[_SCT_f]: ...
+) -> onp.Array1D[_FloatT]: ...
 @overload
 def l_ratio(
     a: onp.ToFloatND,
@@ -567,7 +562,7 @@ def l_ratio(
     trim: lmt.ToTrim = 0,
     *,
     axis: int | None = None,
-    dtype: _DType[np.float64] = np.float64,
+    dtype: _ToDType[np.float64] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
 ) -> onp.Array[onp.AtLeast1D, np.float64]: ...
 @overload
@@ -579,9 +574,9 @@ def l_ratio(
     trim: lmt.ToTrim = 0,
     *,
     axis: int | None = None,
-    dtype: _DType[_SCT_f],
+    dtype: _ToDType[_FloatT],
     **kwds: Unpack[lmt.LMomentOptions],
-) -> onp.Array[onp.AtLeast1D, _SCT_f]: ...
+) -> onp.Array[onp.AtLeast1D, _FloatT]: ...
 @overload
 def l_ratio(
     a: onp.ToFloatND,
@@ -591,7 +586,7 @@ def l_ratio(
     trim: lmt.ToTrim = 0,
     *,
     axis: int,
-    dtype: _DType[np.float64] = np.float64,
+    dtype: _ToDType[np.float64] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
 ) -> onp.ArrayND[np.float64]: ...
 @overload
@@ -603,9 +598,9 @@ def l_ratio(
     trim: lmt.ToTrim = 0,
     *,
     axis: int,
-    dtype: _DType[_SCT_f],
+    dtype: _ToDType[_FloatT],
     **kwds: Unpack[lmt.LMomentOptions],
-) -> onp.ArrayND[_SCT_f]: ...
+) -> onp.ArrayND[_FloatT]: ...
 def l_ratio(
     a: onp.ToFloatND,
     r: lmt.ToOrder,
@@ -614,9 +609,9 @@ def l_ratio(
     trim: lmt.ToTrim = 0,
     *,
     axis: int | None = None,
-    dtype: _DType[_SCT_f] = np.float64,
+    dtype: _ToDType[_FloatT] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
-) -> _ArrayOrScalar[_SCT_f | np.float64]:
+) -> float | onp.ArrayND[_FloatT | np.float64]:
     r"""
     Estimates the generalized L-moment ratio.
 
@@ -672,7 +667,7 @@ def l_stats(
     num: int = 4,
     *,
     axis: None = None,
-    dtype: _DType[np.float64] = np.float64,
+    dtype: _ToDType[np.float64] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
 ) -> onp.Array1D[np.float64]: ...
 @overload
@@ -683,7 +678,7 @@ def l_stats(
     num: int = 4,
     *,
     axis: int | None = None,
-    dtype: _DType[np.float64] = np.float64,
+    dtype: _ToDType[np.float64] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
 ) -> onp.Array[onp.AtLeast1D, np.float64]: ...
 @overload
@@ -694,9 +689,9 @@ def l_stats(
     num: int = 4,
     *,
     axis: None = None,
-    dtype: _DType[_SCT_f],
+    dtype: _ToDType[_FloatT],
     **kwds: Unpack[lmt.LMomentOptions],
-) -> onp.Array1D[_SCT_f]: ...
+) -> onp.Array1D[_FloatT]: ...
 @overload
 def l_stats(
     a: onp.ToFloatND,
@@ -705,9 +700,9 @@ def l_stats(
     num: int = 4,
     *,
     axis: int | None = None,
-    dtype: _DType[_SCT_f],
+    dtype: _ToDType[_FloatT],
     **kwds: Unpack[lmt.LMomentOptions],
-) -> onp.Array[onp.AtLeast1D, _SCT_f]: ...
+) -> onp.Array[onp.AtLeast1D, _FloatT]: ...
 def l_stats(
     a: onp.ToFloatND,
     /,
@@ -715,9 +710,9 @@ def l_stats(
     num: int = 4,
     *,
     axis: int | None = None,
-    dtype: _DType[_SCT_f] = np.float64,
+    dtype: _ToDType[_FloatT] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
-) -> onp.Array[onp.AtLeast1D, _SCT_f | np.float64]:
+) -> onp.Array[onp.AtLeast1D, _FloatT | np.float64]:
     """
     Calculates the L-loc(ation), L-scale, L-skew(ness) and L-kurtosis.
 
@@ -749,19 +744,9 @@ def l_loc(
     trim: lmt.ToTrim = 0,
     *,
     axis: None = None,
-    dtype: _DType[np.float64] = np.float64,
+    dtype: _ToDType[npc.floating] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
-) -> np.float64: ...
-@overload
-def l_loc(
-    a: onp.ToFloatND,
-    /,
-    trim: lmt.ToTrim = 0,
-    *,
-    axis: None = None,
-    dtype: _DType[_SCT_f],
-    **kwds: Unpack[lmt.LMomentOptions],
-) -> _SCT_f: ...
+) -> float: ...
 @overload
 def l_loc(
     a: onp.ToFloatND,
@@ -769,7 +754,7 @@ def l_loc(
     trim: lmt.ToTrim = 0,
     *,
     axis: int,
-    dtype: _DType[np.float64] = np.float64,
+    dtype: _ToDType[np.float64] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
 ) -> onp.ArrayND[np.float64]: ...
 @overload
@@ -779,18 +764,18 @@ def l_loc(
     trim: lmt.ToTrim = 0,
     *,
     axis: int,
-    dtype: _DType[_SCT_f],
+    dtype: _ToDType[_FloatT],
     **kwds: Unpack[lmt.LMomentOptions],
-) -> onp.ArrayND[_SCT_f]: ...
+) -> onp.ArrayND[_FloatT]: ...
 def l_loc(
     a: onp.ToFloatND,
     /,
     trim: lmt.ToTrim = 0,
     *,
     axis: int | None = None,
-    dtype: _DType[_SCT_f] = np.float64,
+    dtype: _ToDType[_FloatT] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
-) -> _ArrayOrScalar[_SCT_f | np.float64]:
+) -> float | onp.ArrayND[_FloatT | np.float64]:
     r"""
     *L-location* (or *L-loc*): unbiased estimator of the first L-moment,
     $\lambda^{(s, t)}_1$.
@@ -873,19 +858,9 @@ def l_scale(
     trim: lmt.ToTrim = 0,
     *,
     axis: None = None,
-    dtype: _DType[np.float64] = np.float64,
+    dtype: _ToDType[npc.floating] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
-) -> np.float64: ...
-@overload
-def l_scale(
-    a: onp.ToFloatND,
-    /,
-    trim: lmt.ToTrim = 0,
-    *,
-    axis: None = None,
-    dtype: _DType[_SCT_f],
-    **kwds: Unpack[lmt.LMomentOptions],
-) -> _SCT_f: ...
+) -> float: ...
 @overload
 def l_scale(
     a: onp.ToFloatND,
@@ -893,7 +868,7 @@ def l_scale(
     trim: lmt.ToTrim = 0,
     *,
     axis: int,
-    dtype: _DType[np.float64] = np.float64,
+    dtype: _ToDType[np.float64] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
 ) -> onp.ArrayND[np.float64]: ...
 @overload
@@ -903,18 +878,18 @@ def l_scale(
     trim: lmt.ToTrim = 0,
     *,
     axis: int,
-    dtype: _DType[_SCT_f],
+    dtype: _ToDType[_FloatT],
     **kwds: Unpack[lmt.LMomentOptions],
-) -> onp.ArrayND[_SCT_f]: ...
+) -> onp.ArrayND[_FloatT]: ...
 def l_scale(
     a: onp.ToFloatND,
     /,
     trim: lmt.ToTrim = 0,
     *,
     axis: int | None = None,
-    dtype: _DType[_SCT_f] = np.float64,
+    dtype: _ToDType[_FloatT] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
-) -> _ArrayOrScalar[_SCT_f | np.float64]:
+) -> float | onp.ArrayND[_FloatT | np.float64]:
     r"""
     *L-scale* unbiased estimator for the second L-moment,
     $\lambda^{(s, t)}_2$.
@@ -950,19 +925,9 @@ def l_variation(
     trim: lmt.ToTrim = 0,
     *,
     axis: None = None,
-    dtype: _DType[np.float64] = np.float64,
+    dtype: _ToDType[npc.floating] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
-) -> np.float64: ...
-@overload  # axis: None
-def l_variation(
-    a: onp.ToFloatND,
-    /,
-    trim: lmt.ToTrim = 0,
-    *,
-    axis: None = None,
-    dtype: _DType[_SCT_f],
-    **kwds: Unpack[lmt.LMomentOptions],
-) -> _SCT_f: ...
+) -> float: ...
 @overload
 def l_variation(
     a: onp.ToFloatND,
@@ -970,7 +935,7 @@ def l_variation(
     trim: lmt.ToTrim = 0,
     *,
     axis: int,
-    dtype: _DType[np.float64] = np.float64,
+    dtype: _ToDType[np.float64] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
 ) -> onp.ArrayND[np.float64]: ...
 @overload
@@ -980,18 +945,18 @@ def l_variation(
     trim: lmt.ToTrim = 0,
     *,
     axis: int,
-    dtype: _DType[_SCT_f],
+    dtype: _ToDType[_FloatT],
     **kwds: Unpack[lmt.LMomentOptions],
-) -> onp.ArrayND[_SCT_f]: ...
+) -> onp.ArrayND[_FloatT]: ...
 def l_variation(
     a: onp.ToFloatND,
     /,
     trim: lmt.ToTrim = 0,
     *,
     axis: int | None = None,
-    dtype: _DType[_SCT_f] = np.float64,
+    dtype: _ToDType[_FloatT] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
-) -> _ArrayOrScalar[_SCT_f | np.float64]:
+) -> float | onp.ArrayND[_FloatT | np.float64]:
     r"""
     The *coefficient of L-variation* (or *L-CV*) unbiased sample estimator:
 
@@ -1034,19 +999,9 @@ def l_skew(
     trim: lmt.ToTrim = 0,
     *,
     axis: None = None,
-    dtype: _DType[np.float64] = np.float64,
+    dtype: _ToDType[npc.floating] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
-) -> np.float64: ...
-@overload
-def l_skew(
-    a: onp.ToFloatND,
-    /,
-    trim: lmt.ToTrim = 0,
-    *,
-    axis: None = None,
-    dtype: _DType[_SCT_f],
-    **kwds: Unpack[lmt.LMomentOptions],
-) -> _SCT_f: ...
+) -> float: ...
 @overload
 def l_skew(
     a: onp.ToFloatND,
@@ -1054,7 +1009,7 @@ def l_skew(
     trim: lmt.ToTrim = 0,
     *,
     axis: int,
-    dtype: _DType[np.float64] = np.float64,
+    dtype: _ToDType[np.float64] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
 ) -> onp.ArrayND[np.float64]: ...
 @overload
@@ -1064,18 +1019,18 @@ def l_skew(
     trim: lmt.ToTrim = 0,
     *,
     axis: int,
-    dtype: _DType[_SCT_f],
+    dtype: _ToDType[_FloatT],
     **kwds: Unpack[lmt.LMomentOptions],
-) -> onp.ArrayND[_SCT_f]: ...
+) -> onp.ArrayND[_FloatT]: ...
 def l_skew(
     a: onp.ToFloatND,
     /,
     trim: lmt.ToTrim = 0,
     *,
     axis: int | None = None,
-    dtype: _DType[_SCT_f] = np.float64,
+    dtype: _ToDType[_FloatT] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
-) -> _ArrayOrScalar[_SCT_f | np.float64]:
+) -> float | onp.ArrayND[_FloatT | np.float64]:
     r"""
     Unbiased sample estimator for the *L-skewness* coefficient.
 
@@ -1109,19 +1064,9 @@ def l_kurtosis(
     trim: lmt.ToTrim = 0,
     *,
     axis: None = None,
-    dtype: _DType[np.float64] = np.float64,
+    dtype: _ToDType[npc.floating] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
-) -> np.float64: ...
-@overload
-def l_kurtosis(
-    a: onp.ToFloatND,
-    /,
-    trim: lmt.ToTrim = 0,
-    *,
-    axis: None = None,
-    dtype: _DType[_SCT_f],
-    **kwds: Unpack[lmt.LMomentOptions],
-) -> _SCT_f: ...
+) -> float: ...
 @overload
 def l_kurtosis(
     a: onp.ToFloatND,
@@ -1129,7 +1074,7 @@ def l_kurtosis(
     trim: lmt.ToTrim = 0,
     *,
     axis: int,
-    dtype: _DType[np.float64] = np.float64,
+    dtype: _ToDType[np.float64] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
 ) -> onp.ArrayND[np.float64]: ...
 @overload
@@ -1139,18 +1084,18 @@ def l_kurtosis(
     trim: lmt.ToTrim = 0,
     *,
     axis: int,
-    dtype: _DType[_SCT_f],
+    dtype: _ToDType[_FloatT],
     **kwds: Unpack[lmt.LMomentOptions],
-) -> onp.ArrayND[_SCT_f]: ...
+) -> onp.ArrayND[_FloatT]: ...
 def l_kurtosis(
     a: onp.ToFloatND,
     /,
     trim: lmt.ToTrim = 0,
     *,
     axis: int | None = None,
-    dtype: _DType[_SCT_f] = np.float64,
+    dtype: _ToDType[_FloatT] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
-) -> _ArrayOrScalar[_SCT_f | np.float64]:
+) -> float | onp.ArrayND[_FloatT | np.float64]:
     r"""
     L-kurtosis coefficient; the 4th sample L-moment ratio.
 
@@ -1194,7 +1139,7 @@ def l_moment_cov(
     trim: lmt.ToTrim = 0,
     *,
     axis: None = None,
-    dtype: _DType[np.float64] = np.float64,
+    dtype: _ToDType[np.float64] = np.float64,
     **kwds: Any,
 ) -> onp.Array2D[np.float64]: ...
 @overload
@@ -1205,9 +1150,9 @@ def l_moment_cov(
     trim: lmt.ToTrim = 0,
     *,
     axis: None = None,
-    dtype: _DType[_SCT_f],
+    dtype: _ToDType[_FloatT],
     **kwds: Any,
-) -> onp.Array2D[_SCT_f]: ...
+) -> onp.Array2D[_FloatT]: ...
 @overload
 def l_moment_cov(
     a: onp.ToFloatND,
@@ -1216,7 +1161,7 @@ def l_moment_cov(
     trim: lmt.ToTrim = 0,
     *,
     axis: int,
-    dtype: _DType[np.float64] = np.float64,
+    dtype: _ToDType[np.float64] = np.float64,
     **kwds: Any,
 ) -> onp.Array[onp.AtLeast2D, np.float64]: ...
 @overload
@@ -1227,9 +1172,9 @@ def l_moment_cov(
     trim: lmt.ToTrim = 0,
     *,
     axis: int,
-    dtype: _DType[_SCT_f],
+    dtype: _ToDType[_FloatT],
     **kwds: Any,
-) -> onp.Array[onp.AtLeast2D, _SCT_f]: ...
+) -> onp.Array[onp.AtLeast2D, _FloatT]: ...
 def l_moment_cov(
     a: onp.ToFloatND,
     r_max: lmt.ToOrder0D,
@@ -1237,9 +1182,9 @@ def l_moment_cov(
     trim: lmt.ToTrim = 0,
     *,
     axis: int | None = None,
-    dtype: _DType[_SCT_f] = np.float64,
+    dtype: _ToDType[_FloatT] = np.float64,
     **kwds: Any,
-) -> onp.Array[onp.AtLeast2D, _SCT_f | np.float64]:
+) -> onp.Array[onp.AtLeast2D, _FloatT | np.float64]:
     """
     Non-parmateric auto-covariance matrix of the generalized trimmed
     L-moment point estimates with orders `r = 1, ..., r_max`.
@@ -1316,21 +1261,9 @@ def l_ratio_se(
     trim: lmt.ToTrim = 0,
     *,
     axis: None = None,
-    dtype: _DType[np.float64] = np.float64,
+    dtype: _ToDType[npc.floating] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
-) -> np.float64: ...
-@overload
-def l_ratio_se(
-    a: onp.ToFloatND,
-    r: lmt.ToOrder0D,
-    s: lmt.ToOrder0D,
-    /,
-    trim: lmt.ToTrim = 0,
-    *,
-    axis: None = None,
-    dtype: _DType[_SCT_f],
-    **kwds: Unpack[lmt.LMomentOptions],
-) -> _SCT_f: ...
+) -> float: ...
 @overload
 def l_ratio_se(
     a: onp.ToFloatND,
@@ -1340,7 +1273,7 @@ def l_ratio_se(
     trim: lmt.ToTrim = 0,
     *,
     axis: int | None = None,
-    dtype: _DType[np.float64] = np.float64,
+    dtype: _ToDType[np.float64] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
 ) -> onp.ArrayND[np.float64]: ...
 @overload
@@ -1352,9 +1285,9 @@ def l_ratio_se(
     trim: lmt.ToTrim = 0,
     *,
     axis: int | None = None,
-    dtype: _DType[_SCT_f],
+    dtype: _ToDType[_FloatT],
     **kwds: Unpack[lmt.LMomentOptions],
-) -> onp.ArrayND[_SCT_f]: ...
+) -> onp.ArrayND[_FloatT]: ...
 @overload
 def l_ratio_se(
     a: onp.ToFloatND,
@@ -1364,9 +1297,9 @@ def l_ratio_se(
     trim: lmt.ToTrim = 0,
     *,
     axis: int | None = None,
-    dtype: _DType[np.float64] = np.float64,
+    dtype: _ToDType[np.float64] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
-) -> _ArrayOrScalar[np.float64]: ...
+) -> float | onp.ArrayND[np.float64]: ...
 @overload
 def l_ratio_se(
     a: onp.ToFloatND,
@@ -1376,9 +1309,9 @@ def l_ratio_se(
     trim: lmt.ToTrim = 0,
     *,
     axis: int | None = None,
-    dtype: _DType[_SCT_f],
+    dtype: _ToDType[_FloatT],
     **kwds: Unpack[lmt.LMomentOptions],
-) -> _ArrayOrScalar[_SCT_f]: ...
+) -> float | onp.ArrayND[_FloatT]: ...
 def l_ratio_se(
     a: onp.ToFloatND,
     r: lmt.ToOrder,
@@ -1387,9 +1320,9 @@ def l_ratio_se(
     trim: lmt.ToTrim = 0,
     *,
     axis: int | None = None,
-    dtype: _DType[_SCT_f] = np.float64,
+    dtype: _ToDType[_FloatT] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
-) -> _ArrayOrScalar[_SCT_f | np.float64]:
+) -> float | onp.ArrayND[_FloatT | np.float64]:
     """
     Non-parametric estimates of the Standard Error (SE) in the L-ratio
     estimates from [`lmo.l_ratio`][lmo.l_ratio].
@@ -1458,7 +1391,7 @@ def l_stats_se(
     num: int = 4,
     *,
     axis: None = None,
-    dtype: _DType[np.float64] = np.float64,
+    dtype: _ToDType[np.float64] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
 ) -> onp.Array1D[np.float64]: ...
 @overload
@@ -1469,9 +1402,9 @@ def l_stats_se(
     num: int = 4,
     *,
     axis: None = None,
-    dtype: _DType[_SCT_f],
+    dtype: _ToDType[_FloatT],
     **kwds: Unpack[lmt.LMomentOptions],
-) -> onp.Array1D[_SCT_f]: ...
+) -> onp.Array1D[_FloatT]: ...
 @overload
 def l_stats_se(
     a: onp.ToFloatND,
@@ -1480,7 +1413,7 @@ def l_stats_se(
     num: int = 4,
     *,
     axis: int | None = None,
-    dtype: _DType[np.float64] = np.float64,
+    dtype: _ToDType[np.float64] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
 ) -> onp.ArrayND[np.float64]: ...
 @overload
@@ -1491,9 +1424,9 @@ def l_stats_se(
     num: int = 4,
     *,
     axis: int | None = None,
-    dtype: _DType[_SCT_f],
+    dtype: _ToDType[_FloatT],
     **kwds: Unpack[lmt.LMomentOptions],
-) -> onp.ArrayND[_SCT_f]: ...
+) -> onp.ArrayND[_FloatT]: ...
 def l_stats_se(
     a: onp.ToFloatND,
     /,
@@ -1501,9 +1434,9 @@ def l_stats_se(
     num: int = 4,
     *,
     axis: int | None = None,
-    dtype: _DType[_SCT_f] = np.float64,
+    dtype: _ToDType[_FloatT] = np.float64,
     **kwds: Unpack[lmt.LMomentOptions],
-) -> onp.ArrayND[_SCT_f | np.float64]:
+) -> onp.ArrayND[_FloatT | np.float64]:
     """
     Calculates the standard errors (SE's) of the [`L-stats`][lmo.l_stats].
 
@@ -1530,9 +1463,6 @@ def l_stats_se(
     return l_ratio_se(a, r, s, trim=trim, axis=axis, dtype=dtype, **kwds)
 
 
-_T_x = TypeVar("_T_x", bound=float | onp.ArrayND[np.floating[Any]])
-
-
 def l_moment_influence(
     a: onp.ToFloat1D,
     r: lmt.ToOrder0D,
@@ -1541,7 +1471,7 @@ def l_moment_influence(
     *,
     sort: lmt.SortKind | bool = True,
     tol: float = 1e-8,
-) -> Callable[[_T_x], _T_x]:
+) -> _InfluenceFunction:
     r"""
     Calculate the *Empirical Influence Function (EIF)* for a
     [sample L-moment][lmo.l_moment] estimate.
@@ -1585,9 +1515,13 @@ def l_moment_influence(
     n = len(x_k)
 
     w_k: onp.Array1D[np.float64] = l_weights(r_, n, (s, t))[-1]
-    l_r = cast("np.float64", w_k @ x_k)
+    l_r = float(w_k @ x_k)
 
-    def influence_function(x: _T_x, /) -> _T_x:
+    @overload
+    def influence_function(x: onp.ToFloat, /) -> float: ...
+    @overload
+    def influence_function(x: onp.ToFloatND, /) -> _FloatND: ...
+    def influence_function(x: onp.ToFloat | onp.ToFloatND, /) -> float | _FloatND:
         x_ = np.asanyarray(x)
 
         # ECDF
@@ -1600,11 +1534,8 @@ def l_moment_influence(
             right=0 if t else w_k[-1],
         )
         alpha = n * w * np.where(w, x_, 0)
-        out = round0(alpha - l_r, tol=tol)
-
-        if x_.ndim == 0 and np.isscalar(x):
-            return out.item()
-        return cast("_T_x", out)
+        out = alpha - l_r
+        return round0(out.item() if out.ndim == 0 and np.isscalar(x) else out, tol=tol)
 
     influence_function.__doc__ = (
         f"Empirical L-moment influence function given "
@@ -1612,7 +1543,7 @@ def l_moment_influence(
     )
     # piggyback the L-moment, to avoid recomputing it in l_ratio_influence
     influence_function.l = l_r  # pyright: ignore[reportFunctionMemberAccess]
-    return influence_function
+    return cast("_InfluenceFunction", influence_function)
 
 
 def l_ratio_influence(
@@ -1624,7 +1555,7 @@ def l_ratio_influence(
     *,
     sort: lmt.SortKind | bool = True,
     tol: float = 1e-8,
-) -> Callable[[_T_x], _T_x]:
+) -> _InfluenceFunction:
     r"""
     Calculate the *Empirical Influence Function (EIF)* for a
     [sample L-moment ratio][lmo.l_ratio] estimate.
@@ -1662,25 +1593,28 @@ def l_ratio_influence(
     eif_r = l_moment_influence(x, r_, trim, sort=False, tol=0)
     eif_k = l_moment_influence(x, s_, trim, sort=False, tol=0)
 
-    l_r, l_k = cast(
-        "tuple[float, float]",
-        (eif_r.l, eif_k.l),  # pyright: ignore[reportFunctionMemberAccess]
-    )
+    l_r, l_k = eif_r.l, eif_k.l
     if abs(l_k) <= tol * abs(l_r):
         msg = f"L-ratio ({r=}, {s=}) denominator is approximately zero."
         raise ZeroDivisionError(msg)
 
     t_r = l_r / l_k
 
-    def influence_function(x: _T_x, /) -> _T_x:
+    @overload
+    def influence_function(x: onp.ToFloat, /) -> float: ...
+    @overload
+    def influence_function(x: onp.ToFloatND, /) -> _FloatND: ...
+    def influence_function(x: onp.ToFloat | onp.ToFloatND, /) -> float | _FloatND:
         psi_r = eif_r(x)
         # cheat a bit to avoid `inf - inf = nan` situations
         psi_k = np.where(np.isinf(psi_r), 0, eif_k(x))
 
-        return cast("_T_x", round0((psi_r - t_r * psi_k) / l_k, tol=tol)[()])
+        out = (psi_r - t_r * psi_k) / l_k
+        return round0(out.item() if out.ndim == 0 and np.isscalar(x) else out, tol=tol)
 
     influence_function.__doc__ = (
         f"Theoretical influence function for L-moment ratio with "
         f"`r = {r_}`, `k = {s_}`, `{trim = }`, and `{n = }`."
     )
-    return influence_function
+    influence_function.l = l_r  # pyright: ignore[reportFunctionMemberAccess]
+    return cast("_InfluenceFunction", influence_function)

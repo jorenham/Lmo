@@ -75,8 +75,19 @@ This means that it's possible to select stable-sort by passing
 ruin the fun).
 """
 
-RNG: TypeAlias = np.random.SeedSequence | np.random.BitGenerator | np.random.Generator
-Seed: TypeAlias = int | Integer | onp.ArrayND[Integer] | RNG
+RNG: TypeAlias = np.random.Generator | np.random.RandomState
+Seed: TypeAlias = (
+    int
+    | Integer
+    # | np.timedelta64
+    # | onp.ArrayND[Integer | np.timedelta64 | np.flexible | np.object_]
+    | onp.ArrayND[Integer]
+    | np.random.SeedSequence
+    | np.random.BitGenerator
+    | RNG
+    | None
+)
+
 """The accepted type of [`numpy.random.default_rng`][numpy.random.default_rng]."""
 
 

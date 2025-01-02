@@ -13,6 +13,7 @@ from collections.abc import Callable
 from math import gamma, inf, log, nan
 from typing import (
     TYPE_CHECKING,
+    Any,
     Concatenate,
     Final,
     Literal,
@@ -95,7 +96,7 @@ _PPF_REGISTRY: Final[set[str]] = {
 
 _Tss = ParamSpec("_Tss")
 
-_Float: TypeAlias = float | np.float32 | np.float64
+_Float: TypeAlias = float | np.floating[Any]
 # (r, s, t, *params) -> float
 _LmFunc: TypeAlias = Callable[Concatenate[int, int, int, _Tss], _Float]
 _LmFuncF: TypeAlias = Callable[Concatenate[int, float, float, _Tss], _Float]
