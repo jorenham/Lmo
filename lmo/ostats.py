@@ -145,5 +145,5 @@ def from_cdf(
         msg = "F must lie between 0 and 1"
         raise ValueError(msg)
 
-    out = betainc(i + 1, n - i, p)
+    out = betainc(float(i + 1), float(n - i), p)
     return out.item() if out.ndim == 0 and np.isscalar(F) else out

@@ -1,6 +1,4 @@
-"""
-Probability distributions, compatible with [`scipy.stats`][scipy.stats].
-"""
+"""Probability distributions, compatible with [`scipy.stats`][scipy.stats]."""
 
 from __future__ import annotations
 
@@ -60,6 +58,9 @@ _genlambda_ppf: Final = np.vectorize(_genlambda_ppf0, [float])
 @np.errstate(divide="ignore")
 def _genlambda_qdf(q: _XT, b: float, d: float, f: float) -> _XT:
     return (1 + f) * q ** (b - 1) + (1 - f) * (1 - q) ** (d - 1)  # pyright: ignore[reportReturnType]
+
+
+# pyright: reportIncompatibleMethodOverride=false
 
 
 def _genlambda_cdf0(  # noqa: C901
@@ -133,7 +134,7 @@ _genlambda_cdf: Final = np.vectorize(
 
 class genlambda_gen(rv_continuous):
     @override
-    def _argcheck(self, /, b: _F8, d: _F8, f: _F8) -> np.bool_:  # pyright: ignore[reportIncompatibleMethodOverride]
+    def _argcheck(self, /, b: _F8, d: _F8, f: _F8) -> np.bool_:
         return np.isfinite(b) & np.isfinite(d) & (f >= -1) & (f <= 1)
 
     @override
@@ -153,23 +154,24 @@ class genlambda_gen(rv_continuous):
         /,
         data: _ArrF8,
         args: tuple[float, float, float] | None = None,
-    ) -> tuple[float, float, float, float, float]:
+    ) -> tuple[_F8, _F8, _F8, _F8, _F8]:
         #  Arbitrary, but the default f=1 is a bad start
-        return super()._fitstart(data, args or (1.0, 1.0, 0.0))  # pyright: ignore[reportReturnType]
+        loc, scale, b, d, f = super()._fitstart(data, args or (1.0, 1.0, 0.0))
+        return loc, scale, b, d, f
 
     @override
-    def _pdf(self, /, x: _XT, b: float, d: float, f: float) -> _XT:  # pyright: ignore[reportIncompatibleMethodOverride]
+    def _pdf(self, /, x: _XT, b: float, d: float, f: float) -> _XT:
         return 1 / self._qdf(self._cdf(x, b, d, f), b, d, f)  # pyright: ignore[reportReturnType]
 
     @override
-    def _cdf(self, /, x: _XT, b: float, d: float, f: float) -> _XT:  # pyright: ignore[reportIncompatibleMethodOverride]
+    def _cdf(self, /, x: _XT, b: float, d: float, f: float) -> _XT:
         return _genlambda_cdf(x, b, d, f)
 
     def _qdf(self, /, q: _XT, b: float, d: float, f: float) -> _XT:
         return _genlambda_qdf(q, b, d, f)
 
     @override
-    def _ppf(self, /, q: _XT, b: float, d: float, f: float) -> _XT:  # pyright: ignore[reportIncompatibleMethodOverride]
+    def _ppf(self, /, q: _XT, b: float, d: float, f: float) -> _XT:
         return _genlambda_ppf(q, b, d, f)
 
     @override

@@ -113,7 +113,8 @@ def eval_sh_jacobi(  # noqa: C901
         ) / 6
 
     # don't use `eval_sh_jacobi`: https://github.com/scipy/scipy/issues/18988
-    return sps.eval_jacobi(n, a, b, 2 * x - 1)
+    out = sps.eval_jacobi(n, a, b, 2 * x - 1)
+    return out.item() if isinstance(out, np.generic) or np.isscalar(x) else out
 
 
 def peaks_jacobi(n: int, a: float, b: float) -> onp.ArrayND[_Float]:

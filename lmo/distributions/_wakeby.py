@@ -173,9 +173,12 @@ _wakeby_sf: Final = np.vectorize(_wakeby_sf0, [float])
 _wakeby_lm: Final = get_lm_func("wakeby")
 
 
+# pyright: reportIncompatibleMethodOverride = false
+
+
 class wakeby_gen(lmt.rv_continuous):
     @override
-    def _argcheck(self, /, b: _F8, d: _F8, f: _F8) -> bool | np.bool_:  # pyright: ignore[reportIncompatibleMethodOverride]
+    def _argcheck(self, /, b: _F8, d: _F8, f: _F8) -> bool | np.bool_:
         return (
             np.isfinite(b)
             & np.isfinite(d)
@@ -207,28 +210,29 @@ class wakeby_gen(lmt.rv_continuous):
         /,
         data: _ArrF8,
         args: tuple[float, float, float] | None = None,
-    ) -> tuple[float, float, float, float, float]:
+    ) -> tuple[_F8, _F8, _F8, _F8, _F8]:
         #  Arbitrary, but the default f=1 is a bad start
-        return super()._fitstart(data, args or (1.0, 1.0, 0.5))  # pyright: ignore[reportReturnType]
+        loc, scale, b, d, f = super()._fitstart(data, args or (1.0, 1.0, 0.5))
+        return loc, scale, b, d, f
 
     @override
-    def _pdf(self, /, x: _XT, b: float, d: float, f: float) -> _XT:  # pyright: ignore[reportIncompatibleMethodOverride]
+    def _pdf(self, /, x: _XT, b: float, d: float, f: float) -> _XT:
         # application of the inverse function theorem
         return 1 / self._qdf(self._cdf(x, b, d, f), b, d, f)  # pyright: ignore[reportReturnType]
 
     @override
-    def _cdf(self, /, x: _XT, b: float, d: float, f: float) -> _XT:  # pyright: ignore[reportIncompatibleMethodOverride]
+    def _cdf(self, /, x: _XT, b: float, d: float, f: float) -> _XT:
         return 1 - _wakeby_sf(x, b, d, f)
 
     def _qdf(self, /, q: _XT, b: float, d: float, f: float) -> _XT:
         return _wakeby_qdf(q, b, d, f)
 
     @override
-    def _ppf(self, /, q: _XT, b: float, d: float, f: float) -> _XT:  # pyright: ignore[reportIncompatibleMethodOverride]
+    def _ppf(self, /, q: _XT, b: float, d: float, f: float) -> _XT:
         return _wakeby_isf(1 - q, b, d, f)
 
     @override
-    def _isf(self, /, q: _XT, b: float, d: float, f: float) -> _XT:  # pyright: ignore[reportIncompatibleMethodOverride]
+    def _isf(self, /, q: _XT, b: float, d: float, f: float) -> _XT:
         return _wakeby_isf(q, b, d, f)
 
     @override
