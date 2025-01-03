@@ -5,7 +5,6 @@ import sys
 from typing import Any, Final, TypeAlias, final
 
 import numpy as np
-import numpy.typing as npt
 import optype.numpy as onp
 import scipy.special as sps
 
@@ -81,5 +80,11 @@ class kumaraswamy_gen(lmt.rv_continuous):
         return (1 - 1 / b) + (1 - 1 / a) * harmonic(b) - math.log(a * b)
 
     @override
-    def _munp(self, /, n: int | npt.NDArray[np.intp], a: float, b: float) -> _FloatND:
+    def _munp(
+        self,
+        /,
+        n: int | onp.ArrayND[np.intp],
+        a: float,
+        b: float,
+    ) -> _Float | _FloatND:
         return b * sps.beta(1 + n / a, b)

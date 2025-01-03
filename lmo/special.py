@@ -120,17 +120,19 @@ def gamma2(
         - [`scipy.special.gammaincc`][scipy.special.gammaincc] for the
           regularized gamma function \( Q(a,\ x) \).
     """
+    x_ = np.asarray(x)
     if a == 0:
-        return sps.expm1(x, out=out)
+        out_ = np.expm1(x_, out=out)
+        return out_.item() if x_.ndim == 0 and np.isscalar(x) else out_
 
     g = sps.gamma(a)
 
     if out is not None:
-        out = sps.gammaincc(a, x, out=out)
+        sps.gammaincc(a, x_, out=out)
         np.multiply(out, g, out=out)
         return out
 
-    res = sps.gammaincc(a, x)
+    res = sps.gammaincc(a, x_)
     res *= g
     return res
 
