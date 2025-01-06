@@ -1,4 +1,6 @@
-# pyright: reportUninitializedInstanceVariable=false
+# ruff: noqa: SLF001
+# pyright: reportPrivateUsage=false, reportUninitializedInstanceVariable=false
+
 """
 Extension methods for the (univariate) distributions in
 [`scipy.stats`][scipy.stats].
@@ -45,7 +47,7 @@ from lmo.theoretical import (
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
-    from scipy.stats import rv_discrete
+    from scipy.stats import rv_continuous, rv_discrete
 
 
 __all__ = ["install", "l_rv_frozen", "l_rv_generic"]
@@ -256,29 +258,27 @@ class l_rv_generic(PatchClass):
         r_ = np.asarray(clean_order(r), np.intp)
         (s, t) = trim_ = clean_trim(trim)
 
-        shapes, loc, scale = self._parse_args(*args, **kwds)
+        theta, loc, scale = self._parse_args(*args, **kwds)
 
         if s <= 0 and t <= 0:
-            mean = self._stats(*shapes)[0]
+            mean = self._stats(*theta)[0]
             if mean is None:
-                mean = self.mean(*shapes)
+                mean = self.mean(*theta)
             if not np.isfinite(mean):
                 # first moment condition not met
                 return np.full(r_.shape, np.nan)[()]
 
-        if not self._argcheck(*shapes):
+        if not self._argcheck(*theta):
             return np.full(r_.shape, np.nan)[()]
 
         # L-moments of the standard distribution (loc=0, scale=scale0)
-        l0_r = _l_moment(self, r_, *shapes, trim=trim_, quad_opts=quad_opts)
+        l0_r = _l_moment(self, r_, *theta, trim=trim_, quad_opts=quad_opts)
 
         # shift (by loc) and scale
-        shift_r: onp.ArrayND[np.float64] = loc * (r_ == 1)
-        scale_r: onp.ArrayND[np.float64] = scale * (r_ > 0) + (r_ == 0)
-        l_r = shift_r + scale_r * l0_r
-
-        # round near zero values to 0
-        return round0(l_r[()], tol=1e-15)
+        shift_r = (r_ == 1) * loc
+        scale_r = (r_ == 0) + (r_ > 0) * scale
+        out: Any = round0((l0_r * scale_r + shift_r), tol=1e-15)
+        return out
 
     @overload
     def l_ratio(
@@ -615,10 +615,9 @@ class l_rv_generic(PatchClass):
         """
         args, _, scale = self._parse_args(*args, **kwds)
         support = self._get_support(*args)
-        cdf, _ = _get_xxf(self, *args)
 
         cov = l_moment_cov_from_cdf(
-            cdf,
+            _get_cdf(self, *args),
             r_max,
             trim=trim,
             support=support,
@@ -725,18 +724,14 @@ class l_rv_generic(PatchClass):
                 trimmed L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
         """
         args, _, scale = self._parse_args(*args, **kwds)
-        support = self._get_support(*args)
-        cdf, ppf = _get_xxf(self, *args)
-
-        cov = l_stats_cov_from_cdf(
-            cdf,
+        return scale**2 * l_stats_cov_from_cdf(
+            _get_cdf(self, *args),
             moments,
             trim=trim,
-            support=support,
+            support=self._get_support(*args),
             quad_opts=quad_opts,
-            ppf=ppf,
+            ppf=_get_icdf(self, *args),
         )
-        return scale**2 * cov
 
     def l_moment_influence(
         self,
@@ -813,17 +808,13 @@ class l_rv_generic(PatchClass):
                 Robust Estimation](https://doi.org/10.2307/2285666)
 
         """
-        lm = self.l_moment(r, *args, trim=trim, quad_opts=quad_opts, **kwds)
-
-        args, loc, scale = self._parse_args(*args, **kwds)
-        cdf, _ = _get_xxf(self, *args, loc=loc, scale=scale)
-
+        theta, loc, scale = self._parse_args(*args, **kwds)
         return l_moment_influence_from_cdf(
-            cdf,
+            _get_cdf(self, *theta, loc=loc, scale=scale),
             r,
             trim=trim,
-            support=self._get_support(*args),
-            l_moment=lm,
+            support=_support(self, *theta, loc=loc, scale=scale),
+            l_moment=self.l_moment(r, *args, trim=trim, quad_opts=quad_opts, **kwds),
             tol=tol,
         )
 
@@ -910,10 +901,9 @@ class l_rv_generic(PatchClass):
         )
 
         args, loc, scale = self._parse_args(*args, **kwds)
-        cdf = _get_xxf(self, *args, loc=loc, scale=scale)[0]
 
         return l_ratio_influence_from_cdf(
-            cdf,
+            _get_cdf(self, *args, loc=loc, scale=scale),
             r,
             k,
             trim=trim,
@@ -1407,11 +1397,72 @@ class l_rv_frozen(PatchClass):  # noqa: D101
         )
 
 
+def _support(
+    rv: rv_continuous | l_rv_generic,
+    *theta: float,
+    loc: float = 0,
+    scale: float = 1,
+) -> tuple[float, float]:
+    a0, b0 = rv._get_support(*theta)
+    return float(a0 * scale + loc), float(b0 * scale + loc)
+
+
+def _get_cdf(
+    rv: rv_continuous | l_rv_generic,
+    /,
+    *theta: float,
+    loc: float = 0,
+    scale: float = 1,
+) -> _Fn1:
+    # TODO(jorenham): use fast `scipy.special` ufunc lookup by `rv.name`
+    cdf_ = rv._cdf
+
+    if loc or scale != 1:
+
+        def cdf(x: Any, /) -> Any:
+            z: Any = (np.asarray(x) - loc) / scale
+            q: Any = cdf_(z, *theta)
+            return q.item() if np.isscalar(x) else q
+
+    else:
+
+        def cdf(x: Any, /) -> Any:
+            q = cdf_(np.asarray(x), *theta)
+            return q.item() if np.isscalar(x) else q
+
+    return cdf
+
+
+def _get_icdf(
+    rv: rv_continuous | l_rv_generic,
+    /,
+    *theta: float,
+    loc: float = 0,
+    scale: float = 1,
+) -> _Fn1:
+    # TODO(jorenham): use fast `scipy.special` ufunc lookup by `rv.name`
+    icdf_ = rv._ppf
+
+    if loc or scale != 1:
+
+        def icdf(q: Any, /) -> Any:
+            x = icdf_(np.asarray(q), *theta) * scale + loc
+            return x.item() if np.isscalar(q) else x
+
+    else:
+
+        def icdf(q: Any, /) -> Any:
+            x = icdf_(np.asarray(q), *theta)
+            return x.item() if np.isscalar(q) else x
+
+    return icdf
+
+
 def _l_moment(
-    self: l_rv_generic,
+    rv: rv_continuous | l_rv_generic,
     r: onp.ArrayND[np.intp],
     /,
-    *args: Any,
+    *theta: float,
     trim: _Tuple2[int] | _Tuple2[float] = (0, 0),
     quad_opts: lmt.QuadOptions | None = None,
 ) -> _FloatND:
@@ -1422,59 +1473,30 @@ def _l_moment(
         Sparse caching: Use a priority queue with key `(self, args, r, trim)`.
         Prefer small `r` and small `sum(trim)`, skip fractional trim.
     """
-    name = self.name
+    name = rv.name
     if quad_opts is None and has_lm_func(name):
+        lm_func = get_lm_func(name)
         with contextlib.suppress(NotImplementedError):
-            return get_lm_func(name)(r, *trim, *args)
-
-    cdf, ppf = _get_xxf(self, *args)
+            return lm_func(r, *trim, *theta)
 
     if prefers_ppf(name):
-        lmbda_r = l_moment_from_ppf(ppf, r, trim=trim, quad_opts=quad_opts)
+        icdf = _get_icdf(rv, *theta)
+        lmbda_r = l_moment_from_ppf(icdf, r, trim=trim, quad_opts=quad_opts)
     else:
-        a, b = self._get_support(*args)  # pyright: ignore[reportPrivateUsage]
+        a, b = _support(rv, *theta)
+
         with np.errstate(over="ignore", under="ignore"):
             lmbda_r = l_moment_from_cdf(
-                cdf,
+                _get_cdf(rv, *theta),
                 r,
                 trim=trim,
                 support=(float(a), float(b)),
-                ppf=ppf,
+                ppf=_get_icdf(rv, *theta),
                 quad_opts=quad_opts,
             )
 
     # re-wrap scalars in 0-d arrays (lmo.theoretical unpacks them)
     return np.asarray(lmbda_r)
-
-
-def _get_xxf(
-    self: l_rv_generic,
-    /,
-    *shape: float,
-    loc: float = 0,
-    scale: float = 1,
-) -> _Tuple2[_Fn1]:
-    assert scale > 0
-
-    cdf_, ppf_ = self._cdf, self._ppf  # pyright: ignore[reportPrivateUsage]
-
-    @overload
-    def cdf(x: onp.ToFloat, /) -> float: ...
-    @overload
-    def cdf(x: onp.ToFloatND, /) -> _FloatND: ...
-    def cdf(x: onp.ToFloat | onp.ToFloatND, /) -> float | _FloatND:
-        z = (np.array([x]) - loc) / scale
-        out = cdf_(z, *shape)
-        return out.item() if out.ndim == 0 else out
-
-    @overload
-    def ppf(p: onp.ToFloat, /) -> float: ...
-    @overload
-    def ppf(p: onp.ToFloatND, /) -> _FloatND: ...
-    def ppf(p: onp.ToFloat | onp.ToFloatND, /) -> float | _FloatND:
-        return ppf_(np.array([p]), *shape)[0] * scale + loc
-
-    return cdf, ppf
 
 
 def install() -> None:
