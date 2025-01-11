@@ -34,7 +34,7 @@ if "pytest" in sys.modules:
     del np
 
 __version__: Final[str] = _get_version()
-__author__: Final[str] = "Joren Hammdugolu"
+__author__: Final[str] = "Joren Hammudoglu"
 __email__: Final[str] = "jhammudoglu@gmail.com"
 __description__: Final[str] = (
     "Robust statistics with trimmed L-moments and L-comoments."
@@ -54,4 +54,5 @@ __all__ += _lm.__all__
 __all__ += _lm_co.__all__
 
 
-del TYPE_CHECKING, Final, _get_version, _lm, _lm_co, sys
+def __dir__() -> list[str]:
+    return __all__
