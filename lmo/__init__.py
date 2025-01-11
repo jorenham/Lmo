@@ -3,7 +3,17 @@
 import sys  # noqa: I001
 from typing import TYPE_CHECKING, Final
 
-from . import _lm, _lm_co, constants, diagnostic, errors, linalg, special
+from . import (
+    _lm,
+    _lm_co,
+    constants,
+    diagnostic,
+    distributions,
+    errors,
+    linalg,
+    special,
+    theoretical,
+)
 from ._meta import get_version as _get_version
 
 
@@ -31,7 +41,15 @@ __description__: Final[str] = (
 )
 
 __all__ = ["__version__"]
-__all__ += ["constants", "diagnostic", "errors", "linalg", "special"]
+__all__ += [
+    "constants",
+    "diagnostic",
+    "distributions",
+    "errors",
+    "linalg",
+    "special",
+    "theoretical",
+]
 __all__ += _lm.__all__
 __all__ += _lm_co.__all__
 
