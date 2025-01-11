@@ -1,4 +1,4 @@
-"""L-moments for robust data analysis, inference, and non-parmaetric statistics."""
+"""L-moments for robust data analysis, inference, and non-parametric statistics."""
 
 import sys  # noqa: I001
 from typing import TYPE_CHECKING, Final
