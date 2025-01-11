@@ -23,7 +23,7 @@ from ._utils import (
 )
 from .linalg import ir_pascal, sandwich, sh_legendre, trim_matrix
 
-__all__ = (
+__all__ = [
     "l_kurt",
     "l_kurtosis",
     "l_loc",
@@ -39,7 +39,7 @@ __all__ = (
     "l_stats_se",
     "l_variation",
     "l_weights",
-)
+]
 
 ###
 
