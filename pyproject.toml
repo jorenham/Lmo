@@ -103,7 +103,10 @@ addopts = [
 doctest_optionflags = ["NORMALIZE_WHITESPACE", "FLOAT_CMP"]
 doctest_plus = "enabled"
 doctest_subpackage_requires = {"lmo/contrib/pandas.py" = "pandas>=2.0"}
-filterwarnings = ["error"]
+filterwarnings = [
+    "error",
+    'ignore:use lmo.l_moments?\(\) instead:DeprecationWarning',
+]
 log_cli_level = "INFO"
 testpaths = ["lmo", "tests"]
 xfail_strict = true
