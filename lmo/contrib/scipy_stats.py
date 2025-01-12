@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import contextlib
 import math
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -59,7 +59,7 @@ if TYPE_CHECKING:
 
     from scipy.stats import rv_continuous, rv_discrete
 
-__all__ = ["install", "l_moments", "l_rv_frozen", "l_rv_generic"]
+__all__ = ["install", "l_moment", "l_moments", "l_rv_frozen", "l_rv_generic"]
 
 ###
 
@@ -1212,7 +1212,7 @@ class l_rv_generic(PatchClass):
 
         Notes:
             The implementation mimics that of
-            [`fit_loc_scale()`][scipy.stats.lmt.rv_continuous.fit_loc_scale]
+            [`fit_loc_scale()`][scipy.stats.rv_continuous.fit_loc_scale]
 
         Args:
             data:
@@ -1551,8 +1551,130 @@ def _l_moment(
                 quad_opts=quad_opts,
             )
 
-    # re-wrap scalars in 0-d arrays (lmo.theoretical unpacks them)
     return lmbda_r
+
+
+@overload
+def l_moment(
+    rv: lmt.rv_frozen[rv_continuous | rv_discrete, float | np.float64],
+    order: lmt.ToOrder0D,
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    ratio: bool = False,
+    validate: bool = True,
+    **quad_opts: Unpack[lmt.QuadOptions],
+) -> float: ...
+@overload
+def l_moment(
+    rv: lmt.rv_frozen[rv_continuous | rv_discrete, float | np.float64],
+    order: onp.Array[_ShapeT, np.integer],
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    ratio: bool = False,
+    validate: bool = True,
+    **quad_opts: Unpack[lmt.QuadOptions],
+) -> onp.Array[_ShapeT, np.float64]: ...
+@overload
+def l_moment(
+    rv: lmt.rv_frozen[rv_continuous | rv_discrete, float | np.float64],
+    order: Sequence[lmt.ToOrder0D],
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    ratio: bool = False,
+    validate: bool = True,
+    **quad_opts: Unpack[lmt.QuadOptions],
+) -> onp.Array1D[np.float64]: ...
+@overload
+def l_moment(
+    rv: lmt.rv_frozen[rv_continuous | rv_discrete, float | np.float64],
+    order: Sequence[Sequence[lmt.ToOrder0D]],
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    ratio: bool = False,
+    validate: bool = True,
+    **quad_opts: Unpack[lmt.QuadOptions],
+) -> onp.Array2D[np.float64]: ...
+@overload
+def l_moment(
+    rv: lmt.rv_frozen[rv_continuous | rv_discrete, float | np.float64],
+    order: lmt.ToOrderND,
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    ratio: bool = False,
+    validate: bool = True,
+    **quad_opts: Unpack[lmt.QuadOptions],
+) -> onp.ArrayND[np.float64]: ...
+def l_moment(
+    rv: lmt.rv_frozen[rv_continuous | rv_discrete, float | np.float64],
+    order: lmt.ToOrder,
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    ratio: bool = False,
+    validate: bool = True,
+    **quad_opts: Unpack[lmt.QuadOptions],
+) -> float | onp.ArrayND[np.float64]:
+    """
+    Compute the first `r = 1, ..., orders` theoretical L-moments of a
+    [`scipy.stats.rv_frozen`][scipy.stats.rv_frozen] instance.
+
+    Either uses numerical integration [`scipy.integrate.quad`][scipy.integrate.quad],
+    or the exact formula, depending on the distribution.
+
+    Args:
+        rv: A frozen `scipy.stats.rv_frozen` instance with scalar parameters.
+        order: The L-moment order scalar or array-like. Must be `>= 0`.
+        trim:
+            The trim orders as a scalar or 2-tuple of integers. E.g. `trim=1` will
+            compute the TL-moments, and `trim=(0, 1)` will compute the LL-moments.
+            Defaults to `0`, i.e. untrimmed "regular" L-moments.
+        ratio:
+            If `True`, calculate the L-moments ratio's by dividing the L-moments with
+            `r > 2` by the L-moment with `r = 2` (the L-scale). Defaults to `False`.
+        validate:
+            If `True` (default), validate the distribution parameters and the
+            computed L-moments.
+        **quad_opts: Additional kwargs to `scipy.integrate.quad` (e.g. `epsabs`).
+
+    Returns:
+        A scalar or array with same shape as `order` of `float64`.
+    """
+    r = np.array(order, np.int32, copy=False, ndmin=1)
+
+    st = clean_trim(trim)
+    if validate and not any(st) and not np.isfinite(rv.mean()):
+        return np.nan if np.isscalar(order) else np.full(r.shape, np.nan)
+
+    dist, (*theta, loc, scale) = _unfreeze(rv)
+    if not np.ndim(scale) == 0:  # `_unfreeze` broadcasts all args
+        raise NotImplementedError("distribution arguments must be scalar")
+
+    if validate:
+        _argcheck(dist, *theta, loc=loc, scale=scale)
+
+    l_r = _l_moment(dist, r, *theta, trim=st, quad_opts=quad_opts)
+
+    if validate:
+        try:
+            validate_moments(l_r, s=st[0], t=st[1])
+        except InvalidLMomentError:
+            return np.nan if np.isscalar(order) else np.full(r.shape, np.nan)
+
+    transform_moments(r, l_r, shift=loc, scale=scale)
+
+    if ratio and r.max() > 2:
+        try:
+            l_2 = l_r[r == 2]
+        except IndexError:
+            l_2 = _l_moment(dist, np.array([2]), *theta, trim=st, quad_opts=quad_opts)
+        l_r[r > 2] /= l_2.item(0)
+
+    return l_r.item() if np.isscalar(order) else l_r
 
 
 def l_moments(
@@ -1567,49 +1689,18 @@ def l_moments(
 ) -> onp.Array1D[np.float64]:
     """
     Calculate the first `r = 1, ..., orders` theoretical L-moments of a
-    `scipy.stats.rv_frozen` instance.
+    [`scipy.stats.rv_frozen`][scipy.stats.rv_frozen] instance.
 
-    Either uses numerical integration `numpy.integrate.quad`, or the exact formula,
-    depending on the distribution.
+    Either uses numerical integration [`scipy.integrate.quad`][scipy.integrate.quad],
+    or the exact formula, depending on the distribution.
     """
     if orders < 1:
         return np.empty((0,), dtype=np.float64)
 
-    dist, (*theta, loc, scale) = _unfreeze(rv)
-
-    if not np.ndim(scale) == 0:  # `_unfreeze` broadcasts all args
-        raise NotImplementedError("distribution arguments must be scalar")
-
-    if validate:
-        _argcheck(dist, *theta, loc=loc, scale=scale)
-
-    st = clean_trim(trim)
-
-    if validate and not any(st):
-        mean = dist._stats(*theta)[0]
-        if mean is None:
-            mean = dist.mean(*theta)
-        if not np.isfinite(mean):
-            out = np.full(orders, np.nan)
-            out[0] = mean
-            return out
-    else:
-        mean = None
-
     r = np.arange(1, orders + 1, dtype=np.int32)
-    l_r = _l_moment(dist, r, *theta, trim=st, quad_opts=quad_opts)
-
-    if validate:
-        try:
-            validate_moments(l_r, s=st[0], t=st[1])
-        except InvalidLMomentError:
-            return np.full(orders, np.nan)
-
-    transform_moments(r, l_r, shift=loc, scale=scale)
-
+    l_r = l_moment(rv, r, trim=trim, ratio=False, validate=validate, **quad_opts)
     if ratio and orders > 2:
         l_r[2:] /= l_r[1]
-
     return l_r
 
 
