@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import contextlib
 import math
+import sys
 from collections.abc import Callable, Sequence
 from typing import (
     TYPE_CHECKING,
@@ -58,6 +59,11 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
 
     from scipy.stats import rv_continuous, rv_discrete
+
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
 
 __all__ = ["install", "l_moment", "l_moments", "l_rv_frozen", "l_rv_generic"]
 
@@ -1252,6 +1258,7 @@ class l_rv_frozen(PatchClass):  # noqa: D101
     kwds: Mapping[str, Any]
 
     @overload
+    @deprecated("use lmo.l_moment() instead")
     def l_moment(
         self,
         order: lmt.ToOrder0D,
@@ -1260,6 +1267,7 @@ class l_rv_frozen(PatchClass):  # noqa: D101
         quad_opts: lmt.QuadOptions | None = ...,
     ) -> float: ...
     @overload
+    @deprecated("use lmo.l_moment() instead")
     def l_moment(
         self,
         order: lmt.ToOrderND,
@@ -1267,6 +1275,7 @@ class l_rv_frozen(PatchClass):  # noqa: D101
         trim: lmt.ToTrim = ...,
         quad_opts: lmt.QuadOptions | None = ...,
     ) -> _FloatND: ...
+    @deprecated("use lmo.l_moment() instead")
     def l_moment(  # noqa: D102
         self,
         order: lmt.ToOrder,
@@ -1283,6 +1292,7 @@ class l_rv_frozen(PatchClass):  # noqa: D101
         )
 
     @overload
+    @deprecated("use lmo.l_moment() instead")
     def l_ratio(
         self,
         order: lmt.ToOrder0D,
@@ -1292,6 +1302,7 @@ class l_rv_frozen(PatchClass):  # noqa: D101
         quad_opts: lmt.QuadOptions | None = ...,
     ) -> float: ...
     @overload
+    @deprecated("use lmo.l_moment() instead")
     def l_ratio(
         self,
         order: lmt.ToOrderND,
@@ -1300,6 +1311,7 @@ class l_rv_frozen(PatchClass):  # noqa: D101
         trim: lmt.ToTrim = ...,
         quad_opts: lmt.QuadOptions | None = ...,
     ) -> _FloatND: ...
+    @deprecated("use lmo.l_moment() instead")
     def l_ratio(  # noqa: D102
         self,
         order: lmt.ToOrder,
@@ -1317,6 +1329,7 @@ class l_rv_frozen(PatchClass):  # noqa: D101
             **self.kwds,
         )
 
+    @deprecated("use lmo.l_moments() instead")
     def l_stats(  # noqa: D102
         self,
         trim: lmt.ToTrim = 0,
@@ -1331,19 +1344,23 @@ class l_rv_frozen(PatchClass):  # noqa: D101
             **self.kwds,
         )
 
+    @deprecated("use lmo.l_moment() instead")
     def l_loc(self, trim: lmt.ToTrim = 0) -> float:  # noqa: D102
         return self.dist.l_loc(*self.args, trim=trim, **self.kwds)
 
+    @deprecated("use lmo.l_moment() instead")
     def l_scale(self, trim: lmt.ToTrim = 0) -> float:  # noqa: D102
         return self.dist.l_scale(*self.args, trim=trim, **self.kwds)
 
+    @deprecated("use lmo.l_moment() instead")
     def l_skew(self, trim: lmt.ToTrim = 0) -> float:  # noqa: D102
         return self.dist.l_skew(*self.args, trim=trim, **self.kwds)
 
+    @deprecated("use lmo.l_moment() instead")
     def l_kurtosis(self, trim: lmt.ToTrim = 0) -> float:  # noqa: D102
         return self.dist.l_kurtosis(*self.args, trim=trim, **self.kwds)
 
-    l_kurt = l_kurtosis
+    l_kurt = l_kurtosis  # pyright: ignore[reportDeprecated]
 
     def l_moments_cov(  # noqa: D102
         self,
@@ -1619,16 +1636,31 @@ def l_moment(
     validate: bool = True,
     **quad_opts: Unpack[lmt.QuadOptions],
 ) -> float | onp.ArrayND[np.float64]:
-    """
-    Compute the first `r = 1, ..., orders` theoretical L-moments of a
+    r"""
+    Compute the first `r = 1, ..., orders` population L-moments of a
     [`scipy.stats.rv_frozen`][scipy.stats.rv_frozen] instance.
 
     Either uses numerical integration [`scipy.integrate.quad`][scipy.integrate.quad],
     or the exact formula, depending on the distribution.
 
+    $$
+    \lambda^{(s, t)}_r =
+    \frac{r+s+t}{r}
+    \frac{B(r,\,r+s+t)}{B(r+s,\,r+t)}
+    \mathbb{E}_X \left[
+        U^s
+        \left(1 - U\right)^t
+        \,\tilde{P}^{(t, s)}_{r-1}(U)
+        \,X
+    \right] \;,
+    $$
+
+    with $U = F_X(X)$ the *rank* of $X$, and $\tilde{P}^{(a,b)}_n(x)$ the
+    shifted ($x \mapsto 2x-1$) Jacobi polynomial.
+
     Args:
         rv: A frozen `scipy.stats.rv_frozen` instance with scalar parameters.
-        order: The L-moment order scalar or array-like. Must be `>= 0`.
+        order: L-moment order(s), non-negative integer or array-like of integers.
         trim:
             The trim orders as a scalar or 2-tuple of integers. E.g. `trim=1` will
             compute the TL-moments, and `trim=(0, 1)` will compute the LL-moments.
@@ -1642,7 +1674,17 @@ def l_moment(
         **quad_opts: Additional kwargs to `scipy.integrate.quad` (e.g. `epsabs`).
 
     Returns:
-        A scalar or array with same shape as `order` of `float64`.
+        lmbda:
+            The population L-moment(s), a scalar or float array like `r`.
+
+    References:
+        - [E. Elamir & A. Seheult (2003) - Trimmed L-moments](
+            https://doi.org/10.1016/S0167-9473(02)00250-5)
+        - [J.R.M. Hosking (2007) - Some theory and practical uses of
+            trimmed L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
+
+    See Also:
+        - [`lmo.l_moment`][lmo.l_moment]: sample L-moment
     """
     r = np.array(order, np.int32, copy=False, ndmin=1)
 
