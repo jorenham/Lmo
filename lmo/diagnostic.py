@@ -28,10 +28,7 @@ import optype.numpy as onp
 
 import lmo.typing as lmt
 from . import constants
-from ._lm import l_ratio
-from ._poly import extrema_jacobi
 from ._utils import clean_orders, clean_trim
-from .special import fpow
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -157,9 +154,9 @@ def normaltest(
         [A. Harri & K.H. Coble (2011) - Normality testing: Two new tests
         using L-moments](https://doi.org/10.1080/02664763.2010.498508)
     """
-    x = np.asanyarray(a)
+    from ._lm import l_ratio
 
-    # sample size
+    x = np.asanyarray(a)
     n = x.size if axis is None else x.shape[axis]
 
     # L-skew and L-kurtosis
@@ -169,19 +166,16 @@ def normaltest(
     # loc/mu and scale/sigma)
     tau3, tau4 = 0.0, 60 * constants.theta_m_bar - 9
 
-    z3 = (t3 - tau3) / np.sqrt(
-        0.1866 / n + (np.sqrt(0.8000) / n) ** 2,
-    )
-    z4 = (t4 - tau4) / np.sqrt(
-        0.0883 / n + (np.sqrt(0.6800) / n) ** 2 + (np.cbrt(4.9000) / n) ** 3,
-    )
+    # the intermediate `* n` factors are omitted here, and later included in `z34`
+    z3_sq = (t3 - tau3) ** 2 / (0.1866 + 0.80 / n)
+    z4_sq = (t4 - tau4) ** 2 / (0.0883 + 0.68 / n + 4.9 / n**2)
 
-    k2 = z3**2 + z4**2
+    z34 = n * (z3_sq + z4_sq)
 
     # special case of the chi^2 survival function for k=2 degrees of freedom
-    p_value = np.exp(-k2 / 2)
+    p_value = np.exp(-z34 / 2)
 
-    return HypothesisTestResult(k2, p_value)
+    return HypothesisTestResult(z34, p_value)
 
 
 def _gof_stat_single(l_obs: _FloatND, l_exp: _FloatND, cov: _FloatND) -> float:
@@ -623,6 +617,10 @@ def l_ratio_bounds(
     t_max = np.empty(r_.shape)
 
     cache: dict[int, _Tuple2[float]] = {}
+
+    from ._poly import extrema_jacobi
+    from .special import fpow
+
     for i, ri in np.ndenumerate(r_):
         ri_ = cast("int", ri)
         if ri_ in cache:
