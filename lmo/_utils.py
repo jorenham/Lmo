@@ -10,8 +10,6 @@ import optype.numpy.compat as npc
 import optype.typing as opt
 
 import lmo.typing as lmt
-from .errors import InvalidLMomentError
-from .special import fpow
 
 __all__ = (
     "clean_order",
@@ -28,6 +26,11 @@ __all__ = (
     "transform_moments",
     "validate_moments",
 )
+
+
+def __dir__() -> tuple[str, ...]:
+    return __all__
+
 
 ###
 
@@ -305,13 +308,13 @@ def clean_order(
     /,
     name: str = "r",
     rmin: onp.ToInt = 0,
-) -> onp.ArrayND[np.intp]: ...
+) -> onp.ArrayND[np.int32]: ...
 def clean_order(
     r: lmt.ToOrder,
     /,
     name: str = "r",
     rmin: onp.ToInt = 0,
-) -> int | onp.ArrayND[np.intp]:
+) -> int | onp.ArrayND[np.int32]:
     """Validates and cleans an single (L-)moment order."""
     if not isinstance(r, int | np.integer):
         return clean_orders(r, name=name, rmin=rmin)
@@ -329,22 +332,22 @@ def clean_orders(
     /,
     name: str = "r",
     rmin: onp.ToInt = 0,
-) -> onp.Array1D[np.intp]: ...
+) -> onp.Array1D[np.int32]: ...
 @overload
 def clean_orders(
     r: lmt.ToOrderND,
     /,
     name: str = "r",
     rmin: onp.ToInt = 0,
-) -> onp.ArrayND[np.intp]: ...
+) -> onp.ArrayND[np.int32]: ...
 def clean_orders(
     r: lmt.ToOrderND,
     /,
     name: str = "r",
     rmin: onp.ToInt = 0,
-) -> onp.ArrayND[np.intp]:
+) -> onp.ArrayND[np.int32]:
     """Validates and cleans an array-like of (L-)moment orders."""
-    r_ = np.asarray_chkfinite(r, dtype=np.intp)
+    r_ = np.asarray_chkfinite(r, dtype=np.int32)
 
     if np.any(invalid := r_ < rmin):
         i = np.argmax(invalid)
@@ -490,12 +493,16 @@ def transform_moments(
 
 def validate_moments(l_r: _FloatND, s: float, t: float) -> None:
     """Vaalidate the L-moments with order [1, 2, 3, ...]."""
+    from .errors import InvalidLMomentError
+
     if (l2 := l_r[1]) <= 0:
         msg = f"L-scale must be strictly positive, got lmda[1] = {l2}"
         raise InvalidLMomentError(msg)
 
     if len(l_r) <= 2:
         return
+
+    from .special import fpow
 
     # enforce the (non-strict) L-ratio bounds, from Hosking (2007) eq. 14,
     # but rewritten using falling factorials, to avoid potential overflows
@@ -506,11 +513,12 @@ def validate_moments(l_r: _FloatND, s: float, t: float) -> None:
     tau_absmax = 2 * fpow(r + s + t, m) / (r * fpow(2 + s + t, m))
 
     if np.any(invalid := np.abs(tau) > tau_absmax):
+        from .errors import InvalidLMomentError
+
         r_invalid = list(set(np.argwhere(invalid).ravel() + 3))
         if len(r_invalid) == 1:
             r_invalid = r_invalid[0]
         msg = f"L-moment(s) with r = {r_invalid} exceed the theoretical bounds"
-        raise InvalidLMomentError(msg)
 
     # validate an l-skewness / l-kurtosis relative inequality that is
     # a pre-condition for the PPF to be strictly monotonically increasing
@@ -531,4 +539,3 @@ def validate_moments(l_r: _FloatND, s: float, t: float) -> None:
             f"L-skewness is too {msg_t3_size} ({t3:.4f}); consider "
             f"increasing {msg_t3_trim}"
         )
-        raise InvalidLMomentError(msg)
