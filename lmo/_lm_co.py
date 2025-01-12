@@ -10,7 +10,7 @@ import lmo.typing as lmt
 from ._lm import l_weights
 from ._utils import clean_order, ordered
 
-__all__ = (
+__all__ = [
     "l_cokurt",
     "l_cokurtosis",
     "l_coloc",
@@ -20,7 +20,7 @@ __all__ = (
     "l_coscale",
     "l_coskew",
     "l_costats",
-)
+]
 
 
 _SCT = TypeVar("_SCT", bound=np.generic)

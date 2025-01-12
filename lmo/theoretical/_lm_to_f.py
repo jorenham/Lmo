@@ -6,8 +6,8 @@ import numpy as np
 import optype.numpy as onp
 import optype.numpy.compat as npc
 
-from lmo._utils import clean_trim, plotting_positions
-from lmo.special import fourier_jacobi, fpow
+from lmo._utils import clean_trim, plotting_positions, validate_moments
+from lmo.special import fourier_jacobi
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -33,51 +33,6 @@ class _Fn1(Protocol):
 
 
 ###
-
-
-def _validate_l_bounds(l_r: _FloatND, s: float, t: float) -> None:
-    if (l2 := l_r[1]) <= 0:
-        msg = f"L-scale must be >0, got lmda[1] = {l2}"
-        raise ValueError(msg)
-
-    if len(l_r) <= 2:
-        return
-
-    # enforce the (non-strict) L-ratio bounds, from Hosking (2007) eq. 14,
-    # but rewritten using falling factorials, to avoid potential overflows
-    tau = l_r[2:] / l2
-
-    r = np.arange(3, len(l_r) + 1)
-    m = max(s, t) + 1
-    tau_absmax = 2 * fpow(r + s + t, m) / (r * fpow(2 + s + t, m))
-
-    if np.any(invalid := np.abs(tau) > tau_absmax):
-        r_invalid = list(np.argwhere(invalid) + 3)
-        if len(r_invalid) == 1:
-            r_invalid = r_invalid[0]
-        msg = f"L-moment(s) with r = {r_invalid}) are not within the valid range"
-        raise ValueError(msg)
-
-    # validate an l-skewness / l-kurtosis relative inequality that is
-    # a pre-condition for the PPF to be strictly monotonically increasing
-    t3 = tau[0]
-    t4 = tau[1] if len(tau) > 1 else 0
-
-    m = 2 + (s if t3 > 0 else t)
-    u = 3 + s + t
-    t3_max = 2 * (u / m + (m + 1) * (u + 4) * t4) / (3 * (u + 2))
-
-    if abs(t3) >= t3_max:
-        if t3 < 0:
-            msg_t3_size, msg_t3_trim = "small", "s"
-        else:
-            msg_t3_size, msg_t3_trim = "large", "t"
-
-        msg = (
-            f"L-skewness is too {msg_t3_size} ({t3:.4f}); consider "
-            f"increasing {msg_t3_trim}"
-        )
-        raise ValueError(msg)
 
 
 def _monotonic(
@@ -169,7 +124,7 @@ def ppf_from_l_moments(
     s, t = clean_trim(trim)
 
     if validate:
-        _validate_l_bounds(l_r, s, t)
+        validate_moments(l_r, s, t)
 
     a, b = support
     if a >= b:
@@ -250,7 +205,7 @@ def qdf_from_l_moments(
     s, t = clean_trim(trim)
 
     if validate:
-        _validate_l_bounds(l_r, s, t)
+        validate_moments(l_r, s, t)
 
     # r = np.arange(2, _n + 1)
     # c = (2 * r + s + t - 1) * r * l_r[1:]

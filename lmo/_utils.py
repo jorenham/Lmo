@@ -23,7 +23,14 @@ __all__ = (
     "plotting_positions",
     "round0",
     "sort_maybe",
+    "transform_moments",
+    "validate_moments",
 )
+
+
+def __dir__() -> tuple[str, ...]:
+    return __all__
+
 
 ###
 
@@ -301,13 +308,13 @@ def clean_order(
     /,
     name: str = "r",
     rmin: onp.ToInt = 0,
-) -> onp.ArrayND[np.intp]: ...
+) -> onp.ArrayND[np.int32]: ...
 def clean_order(
     r: lmt.ToOrder,
     /,
     name: str = "r",
     rmin: onp.ToInt = 0,
-) -> int | onp.ArrayND[np.intp]:
+) -> int | onp.ArrayND[np.int32]:
     """Validates and cleans an single (L-)moment order."""
     if not isinstance(r, int | np.integer):
         return clean_orders(r, name=name, rmin=rmin)
@@ -325,22 +332,22 @@ def clean_orders(
     /,
     name: str = "r",
     rmin: onp.ToInt = 0,
-) -> onp.Array1D[np.intp]: ...
+) -> onp.Array1D[np.int32]: ...
 @overload
 def clean_orders(
     r: lmt.ToOrderND,
     /,
     name: str = "r",
     rmin: onp.ToInt = 0,
-) -> onp.ArrayND[np.intp]: ...
+) -> onp.ArrayND[np.int32]: ...
 def clean_orders(
     r: lmt.ToOrderND,
     /,
     name: str = "r",
     rmin: onp.ToInt = 0,
-) -> onp.ArrayND[np.intp]:
+) -> onp.ArrayND[np.int32]:
     """Validates and cleans an array-like of (L-)moment orders."""
-    r_ = np.asarray_chkfinite(r, dtype=np.intp)
+    r_ = np.asarray_chkfinite(r, dtype=np.int32)
 
     if np.any(invalid := r_ < rmin):
         i = np.argmax(invalid)
@@ -468,3 +475,67 @@ def l_stats_orders(num: opt.AnyInt, /) -> _Tuple2[onp.ArrayND[np.int32]]:
         np.arange(1, n + 1, dtype=np.int32),
         np.array([0] * min(2, n) + [2] * (n - 2), dtype=np.int32),
     )
+
+
+def transform_moments(
+    r: onp.ArrayND[npc.integer],
+    l_r: onp.Array[_ShapeT, _FloatT],
+    /,
+    shift: float = 0.0,
+    scale: float = 1.0,
+) -> None:
+    """Apply a linear transformation to the L-moments in-place."""
+    if scale != 1:
+        l_r[r > 0] *= scale
+    if shift != 0:
+        l_r[r == 1] += shift
+
+
+def validate_moments(l_r: _FloatND, s: float, t: float) -> None:
+    """Vaalidate the L-moments with order [1, 2, 3, ...]."""
+    from .errors import InvalidLMomentError
+
+    if (l2 := l_r[1]) <= 0:
+        msg = f"L-scale must be strictly positive, got lmda[1] = {l2}"
+        raise InvalidLMomentError(msg)
+
+    if len(l_r) <= 2:
+        return
+
+    from .special import fpow
+
+    # enforce the (non-strict) L-ratio bounds, from Hosking (2007) eq. 14,
+    # but rewritten using falling factorials, to avoid potential overflows
+    tau = l_r[2:] / l2
+
+    r = np.arange(3, len(l_r) + 1)
+    m = max(s, t) + 1
+    tau_absmax = 2 * fpow(r + s + t, m) / (r * fpow(2 + s + t, m))
+
+    if np.any(invalid := np.abs(tau) > tau_absmax):
+        from .errors import InvalidLMomentError
+
+        r_invalid = list(set(np.argwhere(invalid).ravel() + 3))
+        if len(r_invalid) == 1:
+            r_invalid = r_invalid[0]
+        msg = f"L-moment(s) with r = {r_invalid} exceed the theoretical bounds"
+
+    # validate an l-skewness / l-kurtosis relative inequality that is
+    # a pre-condition for the PPF to be strictly monotonically increasing
+    t3 = tau[0]
+    t4 = tau[1] if len(tau) > 1 else 0
+
+    m = 2 + (s if t3 > 0 else t)
+    u = 3 + s + t
+    t3_max = 2 * (u / m + (m + 1) * (u + 4) * t4) / (3 * (u + 2))
+
+    if abs(t3) >= t3_max:
+        if t3 < 0:
+            msg_t3_size, msg_t3_trim = "small", "the left trim order (S)"
+        else:
+            msg_t3_size, msg_t3_trim = "large", "the right trim order (t)"
+
+        msg = (
+            f"L-skewness is too {msg_t3_size} ({t3:.4f}); consider "
+            f"increasing {msg_t3_trim}"
+        )

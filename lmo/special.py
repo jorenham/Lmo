@@ -8,8 +8,6 @@ import numpy as np
 import optype.numpy as onp
 import scipy.special as sps
 
-from ._utils import clean_orders
-
 if TYPE_CHECKING:
     import lmo.typing as lmt
 
@@ -236,7 +234,7 @@ def norm_sh_jacobi(
         msg = f"beta must be > -1, got {beta}"
         raise ValueError(msg)
 
-    r = clean_orders(np.asanyarray(n), "n") + 1
+    r = np.asanyarray(n) + 1
 
     if alpha == beta == 0:
         # shifted Legendre

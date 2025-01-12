@@ -1,4 +1,6 @@
-# pyright: reportUninitializedInstanceVariable=false
+# ruff: noqa: SLF001
+# pyright: reportPrivateUsage=false, reportUninitializedInstanceVariable=false
+
 """
 Extension methods for the (univariate) distributions in
 [`scipy.stats`][scipy.stats].
@@ -7,7 +9,9 @@ Extension methods for the (univariate) distributions in
 from __future__ import annotations
 
 import contextlib
-from collections.abc import Callable
+import math
+import sys
+from collections.abc import Callable, Sequence
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -31,8 +35,17 @@ import optype.numpy.compat as npc
 import lmo.typing as lmt
 from lmo import inference
 from lmo._lm import l_moment as l_moment_est
-from lmo._utils import clean_order, clean_trim, l_stats_orders, moments_to_ratio, round0
+from lmo._utils import (
+    clean_order,
+    clean_trim,
+    l_stats_orders,
+    moments_to_ratio,
+    round0,
+    transform_moments,
+    validate_moments,
+)
 from lmo.distributions._lm import get_lm_func, has_lm_func, prefers_ppf
+from lmo.errors import InvalidLMomentError
 from lmo.theoretical import (
     l_moment_cov_from_cdf,
     l_moment_from_cdf,
@@ -45,12 +58,21 @@ from lmo.theoretical import (
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
-    from scipy.stats import rv_discrete
+    from scipy.stats import rv_continuous, rv_discrete
 
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
 
-__all__ = ["install", "l_rv_frozen", "l_rv_generic"]
+__all__ = ["install", "l_moment", "l_moments", "l_rv_frozen", "l_rv_generic"]
 
 ###
+
+
+_ShapeT = TypeVar("_ShapeT", bound=tuple[int, ...])
+_RVT = TypeVar("_RVT", bound=lmt.rv_generic)
+_ArgT = TypeVar("_ArgT", bound=float | np.float64 | onp.ArrayND[np.float64])
 
 _FloatND: TypeAlias = onp.ArrayND[npc.floating]
 
@@ -253,32 +275,30 @@ class l_rv_generic(PatchClass):
         See Also:
             - [`lmo.l_moment`][lmo.l_moment]: sample L-moment
         """
-        r_ = np.asarray(clean_order(r), np.intp)
+        r_ = np.asarray(clean_order(r), np.int32)
         (s, t) = trim_ = clean_trim(trim)
 
-        shapes, loc, scale = self._parse_args(*args, **kwds)
+        theta, loc, scale = self._parse_args(*args, **kwds)
 
         if s <= 0 and t <= 0:
-            mean = self._stats(*shapes)[0]
+            mean = self._stats(*theta)[0]
             if mean is None:
-                mean = self.mean(*shapes)
+                mean = self.mean(*theta)
             if not np.isfinite(mean):
                 # first moment condition not met
                 return np.full(r_.shape, np.nan)[()]
 
-        if not self._argcheck(*shapes):
+        if not self._argcheck(*theta):
             return np.full(r_.shape, np.nan)[()]
 
         # L-moments of the standard distribution (loc=0, scale=scale0)
-        l0_r = _l_moment(self, r_, *shapes, trim=trim_, quad_opts=quad_opts)
+        l0_r = _l_moment(self, r_, *theta, trim=trim_, quad_opts=quad_opts)
 
         # shift (by loc) and scale
-        shift_r: onp.ArrayND[np.float64] = loc * (r_ == 1)
-        scale_r: onp.ArrayND[np.float64] = scale * (r_ > 0) + (r_ == 0)
-        l_r = shift_r + scale_r * l0_r
-
-        # round near zero values to 0
-        return round0(l_r[()], tol=1e-15)
+        shift_r = (r_ == 1) * loc
+        scale_r = (r_ == 0) + (r_ > 0) * scale
+        out: Any = round0((l0_r * scale_r + shift_r), tol=1e-15)
+        return out
 
     @overload
     def l_ratio(
@@ -615,10 +635,9 @@ class l_rv_generic(PatchClass):
         """
         args, _, scale = self._parse_args(*args, **kwds)
         support = self._get_support(*args)
-        cdf, _ = _get_xxf(self, *args)
 
         cov = l_moment_cov_from_cdf(
-            cdf,
+            _get_cdf(self, *args),
             r_max,
             trim=trim,
             support=support,
@@ -725,18 +744,14 @@ class l_rv_generic(PatchClass):
                 trimmed L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
         """
         args, _, scale = self._parse_args(*args, **kwds)
-        support = self._get_support(*args)
-        cdf, ppf = _get_xxf(self, *args)
-
-        cov = l_stats_cov_from_cdf(
-            cdf,
+        return scale**2 * l_stats_cov_from_cdf(
+            _get_cdf(self, *args),
             moments,
             trim=trim,
-            support=support,
+            support=self._get_support(*args),
             quad_opts=quad_opts,
-            ppf=ppf,
+            ppf=_get_icdf(self, *args),
         )
-        return scale**2 * cov
 
     def l_moment_influence(
         self,
@@ -813,17 +828,13 @@ class l_rv_generic(PatchClass):
                 Robust Estimation](https://doi.org/10.2307/2285666)
 
         """
-        lm = self.l_moment(r, *args, trim=trim, quad_opts=quad_opts, **kwds)
-
-        args, loc, scale = self._parse_args(*args, **kwds)
-        cdf, _ = _get_xxf(self, *args, loc=loc, scale=scale)
-
+        theta, loc, scale = self._parse_args(*args, **kwds)
         return l_moment_influence_from_cdf(
-            cdf,
+            _get_cdf(self, *theta, loc=loc, scale=scale),
             r,
             trim=trim,
-            support=self._get_support(*args),
-            l_moment=lm,
+            support=_support(self, *theta, loc=loc, scale=scale),
+            l_moment=self.l_moment(r, *args, trim=trim, quad_opts=quad_opts, **kwds),
             tol=tol,
         )
 
@@ -910,10 +921,9 @@ class l_rv_generic(PatchClass):
         )
 
         args, loc, scale = self._parse_args(*args, **kwds)
-        cdf = _get_xxf(self, *args, loc=loc, scale=scale)[0]
 
         return l_ratio_influence_from_cdf(
-            cdf,
+            _get_cdf(self, *args, loc=loc, scale=scale),
             r,
             k,
             trim=trim,
@@ -1208,7 +1218,7 @@ class l_rv_generic(PatchClass):
 
         Notes:
             The implementation mimics that of
-            [`fit_loc_scale()`][scipy.stats.lmt.rv_continuous.fit_loc_scale]
+            [`fit_loc_scale()`][scipy.stats.rv_continuous.fit_loc_scale]
 
         Args:
             data:
@@ -1248,6 +1258,7 @@ class l_rv_frozen(PatchClass):  # noqa: D101
     kwds: Mapping[str, Any]
 
     @overload
+    @deprecated("use lmo.l_moment() instead")
     def l_moment(
         self,
         order: lmt.ToOrder0D,
@@ -1256,6 +1267,7 @@ class l_rv_frozen(PatchClass):  # noqa: D101
         quad_opts: lmt.QuadOptions | None = ...,
     ) -> float: ...
     @overload
+    @deprecated("use lmo.l_moment() instead")
     def l_moment(
         self,
         order: lmt.ToOrderND,
@@ -1263,6 +1275,7 @@ class l_rv_frozen(PatchClass):  # noqa: D101
         trim: lmt.ToTrim = ...,
         quad_opts: lmt.QuadOptions | None = ...,
     ) -> _FloatND: ...
+    @deprecated("use lmo.l_moment() instead")
     def l_moment(  # noqa: D102
         self,
         order: lmt.ToOrder,
@@ -1279,6 +1292,7 @@ class l_rv_frozen(PatchClass):  # noqa: D101
         )
 
     @overload
+    @deprecated("use lmo.l_moment() instead")
     def l_ratio(
         self,
         order: lmt.ToOrder0D,
@@ -1288,6 +1302,7 @@ class l_rv_frozen(PatchClass):  # noqa: D101
         quad_opts: lmt.QuadOptions | None = ...,
     ) -> float: ...
     @overload
+    @deprecated("use lmo.l_moment() instead")
     def l_ratio(
         self,
         order: lmt.ToOrderND,
@@ -1296,6 +1311,7 @@ class l_rv_frozen(PatchClass):  # noqa: D101
         trim: lmt.ToTrim = ...,
         quad_opts: lmt.QuadOptions | None = ...,
     ) -> _FloatND: ...
+    @deprecated("use lmo.l_moment() instead")
     def l_ratio(  # noqa: D102
         self,
         order: lmt.ToOrder,
@@ -1313,6 +1329,7 @@ class l_rv_frozen(PatchClass):  # noqa: D101
             **self.kwds,
         )
 
+    @deprecated("use lmo.l_moments() instead")
     def l_stats(  # noqa: D102
         self,
         trim: lmt.ToTrim = 0,
@@ -1327,19 +1344,23 @@ class l_rv_frozen(PatchClass):  # noqa: D101
             **self.kwds,
         )
 
+    @deprecated("use lmo.l_moment() instead")
     def l_loc(self, trim: lmt.ToTrim = 0) -> float:  # noqa: D102
         return self.dist.l_loc(*self.args, trim=trim, **self.kwds)
 
+    @deprecated("use lmo.l_moment() instead")
     def l_scale(self, trim: lmt.ToTrim = 0) -> float:  # noqa: D102
         return self.dist.l_scale(*self.args, trim=trim, **self.kwds)
 
+    @deprecated("use lmo.l_moment() instead")
     def l_skew(self, trim: lmt.ToTrim = 0) -> float:  # noqa: D102
         return self.dist.l_skew(*self.args, trim=trim, **self.kwds)
 
+    @deprecated("use lmo.l_moment() instead")
     def l_kurtosis(self, trim: lmt.ToTrim = 0) -> float:  # noqa: D102
         return self.dist.l_kurtosis(*self.args, trim=trim, **self.kwds)
 
-    l_kurt = l_kurtosis
+    l_kurt = l_kurtosis  # pyright: ignore[reportDeprecated]
 
     def l_moments_cov(  # noqa: D102
         self,
@@ -1407,14 +1428,117 @@ class l_rv_frozen(PatchClass):  # noqa: D101
         )
 
 
-def _l_moment(
-    self: l_rv_generic,
-    r: onp.ArrayND[np.intp],
+def _support(
+    rv: rv_continuous | rv_discrete | l_rv_generic,
+    *theta: float,
+    loc: float = 0,
+    scale: float = 1,
+) -> tuple[float, float]:
+    a0, b0 = rv._get_support(*theta)
+    return float(a0 * scale + loc), float(b0 * scale + loc)
+
+
+def _get_cdf(
+    rv: rv_continuous | rv_discrete | l_rv_generic,
     /,
-    *args: Any,
+    *theta: float,
+    loc: float = 0,
+    scale: float = 1,
+) -> _Fn1:
+    # TODO(jorenham): use fast `scipy.special` ufunc lookup by `rv.name`
+    cdf_ = rv._cdf
+
+    if loc or scale != 1:
+
+        def cdf(x: Any, /) -> Any:
+            z: Any = (np.asarray(x) - loc) / scale
+            q: Any = cdf_(z, *theta)
+            return q.item() if np.isscalar(x) else q
+
+    else:
+
+        def cdf(x: Any, /) -> Any:
+            q = cdf_(np.asarray(x), *theta)
+            return q.item() if np.isscalar(x) else q
+
+    return cdf
+
+
+def _get_icdf(
+    rv: rv_continuous | rv_discrete | l_rv_generic,
+    /,
+    *theta: float,
+    loc: float = 0,
+    scale: float = 1,
+) -> _Fn1:
+    # TODO(jorenham): use fast `scipy.special` ufunc lookup by `rv.name`
+    icdf_ = rv._ppf
+
+    if loc or scale != 1:
+
+        def icdf(q: Any, /) -> Any:
+            x = icdf_(np.asarray(q), *theta) * scale + loc
+            return x.item() if np.isscalar(q) else x
+
+    else:
+
+        def icdf(q: Any, /) -> Any:
+            x = icdf_(np.asarray(q), *theta)
+            return x.item() if np.isscalar(q) else x
+
+    return icdf
+
+
+@overload
+def _unfreeze(rv: _RVT, /) -> tuple[_RVT, tuple[np.float64, np.float64]]: ...
+@overload
+def _unfreeze(
+    rv: lmt.rv_frozen[_RVT, _ArgT], /
+) -> tuple[_RVT, tuple[Unpack[tuple[_ArgT, ...]], _ArgT, _ArgT]]: ...
+def _unfreeze(rv: lmt.rv_frozen[_RVT, Any] | _RVT, /) -> tuple[_RVT, tuple[Any, ...]]:
+    """Returns (distribution, (*theta. loc, scale))."""
+    if isinstance(rv, lmt.rv_generic):
+        return _unfreeze(rv())
+
+    d: Any = rv.dist
+    theta, loc, scale = cast("Callable[..., Any]", d._parse_args)(*rv.args, **rv.kwds)
+    (args,) = np.broadcast(*theta, loc, scale)
+    return d, args
+
+
+def _argcheck(
+    rv: rv_continuous | rv_discrete | lmt.rv_frozen[rv_continuous | rv_discrete, float],
+    /,
+    *theta: onp.ToFloat,
+    loc: float = 0,
+    scale: float = 1,
+) -> None:
+    # NOTE: `kappa4._argcheck` returns a 0-d ndarray, which raises in `bool()` since
+    # `numpy >=2.2.0`, and several others return ``
+    if isinstance(rv, lmt.rv_frozen):
+        assert not theta
+        assert loc == 0
+        assert scale == 1
+        d, args = _unfreeze(rv)
+    else:
+        d = rv
+        args = tuple(np.array([*theta, loc, scale], np.float64).ravel().tolist())
+
+    if not np.array(d._argcheck(*theta), np.bool_).item() or not all(
+        map(math.isfinite, args)
+    ):
+        error_msg = f"Invalid distribution arguments: {d.name}{args}"
+        raise ValueError(error_msg)
+
+
+def _l_moment(
+    rv: rv_continuous | rv_discrete | l_rv_generic,
+    r: onp.Array[_ShapeT, np.int32 | np.int64],
+    /,
+    *theta: float,
     trim: _Tuple2[int] | _Tuple2[float] = (0, 0),
     quad_opts: lmt.QuadOptions | None = None,
-) -> _FloatND:
+) -> onp.Array[_ShapeT, np.float64]:
     """
     Population L-moments of the standard distribution (i.e. `loc, scale = 0, 1`).
 
@@ -1422,63 +1546,210 @@ def _l_moment(
         Sparse caching: Use a priority queue with key `(self, args, r, trim)`.
         Prefer small `r` and small `sum(trim)`, skip fractional trim.
     """
-    name = self.name
+    name = rv.name
     if quad_opts is None and has_lm_func(name):
+        lm_func = get_lm_func(name)
         with contextlib.suppress(NotImplementedError):
-            return get_lm_func(name)(r, *trim, *args)
-
-    cdf, ppf = _get_xxf(self, *args)
+            return lm_func(r, *trim, *theta)
 
     if prefers_ppf(name):
-        lmbda_r = l_moment_from_ppf(ppf, r, trim=trim, quad_opts=quad_opts)
+        icdf = _get_icdf(rv, *theta)
+        lmbda_r = l_moment_from_ppf(icdf, r, trim=trim, quad_opts=quad_opts)
     else:
-        a, b = self._get_support(*args)  # pyright: ignore[reportPrivateUsage]
+        a, b = _support(rv, *theta)
+
         with np.errstate(over="ignore", under="ignore"):
             lmbda_r = l_moment_from_cdf(
-                cdf,
+                _get_cdf(rv, *theta),
                 r,
                 trim=trim,
                 support=(float(a), float(b)),
-                ppf=ppf,
+                ppf=_get_icdf(rv, *theta),
                 quad_opts=quad_opts,
             )
 
-    # re-wrap scalars in 0-d arrays (lmo.theoretical unpacks them)
-    return np.asarray(lmbda_r)
+    return lmbda_r
 
 
-def _get_xxf(
-    self: l_rv_generic,
+@overload
+def l_moment(
+    rv: lmt.rv_frozen[rv_continuous | rv_discrete, float | np.float64],
+    order: lmt.ToOrder0D,
     /,
-    *shape: float,
-    loc: float = 0,
-    scale: float = 1,
-) -> _Tuple2[_Fn1]:
-    assert scale > 0
+    trim: lmt.ToTrim = 0,
+    *,
+    ratio: bool = False,
+    validate: bool = True,
+    **quad_opts: Unpack[lmt.QuadOptions],
+) -> float: ...
+@overload
+def l_moment(
+    rv: lmt.rv_frozen[rv_continuous | rv_discrete, float | np.float64],
+    order: onp.Array[_ShapeT, np.integer],
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    ratio: bool = False,
+    validate: bool = True,
+    **quad_opts: Unpack[lmt.QuadOptions],
+) -> onp.Array[_ShapeT, np.float64]: ...
+@overload
+def l_moment(
+    rv: lmt.rv_frozen[rv_continuous | rv_discrete, float | np.float64],
+    order: Sequence[lmt.ToOrder0D],
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    ratio: bool = False,
+    validate: bool = True,
+    **quad_opts: Unpack[lmt.QuadOptions],
+) -> onp.Array1D[np.float64]: ...
+@overload
+def l_moment(
+    rv: lmt.rv_frozen[rv_continuous | rv_discrete, float | np.float64],
+    order: Sequence[Sequence[lmt.ToOrder0D]],
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    ratio: bool = False,
+    validate: bool = True,
+    **quad_opts: Unpack[lmt.QuadOptions],
+) -> onp.Array2D[np.float64]: ...
+@overload
+def l_moment(
+    rv: lmt.rv_frozen[rv_continuous | rv_discrete, float | np.float64],
+    order: lmt.ToOrderND,
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    ratio: bool = False,
+    validate: bool = True,
+    **quad_opts: Unpack[lmt.QuadOptions],
+) -> onp.ArrayND[np.float64]: ...
+def l_moment(
+    rv: lmt.rv_frozen[rv_continuous | rv_discrete, float | np.float64],
+    order: lmt.ToOrder,
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    ratio: bool = False,
+    validate: bool = True,
+    **quad_opts: Unpack[lmt.QuadOptions],
+) -> float | onp.ArrayND[np.float64]:
+    r"""
+    Compute the first `r = 1, ..., orders` population L-moments of a
+    [`scipy.stats.rv_frozen`][scipy.stats.rv_frozen] instance.
 
-    cdf_, ppf_ = self._cdf, self._ppf  # pyright: ignore[reportPrivateUsage]
+    Either uses numerical integration [`scipy.integrate.quad`][scipy.integrate.quad],
+    or the exact formula, depending on the distribution.
 
-    @overload
-    def cdf(x: onp.ToFloat, /) -> float: ...
-    @overload
-    def cdf(x: onp.ToFloatND, /) -> _FloatND: ...
-    def cdf(x: onp.ToFloat | onp.ToFloatND, /) -> float | _FloatND:
-        z = (np.array([x]) - loc) / scale
-        out = cdf_(z, *shape)
-        return out.item() if out.ndim == 0 else out
+    $$
+    \lambda^{(s, t)}_r =
+    \frac{r+s+t}{r}
+    \frac{B(r,\,r+s+t)}{B(r+s,\,r+t)}
+    \mathbb{E}_X \left[
+        U^s
+        \left(1 - U\right)^t
+        \,\tilde{P}^{(t, s)}_{r-1}(U)
+        \,X
+    \right] \;,
+    $$
 
-    @overload
-    def ppf(p: onp.ToFloat, /) -> float: ...
-    @overload
-    def ppf(p: onp.ToFloatND, /) -> _FloatND: ...
-    def ppf(p: onp.ToFloat | onp.ToFloatND, /) -> float | _FloatND:
-        return ppf_(np.array([p]), *shape)[0] * scale + loc
+    with $U = F_X(X)$ the *rank* of $X$, and $\tilde{P}^{(a,b)}_n(x)$ the
+    shifted ($x \mapsto 2x-1$) Jacobi polynomial.
 
-    return cdf, ppf
+    Args:
+        rv: A frozen `scipy.stats.rv_frozen` instance with scalar parameters.
+        order: L-moment order(s), non-negative integer or array-like of integers.
+        trim:
+            The trim orders as a scalar or 2-tuple of integers. E.g. `trim=1` will
+            compute the TL-moments, and `trim=(0, 1)` will compute the LL-moments.
+            Defaults to `0`, i.e. untrimmed "regular" L-moments.
+        ratio:
+            If `True`, calculate the L-moments ratio's by dividing the L-moments with
+            `r > 2` by the L-moment with `r = 2` (the L-scale). Defaults to `False`.
+        validate:
+            If `True` (default), validate the distribution parameters and the
+            computed L-moments.
+        **quad_opts: Additional kwargs to `scipy.integrate.quad` (e.g. `epsabs`).
+
+    Returns:
+        lmbda:
+            The population L-moment(s), a scalar or float array like `r`.
+
+    References:
+        - [E. Elamir & A. Seheult (2003) - Trimmed L-moments](
+            https://doi.org/10.1016/S0167-9473(02)00250-5)
+        - [J.R.M. Hosking (2007) - Some theory and practical uses of
+            trimmed L-moments](https://doi.org/10.1016/j.jspi.2006.12.002)
+
+    See Also:
+        - [`lmo.l_moment`][lmo.l_moment]: sample L-moment
+    """
+    r = np.array(order, np.int32, copy=False, ndmin=1)
+
+    st = clean_trim(trim)
+    if validate and not any(st) and not np.isfinite(rv.mean()):
+        return np.nan if np.isscalar(order) else np.full(r.shape, np.nan)
+
+    dist, (*theta, loc, scale) = _unfreeze(rv)
+    if not np.ndim(scale) == 0:  # `_unfreeze` broadcasts all args
+        raise NotImplementedError("distribution arguments must be scalar")
+
+    if validate:
+        _argcheck(dist, *theta, loc=loc, scale=scale)
+
+    l_r = _l_moment(dist, r, *theta, trim=st, quad_opts=quad_opts)
+
+    if validate:
+        try:
+            validate_moments(l_r, s=st[0], t=st[1])
+        except InvalidLMomentError:
+            return np.nan if np.isscalar(order) else np.full(r.shape, np.nan)
+
+    transform_moments(r, l_r, shift=loc, scale=scale)
+
+    if ratio and r.max() > 2:
+        try:
+            l_2 = l_r[r == 2]
+        except IndexError:
+            l_2 = _l_moment(dist, np.array([2]), *theta, trim=st, quad_opts=quad_opts)
+        l_r[r > 2] /= l_2.item(0)
+
+    return l_r.item() if np.isscalar(order) else l_r
+
+
+def l_moments(
+    rv: lmt.rv_frozen[rv_continuous | rv_discrete, float | np.float64],
+    orders: int = 4,
+    /,
+    trim: lmt.ToTrim = 0,
+    *,
+    ratio: bool = True,
+    validate: bool = True,
+    **quad_opts: Unpack[lmt.QuadOptions],
+) -> onp.Array1D[np.float64]:
+    """
+    Calculate the first `r = 1, ..., orders` theoretical L-moments of a
+    [`scipy.stats.rv_frozen`][scipy.stats.rv_frozen] instance.
+
+    Either uses numerical integration [`scipy.integrate.quad`][scipy.integrate.quad],
+    or the exact formula, depending on the distribution.
+    """
+    if orders < 1:
+        return np.empty((0,), dtype=np.float64)
+
+    r = np.arange(1, orders + 1, dtype=np.int32)
+    l_r = l_moment(rv, r, trim=trim, ratio=False, validate=validate, **quad_opts)
+    if ratio and orders > 2:
+        l_r[2:] /= l_r[1]
+    return l_r
 
 
 def install() -> None:
     """
+    For internal use only.
+
     Add the public methods from
     [`l_rv_generic`][`lmo.contrib.scipy_stats.l_rv_generic`] and
     [`l_lmt.rv_frozen`][`lmo.contrib.scipy_stats.l_lmt.rv_frozen`]
