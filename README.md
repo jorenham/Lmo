@@ -10,6 +10,7 @@
 [![Lmo - pre-commit][IMG-PC]][PC]
 [![Lmo - ruff][IMG-RUFF]][RUFF]
 [![Lmo - bassedpyright][IMG-BPR]][BPR]
+![PyPI - Types](https://img.shields.io/pypi/types/Lmo)
 
 Unlike the legacy
 [product-moments](https://wikipedia.org/wiki/Moment_(mathematics)), the
