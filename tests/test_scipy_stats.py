@@ -37,7 +37,7 @@ def test_rv_cont(rv: distributions.rv_frozen[Any, Any]) -> None:
     s = 2 * (not np.isfinite(a))
     t = 2 * (not np.isfinite(b))
 
-    l_old = cast("l_rv_frozen", rv).l_stats(trim=(s, t))
+    l_old = cast("l_rv_frozen", rv).l_stats(trim=(s, t))  # pyright: ignore[reportDeprecated]
     l_new = l_moments(rv, trim=(s, t))
 
     assert_allclose(l_old, l_new)
