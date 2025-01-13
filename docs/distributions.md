@@ -590,24 +590,6 @@ distributions. The proofs are not published, but it isn't difficult
 to validate their correctness, e.g. numerically, or symbolically with sympy or
 wolfram alpha / mathematica.
 
-### Bernoulli
-
-Surprisingly, the L-moments of the discrete
-[Bernoulli distribution](https://wikipedia.org/wiki/Bernoulli_distribution)
-[@uspensky1937], can't be expressed as easily as the distribution itself:
-
-\[
-\tlmoment{s, t}{r} =
-    \frac{(-1)^r}{r}
-    (1 - p)^{s + 1}
-    \jacobi{r + t - 1}{s + 1}{-t - 1}{2p - 1}
-    + \ffact{1}{r}
-\]
-
-Here, \( \jacobi{n}{\alpha}{\beta}{x} \) is a
-[Jacobi polynomial](#def-jacobi) (although it's not orthogonal for
-\( t >= 0 \), since \( \beta > -1 \) does not hold).
-
 ### PFD
 
 With support on the interval \( (0, 1] \) and shape parameter
