@@ -7,7 +7,6 @@
 [![Lmo - SPEC 0][IMG-SPEC0]][SPEC0]
 [![Lmo - BSD License][IMG-BSD]][BSD]
 [![Lmo - CI][IMG-CI]][CI]
-[![Lmo - pre-commit][IMG-PC]][PC]
 [![Lmo - ruff][IMG-RUFF]][RUFF]
 [![Lmo - bassedpyright][IMG-BPR]][BPR]
 ![PyPI - Types](https://img.shields.io/pypi/types/Lmo)
@@ -133,7 +132,6 @@ See [SPEC 0][SPEC0] for more information.
 [IMG-SPEC0]: https://img.shields.io/badge/SPEC-0-green?labelColor=%23004811&color=%235CA038
 [IMG-BSD]: https://img.shields.io/github/license/jorenham/Lmo
 [IMG-CI]: https://img.shields.io/github/actions/workflow/status/jorenham/Lmo/ci.yml?branch=master
-[IMG-PC]: https://img.shields.io/badge/pre--commit-enabled-orange?logo=pre-commit
 [IMG-RUFF]: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json
 [IMG-BPR]: https://img.shields.io/badge/basedpyright-checked-42b983
 
@@ -143,7 +141,6 @@ See [SPEC 0][SPEC0] for more information.
 [BSD]: https://github.com/jorenham/Lmo/blob/master/LICENSE
 [CI]: https://github.com/jorenham/Lmo/actions/workflows/ci.yml?query=branch%3Amaster
 
-[PC]: https://github.com/pre-commit/pre-commit
 [RUFF]: https://github.com/astral-sh/ruff
 [BPR]: https://github.com/detachhead/basedpyright/
 [PY]: https://github.com/python/cpython
