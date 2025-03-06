@@ -20,21 +20,6 @@ You can install the dev dependencies using
 uv sync
 ```
 
-### pre-commit
-
-Lmo uses [pre-commit](https://pre-commit.com/) to ensure that the code is
-formatted and typed correctly when committing the changes.
-
-```bash
-uv run pre-commit install
-```
-
-It can also be manually run:
-
-```bash
-uv run pre-commit --all-files
-```
-
 ### Testing
 
 Lmo uses [pytest](https://docs.pytest.org/en/stable/) and

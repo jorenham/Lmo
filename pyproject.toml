@@ -76,7 +76,6 @@ dev = [
     "blacken-docs>=1.19.1",
     "codespell>=2.3.0",
     "hypothesis[numpy]>=6.123.17",
-    "pre-commit>=4.0.1",
     "basedpyright>=1.24.0",
     "pytest>=8.3.4",
     "pytest-doctestplus>=1.3.0",
@@ -153,7 +152,7 @@ reportUnusedVariable = false  # dupe of F841
 
 [tool.repo-review]
 # TODO: basedmypy
-ignore = ["PC140", "MY", "RTD"]
+ignore = ["PY006", "PC140", "MY", "RTD"]
 
 [tool.ruff]
 force-exclude = true
@@ -267,7 +266,7 @@ allow-magic-value-types = ["int" ,"str"]
 
 [tool.tox]
 isolated_build = true
-env_list = ["repo-review", "pre-commit", "3.11", "3.12", "3.13"]
+env_list = ["repo-review", "3.11", "3.12", "3.13"]
 
 [tool.tox.env_run_base]
 description = "test with {base_python}"
@@ -275,13 +274,6 @@ skip_install = true
 allowlist_externals = ["uv"]
 commands_pre = [["uv", "sync", "--frozen", "--dev"]]
 commands = [["uv", "run", "pytest"]]
-
-[tool.tox.env.pre-commit]
-description = "pre-commit"
-skip_install = true
-allowlist_externals = ["uv"]
-commands_pre = [["uv", "sync", "--frozen", "--dev"]]
-commands = [["uv", "run", "pre-commit", "run", "--all-files"]]
 
 [tool.tox.env.repo-review]
 description = "repo-review"
