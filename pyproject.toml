@@ -52,36 +52,35 @@ Funding = "https://github.com/sponsors/jorenham"
 
 [dependency-groups]
 debug = [
-    "ipython>=8.31.0",
+    "ipython>=9.0.2",
     "ipykernel>=6.29.5",
     "line_profiler>=4.2.0",
-    "matplotlib>=3.10.0",
+    "matplotlib>=3.10.1",
     "typing-extensions>=4.12.2",
 ]
 docs = [
     "mkdocs>=1.6.1",
-    "mkdocs-bibtex>=2.16.2",
-    "mkdocs-git-revision-date-localized-plugin>=1.3.0",
-    "mkdocs-include-markdown-plugin>=7.1.2",
+    "mkdocs-bibtex>=4.2.3",
+    "mkdocs-git-revision-date-localized-plugin>=1.4.5",
+    "mkdocs-include-markdown-plugin>=7.1.5",
     "mkdocs-jupyter>=0.25.1",
-    "mkdocs-material>=9.5.49",
+    "mkdocs-material>=9.6.9",
     "mkdocs-minify-plugin>=0.8.0",
-    "mkdocstrings[python]>=0.27.0",
+    "mkdocstrings[python]>=0.29.0",
 ]
 pandas = [
     "pandas>=2.2.3",
-    "pandas-stubs>=2.2.3.241126",
+    "pandas-stubs>=2.2.3.250308",
 ]
 dev = [
     "blacken-docs>=1.19.1",
-    "codespell>=2.3.0",
-    "hypothesis[numpy]>=6.123.17",
-    "basedpyright>=1.24.0",
-    "pytest>=8.3.4",
-    "pytest-doctestplus>=1.3.0",
-    "ruff>=0.9.1",
-    "sp-repo-review[cli]>=2024.8.19",
-    "tox>=4.23.2",
+    "codespell>=2.4.1",
+    "hypothesis[numpy]>=6.129.3",
+    "basedpyright>=1.28.1",
+    "pytest>=8.3.5",
+    "pytest-doctestplus>=1.4.0",
+    "ruff>=0.11.0",
+    "sp-repo-review[cli]>=2025.1.22",
 ]
 
 [tool.uv]
