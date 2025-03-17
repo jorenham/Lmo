@@ -76,13 +76,13 @@ _CACHE: Final[_Cache] = {}
 
 
 def _l_weights_pwm(
-    r: _OrderT,
-    n: _SizeT,
+    r: int,
+    n: int,
     /,
     trim: tuple[int, int],
     *,
     dtype: _ToDType[_FloatT],
-) -> onp.Array[tuple[_OrderT, _SizeT], _FloatT]:
+) -> onp.Array2D[_FloatT]:
     s, t = trim
     r0 = r + s + t
     dtype = np.dtype(dtype)
@@ -106,13 +106,13 @@ def _l_weights_pwm(
 
 
 def _l_weights_ostat(
-    r: _OrderT,
-    n: _SizeT,
+    r: int,
+    n: int,
     /,
     trim: tuple[int, int] | tuple[float, float],
     *,
     dtype: _ToDType[_FloatT],
-) -> onp.Array[tuple[_OrderT, _SizeT], _FloatT]:
+) -> onp.Array2D[_FloatT]:
     assert r >= 1, r
 
     s, t = trim
@@ -344,7 +344,7 @@ def l_moment(
     dtype: _ToDType[_FloatT],
     **kwds: Unpack[lmt.LMomentOptions],
 ) -> onp.ArrayND[_FloatT]: ...
-def l_moment(
+def l_moment(  # pyright
     a: onp.ToFloatND,
     r: lmt.ToOrder,
     /,
@@ -352,10 +352,7 @@ def l_moment(
     *,
     axis: int | None = None,
     dtype: _ToDType[npc.floating] = np.float64,
-    fweights: lmt.ToFWeights | None = None,
-    aweights: lmt.ToAWeights | None = None,
-    sort: lmt.SortKind | bool = True,
-    cache: bool | None = None,
+    **kwds: Unpack[lmt.LMomentOptions],
 ) -> float | _FloatND:
     r"""
     Estimates the generalized trimmed L-moment $\lambda^{(s, t)}_r$ from
@@ -460,9 +457,9 @@ def l_moment(
         a,
         axis=axis,
         dtype=dtype,
-        fweights=fweights,
-        aweights=aweights,
-        sort=sort,
+        fweights=kwds.pop("fweights", None),
+        aweights=kwds.pop("aweights", None),
+        sort=kwds.pop("sort", True),
     )
     x_k = ensure_axis_at(x_k, axis, -1)
     n = x_k.shape[-1]
@@ -482,7 +479,10 @@ def l_moment(
         if t:
             x_k[..., -t:] = np.nan_to_num(x_k[..., -t:], nan=np.nan)
 
-    l_r = np.inner(l_weights(r_max, n, st, dtype=dtype, cache=cache), x_k)
+    l_r = np.inner(
+        l_weights(r_max, n, st, dtype=dtype, cache=kwds.pop("cache", None)),
+        x_k,
+    )
 
     out: npc.floating | _FloatND
     if r_min > 0:

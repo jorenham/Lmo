@@ -218,7 +218,7 @@ class wakeby_gen(lmt.rv_continuous):
     @override
     def _pdf(self, /, x: _XT, b: float, d: float, f: float) -> _XT:
         # application of the inverse function theorem
-        return 1 / self._qdf(self._cdf(x, b, d, f), b, d, f)  # pyright: ignore[reportReturnType]
+        return 1 / self._qdf(self._cdf(x, b, d, f), b, d, f)
 
     @override
     def _cdf(self, /, x: _XT, b: float, d: float, f: float) -> _XT:

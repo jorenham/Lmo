@@ -33,14 +33,14 @@ st_a_unique = hnp.arrays(shape=st_mn, unique=True, dtype=st_dtype, elements=st_e
 
 
 @given(r=st_r, n=st_n, trim=st_trim)
-def test_l_comoment_empty(r: int, n: int, trim: tuple[int, int]):
+def test_l_comoment_empty(r: int, n: int, trim: tuple[int, int]) -> None:
     l_00 = lmo.l_comoment(np.empty((0, n)), r, trim)
 
     assert l_00.shape == (0, 0)
 
 
 @given(a=st_a, trim=st_trim)
-def test_l_comoment_zero(a: npt.NDArray[np.float64], trim: tuple[int, int]):
+def test_l_comoment_zero(a: npt.NDArray[np.float64], trim: tuple[int, int]) -> None:
     l_aa = lmo.l_comoment(a, 0, trim)
 
     assert l_aa.shape == (len(a), len(a))
@@ -48,7 +48,11 @@ def test_l_comoment_zero(a: npt.NDArray[np.float64], trim: tuple[int, int]):
 
 
 @given(a=st_a, r=st_r, trim=st_trim)
-def test_tl_comoment_rowvar(a: npt.NDArray[np.float64], r: int, trim: tuple[int, int]):
+def test_tl_comoment_rowvar(
+    a: npt.NDArray[np.float64],
+    r: int,
+    trim: tuple[int, int],
+) -> None:
     l_aa = lmo.l_comoment(a, r, trim)
     l_aa_t = lmo.l_comoment(a.T, r, trim, rowvar=False)
 
@@ -56,7 +60,11 @@ def test_tl_comoment_rowvar(a: npt.NDArray[np.float64], r: int, trim: tuple[int,
 
 
 @given(a=st_a, r=st_r, trim=st_trim)
-def test_tl_comoment_diag(a: npt.NDArray[np.float64], r: int, trim: tuple[int, int]):
+def test_tl_comoment_diag(
+    a: npt.NDArray[np.float64],
+    r: int,
+    trim: tuple[int, int],
+) -> None:
     l_a = lmo.l_moment(a, r, trim, axis=1)
     L_aa = lmo.l_comoment(a, r, trim)
 
@@ -64,7 +72,11 @@ def test_tl_comoment_diag(a: npt.NDArray[np.float64], r: int, trim: tuple[int, i
 
 
 @given(a=st_a, r=st_r, trim=st_trim)
-def test_l_comoment_rowwise(a: npt.NDArray[np.float64], r: int, trim: tuple[int, int]):
+def test_l_comoment_rowwise(
+    a: npt.NDArray[np.float64],
+    r: int,
+    trim: tuple[int, int],
+) -> None:
     l_a = lmo.l_moment(a, r, trim, axis=1)
 
     def func(a_m: npt.NDArray[np.float64]):
@@ -77,7 +89,7 @@ def test_l_comoment_rowwise(a: npt.NDArray[np.float64], r: int, trim: tuple[int,
 
 
 @given(a=st_a)
-def test_l_coloc_mean(a: npt.NDArray[np.float64]):
+def test_l_coloc_mean(a: npt.NDArray[np.float64]) -> None:
     m_a = a.mean(1)
     l_aa = lmo.l_coloc(a)
     l_a0 = l_aa[:, 0]
@@ -85,9 +97,9 @@ def test_l_coloc_mean(a: npt.NDArray[np.float64]):
     assert np.allclose(l_a0, m_a, atol=1e-3, rtol=1e-3)
 
 
-@settings(deadline=timedelta(seconds=1))
+@settings(deadline=timedelta(seconds=1))  # pyright: ignore[reportArgumentType]
 @given(a=st_a_unique)
-def test_l_corr_standard(a: npt.NDArray[np.float64]):
+def test_l_corr_standard(a: npt.NDArray[np.float64]) -> None:
     r_aa = lmo.l_corr(a)
 
     assert np.all(r_aa.diagonal() == 1)

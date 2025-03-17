@@ -99,7 +99,7 @@ def uniform_qdf(p: float) -> float:
 
 # @given(a=st.floats(0.1, 10))
 @pytest.mark.parametrize("a", [0.1, 10])
-def test_lm_expon(a: float):
+def test_lm_expon(a: float) -> None:
     l_stats = np.array([a, a / 2, 1 / 3, 1 / 6])
     r = np.arange(5)
 
@@ -117,7 +117,7 @@ def test_lm_expon(a: float):
     assert_allclose(l_stats_cdf, l_stats, rtol=5e-7)
 
 
-def test_lm_normal():
+def test_lm_normal() -> None:
     from statistics import NormalDist
 
     mu, sigma = 100, 15
@@ -139,7 +139,7 @@ def test_lm_normal():
     assert_allclose(l_qdf, lr[1:])
 
 
-def test_tlm_normal():
+def test_tlm_normal() -> None:
     from statistics import NormalDist
 
     mu, sigma = 100, 15
@@ -165,7 +165,7 @@ def test_tlm_normal():
     assert_allclose(tl_qdf, tl[1:])
 
 
-def test_tlm_cauchy():
+def test_tlm_cauchy() -> None:
     r = [1, 2, 3, 4]
 
     z3 = zeta(3)
@@ -183,7 +183,7 @@ def test_tlm_cauchy():
 
 
 @given(a=st.floats(0.1, 10))
-def test_llm_expon(a: float):
+def test_llm_expon(a: float) -> None:
     r = [1, 2, 3, 4]
     lr = a * np.array([1, 1 / 2, 1 / 9, 1 / 24]) / 2
 
@@ -201,7 +201,7 @@ def test_llm_expon(a: float):
     assert_allclose(l_qdf, lr[1:])
 
 
-def test_lm_cov_uniform():
+def test_lm_cov_uniform() -> None:
     k4 = (
         np.array([
             [1 / 2, 0, -1 / 10, 0],
@@ -216,7 +216,7 @@ def test_lm_cov_uniform():
     assert_allclose(k4, k4_hat)
 
 
-def test_lm_cov_expon():
+def test_lm_cov_expon() -> None:
     k3 = np.array([
         [1, 1 / 2, 1 / 6],
         [1 / 2, 1 / 3, 1 / 6],
@@ -227,7 +227,7 @@ def test_lm_cov_expon():
     assert_allclose(k3, k3_hat)
 
 
-def test_llm_cov_expon():
+def test_llm_cov_expon() -> None:
     k3 = np.array([
         [1 / 3, 1 / 8, 0],
         [1 / 8, 3 / 40, 1 / 60],
@@ -239,7 +239,7 @@ def test_llm_cov_expon():
 
 
 @np.errstate(over="ignore", under="ignore")
-def test_lm_cov_loc_scale_invariant():
+def test_lm_cov_loc_scale_invariant() -> None:
     k4_hat = l_moment_cov_from_cdf(gumbel_cdf, 4, trim=(0, 1))
     k4_hat_r = l_moment_cov_from_cdf(
         functools.partial(gumbel_cdf, loc=5, scale=3),
@@ -249,7 +249,7 @@ def test_lm_cov_loc_scale_invariant():
     assert_allclose(k4_hat, k4_hat_r / 9)
 
 
-def test_ls_cov_uniform():
+def test_ls_cov_uniform() -> None:
     k4 = np.array([
         [1 / 12, 0, -1 / 10, 0],
         [0, 1 / 180, 0, -1 / 70],
@@ -261,7 +261,7 @@ def test_ls_cov_uniform():
     assert_allclose(k4, k4_hat)
 
 
-@settings(deadline=1_000)
+@settings(deadline=1_000)  # pyright: ignore[reportArgumentType]
 @given(
     ppf=st.one_of(
         *map(st.just, [uniform_ppf, norm_ppf, gumbel_ppf, rayleigh_ppf, expon_ppf])
@@ -271,7 +271,7 @@ def test_ls_cov_uniform():
 def test_ppf_from_l_moments_identity(
     ppf: "Callable[[float], float]",
     trim: tuple[int, int] | int,
-):
+) -> None:
     rmax = 8
     r = np.mgrid[1 : rmax + 1]
     l_r = l_moment_from_ppf(ppf, r, trim)
@@ -285,7 +285,7 @@ def test_ppf_from_l_moments_identity(
     assert_allclose(l_0_hat, l_0)
 
 
-@settings(deadline=1_000)
+@settings(deadline=1_000)  # pyright: ignore[reportArgumentType]
 @given(
     qdf=st.one_of(
         *map(st.just, [uniform_qdf, norm_qdf, gumbel_qdf, rayleigh_qdf, expon_qdf])
@@ -295,7 +295,7 @@ def test_ppf_from_l_moments_identity(
 def test_qdf_from_l_moments_identity(
     qdf: "Callable[[float], float]",
     trim: tuple[int, int] | int,
-):
+) -> None:
     rmax = 8
     r = np.mgrid[2 : rmax + 1]
     l_r = l_moment_from_qdf(qdf, r, trim)
