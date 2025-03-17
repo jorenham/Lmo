@@ -47,7 +47,7 @@ if "pytest" in sys.modules:
     import numpy as np
 
     if np.__version__.startswith("2."):
-        np.set_printoptions(legacy="1.25")  # pyright: ignore[reportArgumentType]
+        np.set_printoptions(legacy="1.25")
 
     del np
 
