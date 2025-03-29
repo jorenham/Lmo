@@ -30,7 +30,6 @@ from typing import (
 
 import numpy as np
 import optype.numpy as onp
-import optype.numpy.compat as npc
 
 import lmo.typing as lmt
 from lmo import inference
@@ -74,7 +73,7 @@ _ShapeT = TypeVar("_ShapeT", bound=tuple[int, ...])
 _RVT = TypeVar("_RVT", bound=lmt.rv_generic)
 _ArgT = TypeVar("_ArgT", bound=float | np.float64 | onp.ArrayND[np.float64])
 
-_FloatND: TypeAlias = onp.ArrayND[npc.floating]
+_FloatND: TypeAlias = onp.ArrayND[np.float64]
 
 _T = TypeVar("_T")
 _Tuple2: TypeAlias = tuple[_T, _T]
@@ -295,10 +294,9 @@ class l_rv_generic(PatchClass):
         l0_r = _l_moment(self, r_, *theta, trim=trim_, quad_opts=quad_opts)
 
         # shift (by loc) and scale
-        shift_r = (r_ == 1) * loc
-        scale_r = (r_ == 0) + (r_ > 0) * scale
-        out: Any = round0((l0_r * scale_r + shift_r), tol=1e-15)
-        return out
+        shift_r: onp.ArrayND[np.float64] = (r_ == 1) * loc
+        scale_r: onp.ArrayND[np.float64] = (r_ == 0) + (r_ > 0) * scale
+        return round0((l0_r * scale_r + shift_r), tol=1e-15)
 
     @overload
     def l_ratio(
@@ -1450,18 +1448,18 @@ def _get_cdf(
 
     if loc or scale != 1:
 
-        def cdf(x: Any, /) -> Any:
-            z: Any = (np.asarray(x) - loc) / scale
-            q: Any = cdf_(z, *theta)
+        def cdf(x: onp.ToJustFloatND, /) -> onp.ArrayND[np.float64] | float:
+            z: onp.ArrayND[Any] = (np.asarray(x) - loc) / scale
+            q = cdf_(z, *theta)
             return q.item() if np.isscalar(x) else q
 
     else:
 
-        def cdf(x: Any, /) -> Any:
+        def cdf(x: onp.ToJustFloatND, /) -> onp.ArrayND[np.float64] | float:
             q = cdf_(np.asarray(x), *theta)
             return q.item() if np.isscalar(x) else q
 
-    return cdf
+    return cdf  # pyright: ignore[reportReturnType]
 
 
 def _get_icdf(

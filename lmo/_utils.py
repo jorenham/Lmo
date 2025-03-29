@@ -35,7 +35,7 @@ def __dir__() -> tuple[str, ...]:
 ###
 
 _IntND: TypeAlias = onp.ArrayND[npc.integer]
-_FloatND: TypeAlias = onp.ArrayND[npc.floating]
+_FloatND: TypeAlias = onp.ArrayND[np.float64]
 
 _T = TypeVar("_T")
 _SCT = TypeVar("_SCT", bound=np.generic)
@@ -93,7 +93,7 @@ def plotting_positions(
     """
     x0 = 1 - alpha
     xn = x0 + n - (alpha if beta is None else beta)
-    return np.linspace(x0 / xn, (x0 + n - 1) / xn, n)
+    return np.linspace(x0 / xn, (x0 + n - 1) / xn, n, dtype=np.float64)
 
 
 @overload
@@ -224,18 +224,18 @@ def ordered(
     fweights: lmt.ToFWeights | None = None,
     aweights: lmt.ToAWeights | None = None,
     sort: lmt.SortKind | bool = True,
-) -> _FloatND: ...
+) -> onp.ArrayND[_FloatT]: ...
 def ordered(  # noqa: C901
     x: onp.ToFloatND,
     y: onp.ToFloatND | None = None,
     /,
     axis: op.CanIndex | None = None,
-    dtype: onp.AnyFloatingDType | None = None,
+    dtype: _ToDType[_FloatT] | None = None,
     *,
     fweights: lmt.ToFWeights | None = None,
     aweights: lmt.ToAWeights | None = None,
     sort: lmt.SortKind | bool = True,
-) -> _FloatND:
+) -> onp.ArrayND[np.floating]:
     """
     Calculate `n = len(x)` order stats of `x`, optionally weighted.
     If `y` is provided, the order of `y` is used instead.
@@ -274,7 +274,7 @@ def ordered(  # noqa: C901
     # prepare observation weights
     w_kk = None
     if aweights is not None:
-        w_kk = _sort_like(np.asanyarray(aweights), i_kk, axis=axis)
+        w_kk = _sort_like(np.asanyarray(aweights, dtype=np.float64), i_kk, axis=axis)
 
     # apply the frequency weights to x, and (optionally) to aweights
     if fweights is not None:

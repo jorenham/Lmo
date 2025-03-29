@@ -17,7 +17,9 @@ import optype as op
 import optype.numpy as onp
 import optype.numpy.compat as npc
 import scipy.special as sps
-from numpy.polynomial._polybase import ABCPolyBase  # noqa: PLC2701
+from numpy.polynomial._polybase import (
+    ABCPolyBase,  # noqa: PLC2701  # pyright: ignore[reportPrivateImportUsage]
+)
 
 if TYPE_CHECKING:
     from typing import LiteralString

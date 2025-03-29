@@ -6,19 +6,11 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
-from typing import (
-    Any,
-    Literal,
-    ParamSpec,
-    Protocol,
-    TypeAlias,
-    TypeVar,
-    TypedDict,
-    overload,
-)
+from typing import Literal, ParamSpec, Protocol, TypeAlias, TypeVar, TypedDict, overload
 
 import numpy as np
 import optype.numpy as onp
+import optype.numpy.compat as npc
 from scipy.stats._distn_infrastructure import (
     _ShapeInfo as ShapeInfo,
     rv_continuous,
@@ -28,8 +20,6 @@ from scipy.stats._distn_infrastructure import (
 
 __all__ = [
     "Callable2",
-    "Floating",
-    "Integer",
     "LComomentOptions",
     "LMomentOptions",
     "OrderReshape",
@@ -53,9 +43,6 @@ def __dir__() -> list[str]:
     return __all__
 
 
-Integer: TypeAlias = np.integer[Any]
-Floating: TypeAlias = np.floating[Any]
-
 OrderReshape: TypeAlias = Literal["C", "F", "A"]
 """Type of the `order` parameter of e.g. [`np.reshape`][numpy.array]."""
 
@@ -78,10 +65,10 @@ ruin the fun).
 RNG: TypeAlias = np.random.Generator | np.random.RandomState
 Seed: TypeAlias = (
     int
-    | Integer
+    | npc.integer
     # | np.timedelta64
-    # | onp.ArrayND[Integer | np.timedelta64 | np.flexible | np.object_]
-    | onp.ArrayND[Integer]
+    # | onp.ArrayND[npc.integer | np.timedelta64 | np.flexible | np.object_]
+    | onp.ArrayND[npc.integer]
     | np.random.SeedSequence
     | np.random.BitGenerator
     | RNG
@@ -94,17 +81,17 @@ Seed: TypeAlias = (
 ToIntTrim: TypeAlias = int | tuple[int, int]
 ToTrim: TypeAlias = float | tuple[float, float]
 
-ToOrder0D: TypeAlias = int | Integer
-ToOrder1D: TypeAlias = onp.CanArrayND[Integer] | Sequence[ToOrder0D]
+ToOrder0D: TypeAlias = int | npc.integer
+ToOrder1D: TypeAlias = onp.CanArrayND[npc.integer] | Sequence[ToOrder0D]
 ToOrderND: TypeAlias = (
-    onp.CanArrayND[Integer]
-    | onp.SequenceND[onp.CanArrayND[Integer]]
+    onp.CanArrayND[npc.integer]
+    | onp.SequenceND[onp.CanArrayND[npc.integer]]
     | onp.SequenceND[ToOrder0D]
 )
 ToOrder: TypeAlias = ToOrder0D | ToOrderND
 
-ToFWeights: TypeAlias = onp.ArrayND[Integer]
-ToAWeights: TypeAlias = onp.ArrayND[Floating]
+ToFWeights: TypeAlias = onp.ArrayND[npc.integer]
+ToAWeights: TypeAlias = onp.ArrayND[npc.floating]
 
 
 class UnivariateOptions(TypedDict, total=False):
@@ -159,8 +146,8 @@ class Callable2(Protocol[_F1_co, _F2_co]):
 
 # scipy stuff
 
-_IntLike: TypeAlias = int | Integer
-_FloatLike: TypeAlias = float | Floating
+_IntLike: TypeAlias = int | npc.integer
+_FloatLike: TypeAlias = float | npc.floating
 
 
 class QuadOptions(TypedDict, total=False):

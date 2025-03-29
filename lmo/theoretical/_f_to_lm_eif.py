@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING, Any, Protocol, TypeAlias, TypeVar, overload
 
 import numpy as np
 import optype.numpy as onp
-import optype.numpy.compat as npc
 
 from lmo._poly import eval_sh_jacobi
 from lmo._utils import clean_order, clean_trim, round0
@@ -20,8 +19,7 @@ __all__ = ["l_moment_influence_from_cdf", "l_ratio_influence_from_cdf"]
 
 _T = TypeVar("_T")
 _Pair: TypeAlias = tuple[_T, _T]
-
-_FloatND: TypeAlias = onp.ArrayND[npc.floating]
+_FloatND: TypeAlias = onp.ArrayND[np.float64]
 
 
 class _Fn1(Protocol):

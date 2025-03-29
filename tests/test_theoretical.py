@@ -261,7 +261,7 @@ def test_ls_cov_uniform() -> None:
     assert_allclose(k4, k4_hat)
 
 
-@settings(deadline=1_000)  # pyright: ignore[reportArgumentType]
+@settings(deadline=1_000)
 @given(
     ppf=st.one_of(
         *map(st.just, [uniform_ppf, norm_ppf, gumbel_ppf, rayleigh_ppf, expon_ppf])
@@ -285,7 +285,7 @@ def test_ppf_from_l_moments_identity(
     assert_allclose(l_0_hat, l_0)
 
 
-@settings(deadline=1_000)  # pyright: ignore[reportArgumentType]
+@settings(deadline=1_000)
 @given(
     qdf=st.one_of(
         *map(st.just, [uniform_qdf, norm_qdf, gumbel_qdf, rayleigh_qdf, expon_qdf])
