@@ -56,7 +56,7 @@ debug = [
     "ipykernel>=6.29.5",
     "line_profiler>=4.2.0",
     "matplotlib>=3.10.1",
-    "typing-extensions>=4.12.2",
+    "typing-extensions>=4.13.0",
 ]
 docs = [
     "mkdocs>=1.6.1",
@@ -75,11 +75,11 @@ pandas = [
 dev = [
     "blacken-docs>=1.19.1",
     "codespell>=2.4.1",
-    "hypothesis[numpy]>=6.129.3",
-    "basedpyright>=1.28.1",
+    "hypothesis[numpy]>=6.130.5",
+    "basedpyright>=1.28.4",
     "pytest>=8.3.5",
     "pytest-doctestplus>=1.4.0",
-    "ruff>=0.11.0",
+    "ruff>=0.11.2",
     "sp-repo-review[cli]>=2025.1.22",
 ]
 
@@ -130,7 +130,7 @@ reportMissingModuleSource = true
 reportCallInDefaultInitializer = true
 reportImplicitOverride = true
 reportImplicitStringConcatenation = false
-reportImportCycles = false  # TODO
+reportImportCycles = false
 reportMissingSuperCall = true
 reportPropertyTypeMismatch = true
 reportShadowedImports = true
@@ -138,7 +138,7 @@ reportUninitializedInstanceVariable = true
 reportUnnecessaryTypeIgnoreComment = true
 reportUnusedCallResult = false  # https://github.com/microsoft/pyright/issues/8650
 reportUnreachable = false  # `if sys.version_info() >= ...`
-reportAny = false  # TODO
+reportAny = false
 reportIgnoreCommentWithoutRule = true
 reportPrivateLocalImportUsage = true
 reportImplicitRelativeImport = true

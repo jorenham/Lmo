@@ -97,7 +97,7 @@ def test_l_coloc_mean(a: npt.NDArray[np.float64]) -> None:
     assert np.allclose(l_a0, m_a, atol=1e-3, rtol=1e-3)
 
 
-@settings(deadline=timedelta(seconds=1))  # pyright: ignore[reportArgumentType]
+@settings(deadline=timedelta(seconds=1))
 @given(a=st_a_unique)
 def test_l_corr_standard(a: npt.NDArray[np.float64]) -> None:
     r_aa = lmo.l_corr(a)

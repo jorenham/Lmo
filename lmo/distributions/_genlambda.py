@@ -9,6 +9,7 @@ from typing import Final, TypeAlias, TypeVar
 
 import numpy as np
 import optype.numpy as onp
+import optype.numpy.compat as npc
 import scipy.special as sps
 from scipy.stats.distributions import rv_continuous
 
@@ -231,7 +232,7 @@ class genlambda_gen(rv_continuous):
 
     def _l_moment(
         self,
-        r: onp.ArrayND[lmt.Integer],
+        r: onp.ArrayND[npc.integer],
         b: float,
         d: float,
         f: float,
