@@ -30,7 +30,7 @@ jobs:
           config: ".markdownlint.yaml"
           globs: "*.md"
 
-      - uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@v6
 
       - name: uv sync
         run: >
@@ -69,7 +69,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@v6
 
       - name: setup python ${{ matrix.python-version }}
         run: uv python install ${{ matrix.python-version }}
