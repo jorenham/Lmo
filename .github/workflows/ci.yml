@@ -20,12 +20,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: scientific-python/repo-review@v0.12.1
+      - uses: scientific-python/repo-review@v0.12.2
         with:
           plugins: sp-repo-review
 
       - name: markdownlint
-        uses: DavidAnson/markdownlint-cli2-action@v19
+        uses: DavidAnson/markdownlint-cli2-action@v20
         with:
           config: ".markdownlint.yaml"
           globs: "*.md"
