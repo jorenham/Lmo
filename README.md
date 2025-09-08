@@ -23,7 +23,7 @@ So Lmo is as fast as sorting your samples (in terms of time-complexity).
 
 - Calculates trimmed L-moments and L-*co*moments, from samples or any
   `scipy.stats` distribution.
-- Full support for trimmed L-moment (TL-moments), e.g.
+- Full support for trimmed L-moments (TL-moments), e.g.
   `lmo.l_moment(..., trim=(1/137, 3.1416))`.
 - Generalized Method of L-moments: robust distribution fitting that beats MLE.
 - Fast estimation of L-*co*moment matrices from your multidimensional data
@@ -35,7 +35,7 @@ So Lmo is as fast as sorting your samples (in terms of time-complexity).
 reference with usage examples and with mathematical $\TeX$ definitions.
 - Clean Pythonic syntax for ease of use.
 - Vectorized functions for very fast fitting.
-- Fully typed, tested, and tickled.
+- Fully typed, tested, and validated.
 - Optional Pandas integration.
 
 ## Quick example
@@ -45,7 +45,7 @@ Even if your data is pathological like
 are not defined, the trimmed L-moments (TL-moments) can be used instead.
 
 Let's calculate the first two TL-moments (the TL-location and the TL-scale) of a small
-amount of samples drawn from the standard Cauchy distribution:
+number of samples drawn from the standard Cauchy distribution:
 
 ```pycon
 >>> import numpy as np
