@@ -56,7 +56,7 @@ amount of samples drawn from the standard Cauchy distribution:
 array([-0.17937038,  0.68287665])
 ```
 
-Compared with the theoretical standard Cauchy TL-moments, that pretty close!
+Compared with the theoretical standard Cauchy TL-moments, that's pretty close!
 
 ```pycon
 >>> from scipy.stats import cauchy
@@ -74,7 +74,7 @@ array([-1.7113441 , 19.57350731])
 ```
 
 So even though the `data` was drawn from the *standard* Cauchy distribution, we can
-immediately see that this look standard at all.
+immediately see that this does not look standard at all.
 
 The reason is that the Cauchy distribution doesn't have a mean or standard
 deviation:
