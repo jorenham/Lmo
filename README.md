@@ -35,7 +35,7 @@ So Lmo is as fast as sorting your samples (in terms of time-complexity).
 reference with usage examples and with mathematical $\TeX$ definitions.
 - Clean Pythonic syntax for ease of use.
 - Vectorized functions for very fast fitting.
-- Fully typed, tested, and validated.
+- Fully typed, tested, and tickled.
 - Optional Pandas integration.
 
 ## Quick example
@@ -74,7 +74,7 @@ array([-1.7113441 , 19.57350731])
 ```
 
 So even though the `data` was drawn from the *standard* Cauchy distribution, we can
-immediately see that this does not look standard at all.
+immediately see that this doesn't look standard at all.
 
 The reason is that the Cauchy distribution doesn't have a mean or standard
 deviation:
