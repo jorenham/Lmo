@@ -23,7 +23,7 @@ So Lmo is as fast as sorting your samples (in terms of time-complexity).
 
 - Calculates trimmed L-moments and L-*co*moments, from samples or any
   `scipy.stats` distribution.
-- Full support for trimmed L-moment (TL-moments), e.g.
+- Full support for trimmed L-moments (TL-moments), e.g.
   `lmo.l_moment(..., trim=(1/137, 3.1416))`.
 - Generalized Method of L-moments: robust distribution fitting that beats MLE.
 - Fast estimation of L-*co*moment matrices from your multidimensional data
@@ -45,7 +45,7 @@ Even if your data is pathological like
 are not defined, the trimmed L-moments (TL-moments) can be used instead.
 
 Let's calculate the first two TL-moments (the TL-location and the TL-scale) of a small
-amount of samples drawn from the standard Cauchy distribution:
+number of samples drawn from the standard Cauchy distribution:
 
 ```pycon
 >>> import numpy as np
@@ -56,7 +56,7 @@ amount of samples drawn from the standard Cauchy distribution:
 array([-0.17937038,  0.68287665])
 ```
 
-Compared with the theoretical standard Cauchy TL-moments, that pretty close!
+Compared with the theoretical standard Cauchy TL-moments, that's pretty close!
 
 ```pycon
 >>> from scipy.stats import cauchy
@@ -74,7 +74,7 @@ array([-1.7113441 , 19.57350731])
 ```
 
 So even though the `data` was drawn from the *standard* Cauchy distribution, we can
-immediately see that this look standard at all.
+immediately see that this doesn't look standard at all.
 
 The reason is that the Cauchy distribution doesn't have a mean or standard
 deviation:
