@@ -18,14 +18,14 @@ jobs:
       fail-fast: false
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - uses: scientific-python/repo-review@v0.12.3
         with:
           plugins: sp-repo-review
 
       - name: markdownlint
-        uses: DavidAnson/markdownlint-cli2-action@v21
+        uses: DavidAnson/markdownlint-cli2-action@v22
         with:
           config: ".markdownlint.yaml"
           globs: "*.md"
@@ -67,7 +67,7 @@ jobs:
         pandas: ["--no-group pandas", ""]
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - uses: astral-sh/setup-uv@v7
 
